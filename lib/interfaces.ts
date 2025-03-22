@@ -1,0 +1,210 @@
+export interface NewsArticle {
+  id: string;
+  writerId: string;
+  isPublished: boolean;
+  title: string;
+  content: string;
+  language: string;
+}
+export interface Notification {
+  id: string;
+  userid: string;
+  message: string;
+  readstatus: boolean;
+  url: string;
+  createdat: string;
+}
+export interface SupportQuestion {
+  id: string;
+  question: string;
+  answer: string;
+  language: string;
+  description: string;
+  userid: string;
+  state: boolean;
+}
+export interface Stock {
+  id: string;
+  type: string;
+  name: string;
+  isinCode: string;
+  code: string;
+  facevalue: number;
+  issuer: string;
+  ListedCompanyId: string;
+  marketListing: string;
+  emissionDate: string;
+  enjoymentDate: string | null;
+  quantity: number;
+}
+export interface Bond {
+  id: string;
+  type: string;
+  name: string;
+  isinCode: string;
+  issuer: string;
+  ListedCompanyId: string;
+  marketListing: string;
+  emissionDate: string;
+  enjoymentDate: string | null;
+  quantity: number;
+}
+export interface TitreParticipatif {
+  id: string;
+  type: string;
+  name: string;
+  isinCode: string;
+  issuer: string;
+  ListedCompanyId: string;
+  marketListing: string;
+  emissionDate: string;
+  enjoymentDate: string | null;
+  quantity: number;
+}
+export interface Order {
+  id: string;
+  issuer: string;
+  validity: string;
+  ordertypes: string[];
+  securityissuer: string;
+  orderdirection: number;
+  securityid: Security;
+  securitytype: string;
+  quantity: number;
+  pricelimitmax: number;
+  pricelimitmin: number;
+  duration: string | null;
+  orderdate: string;
+  orderstatus: number;
+  signeddocumnet: string;
+  payedWithCard: boolean;
+  createdat: string;
+  investorid: Person;
+  negotiatorid: Person;
+}
+
+export interface Security {
+  id: string;
+  type: string;
+  name: string;
+  code: string;
+  facevalue: number;
+  isinCode: string;
+  issuer: string;
+  ListedCompanyId: string;
+  marketListing: string;
+  emissionDate: string;
+  enjoymentDate: string | null;
+  quantity: number;
+  shareClass: string | null;
+  votingRights: string | null;
+  dividendInfo: string | null;
+  maturityDate?: string | null;
+  faceValue?: number;
+  couponRate?: number;
+  secteurActivite: string;
+  capitalisationBoursiere: string;
+  siteOfficiel: string;
+  couponSchedule?: string | null;
+  repaymentMethod?: string | null;
+  yieldRate?: number | null;
+  contact: {
+    email: string;
+    phonenumber: string;
+  };
+}
+
+export interface Person {
+  id: string;
+  fullname: string;
+  email: string;
+  phonenumber: string | null;
+  followsbusiness: boolean;
+  businessid: string | null;
+  status: number;
+  extrafields: string | null;
+}
+
+export interface User {
+  id: string;
+  fullname: string;
+  followsbusiness: boolean;
+  roleid: number;
+  phonenumber: string;
+  email: string;
+  address: string;
+  birthdate: string;
+  trustnumber: string;
+  nationality: string;
+  countryofresidence: string;
+  negotiatorid: string;
+  countryofbirth: string;
+  profession: string;
+  zipcode: string;
+  status: number;
+}
+
+export interface Action {
+  societeEmettrice: string;
+  marcheDeCotation: string;
+  codeBourse: string;
+  codeISIN: string;
+  dateEmission: string; // ISO Date
+  dateJouissance: string; // ISO Date
+  valeurNominale: number;
+  nombreActions: number;
+}
+
+export interface Obligation {
+  societeEmettrice: string;
+  marcheDeCotation: string;
+  codeBourse: string;
+  codeISIN: string;
+  dateEmission: string; // ISO Date
+  dateJouissance: string; // ISO Date
+  dateEcheance: string; // ISO Date
+  dureeDeVie: number; // in years
+  valeurNominale: number;
+  nombreObligations: number;
+  modeRemboursement: "Infine" | "Capital Constant" | "Annuité Constante";
+  tauxCoupon: { annee: number; taux: number }[]; // Array for progressive coupons
+  tauxRendementActuariel: number; // percentage
+}
+export interface TitresParticipatifs {
+  societeEmettrice: string;
+  marcheDeCotation: string;
+  codeBourse: string;
+  codeISIN: string;
+  dateEmission: string; // ISO Date
+  dateJouissance: string; // ISO Date
+  dateEcheance: string; // ISO Date
+  dureeDeVie: number; // in years
+  valeurNominale: number;
+  nombreTitres: number;
+  tauxCouponFixe: number; // percentage
+  tauxCouponVariable?: number; // optional, percentage
+}
+export interface Sukuk {
+  societeEmettrice: string;
+  marcheDeCotation: string;
+  codeBourse: string;
+  codeISIN: string;
+  dateEmission: string; // ISO Date
+  dateJouissance: string; // ISO Date
+  dateEcheance: string; // ISO Date
+  dureeDeVie: number; // in years
+  valeurNominale: number;
+  nombreTitres: number;
+  remuneration: number; // percentage
+}
+export interface SocieteCotee {
+  nomSociete: string;
+  secteurActivite: string;
+  capitalisationBoursiere: number; // in currency value
+  titresEmisEtCodes: { typeTitre: string; code: string }[]; // Array for multiple titles
+  siteOfficiel: string; // URL
+  contact: {
+    email: string;
+    numerosTelephone: string[];
+  };
+}

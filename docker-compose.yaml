@@ -1,0 +1,15 @@
+services:
+  nextjs-app:
+    container_name: InvestmarketUi
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: investmarket-ui
+    ports:
+      - "4000:3000"
+    restart: always
+    environment:
+      - NODE_ENV=production

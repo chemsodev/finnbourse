@@ -1,0 +1,56 @@
+# Node modules
+/node_modules/
+
+# Build output
+/.next/
+/out/
+
+# Next.js specific files
+/.next/
+/out/
+/public/static/
+
+# Logs
+*.log
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js build output
+.next
+out
+
+# macOS specific
+.DS_Store
+
+# Windows specific
+Thumbs.db
+
+# IDE and editor specific
+.idea/
+.vscode/
+
+# Operating system specific files
+*.swp
+*.swo
+
+# Yarn Integrity file
+.yarn-integrity
+
+# JetBrains IDEs
+.idea/
+
+# Log files
+*.log
+
+# npm package lock
+package-lock.json
+
