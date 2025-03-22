@@ -4,6 +4,7 @@ import { LIST_ORDERS_QUERY_PDF } from "@/graphql/queries";
 import { Order } from "@/lib/interfaces";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
+//fixed!
 interface GetOrdersResponse {
   listOrdersExtended: Order[];
 }
