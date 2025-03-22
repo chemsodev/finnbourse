@@ -113,7 +113,7 @@ const UpdateFaceValue = ({ securityId }: { securityId: string }) => {
       <DialogContent>
         <DialogTitle>
           <div className="flex items-center justify-center">
-            <DollarSign className="h-16 w-16 text-orange-500 my-4" />
+            <DollarSign className="h-16 w-16 text-blue-600 my-4" />
           </div>
           <div className="text-xl font-semibold text-center text-primary">
             {t("updateFaceValue")}

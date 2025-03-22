@@ -11,8 +11,8 @@ const loading = () => {
           src="/favicon.ico"
           width={600}
           height={600}
-          alt="logo invest market"
-          className="w-52"
+          alt="logo FinnBourse"
+          className="w-32 mb-6"
         />
         <div className=" capitalize text-xl font-semibold text-primary mb-6">
           {t("loading")}
@@ -20,7 +20,7 @@ const loading = () => {
         <div role="status">
           <svg
             aria-hidden="true"
-            className="w-10 h-10 text-gray-200 animate-spin fill-orange-500"
+            className="w-10 h-10 text-gray-200 animate-spin fill-blue-600"
             viewBox="0 0 100 101"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

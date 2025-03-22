@@ -25,7 +25,7 @@ const InfoDialog = ({ title, text }: InfoDialogProps) => {
       </DialogTrigger>
       <DialogContent className=" bg-primary border-none text-white">
         <DialogHeader>
-          <DialogTitle className="font-bold  text-orange-500 group-hover:text-white text-center text-2xl">
+          <DialogTitle className="font-bold  text-blue-600 group-hover:text-white text-center text-2xl">
             {title}
           </DialogTitle>
           <DialogDescription>

@@ -5,7 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import SessionWrapper from "@/components/SessionWrapper";
 import { Toaster } from "@/components/ui/toaster";
 export const metadata: Metadata = {
-  title: "Invest Market",
+  title: "FinnBourse",
   description: "",
 };
 

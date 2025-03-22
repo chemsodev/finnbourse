@@ -51,7 +51,7 @@ const page = async () => {
       <div className="flex justify-center">
         <div className="flex flex-col  gap-4 md:w-[55%] mt-8">
           <Link
-            href="mailto:contact@invest-market.com"
+            href="mailto:contact@finnetude.com"
             className="flex w-full gap-4 border border-gray-100 rounded-md p-4"
           >
             <div className="w-14 h-14 shadow-inner bg-gray-50 rounded-md flex justify-center items-center">

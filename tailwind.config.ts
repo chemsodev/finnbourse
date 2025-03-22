@@ -11,7 +11,7 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#15383E",
+          DEFAULT: "#0F172A",
           foreground: "hsl(var(--primary-foreground))",
         },
         background: "hsl(var(--background))",

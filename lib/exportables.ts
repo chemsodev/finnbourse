@@ -222,7 +222,7 @@ export const clients = [
   },
   {
     id: "CLI-004",
-    nom: "Invest Market Algérie",
+    nom: "FinnBourse Algérie",
     type: "entreprise",
     adresse: "10 Avenue Khemisti, Alger",
     telephone: "+213 770 321 654",

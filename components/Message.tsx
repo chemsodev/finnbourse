@@ -159,7 +159,7 @@ const Message = ({
             <DialogTitle className="font-semibold text-2xl text-primary group-hover:text-white text-center mt-4 mb-6">
               <div className="font-semibold text-primary">
                 {t("questionDe")}
-                <span className="text-orange-500 capitalize mx-2">
+                <span className="text-blue-600 capitalize mx-2">
                   {user?.fullname}
                 </span>
               </div>

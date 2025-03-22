@@ -41,7 +41,7 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
                 fontFamily: "Helvetica-Bold",
               }}
             >
-              INVESTMARKET…INVEST IN GROWTH
+              FINNBOURSE…INVEST IN GROWTH
             </Text>
           </View>
           <View
@@ -64,7 +64,7 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
             marginVertical: 20,
           }}
         >
-          Invest Market au Capital Social de 10.000.000 DA Intermédiaire en
+          FinnBourse au Capital Social de 100.000.000 DA Intermédiaire en
           opération de bourse
         </Text>
         <Text
@@ -387,15 +387,13 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
                 fontFamily: "Helvetica-Bold",
               }}
             >
-              Invest Market
+              FinnBourse
             </Text>
             <Text style={{ fontSize: 8, marginLeft: 2 }}>
-              au capital social de 10.000.000 DZD
+              au capital social de 100.000.000 DZD
             </Text>
           </View>
-          <Text style={{ fontSize: 8 }}>
-            02, boulevard Mohamed V – Alger Centre
-          </Text>
+          <Text style={{ fontSize: 8 }}>lot n° 08 2eme étage, Hydra 16035</Text>
           <Text
             style={{
               textDecoration: "underline",
@@ -403,7 +401,7 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
               fontSize: 8,
             }}
           >
-            info@investmarket-dz.com
+            info@finnetude.com
           </Text>
           <Text style={{ fontSize: 8 }}>Tél. : 021 78 23 77</Text>
         </View>

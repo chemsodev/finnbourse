@@ -19,7 +19,7 @@ const page = () => {
 
       <h1 className="text-3xl font-bold text-primary">{t("congrats")}</h1>
       <div className="text-lg">{t("description")}</div>
-      <Link href="/" className="bg-orange-500 text-white py-2 px-4 rounded-md">
+      <Link href="/" className="bg-blue-600 text-white py-2 px-4 rounded-md">
         {t("retour")}
       </Link>
     </div>

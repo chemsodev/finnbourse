@@ -38,7 +38,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 fontFamily: "Helvetica-Bold",
               }}
             >
-              INVESTMARKET…INVEST IN GROWTH
+              FINNBOURSE…INVEST IN GROWTH
             </Text>
           </View>
           <View
@@ -61,7 +61,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
             marginVertical: 20,
           }}
         >
-          Invest Market au Capital Social de 10.000.000 DA Intermédiaire en
+          FinnBourse au Capital Social de 100.000.000 DA Intermédiaire en
           opération de bourse
         </Text>
 
@@ -394,7 +394,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 fontFamily: "Helvetica-Bold",
               }}
             >
-              Invest Market SPA
+              SARL FinnBourse
             </Text>
             <Text style={{ fontSize: 8, marginLeft: 2 }}>
               au capital social de 10.000.000 DZD
@@ -410,7 +410,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
               fontSize: 8,
             }}
           >
-            info@investmarket-dz.com
+            info@finnetude.com
           </Text>
           <Text style={{ fontSize: 8 }}>Tél. : 021 78 23 77</Text>
         </View>

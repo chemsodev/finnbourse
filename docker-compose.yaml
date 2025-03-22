@@ -1,13 +1,13 @@
 services:
   nextjs-app:
-    container_name: InvestmarketUi
+    container_name: FinnbourseUi
     read_only: true
     security_opt:
       - no-new-privileges:true
     build:
       context: .
       dockerfile: Dockerfile
-    image: investmarket-ui
+    image: finnbourse-ui
     ports:
       - "4000:3000"
     restart: always

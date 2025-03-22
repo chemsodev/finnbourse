@@ -171,8 +171,8 @@ export default function Login() {
           <CardContent className="flex items-center justify-center gap-20">
             <div className="flex flex-col justify-center items-center md:w-1/2">
               <div className=" text-xl font-semibold text-primary mb-4  ">
-                {t("bienvenue")} Invest
-                <span className="text-orange-500"> Market</span>.
+                {t("bienvenue")} Finn
+                <span className="text-blue-600">Bourse</span>.
               </div>
               <Form {...form}>
                 <form
@@ -351,15 +351,15 @@ export default function Login() {
               </div>
             </div>
             <div className="hidden md:flex object-cover w-1/2 flex-col gap-4">
-              <div className="text-orange-500 uppercase text-sm">
-                INVEST MARKET spa
+              <div className="text-blue-600 uppercase text-sm">
+                SARL FINNBOURSE
               </div>
               <div className="font-semibold text-primary text-2xl uppercase">
                 INVEST IN GROWTH...
               </div>
               <div className="text-sm text-gray-500">
-                Invest Market, filiale de RMGC Spa Holding, est un Intermédiaire
-                en Opérations de Bourse (IOB) agréé par la Commission
+                FinnBourse, filiale de RMGC Spa Holding, est un Intermédiaire en
+                Opérations de Bourse (IOB) agréé par la Commission
                 d’Organisation et de Surveillance des Opérations de Bourse
                 (COSOB)
                 <ul className="list-disc ml-4 my-4">
@@ -378,7 +378,7 @@ export default function Login() {
               </div>
               <div className="flex gap-2 mt-4">
                 <Link
-                  href="https://investmarket-dz.com/"
+                  href="https://finnetude.com/"
                   className="flex gap-2 bg-primary hover:bg-primary/80 text-white w-fit items-center py-2 px-4 rounded-md"
                 >
                   Site Officiel
