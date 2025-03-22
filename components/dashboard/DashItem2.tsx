@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 import { DashbpardPie } from "./DashboardPie";
-import NegotiatiorStats from "./NegotiatiorStats";
-import NoAccess from "./NoAccess";
+import NegotiatiorStats from "../NegotiatiorStats";
+import NoAccess from "../NoAccess";
 
 const DashItem2 = async () => {
   const session = await getServerSession(auth);

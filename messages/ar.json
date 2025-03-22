@@ -78,7 +78,13 @@
   },
   "HomePage": {
     "portefeuille": "أحدث الأسهم المتاحة",
-    "seanceDu": "جلسة من"
+    "seanceDu": "جلسة من",
+    "clientType": "نوع العميل",
+    "shareCount": "عدد الأوراق المالية",
+    "portfolioValue": "قيمة المحفظة",
+    "accountCount": "عدد الحسابات",
+    "physical": "شخصي",
+    "shares": "أسهم"
   },
   "StockCard": { "fluct": "منذ الجلسة الماضية", "dzd": "د.ج" },
   "DashboardPie": {

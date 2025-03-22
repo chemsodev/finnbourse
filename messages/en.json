@@ -33,7 +33,13 @@
   },
   "HomePage": {
     "portefeuille": "Latest Stocks available",
-    "seanceDu": "Session of"
+    "seanceDu": "Session of",
+    "clientType": "Client Type",
+    "shareCount": "Number of Shares",
+    "portfolioValue": "Portfolio Value",
+    "accountCount": "Account Count",
+    "physical": "Physical",
+    "shares": "Shares"
   },
   "StockCard": { "fluct": "  Since Last Session", "dzd": "DA" },
   "DashboardPie": {

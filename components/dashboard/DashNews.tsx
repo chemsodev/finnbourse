@@ -1,13 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import News from "./News";
+import News from "../News";
 import { GET_NEWS_QUERY } from "@/graphql/queries";
 import { NewsArticle } from "@/lib/interfaces";
 import { useLocale, useTranslations } from "next-intl";
-import NewsPagination from "./NewsPagination";
+import NewsPagination from "../NewsPagination";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import RateLimitReached from "./RateLimitReached";
+import RateLimitReached from "../RateLimitReached";
 
 interface DashNewsProps {
   skip?: number;

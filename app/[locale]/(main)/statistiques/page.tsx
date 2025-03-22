@@ -4,7 +4,7 @@ import MyPagination from "@/components/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import StatCharts from "@/components/StatCharts";
 import OrdresTable from "@/components/OrdresTable";
-import DashGraph from "@/components/DashGraph";
+import DashGraph from "@/components/dashboard/DashGraph";
 
 const page = async (props: {
   searchParams?: Promise<{

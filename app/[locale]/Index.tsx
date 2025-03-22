@@ -1,11 +1,11 @@
 import MyMarquee from "@/components/MyMarquee";
-import TopBarDash from "@/components/TopBarDash";
+import TopBarDash from "@/components/navigation/TopBarDash";
 import { getTranslations } from "next-intl/server";
 import FormattedDate from "@/components/FormattedDate";
-import DashItem3 from "@/components/DashItem3";
-import DashItem2 from "@/components/DashItem2";
-import DashItem1 from "@/components/DashItem1";
-import DashGraph from "@/components/DashGraph";
+import DashItem3 from "@/components/dashboard/DashItem3";
+import DashItem2 from "@/components/dashboard/DashItem2";
+import DashItem1 from "@/components/dashboard/DashItem1";
+import DashGraph from "@/components/dashboard/DashGraph";
 import SideBar from "@/components/SideBar";
 import BottomNavMobile from "@/components/BottomNavMobile";
 import MyPortfolio from "@/components/MyPortfolio";
@@ -14,6 +14,9 @@ import { getServerSession } from "next-auth";
 
 import LogOutAgent from "@/components/LogOutAgent";
 import { StockTracker } from "@/components/StockTracker";
+import DashWidgetTcc from "@/components/dashboard/dash-widget-tcc";
+import { BadgePercent, Database, LineChart, Users } from "lucide-react";
+
 export default async function Home() {
   const t = await getTranslations("HomePage");
   const dateTime = new Date();
@@ -26,6 +29,33 @@ export default async function Home() {
       <SideBar />
       <div className="p-4 overflow-scroll h-screen md:w-5/6 mb-12 md:mb-0 motion-preset-focus motion-duration-2000">
         <TopBarDash />
+
+        <div className="flex justify-between mt-3">
+          <DashWidgetTcc
+            title={t("clientType")}
+            value="12,347"
+            subtitle={t("physical")}
+            icon={<Users className="w-8" />}
+          />
+          <DashWidgetTcc
+            title={t("shareCount")}
+            value="5,033"
+            subtitle={t("shares")}
+            icon={<Database className="w-8" />}
+          />
+          <DashWidgetTcc
+            title={t("portfolioValue")}
+            value="250,347"
+            subtitle=""
+            icon={<LineChart className="w-8" />}
+          />
+          <DashWidgetTcc
+            title={t("accountCount")}
+            value="12,347"
+            subtitle="IOB"
+            icon={<BadgePercent className="w-8" />}
+          />
+        </div>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="mt-4 md:w-4/6">
             <StockTracker />

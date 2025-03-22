@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 
-import NoAccess from "./NoAccess";
+import NoAccess from "../NoAccess";
 
-import OrdresTable from "./OrdresTable";
+import OrdresTable from "../OrdresTable";
 
 const DashItem1 = async () => {
   const session = await getServerSession(auth);

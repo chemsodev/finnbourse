@@ -1,8 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShadLineChart } from "./ShadLineChart";
-import { ShadAreaChart } from "./ShadAreaChart";
-import { ShadBarChart } from "./ShadBarChart";
-import { ShadDoubleLineChart } from "./ShadDoubleLineChart";
+import { ShadLineChart } from "../ShadLineChart";
+import { ShadAreaChart } from "../ShadAreaChart";
+import { ShadBarChart } from "../ShadBarChart";
+import { ShadDoubleLineChart } from "../ShadDoubleLineChart";
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 import { getTranslations } from "next-intl/server";

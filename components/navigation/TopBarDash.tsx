@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import VoletNotif from "./VoletNotif";
+import VoletNotif from "../dashboard/VoletNotif";
 import { useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/utils";
 import auth from "@/auth";
@@ -8,7 +8,7 @@ import { getServerSession } from "next-auth";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { CALCULATE_TOTAL_WALLET_VALUE } from "@/graphql/queries";
 import { useSession } from "next-auth/react";
-import LogOutAgent from "./LogOutAgent";
+import LogOutAgent from "../LogOutAgent";
 
 const TopBarDash = () => {
   const t = useTranslations("TopBarDash");

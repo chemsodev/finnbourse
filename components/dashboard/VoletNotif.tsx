@@ -2,10 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { BsBell } from "react-icons/bs";
 import { FaLongArrowAltLeft } from "react-icons/fa";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
-import useSocket from "../hooks/useWebSocket";
+import useSocket from "../../hooks/useWebSocket";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { GET_NOTIFICATIONS_QUERY } from "@/graphql/queries";
 import { Bell, ChevronLeft, ChevronRight } from "lucide-react";
