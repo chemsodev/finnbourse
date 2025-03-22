@@ -1,10 +1,9 @@
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
-import AvisOrdre from "@/components/AvisOrdre";
+import AvisOrdre from "@/components/pdf/AvisOrdre";
 import { LIST_ORDERS_QUERY_PDF } from "@/graphql/queries";
 import { Order } from "@/lib/interfaces";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
-
 interface GetOrdersResponse {
   listOrdersExtended: Order[];
 }
