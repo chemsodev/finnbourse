@@ -15,7 +15,7 @@ const AccessDenied = () => {
           <g id="freepik--background-simple--inject-3">
             <path
               d="M55.48,273.73s2.32,72,62.43,120,143.41,51.43,210.84,56,119.23-33.62,127-91.32-43.72-74.64-71.68-140.33S358.64,130.8,299.49,90.4,147.8,74.81,99.29,144,55.48,273.73,55.48,273.73Z"
-              className="fill-blue-600"
+              className="fill-secondary"
             ></path>
             <path
               d="M55.48,273.73s2.32,72,62.43,120,143.41,51.43,210.84,56,119.23-33.62,127-91.32-43.72-74.64-71.68-140.33S358.64,130.8,299.49,90.4,147.8,74.81,99.29,144,55.48,273.73,55.48,273.73Z"
@@ -62,7 +62,7 @@ const AccessDenied = () => {
             ></path>
             <path
               d="M164.07,195.51s-30,42.16-30,45.25,4.77,26.95,12.35,29.19,11.79-1.68,13.19-9.54-3.37-19.09-3.37-19.09l14-12.63Z"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></path>
             <path
               d="M158.25,259.29s8.7-1.41,10.95-.85,3.93,5.9,3.93,5.9.84,7.86-.57,9.54-8.14,3.65-10.94,4.21-8.71-5.89-11-9.82S152.35,257.6,158.25,259.29Z"
@@ -70,7 +70,7 @@ const AccessDenied = () => {
             ></path>
             <polygon
               points="170.38 193.6 164.07 195.51 174.01 261.86 233.09 261.86 242.08 195.89 234.05 192.83 204.41 186.33 170.38 193.6"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></polygon>
             <polygon
               points="236.34 215.78 235.01 225.34 224.68 227.82 214.16 223.62 214.93 215.01 236.34 215.78"
@@ -96,11 +96,11 @@ const AccessDenied = () => {
             ></polygon>
             <path
               d="M239,192.83s9.62,2.17,15.51,5.54,7.3,10.95,3.93,19.37-13.75,7.3-18.52,5-6.18-10.66-5.34-14.31"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></path>
             <polygon
               points="193.9 184.04 191.03 185.95 191.79 205.26 204.22 196.47 217.22 205.45 218.37 186.33 214.93 183.46 193.9 184.04"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></polygon>
             <path
               d="M219,161.07s7.06-1.72,8.39-8.78S216,136.64,207.18,135.12s-21.75,7.63-23.85,13.93,6.1,12.59,14.88,13.93S219,161.07,219,161.07Z"
@@ -206,14 +206,14 @@ const AccessDenied = () => {
               cy="202.02"
               rx="13.9"
               ry="14.6"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></ellipse>
             <ellipse
               cx="249.9"
               cy="194.63"
               rx="10.88"
               ry="9.75"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></ellipse>
             <ellipse
               cx="249.9"
@@ -351,14 +351,14 @@ const AccessDenied = () => {
               y="293.21"
               width="271.93"
               height="26.36"
-              className="fill-blue-600 stroke-primary stroke-miterlimit-10 stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-miterlimit-10 stroke-[1.166343341900884px]"
             ></rect>
             <rect
               x="62.36"
               y="293.21"
               width="271.93"
               height="26.36"
-              className="fill-blue-600 stroke-primary stroke-miterlimit-10 stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-miterlimit-10 stroke-[1.166343341900884px]"
             ></rect>
             <polygon
               points="66.81 319.57 89.89 319.57 101.82 293.21 78.74 293.21 66.81 319.57"
@@ -417,7 +417,7 @@ const AccessDenied = () => {
             ></rect>
             <polygon
               points="395.49 440.56 344.39 440.56 364.42 331.6 375.46 331.6 395.49 440.56"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></polygon>
             <polygon
               points="356.98 372.1 382.91 372.1 380.42 358.6 359.46 358.6 356.98 372.1"
@@ -428,19 +428,19 @@ const AccessDenied = () => {
               y1="422.37"
               x2="389.09"
               y2="429.82"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></line>
             <line
               x1="373.22"
               y1="337.62"
               x2="386.2"
               y2="413"
-              className="fill-blue-600 stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
+              className="fill-secondary stroke-primary stroke-linecap-round stroke-linejoin-round stroke-[1.166343341900884px]"
             ></line>
           </g>
         </svg>
         <div className="flex flex-col items-center gap-4">
-          <h1 className="text-4xl font-medium text-center text-blue-600">
+          <h1 className="text-4xl font-medium text-center text-secondary">
             {t("title")}
           </h1>
           <div className="text-xl text-center text-primary">

@@ -87,7 +87,7 @@ const ReenitialiserMdpDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="secondary">
+        <Button type="button" variant="outline">
           {t("title")}
         </Button>
       </DialogTrigger>

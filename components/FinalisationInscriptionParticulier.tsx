@@ -686,7 +686,7 @@ const FinalisationInscriptionParticulier = () => {
             </div>
             <div className="flex gap-4">
               <div>
-                <Button variant="secondary">{t("fermer")}</Button>
+                <Button variant="outline">{t("fermer")}</Button>
               </div>
               <Button
                 type="submit"

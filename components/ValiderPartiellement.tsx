@@ -126,7 +126,7 @@ export function ValiderPartiellement({ ordreId }: { ordreId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="capitalize w-full">
+        <Button variant="outline" className="capitalize w-full">
           {t("validerPartiellement")}
         </Button>
       </DialogTrigger>
@@ -190,7 +190,7 @@ export function ValiderPartiellement({ ordreId }: { ordreId: string }) {
             </DialogDescription>
             <DialogFooter className="mt-4">
               <DialogClose asChild>
-                <Button variant="secondary">{t("annuler")}</Button>
+                <Button variant="outline">{t("annuler")}</Button>
               </DialogClose>
               <Button type="submit">
                 {t("valider")}

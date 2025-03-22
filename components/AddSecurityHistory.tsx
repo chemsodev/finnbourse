@@ -189,7 +189,7 @@ const AddSecurityHistory = ({ securityId }: { securityId: string }) => {
       <DialogContent>
         <DialogTitle>
           <div className="flex items-center justify-center">
-            <ChartNoAxesCombined className="h-16 w-16 text-blue-600 my-4" />
+            <ChartNoAxesCombined className="h-16 w-16 text-secondary my-4" />
           </div>
           <div className="text-xl font-semibold text-center text-primary">
             {t("ImportHistorique")}

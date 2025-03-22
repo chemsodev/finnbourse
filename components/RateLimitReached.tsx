@@ -27,7 +27,7 @@ const RateLimitReached = () => {
   return (
     <div className="absolute z-50  top-0 left-0 right-0 bg-gradient-to-br from-primary to-green-900 w-screen h-screen justify-center items-center flex flex-col gap-4 cursor-not-allowed">
       <Gauge className="text-white font-bold w-32 h-32" />
-      <div className="text-5xl font-bold text-blue-600">429</div>
+      <div className="text-5xl font-bold text-secondary">429</div>
       <div className="text-3xl font-bold text-white">
         {t("rateLimitReached")}
       </div>
@@ -36,7 +36,7 @@ const RateLimitReached = () => {
       </p>
       <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden mt-12">
         <div
-          className="h-full bg-blue-600 transition-all duration-1000 ease-linear"
+          className="h-full bg-secondary transition-all duration-1000 ease-linear"
           style={{ width: `${progress}%` }}
         />
       </div>

@@ -37,7 +37,7 @@ const EditOrderDialog = (order: any) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="w-full">
+        <Button variant="outline" className="w-full">
           {t("editOrder")}
         </Button>
       </DialogTrigger>

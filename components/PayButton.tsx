@@ -38,7 +38,7 @@ const PayButton: React.FC<PayButtonProps> = ({
       <Button
         disabled={payedWithCard || !isTermsAccepted}
         type="button"
-        className="w-full flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-bold py-2 px-4 rounded shadow-md transition-colors duration-200"
+        className="w-full flex items-center justify-center bg-gradient-to-r from-secondary to-blue-700 hover:from-secondary hover:to-blue-800 text-white font-bold py-2 px-4 rounded shadow-md transition-colors duration-200"
         onClick={async () => {
           if (payedWithCard || !isTermsAccepted) return;
           const token = session.data?.user.token;

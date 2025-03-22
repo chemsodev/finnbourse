@@ -138,7 +138,7 @@ export function ValiderTotallement({
             </DialogDescription>
             <DialogFooter className="mt-4">
               <DialogClose asChild>
-                <Button variant="secondary">{t("annuler")}</Button>
+                <Button variant="outline">{t("annuler")}</Button>
               </DialogClose>
               <Button type="submit">
                 {t("valider")}

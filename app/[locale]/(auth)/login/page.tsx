@@ -172,7 +172,7 @@ export default function Login() {
             <div className="flex flex-col justify-center items-center md:w-1/2">
               <div className=" text-xl font-semibold text-primary mb-4  ">
                 {t("bienvenue")} Finn
-                <span className="text-blue-600">Bourse</span>.
+                <span className="text-secondary">Bourse</span>.
               </div>
               <Form {...form}>
                 <form
@@ -224,7 +224,7 @@ export default function Login() {
                       <AlertDialogFooter>
                         <Button
                           type="submit"
-                          variant="secondary"
+                          variant="outline"
                           className="capitalize"
                           onClick={() => {
                             handleResendCode(); // Start the timer
@@ -306,7 +306,7 @@ export default function Login() {
                       disabled={loading}
                       type="submit"
                       className={`rounded-md py-1 text-white shadow-md ${
-                        loading ? "bg-primary/90 cursor-wait" : "bg-primary"
+                        loading ? "bg-secondary/90 cursor-wait" : "bg-secondary"
                       }`}
                     >
                       {loading ? (
@@ -351,7 +351,7 @@ export default function Login() {
               </div>
             </div>
             <div className="hidden md:flex object-cover w-1/2 flex-col gap-4">
-              <div className="text-blue-600 uppercase text-sm">
+              <div className="text-secondary uppercase text-sm">
                 SARL FINNBOURSE
               </div>
               <div className="font-semibold text-primary text-2xl uppercase">
@@ -379,7 +379,7 @@ export default function Login() {
               <div className="flex gap-2 mt-4">
                 <Link
                   href="https://finnetude.com/"
-                  className="flex gap-2 bg-primary hover:bg-primary/80 text-white w-fit items-center py-2 px-4 rounded-md"
+                  className="flex gap-2 bg-secondary hover:bg-secondary/80 text-white w-fit items-center py-2 px-4 rounded-md"
                 >
                   Site Officiel
                   <ArrowRight className="w-6 h-6" />

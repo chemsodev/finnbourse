@@ -768,7 +768,7 @@ const FormPassationOrdreAction = ({
               )}
             </div>
             <div className="flex justify-between gap-6 mt-4">
-              <Button onClick={handleGoBack} type="reset" variant="secondary">
+              <Button onClick={handleGoBack} type="reset" variant="outline">
                 {t("annuler")}
               </Button>
 

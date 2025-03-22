@@ -806,7 +806,7 @@ const FinalisationInscriptionEntreprise = () => {
             </div>
             <div className="flex gap-4">
               <DialogClose asChild>
-                <Button variant="secondary">{t("fermer")}</Button>
+                <Button variant="outline">{t("fermer")}</Button>
               </DialogClose>
               <Button
                 type="submit"

@@ -115,7 +115,7 @@ const OrdresTable = async ({
       case 1:
         return "bg-yellow-600";
       case 2:
-        return "bg-blue-600";
+        return "bg-secondary";
       case 3:
         return "bg-green-600";
       case 4:

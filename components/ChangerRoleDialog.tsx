@@ -111,7 +111,7 @@ const ChangerRoleDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="font-semibold shadow-inner">
+        <Button variant="outline" className="font-semibold shadow-inner">
           {t("changerRole")}
         </Button>
       </DialogTrigger>

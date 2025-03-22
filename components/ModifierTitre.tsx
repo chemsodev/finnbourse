@@ -292,7 +292,7 @@ const ModifierTitre = ({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="secondary">{t("modifier")}</Button>
+          <Button variant="outline">{t("modifier")}</Button>
         </DialogTrigger>
         <DialogContent className="max-w-fit max-h-[90vh] overflow-y-scroll">
           <DialogHeader>
@@ -1062,7 +1062,7 @@ const ModifierTitre = ({
                 </DialogDescription>
                 <DialogFooter className="mt-10">
                   <DialogClose asChild>
-                    <Button type="button" variant="secondary">
+                    <Button type="button" variant="outline">
                       {t("fermer")}
                     </Button>
                   </DialogClose>
@@ -1082,7 +1082,7 @@ const ModifierTitre = ({
               <div role="status">
                 <svg
                   aria-hidden="true"
-                  className="w-10 h-10 text-gray-200 animate-spin fill-blue-600"
+                  className="w-10 h-10 text-gray-200 animate-spin fill-secondary"
                   viewBox="0 0 100 101"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"

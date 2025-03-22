@@ -129,7 +129,7 @@ const AtribuerNegociateur = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="w-full">
+        <Button variant="outline" className="w-full">
           {t("attribuerUnNegociateur")}
         </Button>
       </DialogTrigger>
@@ -139,7 +139,7 @@ const AtribuerNegociateur = ({
             <div role="status">
               <svg
                 aria-hidden="true"
-                className="w-10 h-10 text-gray-200 animate-spin fill-blue-600"
+                className="w-10 h-10 text-gray-200 animate-spin fill-secondary"
                 viewBox="0 0 100 101"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"

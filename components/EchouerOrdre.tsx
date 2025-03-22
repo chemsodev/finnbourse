@@ -85,7 +85,7 @@ export function EchouerOrdre({ ordreId }: { ordreId: string }) {
         </DialogDescription>
         <DialogFooter className="mt-4">
           <DialogClose asChild>
-            <Button variant="secondary">{t("cancel")}</Button>
+            <Button variant="outline">{t("cancel")}</Button>
           </DialogClose>
           <Button
             type="submit"
