@@ -24,7 +24,7 @@ export default function LogoutNotification() {
   }, []);
 
   return (
-    <div className="absolute top-0 left-0 w-screen h-screen bg-gradient-to-br from-primary to-green-900 flex items-center justify-center p-4 cursor-not-allowed pointer-events-none z-50">
+    <div className="absolute top-0 left-0 w-screen h-screen bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center p-4 cursor-not-allowed pointer-events-none z-50">
       <div className="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-8 shadow-2xl max-w-md w-full">
         <div className="flex justify-center mb-6">
           <svg

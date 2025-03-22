@@ -20,8 +20,8 @@ const NavbarLink = ({
       href={link.href}
       className={`flex items-center gap-4 py-2 px-6 w-full rounded-md ${
         isActive
-          ? "bg-green-600/20 shadow-sm"
-          : "hover:bg-green-600/20 hover:text-primary hover:shadow-sm"
+          ? "bg-blue-600/20 shadow-sm"
+          : "hover:bg-blue-600/20 hover:text-primary hover:shadow-sm"
       }`}
     >
       {link.icon}
