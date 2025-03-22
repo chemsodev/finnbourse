@@ -1,5 +1,5 @@
 import FloatingShapes from "@/components/FloatingShapes";
-import FormInscriptionParticulier from "@/components/FormInscriptionParticulier";
+import FormInscriptionParticulier from "@/components/passation-ordre/FormInscriptionParticulier";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 import { useTranslations } from "next-intl";

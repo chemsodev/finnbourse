@@ -52,13 +52,13 @@ import {
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { Separator } from "./ui/separator";
+import { Separator } from "../ui/separator";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatNumber } from "@/lib/utils";
-import Commissiontooltip from "./Commissiontooltip";
+import Commissiontooltip from "../Commissiontooltip";
 import { fr, ar, enUS } from "date-fns/locale";
 
 import {
@@ -67,9 +67,9 @@ import {
   FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
 } from "@/graphql/queries";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
-import PasserUnOrdreSkeleton from "./PasserUnOrdreSkeleton";
+import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
 import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
-import BulletinSubmitDialog from "./BulletinSubmitDialog";
+import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import { useSession } from "next-auth/react";
 
 interface CreateOrderResponse {

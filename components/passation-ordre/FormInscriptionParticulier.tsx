@@ -17,7 +17,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
-import { PasswordInput } from "./ui/password-input";
+import { PasswordInput } from "../ui/password-input";
 
 const FormInscriptionParticulier = () => {
   const submissionLink = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`;

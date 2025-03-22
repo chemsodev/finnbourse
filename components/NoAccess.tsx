@@ -7,8 +7,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import FinalisationInscriptionParticulier from "./FinalisationInscriptionParticulier";
-import FinalisationInscriptionEntreprise from "./FinalisationInscriptionEntreprise";
+import FinalisationInscriptionParticulier from "./auth/FinalisationInscriptionParticulier";
+import FinalisationInscriptionEntreprise from "./auth/FinalisationInscriptionEntreprise";
 
 import { getTranslations } from "next-intl/server";
 import { getServerSession } from "next-auth";

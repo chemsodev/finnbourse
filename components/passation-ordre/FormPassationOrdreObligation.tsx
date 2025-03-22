@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "@/i18n/routing";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,20 +12,27 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "@/i18n/routing";
 import {
   ArrowRight,
   Check,
   CheckIcon,
   ChevronDown,
   CircleAlert,
+  CloudUpload,
+  Download,
+  Paperclip,
+  XIcon,
 } from "lucide-react";
 import {
+  calculateTotalValue,
   cn,
+  formatDate,
+  formatNumber,
   formatPrice,
-  getNextMonthDate,
-  preventNonNumericInput,
   updateTotalAmount,
 } from "@/lib/utils";
+
 import {
   Popover,
   PopoverContent,
@@ -40,32 +46,24 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Separator } from "./ui/separator";
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
-import { useToast } from "@/hooks/use-toast";
-import { formatDate, formatNumber } from "@/lib/utils";
-
 import {
   FIND_UNIQUE_BOND_QUERY,
   FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
-  FIND_UNIQUE_STOCKS_QUERY,
   LIST_BOND_QUERY,
-  LIST_STOCKS_NAME_PRICE_QUERY,
-  LIST_STOCKS_QUERY,
+  LIST_BONDS_NAME_PRICE_QUERY,
 } from "@/graphql/queries";
+import { Separator } from "../ui/separator";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { preventNonNumericInput } from "@/lib/utils";
+import { Link } from "@/i18n/routing";
+import { toast } from "@/hooks/use-toast";
+import CouponTable from "../CouponTable";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
-import PasserUnOrdreSkeleton from "./PasserUnOrdreSkeleton";
 import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
-import BulletinSubmitDialog from "./BulletinSubmitDialog";
-import auth from "@/auth";
+import BulletinSubmitDialog from "../BulletinSubmitDialog";
+import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
 import { useSession } from "next-auth/react";
-import CouponTable from "./CouponTable";
 
 interface CreateOrderResponse {
   createOrder: {
@@ -73,7 +71,7 @@ interface CreateOrderResponse {
   };
 }
 
-const FormPassationOrdreMarchePrimaire = ({
+const FormPassationOrdreObligation = ({
   titreId,
   type,
 }: {
@@ -83,29 +81,27 @@ const FormPassationOrdreMarchePrimaire = ({
   const session = useSession();
   const userId = session.data?.user?.id;
   const negotiatorId = session.data?.user?.negotiatorId;
-  const { toast } = useToast();
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [titre, setTitre] = useState("");
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
-  const [totalAmount, setTotalAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [securityData, setSecurityData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [obligationData, setObligationData] = useState<any>(null);
   const [createdOrdreId, setCreatedOrdreId] = useState<string | null>(null);
   const [selectedTitreName, setSelectedTitreName] = useState<string | null>(
     null
   );
   const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
-  const t = useTranslations("FormPassationOrdre");
-  let query;
+  const t = useTranslations("FormPassationOrdreObligation");
 
-  if (type === "action" || type === "opv") {
-    query = LIST_STOCKS_QUERY;
-  } else {
-    query = LIST_BOND_QUERY;
-  }
+  const router = useRouter();
+
+  const handleGoBack = () => {
+    router.back();
+  };
 
   const fetchExtraFieldsData = async (id: string) => {
     try {
@@ -121,39 +117,49 @@ const FormPassationOrdreMarchePrimaire = ({
       console.error("Error fetching extra fields data:", error);
     }
   };
-  let findUiniqueQuery;
 
-  if (type === "action" || type === "opv") {
-    findUiniqueQuery = FIND_UNIQUE_STOCKS_QUERY;
-  } else {
-    findUiniqueQuery = FIND_UNIQUE_BOND_QUERY;
-  }
+  const formSchema = z.object({
+    issuer: z.string().optional(),
+    typeTransaction: z.boolean(),
+    selectedTitreId: z.string(),
+    quantite: z
+      .number()
+      .min(1)
+      .max(data?.quantity || 1, {
+        message: `La quantité ne peut pas dépasser ${data?.quantity || 1}.`,
+      }),
+  });
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      selectedTitreId: "",
+      typeTransaction: true,
+      quantite: 1,
+    },
+  });
 
   useEffect(() => {
-    const ListSecurityData = async () => {
+    const ListObligationData = async () => {
       setLoading(true);
       try {
-        const result = await fetchGraphQL<any>(query, { type });
-        let listData;
-        if (type === "action" || type === "opv") {
-          listData = result.listStocks;
-        } else {
-          listData = result.listBonds;
-        }
-        setSecurityData(listData);
+        const result = await fetchGraphQL<any>(LIST_BOND_QUERY, { type });
+        const listData = result.listBonds;
+        setObligationData(listData);
         const selectedTitreId = titreId;
         if (selectedTitreId) {
           const selectedTitre = listData.find(
             (t: any) => t.id === selectedTitreId
           );
           if (selectedTitre) {
-            setTitre(selectedTitre.name);
+            setTitre(selectedTitre.issuer);
             setSelectedPrice(selectedTitre.facevalue);
             form.setValue("selectedTitreId", selectedTitre.id);
+
             setTotalAmount(
-              updateTotalAmount(
+              calculateTotalValue(
                 selectedTitre.facevalue,
-                form.getValues("quantite")
+                form.getValues("quantite"),
+                "obligation"
               )
             );
           }
@@ -164,68 +170,31 @@ const FormPassationOrdreMarchePrimaire = ({
         setLoading(false);
       }
     };
-    ListSecurityData();
+    ListObligationData();
   }, []);
 
   const fetchData = async (id: string) => {
     setLoading(true);
     try {
-      const result = await fetchGraphQL<any>(findUiniqueQuery, {
+      const result = await fetchGraphQL<any>(FIND_UNIQUE_BOND_QUERY, {
         id,
         type,
       });
-      let listSecData;
-      if (type === "action" || type === "opv") {
-        listSecData = result.findUniqueStock;
-      } else {
-        listSecData = result.findUniqueBond;
-      }
-
-      setData(listSecData);
-      setSelectedTitreName(listSecData.name);
-      fetchExtraFieldsData(listSecData.listedcompanyid);
+      const FindUniqueData = result.findUniqueBond;
+      setData(FindUniqueData);
+      setSelectedTitreName(result.findUniqueBond.name);
+      fetchExtraFieldsData(result.findUniqueBond.listedcompanyid);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchData(titreId);
   }, [titreId]);
 
-  const router = useRouter();
-  const handleGoBack = () => {
-    router.back();
-  };
-  const formSchema = z.object({
-    issuer: z.string().optional(),
-    quantite: z
-      .number()
-      .int()
-      .min(1)
-      .max(data?.quantity || 1, {
-        message: `La quantité ne peut pas dépasser ${data?.quantity || 1}.`,
-      }),
-    selectedTitreId: z.string(),
-  });
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      selectedTitreId: "",
-      quantite: 1,
-    },
-  });
-
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "quantite" && selectedPrice) {
-        const quantity = value.quantite as number;
-        setTotalAmount(Number(selectedPrice) * quantity);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form, selectedPrice]);
   useEffect(() => {
     const selectedTitreId = form.getValues("selectedTitreId");
     if (selectedTitreId) {
@@ -240,26 +209,20 @@ const FormPassationOrdreMarchePrimaire = ({
       const retrunedData = await fetchGraphQL<CreateOrderResponse>(
         CREATE_ORDER_MUTATION,
         {
-          orderdirection: 1,
-          securityid: data.selectedTitreId,
-          investorid: userId || "",
-          negotiatorid: negotiatorId || "",
-          securitytype:
-            type === "empruntobligataire"
-              ? "empruntobligataire"
-              : type === "opv"
-              ? "stock"
-              : type === "sukukmp"
-              ? "sukuk"
-              : type === "titresparticipatifsmp"
-              ? "titresparticipatifs"
-              : "opv",
-          quantity: data.quantite,
-          orderstatus: 0,
-          pricelimitmin: selectedPrice,
-          pricelimitmax: selectedPrice,
           ordertypeone: "",
           ordertypetwo: "",
+          orderdirection: data.typeTransaction ? 1 : 0,
+          securityid: data.selectedTitreId,
+          investorid: userId,
+          negotiatorid: negotiatorId || "",
+          securitytype:
+            type === "obligation"
+              ? "bond"
+              : type === "sukukms"
+              ? "sukukms"
+              : "titresParticipatifs",
+          quantity: data.quantite,
+          orderstatus: 0,
           securityissuer: selectedTitreName,
         }
       );
@@ -296,14 +259,31 @@ const FormPassationOrdreMarchePrimaire = ({
     }
   };
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "quantite" && Number(selectedPrice)) {
+        const quantity = value.quantite as number;
+        setTotalAmount(
+          calculateTotalValue(Number(selectedPrice), quantity, "obligation")
+        );
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, selectedPrice]);
+
+  const setTransactionType = (type: boolean) => {
+    form.setValue("typeTransaction", type);
+  };
+
+  const isAchatSelected = form.watch("typeTransaction");
+
   if (loading) {
     return <PasserUnOrdreSkeleton />;
   }
-
   return (
     <>
       <BulletinSubmitDialog
-        createdOrdreId={createdOrdreId || ""}
+        createdOrdreId={createdOrdreId?.toString() || ""}
         isDialogOpen={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
       />
@@ -337,44 +317,50 @@ const FormPassationOrdreMarchePrimaire = ({
                           </div>
                           <div className="flex items-center">
                             {titre && (
-                              <div>
-                                {selectedPrice} {t("currency")}
+                              <div className="flex gap-1">
+                                {formatPrice(selectedPrice || 0)}
+                                {t("currency")}
                               </div>
                             )}
                             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </div>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[52vw] p-0">
+                      <PopoverContent className="w-[45vw] p-0">
                         <Command>
-                          <CommandInput placeholder="Rechercher un titre..." />
+                          <CommandInput placeholder={t("rechercherUnTitre")} />
                           <CommandList>
                             <CommandEmpty>{t("noTitle")}</CommandEmpty>
                             <CommandGroup>
-                              {securityData &&
-                                securityData.map((t: any) => (
-                                  <CommandItem
-                                    key={t.id}
-                                    value={t.name}
-                                    onSelect={() => {
-                                      setTitre(t.name);
-                                      setSelectedPrice(t.facevalue);
-                                      field.onChange(t.id);
-                                      setTotalAmount(t.facevalue);
-                                      setOpen(false);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        field.value === t.id
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {t.name}
-                                  </CommandItem>
-                                ))}
+                              {obligationData?.map((t: any) => (
+                                <CommandItem
+                                  key={t.id}
+                                  value={t.issuer}
+                                  onSelect={() => {
+                                    setTitre(t.issuer);
+                                    setSelectedPrice(t.facevalue);
+                                    field.onChange(t.id);
+                                    setTotalAmount(
+                                      calculateTotalValue(
+                                        t.facevalue,
+                                        form.getValues("quantite"),
+                                        "obligation"
+                                      )
+                                    );
+                                    setOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === t.id
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {t.issuer}
+                                </CommandItem>
+                              ))}
                             </CommandGroup>
                           </CommandList>
                         </Command>
@@ -386,14 +372,56 @@ const FormPassationOrdreMarchePrimaire = ({
               )}
             />
 
-            <div className="px-10 py-4 border rounded-md flex flex-col mb-4">
+            <div className="p-10 border rounded-md shadow flex flex-col gap-10">
+              <FormField
+                control={form.control}
+                name="typeTransaction"
+                render={({ field }) => {
+                  return (
+                    <FormItem className="gap-32">
+                      <div className="flex items-baseline justify-between ">
+                        <FormLabel className="text-gray-400 capitalize text-lg">
+                          {t("TypeTransaction")}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="flex gap-4">
+                            <button
+                              type="button"
+                              onClick={() => setTransactionType(true)}
+                              className={`border px-8 rounded-full ${
+                                isAchatSelected
+                                  ? "bg-green-600 text-white border-green-600"
+                                  : "text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
+                              }`}
+                            >
+                              {t("achat")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTransactionType(false)}
+                              className={`border px-8 rounded-full ${
+                                !isAchatSelected
+                                  ? "bg-red-600 text-white border-red-600"
+                                  : "text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+                              }`}
+                            >
+                              {t("vente")}
+                            </button>
+                          </div>
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
               <FormField
                 control={form.control}
                 name="quantite"
                 render={({ field }) => {
                   return (
                     <FormItem className="text-xl items-baseline">
-                      <div className="flex justify-between items-baseline">
+                      <div className="flex justify-between ">
                         <FormLabel className="text-gray-400 capitalize text-lg">
                           {t("quantite")}
                         </FormLabel>
@@ -417,12 +445,13 @@ const FormPassationOrdreMarchePrimaire = ({
                           />
                         </FormControl>
                       </div>
+                      <FormMessage />
                     </FormItem>
                   );
                 }}
               />
             </div>
-            <div className="p-10 border rounded-md shadow flex flex-col gap-10">
+            <div className="p-10 border rounded-md shadow flex flex-col gap-10 mt-6">
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("visaCOSOB")}
@@ -433,46 +462,75 @@ const FormPassationOrdreMarchePrimaire = ({
               </div>
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
-                <div className="text-lg font-semibold">{data?.isincode}</div>
+                <div className="text-lg font-semibold">
+                  {data?.isincode || "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-400 capitalize">
+                  {t("valeurNominale")}
+                </div>
+                <div className="text-lg font-semibold flex gap-1">
+                  <div>{formatPrice(selectedPrice || 0)}</div>
+                  <div>{t("currency")}</div>
+                </div>
               </div>
 
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("dateEmission")}
                 </div>
+
                 <div className="text-lg font-semibold">
-                  {data?.emissiondate && formatDate(data.emissiondate)}
+                  {data?.emissiondate ? formatDate(data.emissiondate) : "N/A"}
                 </div>
               </div>
-
               <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">{t("nbTitres")}</div>
+                <div className=" text-gray-400 capitalize">
+                  {t("dateJouissance")}
+                </div>
+
                 <div className="text-lg font-semibold">
-                  {data?.quantity && formatNumber(data?.quantity)}
+                  {data?.enjoymentdate ? formatDate(data.enjoymentdate) : "N/A"}
                 </div>
               </div>
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-400 capitalize">
+                  {t("dateEcheance")}
+                </div>
 
+                <div className="text-lg font-semibold">
+                  {data?.maturitydate ? formatDate(data.maturitydate) : "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-400 capitalize">
+                  {t("nombreObligations")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {formatNumber(data?.quantity || 0)}
+                </div>
+              </div>
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("commission")}
                 </div>
                 <div className="text-lg font-semibold">
-                  {t("pasDeCommission")}
+                  {type === "obligation"
+                    ? `${process.env.NEXT_PUBLIC_COMMISSION_ACTION}%`
+                    : t("pasDeCommission")}
                 </div>
               </div>
-
               <Separator />
               <div className="flex justify-between items-baseline">
-                <div className="text-gray-400 capitalize text-lg ">
-                  {t("mtt")}
-                </div>
+                <div className=" text-gray-400 capitalize">{t("mtt")}</div>
                 <div className="text-xl font-bold flex gap-1">
-                  <span>{formatPrice(totalAmount || 0)}</span>
-                  <span> {t("currency")}</span>
+                  <div>{formatPrice(totalAmount)}</div>
+                  <div>{t("currency")}</div>
                 </div>
               </div>
             </div>
-            {type !== "opv" && data?.couponschedule && (
+            {data?.couponschedule && (
               <div className="px-10 py-4 border rounded-md shadow flex flex-col gap-10 mt-6">
                 <CouponTable
                   couponschedule={data.couponschedule}
@@ -504,12 +562,7 @@ const FormPassationOrdreMarchePrimaire = ({
               <Button onClick={handleGoBack} type="reset" variant="outline">
                 {t("annuler")}
               </Button>
-
-              <Button
-                type="submit"
-                className="w-full group gap-2"
-                disabled={isSubmitting}
-              >
+              <Button className="w-full group gap-2" disabled={isSubmitting}>
                 {t("suivant")}
                 {isSubmitting ? (
                   <svg
@@ -540,4 +593,4 @@ const FormPassationOrdreMarchePrimaire = ({
   );
 };
 
-export default FormPassationOrdreMarchePrimaire;
+export default FormPassationOrdreObligation;

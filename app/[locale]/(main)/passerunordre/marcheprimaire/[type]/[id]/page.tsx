@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import auth from "@/auth";
 
-import FormPassationOrdreMarchePrimaire from "@/components/FormPassationOrdreMarchePrimaire";
+import FormPassationOrdreMarchePrimaire from "@/components/passation-ordre/FormPassationOrdreMarchePrimaire";
 import AccessDenied from "@/components/AccessDenied";
 
 const page = async ({ params }: { params: { type: string; id: string } }) => {

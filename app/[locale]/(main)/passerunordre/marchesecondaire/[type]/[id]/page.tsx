@@ -1,5 +1,5 @@
-import FormPassationOrdreAction from "@/components/FormPassationOrdreAction";
-import FormPassationOrdreObligation from "../../../../../../../components/FormPassationOrdreObligation";
+import FormPassationOrdreAction from "@/components/passation-ordre/FormPassationOrdreAction";
+import FormPassationOrdreObligation from "../../../../../../../components/passation-ordre/FormPassationOrdreObligation";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";

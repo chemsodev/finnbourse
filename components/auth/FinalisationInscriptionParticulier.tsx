@@ -43,7 +43,7 @@ import {
   FileUploaderContent,
   FileUploaderItem,
 } from "@/components/ui/file-upload";
-import { DialogClose } from "./ui/dialog";
+import { DialogClose } from "../ui/dialog";
 import { useLocale, useTranslations } from "next-intl";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { useToast } from "@/hooks/use-toast";
