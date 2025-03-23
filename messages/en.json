@@ -42,7 +42,10 @@
     "physical": "Physical",
     "shares": "Shares"
   },
-  "StockCard": { "fluct": "  Since Last Session", "dzd": "DA" },
+  "StockCard": {
+    "fluct": "  Since Last Session",
+    "dzd": "DA"
+  },
   "DashboardPie": {
     "title": "My Portfolio",
     "description": "Percentage distribution of assets in my portfolio.",
@@ -50,7 +53,6 @@
     "seeMore": "See more",
     "securities": "Securities"
   },
-
   "DashNews": {
     "noNews": "No news found.",
     "seeMore": "See more",
@@ -69,7 +71,10 @@
     "startPeriod": "Start Period",
     "endPeriod": "End Period"
   },
-  "TopBarDash": { "title": "Portfolio Value", "currency": "DA" },
+  "TopBarDash": {
+    "title": "Portfolio Value",
+    "currency": "DA"
+  },
   "PasserUnOrdre": {
     "marche": "Market",
     "passerunordre": "Place an Order",
@@ -232,8 +237,14 @@
     "email": "Email",
     "contact": "Contact"
   },
-  "FormPassationOrdreS": { "action": "Action", "obligation": "Obligation" },
-  "FormPassationOrdreC": { "action": "Action", "obligation": "Obligation" },
+  "FormPassationOrdreS": {
+    "action": "Action",
+    "obligation": "Obligation"
+  },
+  "FormPassationOrdreC": {
+    "action": "Action",
+    "obligation": "Obligation"
+  },
   "FormPassationOrdre": {
     "newFaceValue": "New Face Value",
     "enterNewFaceValue": "Enter the new Face Value",
@@ -377,7 +388,6 @@
     "supprimer": "Delete",
     "questionDe": "Question of"
   },
-
   "status": {
     "Draft": "Draft",
     "Pending": "Pending",
@@ -479,7 +489,6 @@
   },
   "profileForm": {
     "errorDescription": "An error occurred",
-
     "error": "Error",
     "pickADate": "Pick a date",
     "permisDeConduite": "Driver's License",
@@ -853,7 +862,6 @@
   },
   "SupportDialog": {
     "modifierQstDescription": "Edit the question",
-
     "titre": "Let us know your problem",
     "probleme": "Problem",
     "description": "Description",
@@ -946,7 +954,7 @@
     "valide": "Validated",
     "annule": "Canceled",
     "utilisateurs": "Users",
-
+    "ajoutUtilisateur": "Add a new user",
     "nom": "Name and Surname",
     "type": "Type",
     "email": "Email",
@@ -1016,7 +1024,13 @@
     "error": "Error",
     "errorDescription": "An error occurred while performing the action",
     "success": "Success",
-    "successDescription": "The action was successfully performed"
+    "successDescription": "The action was successfully performed",
+    "NomClient" : "name",
+    "NTelephoneClient" : "phone number",
+    "PosteClient" : "position",
+    "ClientAffecteClient" : "assigned client",
+    "ValidationClient" : "validation",
+    "StatusClient" : "status"
   },
   "UserFilter": {
     "investisseur": "Investor",
@@ -1045,7 +1059,6 @@
     "annuler": "Cancel",
     "supprimer": "Delete"
   },
-
   "parametres": {
     "parametres": "Settings",
     "parametresDesc": "Manage your account settings and set your preferences.",
@@ -1060,7 +1073,6 @@
     "repondre": "Reply",
     "noMessages": "No messages found"
   },
-
   "Recherche": {
     "rechercher": "Search..."
   },

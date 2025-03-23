@@ -87,7 +87,10 @@
     "physical": "شخصي",
     "shares": "أسهم"
   },
-  "StockCard": { "fluct": "منذ الجلسة الماضية", "dzd": "د.ج" },
+  "StockCard": {
+    "fluct": "منذ الجلسة الماضية",
+    "dzd": "د.ج"
+  },
   "DashboardPie": {
     "title": "محفظتي",
     "description": "نسبة توزيع الأسهم في محفظتي.",
@@ -95,7 +98,6 @@
     "seeMore": "مشاهدة المزيد",
     "securities": "الأسهم"
   },
-
   "DashNews": {
     "seeMore": "مشاهدة المزيد",
     "noNews": "لا يوجد أخبار"
@@ -113,7 +115,10 @@
     "startPeriod": "تاريخ البداية",
     "endPeriod": "تاريخ النهاية"
   },
-  "TopBarDash": { "title": "قيمة المحفظة", "currency": "د.ج" },
+  "TopBarDash": {
+    "title": "قيمة المحفظة",
+    "currency": "د.ج"
+  },
   "PasserUnOrdre": {
     "marche": "السوق",
     "passerunordre": "تقديم طلب",
@@ -282,8 +287,14 @@
     "email": "البريد الإلكتروني",
     "contact": "التواصل"
   },
-  "FormPassationOrdreS": { "action": "سهم", "obligation": "سند" },
-  "FormPassationOrdreC": { "action": "سهم", "obligation": "سند" },
+  "FormPassationOrdreS": {
+    "action": "سهم",
+    "obligation": "سند"
+  },
+  "FormPassationOrdreC": {
+    "action": "سهم",
+    "obligation": "سند"
+  },
   "FormPassationOrdre": {
     "newFaceValue": "القيمة الاسمية الجديدة",
     "enterNewFaceValue": "أدخل القيمة الاسمية الجديدة",
@@ -953,6 +964,7 @@
     "valide": "تم التحقق",
     "annule": "ملغى",
     "utilisateurs": "المستخدمون",
+    "ajoutUtilisateur": "إضافة مستخدم جديد",
     "nom": "الاسم واللقب",
     "type": "النوع",
     "email": "البريد الإلكتروني",
@@ -1018,7 +1030,13 @@
     "copieDuNumeroDIdentificationStatistique": "نسخة من رقم التعريف الإحصائي",
     "declarationDeSouscription": "إقرار الاشتراك",
     "copieDuProcesVerbal": "نسخة من محضر الاجتماع",
-    "attestationDeConservationDesDocuments": "شهادة حفظ المستندات"
+    "attestationDeConservationDesDocuments": "شهادة حفظ المستندات",
+    "NomClient" : "الاسم",
+    "NTelephoneClient" : "رقم الهاتف",
+    "PosteClient" : "الوظيفة",
+    "ClientAffecteClient" : "العميل المعين",
+    "ValidationClient" : "التحقق",
+    "StatusClient" : "الحالة"
   },
   "UserFilter": {
     "investisseur": "مستثمر",
@@ -1047,7 +1065,6 @@
     "annuler": "إلغاء",
     "supprimer": "حذف"
   },
-
   "parametres": {
     "parametres": "الإعدادات",
     "parametresDesc": "أدر إعدادات حسابك وحدد تفضيلاتك.",

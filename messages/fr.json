@@ -1042,7 +1042,13 @@
     "copieDuNumeroDIdentificationStatistique": "Copie du numéro d'identification statistique",
     "declarationDeSouscription": "Déclaration de souscription",
     "copieDuProcesVerbal": "Copie du procès-verbal",
-    "attestationDeConservationDesDocuments": "Attestation de conservation des documents"
+    "attestationDeConservationDesDocuments": "Attestation de conservation des documents",
+    "NomClient" : "Nom",
+    "NTelephoneClient" : "N° téléphone",
+    "PosteClient" : "Poste",
+    "ClientAffecteClient" : "Client affecté",
+    "ValidationClient" : "Validation",
+    "StatusClient" : "Statut"
   },
   "UserFilter": {
     "investisseur": "Investisseur",
