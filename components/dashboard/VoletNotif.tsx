@@ -248,7 +248,7 @@ const VoletNotif = () => {
                           className={`text-xs rtl:text-right ${
                             notification.readstatus
                               ? "text-gray-400"
-                              : "text-orange-600"
+                              : "text-secondary"
                           }`}
                         >
                           {new Date(notification.createdat).toLocaleString([], {

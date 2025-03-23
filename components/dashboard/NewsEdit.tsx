@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { PiChatsCircleLight } from "react-icons/pi";
 import Image from "next/image";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Check,

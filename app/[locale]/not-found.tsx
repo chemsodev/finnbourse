@@ -24,7 +24,7 @@ export default function NotFound() {
             </div>
             <Link
               href="/"
-              className="inline-flex text-white bg-orange-600   font-medium rounded-md text-sm px-5 py-2.5 text-center my-4"
+              className="inline-flex text-white bg-secondary   font-medium rounded-md text-sm px-5 py-2.5 text-center my-4"
             >
               {t("goHome")}
             </Link>
