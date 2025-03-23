@@ -120,14 +120,14 @@ const TitresEtEmissionDropDown = () => {
                   >
                     <NavbarLink
                       link={{
-                        href: "",
+                        href: "/actions",
                         icon: <CircleDollarSign size={14} />,
                         label: t("action"),
                       }}
                     />
                     <NavbarLink
                       link={{
-                        href: "",
+                        href: "/obligations",
                         icon: <FileBadge size={14} />,
                         label: t("obligation"),
                       }}
