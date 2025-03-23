@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import UserTypeSwitch from "@/components/UserTypeSwitch";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import MyPagination from "@/components/navigation/MyPagination";
@@ -109,14 +109,13 @@ const page = async (props: {
   return (
     <div className=" motion-preset-focus motion-duration-2000">
       <div className="mt-3"></div>
-      <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 ">
-        <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right capitalize">
-          {t("utilisateurs")}
+      <div className="flex items-center mt-16 mb-8 ml-8 gap-3">
+        <div className="text-3xl font-bold text-primary md:text-left text-center">
+          {t("ajoutUtilisateur")}
         </div>
-        <div className="text-xs text-gray-500 md:w-[50%] text-center md:ltr:text-left md:rtl:text-right">
-          {t("expl")}
-        </div>
+        <UserTypeSwitch />
       </div>
+
       <div className="border border-gray-100 rounded-md p-4 mt-10">
         <div className="flex justify-center gap-4 items-center md:justify-between flex-col md:flex-row">
           {userRole === 3 && <UserFilter />}
