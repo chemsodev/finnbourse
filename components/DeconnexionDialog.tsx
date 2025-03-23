@@ -19,8 +19,8 @@ export function DeconnexionDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <button className="flex items-center gap-4 hover:bg-red-600/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-md ">
-          <CiLogout size={20} className="text-red-500" />
-          <div className="capitalize text-sm">{t("deconnexion")}</div>
+          <CiLogout size={15} className="text-red-500" />
+          <div className="capitalize text-xs">{t("deconnexion")}</div>
         </button>
       </AlertDialogTrigger>
       <AlertDialogContent>

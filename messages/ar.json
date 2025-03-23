@@ -1,10 +1,10 @@
 {
   "SideBar": {
     "mesOrdres": "طلباتي",
-    "TableauDeBord": "لوحة التحكم",
-    "PasserUnOrdre": "تقديم طلب",
+    "TableauDeBord": "لوحة القيادة",
+    "PasserUnOrdre": "وضع طلب",
     "portefeuille": "محفظتي",
-    "Statistiques": "إحصائيات",
+    "Statistiques": "الإحصائيات",
     "ServiceClients": "خدمة العملاء",
     "Deconnexion": "تسجيل الخروج",
     "Parametres": "الإعدادات",
@@ -17,10 +17,11 @@
     "utilisateurs": "المستخدمون",
     "operationsSurTitres": "عمليات على الأوراق المالية",
     "annonceOst": "إعلان OST",
-    "paiementDividendes": "دفع الأرباح",
+    "paiementDividendes": "دفع أرباح الأسهم",
     "paiementDroitsDeGarde": "دفع رسوم الحفظ",
-    "paiementCoupon": "دفع القسيمة",
-    "remboursement": "السداد"
+    "paiementCoupon": "دفع الكوبون",
+    "remboursement": "التسديد",
+    "chiffresEtEditions": "الأرقام والتقارير"
   },
   "finalisationInscriptionParticulier": {
     "nCompteTitres": "رقم حساب الأوراق المالية",
@@ -1211,5 +1212,28 @@
     "sessionConfilct": "تعارض الجلسة",
     "warningMessage": "لقد قمت بتسجيل الدخول من جهاز آخر. ستنتهي هذه الجلسة في",
     "contactSupport": "إذا لم تكن أنت، يرجى الاتصال بالدعم فورًا."
+  },
+  "TokenRevoked": {
+    "sessionConfilct": "تعارض الجلسة",
+    "warningMessage": "لقد قمت بتسجيل الدخول من جهاز آخر. ستنتهي هذه الجلسة في",
+    "contactSupport": "إذا لم تكن أنت، يرجى الاتصال بالدعم فورًا."
+  },
+  "TitresEtEmissionDropDown": {
+    "title": "الأوراق المالية والإصدار",
+    "emetteurs": "المصدرون",
+    "teneurDeCompte": "صاحب الحساب",
+    "emissions": "الإصدارات",
+    "gestionDesTitres": "إدارة الأوراق المالية",
+    "action": "سهم",
+    "obligation": "سند",
+    "iob": "آي أو بي",
+    "agence": "وكالة",
+    "chargesEtFrais": "الرسوم والمصاريف"
+  },
+  "GestionDeCompteDropDown": {
+    "title": "إدارة الحساب",
+    "compteEspece": "حساب نقدي",
+    "compteDeTitre": "حساب الأوراق المالية",
+    "lienComptes": "ربط الحساب النقدي وحساب الأوراق المالية"
   }
 }

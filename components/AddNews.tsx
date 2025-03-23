@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight, CircleHelp, Newspaper } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { use, useEffect, useState } from "react";
-import NewsEdit from "./NewsEdit";
+import NewsEdit from "./dashboard/NewsEdit";
 
 interface GetNewsResponse {
   listNewsArticles: NewsArticle[];

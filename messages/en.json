@@ -20,7 +20,8 @@
     "paiementDividendes": "Dividend Payment",
     "paiementDroitsDeGarde": "Custody Fee Payment",
     "paiementCoupon": "Coupon Payment",
-    "remboursement": "Repayment"
+    "remboursement": "Repayment",
+    "chiffresEtEditions": "Figures and Reports"
   },
   "voletNotif": {
     "nouvelleNotification": "New Notification !",
@@ -1210,5 +1211,28 @@
     "sessionConfilct": "Session Conflict",
     "warningMessage": "You've logged in from another device. This session will end in",
     "contactSupport": "If this wasn't you, please contact support immediately."
+  },
+  "TokenRevoked": {
+    "sessionConfilct": "Session Conflict",
+    "warningMessage": "You have logged in from another device. This session will end in",
+    "contactSupport": "if it was not you, please contact support immediately."
+  },
+  "TitresEtEmissionDropDown": {
+    "title": "Securities and Issuance",
+    "emetteurs": "Issuers",
+    "teneurDeCompte": "Account Holder",
+    "emissions": "Issuances",
+    "gestionDesTitres": "Securities Management",
+    "action": "Stock",
+    "obligation": "Bond",
+    "iob": "IOB",
+    "agence": "Agency",
+    "chargesEtFrais": "Charges and Fees"
+  },
+  "GestionDeCompteDropDown": {
+    "title": "Account Management",
+    "compteEspece": "Cash Account",
+    "compteDeTitre": "Securities Account",
+    "lienComptes": "Cash and Securities Account Link"
   }
 }

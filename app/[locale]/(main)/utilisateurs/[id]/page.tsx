@@ -1,6 +1,6 @@
 import { BsImages } from "react-icons/bs";
 import TabSearch from "@/components/TabSearch";
-import MyPagination from "@/components/MyPagination";
+import MyPagination from "@/components/navigation/MyPagination";
 import PdfDialog from "@/components/PdfDialog";
 import AtribuerNegociateur from "@/components/AtribuerNegociateur";
 import { getTranslations } from "next-intl/server";

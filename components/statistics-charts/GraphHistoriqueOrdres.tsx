@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { ORDER_HISTORY_QUERY } from "@/graphql/queries";
 import { useTranslations } from "next-intl";
-import RateLimitReached from "./RateLimitReached";
+import RateLimitReached from "../RateLimitReached";
 
 type OrderStatusData = {
   status: string;

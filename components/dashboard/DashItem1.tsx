@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 
-import NoAccess from "../NoAccess";
+import NoAccess from "../navigation/NoAccess";
 
 import OrdresTable from "../OrdresTable";
 

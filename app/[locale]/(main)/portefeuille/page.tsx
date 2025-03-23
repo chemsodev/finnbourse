@@ -1,6 +1,6 @@
 import MyMarquee from "@/components/MyMarquee";
 import { getTranslations } from "next-intl/server";
-import MyPagination from "@/components/MyPagination";
+import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import {
   Table,

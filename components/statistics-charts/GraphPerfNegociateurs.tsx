@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { useTranslations } from "next-intl";
 import { PERF_NEGOCIATEURS_QUERY } from "@/graphql/queries";
-import RateLimitReached from "./RateLimitReached";
+import RateLimitReached from "../RateLimitReached";
 
 // New GraphQL query to fetch the list of users with their fullnames
 const LIST_USERS_QUERY = `

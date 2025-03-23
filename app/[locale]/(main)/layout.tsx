@@ -1,5 +1,5 @@
-import SideBar from "@/components/SideBar";
-import BottomNavMobile from "@/components/BottomNavMobile";
+import SideBar from "@/components/navigation/SideBar";
+import BottomNavMobile from "@/components/navigation/BottomNavMobile";
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 import { signOut } from "next-auth/react";

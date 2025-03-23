@@ -6,7 +6,7 @@ import { PiBookOpenText } from "react-icons/pi";
 import { TbWallet } from "react-icons/tb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ImStatsBars } from "react-icons/im";
-import { DeconnexionDialog } from "./DeconnexionDialog";
+import { DeconnexionDialog } from "../DeconnexionDialog";
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 import { getTranslations } from "next-intl/server";
@@ -19,9 +19,13 @@ import {
   LayoutDashboard,
   Settings,
   UserRound,
+  FileBarChart,
 } from "lucide-react";
 
-import LocaleButton from "./Locales/LocaleButton";
+import LocaleButton from "../Locales/LocaleButton";
+import OperationsSurTitresDropDown from "../OperationsSurTitresDropDown";
+import TitresEtEmissionDropDown from "../TitresEtEmissionDropDown";
+import GestionDeCompteDropDown from "../GestionDeCompteDropDown";
 
 const SideBar = async () => {
   const session = await getServerSession(auth);
@@ -30,24 +34,24 @@ const SideBar = async () => {
 
   return (
     <div className="hidden md:flex bg-gray-50 w-1/6 px-3 py-5 shadow-inner h-screen overflow-scroll flex-col justify-between">
-      <div className="flex flex-col gap-16 ">
-        <div className="flex gap-4 justify-center items-center py-8">
-          <div className="rounded-full bg-white shadow-sm p-2  w-fit">
+      <div className="flex flex-col gap-1">
+        <div className="flex gap-4 justify-center items-center py-4">
+          <div className="rounded-full bg-white shadow-sm p-2 w-fit">
             <Image
               src="/favicon.ico"
               width={100}
               height={100}
               alt="logo"
-              className="w-10 "
+              className="w-8 h-8 p-1"
             />
           </div>
-          <div className="text-primary font-bold">Invest Market</div>
+          <div className="text-primary font-bold text-sm">FinnBourse</div>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <NavbarLink
             link={{
               href: "/",
-              icon: <LayoutDashboard size={20} />,
+              icon: <LayoutDashboard size={15} />,
               label: t("TableauDeBord"),
             }}
           />
@@ -56,9 +60,9 @@ const SideBar = async () => {
               href: "/passerunordre",
               icon:
                 userRole === 1 ? (
-                  <PiBookOpenText size={20} />
+                  <PiBookOpenText size={15} />
                 ) : (
-                  <RiMoneyDollarCircleLine size={20} />
+                  <RiMoneyDollarCircleLine size={15} />
                 ),
               label: userRole === 1 ? t("PasserUnOrdre") : t("marche"),
             }}
@@ -79,29 +83,44 @@ const SideBar = async () => {
                 href: "/carnetordres",
                 icon:
                   userRole === 1 ? (
-                    <ArrowRightLeft size={20} />
+                    <ArrowRightLeft size={15} />
                   ) : (
-                    <PiBookOpenText size={20} />
+                    <PiBookOpenText size={15} />
                   ),
                 label: userRole === 1 ? t("mesOrdres") : t("carnetOrdres"),
               }}
             />
           )}
-          {/*(userRole !== 0 && userRole !== 1) && (
-        <OperationsSurTitresDropDown
-          titre={t("operationsSurTitres")} 
-          annonceOst={t("annonceOst")} 
-          paiementDividendes={t("paiementDividendes")} 
-          paiementDroitsDeGarde={t("paiementDroitsDeGarde")}  
-          paiementCoupon={t("paiementCoupon")}  
-          remboursement={t("remboursement")}  
-        />
-          )*/}
+          {userRole !== 0 && userRole !== 1 && (
+            <>
+              {" "}
+              <OperationsSurTitresDropDown
+                titre={t("operationsSurTitres")}
+                annonceOst={t("annonceOst")}
+                paiementDividendes={t("paiementDividendes")}
+                paiementDroitsDeGarde={t("paiementDroitsDeGarde")}
+                paiementCoupon={t("paiementCoupon")}
+                remboursement={t("remboursement")}
+              />
+              <TitresEtEmissionDropDown />
+              <GestionDeCompteDropDown />
+            </>
+          )}
+
+          {userRole !== 0 && userRole !== 1 && (
+            <NavbarLink
+              link={{
+                href: "/chiffreseteditions",
+                icon: <FileBarChart size={15} />,
+                label: t("chiffresEtEditions"),
+              }}
+            />
+          )}
           {(userRole === 3 || userRole === 2) && (
             <NavbarLink
               link={{
                 href: "/utilisateurs",
-                icon: <UserRound size={20} />,
+                icon: <UserRound size={15} />,
                 label: t("utilisateurs"),
               }}
             />
@@ -110,7 +129,7 @@ const SideBar = async () => {
             <NavbarLink
               link={{
                 href: "/statistiques",
-                icon: <ImStatsBars size={20} />,
+                icon: <ImStatsBars size={15} />,
                 label: t("Statistiques"),
               }}
             />
@@ -123,7 +142,7 @@ const SideBar = async () => {
             href="/serviceclients"
             className="flex items-center gap-4 hover:bg-green-600/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
           >
-            <HiOutlineSupport size={20} />
+            <HiOutlineSupport size={15} />
             <div className="capitalize text-sm">{t("ServiceClients")}</div>
           </Link>
         )}
@@ -131,16 +150,15 @@ const SideBar = async () => {
         {(userRole === 3 || userRole === 2) && (
           <Link
             href="/parametres"
-            className="flex items-center gap-4 hover:bg-green-600/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
+            className="flex items-center gap-4 hover:bg-primary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
           >
-            <Settings size={20} />
-            <div className="capitalize text-sm">{t("parametres")}</div>
+            <Settings size={15} />
+            <div className="capitalize text-xs">{t("parametres")}</div>
           </Link>
         )}
 
         <DeconnexionDialog />
-        <div className="flex mt-2">
-          {" "}
+        <div className="flex">
           <Link
             href="/profile"
             className="flex bg-white shadow-sm items-center gap-4 hover:shadow-inner p-2 w-full ltr:rounded-l-xl rtl:rounded-r-xl"
@@ -153,7 +171,7 @@ const SideBar = async () => {
             </Avatar>
 
             <div className="flex flex-col text-xs">
-              <div className="font-semibold capitalize">
+              <div className="font-medium capitalize text-sm">
                 {session?.user?.name}
               </div>
               <div className="text-[8px] text-gray-500">

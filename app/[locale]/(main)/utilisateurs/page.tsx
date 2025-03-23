@@ -9,7 +9,7 @@ import {
 
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
-import MyPagination from "@/components/MyPagination";
+import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import { LIST_NEGOCIATEURS_QUERY, LIST_USERS_QUERY } from "@/graphql/queries";
 import { User } from "@/lib/interfaces";

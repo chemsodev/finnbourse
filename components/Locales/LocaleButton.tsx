@@ -30,7 +30,7 @@ const LocaleButton = () => {
       </AnimatePresence>
       <button
         onClick={toggleLocales}
-        className="bg-primary text-white text-lg capitalize px-2 ltr:rounded-r-lg rtl:rounded-l-lg h-full"
+        className="bg-primary text-white capitalize px-2 ltr:rounded-r-lg rtl:rounded-l-lg h-full"
       >
         {locale}
       </button>

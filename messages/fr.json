@@ -20,7 +20,8 @@
     "paiementDividendes": "Paiement de dividendes",
     "paiementDroitsDeGarde": "Paiement de droits de garde",
     "paiementCoupon": "Paiement de coupon",
-    "remboursement": "Remboursement"
+    "remboursement": "Remboursement",
+    "chiffresEtEditions": "Chiffres et Éditions"
   },
   "voletNotif": {
     "nouvelleNotification": "Nouvelle Notification !",
@@ -1230,7 +1231,25 @@
   },
   "tokenRevoked": {
     "sessionConfilct": "Conflit de session",
-    "warningMessage": "Vous vous êtes connecté depuis un autre appareil. Cette session se terminera dans",
+    "warningMessage": "Vous vous êtes connecté à partir d'un autre appareil. Cette session se terminera dans",
     "contactSupport": "Si ce n'était pas vous, veuillez contacter le support immédiatement."
+  },
+  "TitresEtEmissionDropDown": {
+    "title": "Titres et émission",
+    "emetteurs": "Emetteurs",
+    "teneurDeCompte": "Teneur de compte",
+    "emissions": "Emissions",
+    "gestionDesTitres": "Gestion des Titres",
+    "action": "Action",
+    "obligation": "Obligation",
+    "iob": "IOB",
+    "agence": "Agence",
+    "chargesEtFrais": "Charges et Frais"
+  },
+  "GestionDeCompteDropDown": {
+    "title": "Gestion de compte",
+    "compteEspece": "Compte Espèce",
+    "compteDeTitre": "Compte de Titre",
+    "lienComptes": "Lien compte Espèce et compte de Titre"
   }
 }

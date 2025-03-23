@@ -1,25 +1,13 @@
 "use client";
-import { Calculator, ChevronDown, Sparkle } from "lucide-react";
+import { Wallet, ChevronDown, Receipt, Link as LinkIcon } from "lucide-react";
 import NavbarLink from "./navigation/NavbarLink";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-const OperationsSurTitresDropDown = ({
-  titre,
-  annonceOst,
-  paiementDividendes,
-  paiementDroitsDeGarde,
-  paiementCoupon,
-  remboursement,
-}: {
-  titre: string;
-  annonceOst: string;
-  paiementDividendes: string;
-  paiementDroitsDeGarde: string;
-  paiementCoupon: string;
-  remboursement: string;
-}) => {
+const GestionDeCompteDropDown = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations("GestionDeCompteDropDown");
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -31,7 +19,7 @@ const OperationsSurTitresDropDown = ({
         onClick={toggleDropdown}
         className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-primary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
       >
-        <Calculator size={15} /> {titre}
+        <Wallet size={15} /> {t("title")}
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -52,36 +40,22 @@ const OperationsSurTitresDropDown = ({
             <NavbarLink
               link={{
                 href: "",
-                icon: <Sparkle size={14} />,
-                label: annonceOst,
+                icon: <Wallet size={14} />,
+                label: t("compteEspece"),
               }}
             />
             <NavbarLink
               link={{
                 href: "",
-                icon: <Sparkle size={14} />,
-                label: paiementDividendes,
+                icon: <Receipt size={14} />,
+                label: t("compteDeTitre"),
               }}
             />
             <NavbarLink
               link={{
                 href: "",
-                icon: <Sparkle size={14} />,
-                label: paiementDroitsDeGarde,
-              }}
-            />
-            <NavbarLink
-              link={{
-                href: "",
-                icon: <Sparkle size={14} />,
-                label: paiementCoupon,
-              }}
-            />
-            <NavbarLink
-              link={{
-                href: "",
-                icon: <Sparkle size={14} />,
-                label: remboursement,
+                icon: <LinkIcon size={14} />,
+                label: t("lienComptes"),
               }}
             />
           </motion.div>
@@ -91,4 +65,4 @@ const OperationsSurTitresDropDown = ({
   );
 };
 
-export default OperationsSurTitresDropDown;
+export default GestionDeCompteDropDown;

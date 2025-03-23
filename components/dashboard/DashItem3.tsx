@@ -1,7 +1,7 @@
 import React from "react";
 import DashNews from "./DashNews";
 import Messages from "../Messages";
-import NoAccess from "../NoAccess";
+import NoAccess from "../navigation/NoAccess";
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 

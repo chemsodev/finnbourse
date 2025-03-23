@@ -1,6 +1,6 @@
 import { StatAreaChart } from "@/components/StatAreaChart";
 import { getTranslations } from "next-intl/server";
-import MyPagination from "@/components/MyPagination";
+import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import StatCharts from "@/components/StatCharts";
 import OrdresTable from "@/components/OrdresTable";

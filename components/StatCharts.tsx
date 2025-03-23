@@ -2,11 +2,11 @@ import auth from "@/auth";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import React from "react";
-import { GraphPerfPortefeille } from "./GraphPerfPortefeille";
-import { GraphHistoriqueOrdres } from "./GraphHistoriqueOrdres";
+import { GraphPerfPortefeille } from "./statistics-charts/GraphPerfPortefeille";
+import { GraphHistoriqueOrdres } from "./statistics-charts/GraphHistoriqueOrdres";
 import { HistoriqueExecutionOrdre } from "./HistoriqueExecutionOrdre";
-import { GraphVueEnsembleTransactions } from "./GraphVueEnsembleTransactions";
-import { GraphPerfNegociateurs } from "./GraphPerfNegociateurs";
+import { GraphVueEnsembleTransactions } from "./statistics-charts/GraphVueEnsembleTransactions";
+import { GraphPerfNegociateurs } from "./statistics-charts/GraphPerfNegociateurs";
 
 const StatCharts = async () => {
   const session = await getServerSession(auth);

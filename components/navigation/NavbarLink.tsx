@@ -1,7 +1,7 @@
 "use client";
 import { Link } from "@/i18n/routing";
 import { usePathname } from "next/navigation";
-import OrderCounter from "./OrderCounter";
+import OrderCounter from "../OrderCounter";
 import { useSession } from "next-auth/react";
 
 const NavbarLink = ({
@@ -18,15 +18,15 @@ const NavbarLink = ({
   return (
     <Link
       href={link.href}
-      className={`flex items-center gap-4 py-2 px-6 w-full rounded-md ${
+      className={`flex items-center gap-4 py-2 px-6 w-full rounded-md  ${
         isActive
           ? "bg-secondary/20 shadow-sm"
           : "hover:bg-secondary/20 hover:text-primary hover:shadow-sm"
       }`}
     >
       {link.icon}
-      <div className="capitalize text-sm flex justify-between gap-4 items-center">
-        {link.label}{" "}
+      <div className="capitalize text-xs flex justify-between gap-4 items-center">
+        {link.label}
         {link.href === "/carnetordres" &&
           (userRole === 2 || userRole === 3) && (
             <span className="text-xs bg-primary text-white h-4 w-4 rounded-full flex justify-center items-center shadow-inner ">

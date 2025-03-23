@@ -17,7 +17,7 @@ import {
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import RateLimitReached from "./RateLimitReached";
+import RateLimitReached from "../RateLimitReached";
 
 // Updated type definitions
 type SecurityData = {
