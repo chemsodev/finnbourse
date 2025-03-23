@@ -193,8 +193,8 @@ export default function AjoutActionPage() {
   }
 
   return (
-    <div className="container mx-auto mb-6 overflow-y-scroll max-h-screen">
-      <div className="mb-6">
+    <div className="container mx-auto pb-6">
+      <div className="pb-6">
         <MyMarquee />
       </div>
       <h1 className="text-3xl text-secondary font-bold mb-6">{t("title")}</h1>

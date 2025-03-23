@@ -229,8 +229,8 @@ export default function AjoutObligationPage() {
   }
 
   return (
-    <div className="container mx-auto mb-6">
-      <div className="mb-6">
+    <div className="container mx-auto pb-6">
+      <div className="pb-6">
         <MyMarquee />
       </div>
 
