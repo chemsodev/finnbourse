@@ -35,7 +35,7 @@ const SideBar = async () => {
   return (
     <div className="hidden md:flex bg-gray-50 w-1/6 px-3 py-5 shadow-inner h-screen overflow-scroll flex-col justify-between">
       <div className="flex flex-col gap-1">
-        <div className="flex gap-4 justify-center items-center py-4">
+        <div className="flex gap-4 justify-center items-center py-8">
           <div className="rounded-full bg-white shadow-sm p-2 w-fit">
             <Image
               src="/favicon.ico"
@@ -45,7 +45,7 @@ const SideBar = async () => {
               className="w-8 h-8 p-1"
             />
           </div>
-          <div className="text-primary font-bold text-sm">FinnBourse</div>
+          <div className="text-primary font-bold">FinnBourse</div>
         </div>
         <div className="flex flex-col gap-2">
           <NavbarLink
