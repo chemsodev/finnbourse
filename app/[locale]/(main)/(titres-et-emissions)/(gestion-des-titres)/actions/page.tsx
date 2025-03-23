@@ -88,7 +88,7 @@ interface GetListedCompaniesResponse {
   }[];
 }
 
-export default function AjoutTitrePage() {
+export default function AjoutActionPage() {
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState<GetListedCompaniesResponse | null>(
     null
@@ -193,7 +193,7 @@ export default function AjoutTitrePage() {
   }
 
   return (
-    <div className="container mx-auto mb-6">
+    <div className="container mx-auto mb-6 overflow-y-scroll max-h-screen">
       <div className="mb-6">
         <MyMarquee />
       </div>
@@ -201,176 +201,7 @@ export default function AjoutTitrePage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Row 1 */}
-            <FormField
-              control={form.control}
-              name="quantite"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.quantity")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.quantityPlaceholder")}
-                      {...field}
-                      type="number"
-                      onKeyDown={preventNonNumericInput}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 2 */}
-            <FormField
-              control={form.control}
-              name="nombreTotalTitres"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.totalShares")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.totalSharesPlaceholder")}
-                      {...field}
-                      type="number"
-                      onKeyDown={preventNonNumericInput}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="code1"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.code1")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.code1Placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="code2"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.code2")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.code2Placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 3 */}
-            <FormField
-              control={form.control}
-              name="codeValeur"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.valueCode")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.valueCodePlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="typeTitre"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.securityType")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("form.selectType")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="action">{t("form.action")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="codeISIN"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.isinCode")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.isinCodePlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 4 */}
-            <FormField
-              control={form.control}
-              name="nominal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.nominal")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.nominalPlaceholder")}
-                      {...field}
-                      type="number"
-                      onKeyDown={preventNonNumericInput}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="libelleCourt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.shortLabel")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.shortLabelPlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            {/* Row 1 - Emetteur first */}
             <FormField
               control={form.control}
               name="emetteur"
@@ -435,7 +266,175 @@ export default function AjoutTitrePage() {
               )}
             />
 
-            {/* Row 5 */}
+            <FormField
+              control={form.control}
+              name="quantite"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.quantity")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.quantityPlaceholder")}
+                      {...field}
+                      type="number"
+                      onKeyDown={preventNonNumericInput}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nombreTotalTitres"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.totalShares")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.totalSharesPlaceholder")}
+                      {...field}
+                      type="number"
+                      onKeyDown={preventNonNumericInput}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Row 2 */}
+            <FormField
+              control={form.control}
+              name="code1"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.code1")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.code1Placeholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="code2"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.code2")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.code2Placeholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="codeValeur"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.valueCode")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.valueCodePlaceholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Row 3 */}
+            <FormField
+              control={form.control}
+              name="typeTitre"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.securityType")}</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("form.selectType")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="action">{t("form.action")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="codeISIN"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.isinCode")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.isinCodePlaceholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nominal"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.nominal")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.nominalPlaceholder")}
+                      {...field}
+                      type="number"
+                      onKeyDown={preventNonNumericInput}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Row 4 */}
+            <FormField
+              control={form.control}
+              name="libelleCourt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("form.shortLabel")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("form.shortLabelPlaceholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="libelleLong"
@@ -481,6 +480,7 @@ export default function AjoutTitrePage() {
               )}
             />
 
+            {/* Row 5 */}
             <FormField
               control={form.control}
               name="natureJuridique"
@@ -509,7 +509,6 @@ export default function AjoutTitrePage() {
               )}
             />
 
-            {/* Row 6 */}
             <FormField
               control={form.control}
               name="typeCotation"
@@ -572,6 +571,7 @@ export default function AjoutTitrePage() {
               )}
             />
 
+            {/* Row 6 */}
             <FormField
               control={form.control}
               name="tauxVariation"
@@ -591,7 +591,6 @@ export default function AjoutTitrePage() {
               )}
             />
 
-            {/* Row 7 */}
             <FormField
               control={form.control}
               name="devise"
@@ -635,6 +634,7 @@ export default function AjoutTitrePage() {
               )}
             />
 
+            {/* Row 7 */}
             <FormField
               control={form.control}
               name="titreParent"
@@ -662,7 +662,6 @@ export default function AjoutTitrePage() {
               )}
             />
 
-            {/* Row 8 */}
             <FormField
               control={form.control}
               name="modeEnregistrement"
@@ -712,6 +711,7 @@ export default function AjoutTitrePage() {
               )}
             />
 
+            {/* Row 8 */}
             <FormField
               control={form.control}
               name="refSource"
@@ -729,7 +729,6 @@ export default function AjoutTitrePage() {
               )}
             />
 
-            {/* Row 9 */}
             <FormField
               control={form.control}
               name="teneurRegistre"
