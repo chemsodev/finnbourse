@@ -13,6 +13,7 @@ import { getTranslations } from "next-intl/server";
 import MyPagination from "@/components/navigation/MyPagination";
 import UsersTableSkeleton from "@/components/UsersTableSkeleton";
 import { Suspense } from "react";
+import SearchBar from "@/components/SearchBarUsers";
 
 const page = async (props: {
   searchParams?: Promise<{
@@ -128,7 +129,7 @@ const page = async (props: {
         </div>
         <UserTypeSwitch />
       </div>
-
+      <SearchBar />
       <div className="border border-gray-100 rounded-md p-4 mt-10">
         <div className="my-4">
           <Suspense key={`users-0`} fallback={<UsersTableSkeleton />}>
