@@ -394,3 +394,38 @@ export const CREATE_SUPPORT_MESSAGE = `
   }
 }
 `;
+
+export const UPDATE_LISTED_COMPANY = `
+  mutation UpdateListedCompany(
+    $id: ID!,
+    $nom: String!,
+    $secteuractivite: String!,
+    $capitalisationboursiere: String!,
+    $email: String!,
+    $phone: String!,
+    $address: String!,
+    $siteofficiel: String
+  ) {
+    updateListedCompany(
+      id: $id,
+      nom: $nom,
+      secteuractivite: $secteuractivite,
+      capitalisationboursiere: $capitalisationboursiere,
+      contact: {
+        email: $email,
+        phone: $phone,
+        address: $address
+      },
+      siteofficiel: $siteofficiel
+    ) {
+      id
+      nom
+    }
+  }
+`;
+
+export const DELETE_LISTED_COMPANY = `
+  mutation DeleteListedCompany($id: ID!) {
+    deleteListedCompany(id: $id)
+  }
+`;

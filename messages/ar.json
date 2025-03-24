@@ -1031,12 +1031,12 @@
     "declarationDeSouscription": "إقرار الاشتراك",
     "copieDuProcesVerbal": "نسخة من محضر الاجتماع",
     "attestationDeConservationDesDocuments": "شهادة حفظ المستندات",
-    "NomClient" : "الاسم",
-    "NTelephoneClient" : "رقم الهاتف",
-    "PosteClient" : "الوظيفة",
-    "ClientAffecteClient" : "العميل المعين",
-    "ValidationClient" : "التحقق",
-    "StatusClient" : "الحالة"
+    "NomClient": "الاسم",
+    "NTelephoneClient": "رقم الهاتف",
+    "PosteClient": "الوظيفة",
+    "ClientAffecteClient": "العميل المعين",
+    "ValidationClient": "التحقق",
+    "StatusClient": "الحالة"
   },
   "UserFilter": {
     "investisseur": "مستثمر",
@@ -1445,5 +1445,61 @@
       "error": "خطأ في إضافة السند",
       "unknownError": "خطأ غير معروف"
     }
+  },
+  "Companies": {
+    "listedCompanies": "الشركات المدرجة",
+    "listedCompaniesDescription": "إدارة الشركات المدرجة في البورصة",
+    "name": "الاسم",
+    "sector": "القطاع",
+    "marketCap": "القيمة السوقية",
+    "contact": "الاتصال",
+    "website": "الموقع الإلكتروني",
+    "actions": "الإجراءات",
+    "loading": "جاري تحميل الشركات...",
+    "error": "خطأ",
+    "noCompanies": "لم يتم العثور على شركات في قاعدة البيانات",
+    "noCompaniesFound": "لا توجد شركات تطابق بحثك",
+    "visit": "زيارة",
+    "notAvailable": "غير متوفر",
+    "fetchError": "فشل في جلب الشركات",
+    "unknownError": "حدث خطأ غير معروف",
+    "refresh": "تحديث"
+  },
+  "EditCompany": {
+    "editCompany": "تعديل الشركة",
+    "name": "الاسم",
+    "enterName": "أدخل اسم الشركة",
+    "sector": "قطاع النشاط",
+    "enterSector": "أدخل القطاع",
+    "website": "الموقع الرسمي",
+    "enterWebsite": "أدخل رابط الموقع",
+    "marketCap": "القيمة السوقية",
+    "enterMarketCap": "أدخل القيمة السوقية",
+    "email": "البريد الإلكتروني",
+    "enterEmail": "أدخل عنوان البريد الإلكتروني",
+    "phone": "الهاتف",
+    "enterPhone": "أدخل رقم الهاتف",
+    "address": "العنوان",
+    "enterAddress": "أدخل العنوان",
+    "cancel": "إلغاء",
+    "save": "حفظ التغييرات",
+    "loading": "جاري الحفظ",
+    "success": "تم بنجاح",
+    "companyUpdatedSuccessfully": "تم تحديث الشركة بنجاح",
+    "error": "خطأ",
+    "errorUpdatingCompany": "خطأ في تحديث الشركة"
+  },
+  "DeleteCompany": {
+    "confirmDeletion": "تأكيد الحذف",
+    "deleteConfirmationMessage": "هل أنت متأكد من رغبتك في حذف {companyName}؟ لا يمكن التراجع عن هذا الإجراء.",
+    "delete": "حذف",
+    "deleting": "جاري الحذف",
+    "cancel": "إلغاء",
+    "success": "تم بنجاح",
+    "companyDeletedSuccessfully": "تم حذف الشركة بنجاح",
+    "error": "خطأ"
+  },
+  "SearchFilter": {
+    "searchPlaceholder": "البحث حسب الاسم أو القطاع..."
   }
 }

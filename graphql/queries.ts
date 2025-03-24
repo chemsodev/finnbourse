@@ -20,7 +20,6 @@ export const LIST_STOCKS_QUERY = `
       marketmetadata
       closingdate
 		  dividendrate
-      
     }
   }
 `;
@@ -791,6 +790,19 @@ export const LIST_ORDERS_QUERY_EXCEL = `
       securityissuer
       validity
       createdat
+    }
+  }
+`;
+
+export const LIST_LISTED_COMPANIES = `
+  query ListListedCompanies {
+    listListedCompanies {
+      id
+      nom
+      secteuractivite
+      capitalisationboursiere
+      contact
+      siteofficiel
     }
   }
 `;

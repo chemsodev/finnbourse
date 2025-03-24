@@ -1043,12 +1043,12 @@
     "declarationDeSouscription": "Déclaration de souscription",
     "copieDuProcesVerbal": "Copie du procès-verbal",
     "attestationDeConservationDesDocuments": "Attestation de conservation des documents",
-    "NomClient" : "Nom",
-    "NTelephoneClient" : "N° téléphone",
-    "PosteClient" : "Poste",
-    "ClientAffecteClient" : "Client affecté",
-    "ValidationClient" : "Validation",
-    "StatusClient" : "Statut"
+    "NomClient": "Nom",
+    "NTelephoneClient": "N° téléphone",
+    "PosteClient": "Poste",
+    "ClientAffecteClient": "Client affecté",
+    "ValidationClient": "Validation",
+    "StatusClient": "Statut"
   },
   "UserFilter": {
     "investisseur": "Investisseur",
@@ -1452,5 +1452,61 @@
       "error": "Erreur lors de l'ajout de l'obligation",
       "unknownError": "Erreur inconnue"
     }
+  },
+  "Companies": {
+    "listedCompanies": "Sociétés Cotées",
+    "listedCompaniesDescription": "Gestion des sociétés cotées en bourse",
+    "name": "Nom",
+    "sector": "Secteur",
+    "marketCap": "Capitalisation",
+    "contact": "Contact",
+    "website": "Site Web",
+    "actions": "Actions",
+    "loading": "Chargement des sociétés...",
+    "error": "Erreur",
+    "noCompanies": "Aucune société trouvée dans la base de données",
+    "noCompaniesFound": "Aucune société ne correspond à votre recherche",
+    "visit": "Visiter",
+    "notAvailable": "Non disponible",
+    "fetchError": "Échec de récupération des sociétés",
+    "unknownError": "Une erreur inconnue s'est produite",
+    "refresh": "Actualiser"
+  },
+  "EditCompany": {
+    "editCompany": "Modifier la Société",
+    "name": "Nom",
+    "enterName": "Entrez le nom de la société",
+    "sector": "Secteur d'Activité",
+    "enterSector": "Entrez le secteur",
+    "website": "Site Web Officiel",
+    "enterWebsite": "Entrez l'URL du site web",
+    "marketCap": "Capitalisation Boursière",
+    "enterMarketCap": "Entrez la capitalisation boursière",
+    "email": "Email",
+    "enterEmail": "Entrez l'adresse email",
+    "phone": "Téléphone",
+    "enterPhone": "Entrez le numéro de téléphone",
+    "address": "Adresse",
+    "enterAddress": "Entrez l'adresse",
+    "cancel": "Annuler",
+    "save": "Enregistrer les Modifications",
+    "loading": "Enregistrement",
+    "success": "Succès",
+    "companyUpdatedSuccessfully": "Société mise à jour avec succès",
+    "error": "Erreur",
+    "errorUpdatingCompany": "Erreur lors de la mise à jour de la société"
+  },
+  "DeleteCompany": {
+    "confirmDeletion": "Confirmer la Suppression",
+    "deleteConfirmationMessage": "Êtes-vous sûr de vouloir supprimer {companyName}? Cette action ne peut pas être annulée.",
+    "delete": "Supprimer",
+    "deleting": "Suppression",
+    "cancel": "Annuler",
+    "success": "Succès",
+    "companyDeletedSuccessfully": "Société supprimée avec succès",
+    "error": "Erreur"
+  },
+  "SearchFilter": {
+    "searchPlaceholder": "Rechercher par nom ou secteur..."
   }
 }

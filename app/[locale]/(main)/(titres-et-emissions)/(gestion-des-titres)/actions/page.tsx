@@ -193,7 +193,7 @@ export default function AjoutActionPage() {
   }
 
   return (
-    <div className="container mx-auto pb-6">
+    <>
       <div className="pb-6">
         <MyMarquee />
       </div>
@@ -1011,6 +1011,6 @@ export default function AjoutActionPage() {
           </div>
         </form>
       </Form>
-    </div>
+    </>
   );
 }

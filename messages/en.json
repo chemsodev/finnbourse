@@ -1025,12 +1025,12 @@
     "errorDescription": "An error occurred while performing the action",
     "success": "Success",
     "successDescription": "The action was successfully performed",
-    "NomClient" : "name",
-    "NTelephoneClient" : "phone number",
-    "PosteClient" : "position",
-    "ClientAffecteClient" : "assigned client",
-    "ValidationClient" : "validation",
-    "StatusClient" : "status"
+    "NomClient": "name",
+    "NTelephoneClient": "phone number",
+    "PosteClient": "position",
+    "ClientAffecteClient": "assigned client",
+    "ValidationClient": "validation",
+    "StatusClient": "status"
   },
   "UserFilter": {
     "investisseur": "Investor",
@@ -1439,5 +1439,61 @@
       "error": "Error adding bond",
       "unknownError": "Unknown error"
     }
+  },
+  "Companies": {
+    "listedCompanies": "Listed Companies",
+    "listedCompaniesDescription": "Management of companies listed on the stock exchange",
+    "name": "Name",
+    "sector": "Sector",
+    "marketCap": "Market Cap",
+    "contact": "Contact",
+    "website": "Website",
+    "actions": "Actions",
+    "loading": "Loading companies...",
+    "error": "Error",
+    "noCompanies": "No companies found in the database",
+    "noCompaniesFound": "No companies match your search",
+    "visit": "Visit",
+    "notAvailable": "Not available",
+    "fetchError": "Failed to fetch companies",
+    "unknownError": "An unknown error occurred",
+    "refresh": "Refresh"
+  },
+  "EditCompany": {
+    "editCompany": "Edit Company",
+    "name": "Name",
+    "enterName": "Enter company name",
+    "sector": "Sector of Activity",
+    "enterSector": "Enter sector",
+    "website": "Official Website",
+    "enterWebsite": "Enter website URL",
+    "marketCap": "Market Capitalization",
+    "enterMarketCap": "Enter market capitalization",
+    "email": "Email",
+    "enterEmail": "Enter email address",
+    "phone": "Phone",
+    "enterPhone": "Enter phone number",
+    "address": "Address",
+    "enterAddress": "Enter address",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "loading": "Saving",
+    "success": "Success",
+    "companyUpdatedSuccessfully": "Company updated successfully",
+    "error": "Error",
+    "errorUpdatingCompany": "Error updating company"
+  },
+  "DeleteCompany": {
+    "confirmDeletion": "Confirm Deletion",
+    "deleteConfirmationMessage": "Are you sure you want to delete {companyName}? This action cannot be undone.",
+    "delete": "Delete",
+    "deleting": "Deleting",
+    "cancel": "Cancel",
+    "success": "Success",
+    "companyDeletedSuccessfully": "Company deleted successfully",
+    "error": "Error"
+  },
+  "SearchFilter": {
+    "searchPlaceholder": "Search by name or sector..."
   }
 }

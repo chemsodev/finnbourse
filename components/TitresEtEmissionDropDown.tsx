@@ -55,7 +55,7 @@ const TitresEtEmissionDropDown = () => {
           >
             <NavbarLink
               link={{
-                href: "",
+                href: "/emetteurs",
                 icon: <CheckCircle size={14} />,
                 label: t("emetteurs"),
               }}

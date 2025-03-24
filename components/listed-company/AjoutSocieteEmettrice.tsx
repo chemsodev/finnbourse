@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useTranslations } from "next-intl";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
