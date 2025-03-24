@@ -1,5 +1,5 @@
 import auth from "@/auth";
-import AjoutSocieteEmettrice from "@/components/AjoutSocieteEmettrice";
+import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmettrice";
 import AjoutTitre from "@/components/AjoutTitre";
 import MyMarquee from "@/components/MyMarquee";
 import { TitresTable } from "@/components/TitresTable";
