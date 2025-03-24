@@ -19,7 +19,7 @@ const DashWidgetTcc = ({
       <div className="flex flex-col text-sm justify-between gap-1">
         <div>{title}</div>
         <div className="text-lg font-bold">{value}</div>
-        <div className="text-xs text-secondary">{subtitle}</div>
+        <div className="text-xs text-white">{subtitle}</div>
       </div>
       <div className="flex flex-col gap-10 items-end justify-end">
         <div className="flex">
