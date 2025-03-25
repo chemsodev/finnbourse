@@ -1,25 +1,23 @@
 "use client";
-import { Calculator, ChevronDown, Sparkle } from "lucide-react";
+import {
+  Users,
+  ChevronDown,
+  Building,
+  Briefcase,
+  Landmark,
+  Network,
+  UserCog,
+  User,
+  BarChart3,
+} from "lucide-react";
 import NavbarLink from "./navigation/NavbarLink";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-const OperationsSurTitresDropDown = ({
-  titre,
-  annonceOst,
-  paiementDividendes,
-  paiementDroitsDeGarde,
-  paiementCoupon,
-  remboursement,
-}: {
-  titre: string;
-  annonceOst: string;
-  paiementDividendes: string;
-  paiementDroitsDeGarde: string;
-  paiementCoupon: string;
-  remboursement: string;
-}) => {
+const GestionDesActeurs = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations("GestionDesActeurs");
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -31,7 +29,7 @@ const OperationsSurTitresDropDown = ({
         onClick={toggleDropdown}
         className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-secondary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
       >
-        <Calculator size={15} /> {titre}
+        <Landmark size={15} /> {t("title")}
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -51,37 +49,37 @@ const OperationsSurTitresDropDown = ({
           >
             <NavbarLink
               link={{
-                href: "/annonce-ost",
-                icon: <Sparkle size={14} />,
-                label: annonceOst,
+                href: "/iob",
+                icon: <BarChart3 size={14} />,
+                label: t("iob"),
               }}
             />
             <NavbarLink
               link={{
-                href: "/paiement-de-dividendes",
-                icon: <Sparkle size={14} />,
-                label: paiementDividendes,
+                href: "/tcc",
+                icon: <Building size={14} />,
+                label: t("teneurDeCompte"),
               }}
             />
             <NavbarLink
               link={{
-                href: "/paiement-droits-de-garde",
-                icon: <Sparkle size={14} />,
-                label: paiementDroitsDeGarde,
+                href: "/agence",
+                icon: <Landmark size={14} />,
+                label: t("agence"),
               }}
             />
             <NavbarLink
               link={{
-                href: "/paiement-coupon",
-                icon: <Sparkle size={14} />,
-                label: paiementCoupon,
+                href: "/clients",
+                icon: <Briefcase size={14} />,
+                label: t("client"),
               }}
             />
             <NavbarLink
               link={{
-                href: "/remboursement",
-                icon: <Sparkle size={14} />,
-                label: remboursement,
+                href: "/utilisateurs",
+                icon: <UserCog size={14} />,
+                label: t("user"),
               }}
             />
           </motion.div>
@@ -91,4 +89,4 @@ const OperationsSurTitresDropDown = ({
   );
 };
 
-export default OperationsSurTitresDropDown;
+export default GestionDesActeurs;

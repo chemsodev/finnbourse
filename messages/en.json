@@ -1247,6 +1247,14 @@
     "compteDeTitre": "Securities Account",
     "lienComptes": "Cash and Securities Account Link"
   },
+  "GestionDesActeurs": {
+    "title": "Management of Actors",
+    "iob": "IOB",
+    "teneurDeCompte": "Account Keeper",
+    "agence": "Agency",
+    "client": "Client",
+    "user": "User"
+  },
   "Actions": {
     "title": "Stocks",
     "form": {

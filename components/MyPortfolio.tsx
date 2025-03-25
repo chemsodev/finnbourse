@@ -1,5 +1,5 @@
 import React from "react";
-import StockCard from "./StockCard";
+import StockCard from "./dashboard/StockCard";
 import { Stock } from "@/lib/interfaces";
 import { LIST_STOCKS_SIMPLE_QUERY } from "@/graphql/queries";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";

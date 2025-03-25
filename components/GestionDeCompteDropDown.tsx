@@ -17,7 +17,7 @@ const GestionDeCompteDropDown = () => {
     <div>
       <button
         onClick={toggleDropdown}
-        className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-primary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
+        className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-secondary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
       >
         <Wallet size={15} /> {t("title")}
         <motion.span
@@ -39,21 +39,21 @@ const GestionDeCompteDropDown = () => {
           >
             <NavbarLink
               link={{
-                href: "",
+                href: "/compte-espece",
                 icon: <Wallet size={14} />,
                 label: t("compteEspece"),
               }}
             />
             <NavbarLink
               link={{
-                href: "",
+                href: "/compte-titre",
                 icon: <Receipt size={14} />,
                 label: t("compteDeTitre"),
               }}
             />
             <NavbarLink
               link={{
-                href: "",
+                href: "/lien-comptes",
                 icon: <LinkIcon size={14} />,
                 label: t("lienComptes"),
               }}

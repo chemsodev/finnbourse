@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useLocale, useTranslations } from "next-intl";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { format } from "date-fns";
 import {
@@ -44,9 +44,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from "./ui/separator";
+import { Separator } from "../ui/separator";
 import { fr, ar, enUS } from "date-fns/locale";
-import { Calendar } from "./ui/calendar";
+import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 
@@ -233,11 +233,11 @@ export function StockTracker() {
   const chartConfig = {
     stockOne: {
       label: stockOne ? stockOne.issuer : "Stock One",
-      color: "hsl(var(--chart-1))",
+      color: "hsl(var(--chart-3))",
     },
     stockTwo: {
       label: stockTwo ? stockTwo.issuer : "Stock Two",
-      color: "hsl(var(--chart-2))",
+      color: "hsl(var(--chart-1))",
     },
   };
 
@@ -273,7 +273,7 @@ export function StockTracker() {
                 className="aspect-auto h-[200px] w-full"
               >
                 <AreaChart data={mergedData}>
-                  <defs>
+                  {/* <defs>
                     <linearGradient
                       id="fillStockOne"
                       x1="0"
@@ -300,7 +300,7 @@ export function StockTracker() {
                       />
                       <stop offset="95%" stopColor="rgba(255,255,255,0.2)" />
                     </linearGradient>
-                  </defs>
+                  </defs> */}
                   <CartesianGrid vertical={false} />
                   <XAxis
                     dataKey="date"
@@ -343,14 +343,14 @@ export function StockTracker() {
                     type="natural"
                     fill="url(#fillStockOne)"
                     stroke={chartConfig.stockOne.color}
-                    strokeWidth={2}
+                    strokeWidth={4}
                   />
                   <Area
                     dataKey="stockTwo"
                     type="natural"
                     fill="url(#fillStockTwo)"
                     stroke={chartConfig.stockTwo.color}
-                    strokeWidth={2}
+                    strokeWidth={4}
                   />
                   <ChartLegend content={<ChartLegendContent />} />
                 </AreaChart>

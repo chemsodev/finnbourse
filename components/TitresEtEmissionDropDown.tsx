@@ -33,7 +33,7 @@ const TitresEtEmissionDropDown = () => {
     <div>
       <button
         onClick={toggleDropdown}
-        className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-primary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
+        className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-secondary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
       >
         <FileBadge size={15} /> {t("title")}
         <motion.span
@@ -60,41 +60,15 @@ const TitresEtEmissionDropDown = () => {
                 label: t("emetteurs"),
               }}
             />
+
             <NavbarLink
               link={{
-                href: "",
-                icon: <FileText size={14} />,
-                label: t("teneurDeCompte"),
-              }}
-            />
-            <NavbarLink
-              link={{
-                href: "",
+                href: "/emissions",
                 icon: <GanttChartSquare size={14} />,
                 label: t("emissions"),
               }}
             />
-            <NavbarLink
-              link={{
-                href: "",
-                icon: <Building size={14} />,
-                label: t("iob"),
-              }}
-            />
-            <NavbarLink
-              link={{
-                href: "",
-                icon: <Building2 size={14} />,
-                label: t("agence"),
-              }}
-            />
-            <NavbarLink
-              link={{
-                href: "",
-                icon: <BadgePercent size={14} />,
-                label: t("chargesEtFrais"),
-              }}
-            />
+
             <div>
               <button
                 onClick={toggleGestionDropdown}

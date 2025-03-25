@@ -1255,10 +1255,18 @@
     "chargesEtFrais": "Charges et Frais"
   },
   "GestionDeCompteDropDown": {
-    "title": "Gestion de compte",
+    "title": "Gestion de Compte",
     "compteEspece": "Compte Espèce",
     "compteDeTitre": "Compte de Titre",
-    "lienComptes": "Lien compte Espèce et compte de Titre"
+    "lienComptes": "Lien Comptes Espèce & Titre"
+  },
+  "GestionDesActeurs": {
+    "title": "Gestion des Acteurs",
+    "iob": "IOB",
+    "teneurDeCompte": "Teneur de Compte",
+    "agence": "Agence",
+    "client": "Client",
+    "user": "Utilisateur"
   },
   "Actions": {
     "title": "Actions",

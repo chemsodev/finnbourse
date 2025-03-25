@@ -1250,8 +1250,16 @@
   "GestionDeCompteDropDown": {
     "title": "إدارة الحساب",
     "compteEspece": "حساب نقدي",
-    "compteDeTitre": "حساب الأوراق المالية",
-    "lienComptes": "ربط الحساب النقدي وحساب الأوراق المالية"
+    "compteDeTitre": "حساب السندات",
+    "lienComptes": "ربط حساب نقدي وحساب سندات"
+  },
+  "GestionDesActeurs": {
+    "title": "إدارة المتعاملين",
+    "iob": "وسيط عملية البورصة",
+    "teneurDeCompte": "حافظ الحسابات",
+    "agence": "وكالة",
+    "client": "عميل",
+    "user": "مستخدم"
   },
   "Actions": {
     "title": "الأسهم",
@@ -1501,5 +1509,13 @@
   },
   "SearchFilter": {
     "searchPlaceholder": "البحث حسب الاسم أو القطاع..."
+  },
+  "ClientsEtComptes": {
+    "title": "العملاء والحسابات",
+    "iob": "وسيط عملية البورصة",
+    "teneurDeCompte": "حافظ الحسابات",
+    "agence": "وكالة",
+    "client": "عميل",
+    "user": "مستخدم"
   }
 }

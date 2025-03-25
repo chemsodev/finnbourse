@@ -26,6 +26,7 @@ import LocaleButton from "../Locales/LocaleButton";
 import OperationsSurTitresDropDown from "../OperationsSurTitresDropDown";
 import TitresEtEmissionDropDown from "../TitresEtEmissionDropDown";
 import GestionDeCompteDropDown from "../GestionDeCompteDropDown";
+import GestionDesActeurs from "../GestionDesActeurs";
 
 const SideBar = async () => {
   const session = await getServerSession(auth);
@@ -104,6 +105,7 @@ const SideBar = async () => {
               />
               <TitresEtEmissionDropDown />
               <GestionDeCompteDropDown />
+              <GestionDesActeurs />
             </>
           )}
 
@@ -116,31 +118,13 @@ const SideBar = async () => {
               }}
             />
           )}
-          {(userRole === 3 || userRole === 2) && (
-            <NavbarLink
-              link={{
-                href: "/utilisateurs",
-                icon: <UserRound size={15} />,
-                label: t("utilisateurs"),
-              }}
-            />
-          )}
-          {userRole !== 0 && (
-            <NavbarLink
-              link={{
-                href: "/statistiques",
-                icon: <ImStatsBars size={15} />,
-                label: t("Statistiques"),
-              }}
-            />
-          )}
         </div>
       </div>
       <div className="flex flex-col gap-2">
         {(userRole === 1 || userRole === 0) && (
           <Link
             href="/serviceclients"
-            className="flex items-center gap-4 hover:bg-green-600/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
+            className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
           >
             <HiOutlineSupport size={15} />
             <div className="capitalize text-sm">{t("ServiceClients")}</div>
@@ -150,13 +134,21 @@ const SideBar = async () => {
         {(userRole === 3 || userRole === 2) && (
           <Link
             href="/parametres"
-            className="flex items-center gap-4 hover:bg-primary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
+            className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
           >
             <Settings size={15} />
             <div className="capitalize text-xs">{t("parametres")}</div>
           </Link>
         )}
-
+        {userRole !== 0 && (
+          <NavbarLink
+            link={{
+              href: "/statistiques",
+              icon: <ImStatsBars size={15} />,
+              label: t("Statistiques"),
+            }}
+          />
+        )}
         <DeconnexionDialog />
         <div className="flex">
           <Link
