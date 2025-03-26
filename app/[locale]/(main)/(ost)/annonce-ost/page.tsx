@@ -46,7 +46,7 @@ export default function OperationsSurTitres() {
   const form = useForm({
     defaultValues: {
       titrePrincipal: "",
-      referenceRost: "",
+      referenceost: "",
       evenement: "",
       descriptionOst: "",
       typeOst: "",
@@ -104,11 +104,11 @@ export default function OperationsSurTitres() {
 
             <FormField
               control={form.control}
-              name="referenceRost"
+              name="referenceost"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700">
-                    Référence de ROST
+                    Référence de OST
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
