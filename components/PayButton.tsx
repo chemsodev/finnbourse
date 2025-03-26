@@ -32,13 +32,13 @@ const PayButton: React.FC<PayButtonProps> = ({
 
   return (
     <>
-      <div className="w-full flex gap-6 items-center justify-center mb-4">
+      <div className="w-full flex gap-6 items-center justify-center mb-4 z-50">
         <TermsAndConditions onChange={handleTermsChange} />
       </div>
       <Button
         disabled={payedWithCard || !isTermsAccepted}
         type="button"
-        className="w-full flex items-center justify-center bg-gradient-to-r from-secondary to-blue-700 hover:from-secondary hover:to-blue-800 text-white font-bold py-2 px-4 rounded shadow-md transition-colors duration-200"
+        className="w-full flex items-center justify-center bg-gradient-to-r from-secondary to-blue-700 hover:from-secondary hover:to-blue-800 text-white font-bold py-2 px-4 rounded shadow-md transition-colors duration-200 z-50"
         onClick={async () => {
           if (payedWithCard || !isTermsAccepted) return;
           const token = session.data?.user.token;
@@ -66,7 +66,7 @@ const PayButton: React.FC<PayButtonProps> = ({
                   <div className="w-full flex gap-6 items-center">
                     <CircleAlert size={40} />
                     <span className="first-letter:capitalize text-xs">
-                      ${responseData.message}
+                      {responseData.message}
                     </span>
                   </div>
                 ),
@@ -114,7 +114,7 @@ const PayButton: React.FC<PayButtonProps> = ({
                           <div className="w-full flex gap-6 items-center">
                             <CircleAlert size={40} />
                             <span className="first-letter:capitalize text-xs">
-                              Failed to update order payed with card.
+                              {t("paymentUpdateError")}
                             </span>
                           </div>
                         ),
@@ -131,8 +131,7 @@ const PayButton: React.FC<PayButtonProps> = ({
                   <div className="w-full flex gap-6 items-center">
                     <CircleAlert size={40} />
                     <span className="first-letter:capitalize text-xs">
-                      Failed to open payment window. Please check your popup
-                      blocker settings.
+                      {t("popupBlockedError")}
                     </span>
                   </div>
                 ),
@@ -146,7 +145,7 @@ const PayButton: React.FC<PayButtonProps> = ({
                 <div className="w-full flex gap-6 items-center">
                   <CircleAlert size={40} />
                   <span className="first-letter:capitalize text-xs">
-                    Payment failed. Please try again.
+                    {t("paymentFailedError")}
                   </span>
                 </div>
               ),

@@ -366,7 +366,7 @@ export function TitresTable({ type }: TitresTableProps) {
       </div>
       <div className="rounded-md border my-4">
         <Suspense fallback={<TitresTableSkeleton />}>
-          <Table>
+          <Table className="bg-white rounded-md">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>

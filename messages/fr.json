@@ -318,7 +318,11 @@
     "taux": "Taux",
     "duree": "Durée",
     "SatimPaymentbutton": "Payer avec CIB ou Dahabiya",
-    "beforeContinuingPleaseProcessedePaymentWithCib": "Veuillez traiter le paiement avec CIB ou Dahabiya avant de continuer."
+    "beforeContinuingPleaseProcessedePaymentWithCib": "Veuillez traiter le paiement avec CIB ou Dahabiya avant de continuer.",
+    "paymentSuccess": "Paiement effectué avec succès",
+    "paymentUpdateError": "Échec de la mise à jour de la commande payée par carte.",
+    "popupBlockedError": "Échec de l'ouverture de la fenêtre de paiement. Veuillez vérifier les paramètres de votre bloqueur de fenêtres contextuelles.",
+    "paymentFailedError": "Le paiement a échoué. Veuillez réessayer."
   },
   "congrats": {
     "congrats": "Félicitations !",
@@ -1269,7 +1273,7 @@
     "user": "Utilisateur"
   },
   "Actions": {
-    "title": "Actions",
+    "title": "Ajouter une Action",
     "form": {
       "quantity": "Quantité",
       "quantityPlaceholder": "Saisir la quantité",
@@ -1516,5 +1520,8 @@
   },
   "SearchFilter": {
     "searchPlaceholder": "Rechercher par nom ou secteur..."
+  },
+  "TermsAndConditions": {
+    "acceptTerms": "J'accepte les conditions d'utilisation"
   }
 }

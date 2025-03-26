@@ -29,10 +29,10 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
               flexDirection: "row",
             }}
           >
-            <Image src="public/LOGO.png" style={{ width: "8%" }} />
+            <Image src="/LOGO.png" style={{ width: "8%" }} />
             <Text
               style={{
-                fontSize: "8",
+                fontSize: 8,
                 color: "#15383E",
                 fontWeight: "bold",
                 fontFamily: "Helvetica-Bold",
@@ -75,26 +75,26 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
             marginVertical: 20,
           }}
         >
-          REGISTRE D’ORDRE DE BOURSE
+          REGISTRE D'ORDRE DE BOURSE
         </Text>
         {/* Form */}
         <View
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "12",
-            fontSize: "10",
+            gap: 12,
+            fontSize: 10,
             width: "70%",
             alignSelf: "center",
-            marginVertical: "50",
+            marginVertical: 50,
           }}
         >
-          <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
+          <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
             <Text>N° de compte titres :</Text>
             <Text>{userData?.nCompteTitres}</Text>
           </View>
-          <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
-            <Text>Nom et prénom du donneur d’ordre:</Text>
+          <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
+            <Text>Nom et prénom du donneur d'ordre:</Text>
             <Text>{order?.investorid?.fullname}</Text>
           </View>
           <View
@@ -104,11 +104,11 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
               justifyContent: "space-between",
             }}
           >
-            <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
+            <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
               <Text>Adresse :</Text>
               <Text>{userData?.adresse || "N/A"}</Text>
             </View>
-            <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
+            <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
               <Text>N°CNI/PC :</Text>
               <Text>
                 {order?.investorid?.followsbusiness
@@ -117,7 +117,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
               </Text>
             </View>
           </View>
-          <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
+          <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
             <Text>Agissant pour compte :</Text>
             <Text>
               {order?.investorid?.followsbusiness
@@ -125,7 +125,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 : order?.investorid?.fullname}
             </Text>
           </View>
-          <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
+          <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
             <Text>N° de compte espèces :</Text>
             <Text>{userData?.rib}</Text>
           </View>
@@ -133,16 +133,16 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
             style={{
               display: "flex",
               flexDirection: "row",
-              gap: "10",
+              gap: 10,
               alignItems: "center",
             }}
           >
-            <Text>Sens de l’opération de Bourse :</Text>
+            <Text>Sens de l'opération de Bourse :</Text>
             <View
               style={{
                 display: "flex",
                 flexDirection: "row",
-                gap: "4",
+                gap: 4,
                 alignItems: "center",
               }}
             >
@@ -150,7 +150,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 style={{
                   width: 40,
                   height: 20,
-                  border: 1,
+                  border: "1pt solid black",
                   backgroundColor:
                     order?.orderdirection === 1 ? "black" : "transparent",
                 }}
@@ -161,7 +161,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
               style={{
                 display: "flex",
                 flexDirection: "row",
-                gap: "4",
+                gap: 4,
                 alignItems: "center",
               }}
             >
@@ -169,7 +169,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 style={{
                   width: 40,
                   height: 20,
-                  border: 1,
+                  border: "1pt solid black",
                   backgroundColor:
                     order?.orderdirection === 0 ? "black" : "transparent",
                 }}
@@ -183,7 +183,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
           style={{
             width: "80%",
             alignSelf: "center",
-            fontSize: "8",
+            fontSize: 8,
             flex: 1,
           }}
         >
@@ -201,7 +201,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 textAlign: "center",
                 paddingHorizontal: 4,
                 paddingVertical: 12,
-                border: 1,
+                border: "1pt solid black",
                 fontFamily: "Helvetica-Bold",
               }}
             >
@@ -213,9 +213,9 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 textAlign: "center",
                 paddingHorizontal: 4,
                 paddingVertical: 12,
-                borderRight: 1,
-                borderBottom: 1,
-                borderTop: 1,
+                borderRight: "1pt solid black",
+                borderBottom: "1pt solid black",
+                borderTop: "1pt solid black",
                 fontFamily: "Helvetica-Bold",
               }}
             >
@@ -227,9 +227,9 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 textAlign: "center",
                 paddingHorizontal: 4,
                 paddingVertical: 12,
-                borderRight: 1,
-                borderBottom: 1,
-                borderTop: 1,
+                borderRight: "1pt solid black",
+                borderBottom: "1pt solid black",
+                borderTop: "1pt solid black",
                 fontFamily: "Helvetica-Bold",
               }}
             >
@@ -241,9 +241,9 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 textAlign: "center",
                 paddingHorizontal: 4,
                 paddingVertical: 12,
-                borderRight: 1,
-                borderBottom: 1,
-                borderTop: 1,
+                borderRight: "1pt solid black",
+                borderBottom: "1pt solid black",
+                borderTop: "1pt solid black",
                 fontFamily: "Helvetica-Bold",
               }}
             >
@@ -265,13 +265,15 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                   textAlign: "center",
                   paddingHorizontal: 4,
                   paddingVertical: 12,
-                  borderRight: 1,
-                  borderLeft: 1,
-                  borderBottom: 1,
+                  borderRight: "1pt solid black",
+                  borderLeft: "1pt solid black",
+                  borderBottom: "1pt solid black",
                 }}
                 break
               >
-                {formatPrice(order?.securityid.facevalue!)}
+                {order?.securityid?.facevalue
+                  ? formatPrice(order.securityid.facevalue)
+                  : "-"}
               </Text>
               <Text
                 style={{
@@ -279,8 +281,8 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                   textAlign: "center",
                   paddingHorizontal: 4,
                   paddingVertical: 12,
-                  borderRight: 1,
-                  borderBottom: 1,
+                  borderRight: "1pt solid black",
+                  borderBottom: "1pt solid black",
                 }}
                 break
               >
@@ -292,15 +294,19 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                   textAlign: "center",
                   paddingHorizontal: 4,
                   paddingVertical: 12,
-                  borderRight: 1,
-                  borderBottom: 1,
+                  borderRight: "1pt solid black",
+                  borderBottom: "1pt solid black",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "2",
+                  gap: 2,
                 }}
                 break
               >
-                <Text>{order?.ordertypes[1]}</Text>
+                <Text>
+                  {order?.ordertypes && order.ordertypes.length > 1
+                    ? order.ordertypes[1]
+                    : "-"}
+                </Text>
               </View>
               <Text
                 style={{
@@ -308,14 +314,14 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                   textAlign: "center",
                   paddingHorizontal: 4,
                   paddingVertical: 12,
-                  borderRight: 1,
-                  borderBottom: 1,
+                  borderRight: "1pt solid black",
+                  borderBottom: "1pt solid black",
                 }}
                 break
               >
-                {formatPrice(
-                  order?.securityid.facevalue! * (order?.quantity || 1)
-                )}
+                {order?.securityid?.facevalue && order?.quantity
+                  ? formatPrice(order.securityid.facevalue * order.quantity)
+                  : "-"}
               </Text>
             </View>
           </View>
@@ -324,28 +330,33 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "6",
-            fontSize: "10",
+            gap: 6,
+            fontSize: 10,
             width: "70%",
             alignSelf: "center",
             marginBottom: 30,
           }}
         >
-          <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
+          <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
             <Text>Validité de l'ordre :</Text>
           </View>
-          <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
+          <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
             <Text>- Du:</Text>
             <Text>{formatDate(new Date())}</Text>
             <Text>Au :</Text>
             <Text>
               {order?.validity
-                ? formatDate(order?.validity)
+                ? formatDate(order.validity)
                 : ".................."}
             </Text>
           </View>
-          <View style={{ display: "flex", flexDirection: "row", gap: "4" }}>
-            <Text>- {order?.ordertypes[0]}</Text>
+          <View style={{ display: "flex", flexDirection: "row", gap: 4 }}>
+            <Text>
+              -{" "}
+              {order?.ordertypes && order.ordertypes.length > 0
+                ? order.ordertypes[0]
+                : "-"}
+            </Text>
           </View>
         </View>
         {/* Cachet / Signature */}
@@ -361,8 +372,8 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
             marginBottom: 120,
           }}
         >
-          <Text>Signature du client </Text>{" "}
-          {/*<Text>Signature et cachet de l’IOB</Text> */}
+          <Text>Signature du client </Text>
+          <Text>Signature et cachet de l'IOB</Text>
         </View>
         {/* Footer Section */}
         <View
@@ -397,7 +408,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
               SARL FinnBourse
             </Text>
             <Text style={{ fontSize: 8, marginLeft: 2 }}>
-              au capital social de 10.000.000 DZD
+              au capital social de 100.000.000 DZD
             </Text>
           </View>
           <Text style={{ fontSize: 8 }}>

@@ -359,7 +359,11 @@
     "marcheCotation": "سوق التداول",
     "nbActions": "عدد السهمات",
     "SatimPaymentbutton": "ادفع باستخدام CIB أو Dahabiya",
-    "beforeContinuingPleaseProcessedePaymentWithCib": "يرجى معالجة الدفعة مع CIB أو Dahabiya قبل المتابعة."
+    "beforeContinuingPleaseProcessedePaymentWithCib": "يرجى معالجة الدفعة مع CIB أو Dahabiya قبل المتابعة.",
+    "paymentSuccess": "تم الدفع بنجاح",
+    "paymentUpdateError": "فشل تحديث الطلب المدفوع بالبطاقة.",
+    "popupBlockedError": "فشل فتح نافذة الدفع. يرجى التحقق من إعدادات حاظر النوافذ المنبثقة لديك.",
+    "paymentFailedError": "فشلت عملية الدفع. يرجى المحاولة مرة أخرى."
   },
   "congrats": {
     "congrats": "تهانينا!",
@@ -1517,5 +1521,8 @@
     "agence": "وكالة",
     "client": "عميل",
     "user": "مستخدم"
+  },
+  "TermsAndConditions": {
+    "acceptTerms": "أوافق على شروط الاستخدام"
   }
 }

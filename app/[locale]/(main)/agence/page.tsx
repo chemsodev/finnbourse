@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { agencyData, type AgencyData } from "@/lib/exportables";
+import MyPagination from "@/components/navigation/MyPagination";
 
 export default function AgencePage() {
   const router = useRouter();
@@ -79,10 +80,10 @@ export default function AgencePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="shadow-inner bg-gray-50 rounded-md">
       <div className="container mx-auto px-4 py-6">
-        <header className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Agence</h1>
+        <h1 className="text-3xl font-bold text-secondary my-4">Agence</h1>
+        <header className="flex items-center justify-end mb-8">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -187,7 +188,7 @@ export default function AgencePage() {
             </TableBody>
           </Table>
         </div>
-
+        <MyPagination />
         {/* Add/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">

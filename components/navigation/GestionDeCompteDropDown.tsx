@@ -1,6 +1,6 @@
 "use client";
 import { Wallet, ChevronDown, Receipt, Link as LinkIcon } from "lucide-react";
-import NavbarLink from "./navigation/NavbarLink";
+import NavbarLink from "./NavbarLink";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useTranslations } from "next-intl";

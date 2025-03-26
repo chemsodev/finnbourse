@@ -229,3 +229,10 @@ export interface Commission {
   tiers: CommissionTier[];
   createdAt: string;
 }
+export interface AccountData {
+  id: string;
+  codeAgent: string;
+  compteEspece: string;
+  compteBancaire: string;
+  orderDeTu: string;
+}

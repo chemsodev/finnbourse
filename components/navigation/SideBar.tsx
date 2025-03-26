@@ -23,9 +23,9 @@ import {
 } from "lucide-react";
 
 import LocaleButton from "../Locales/LocaleButton";
-import OperationsSurTitresDropDown from "../OperationsSurTitresDropDown";
-import TitresEtEmissionDropDown from "../TitresEtEmissionDropDown";
-import GestionDeCompteDropDown from "../GestionDeCompteDropDown";
+import OperationsSurTitresDropDown from "./OperationsSurTitresDropDown";
+import TitresEtEmissionDropDown from "./TitresEtEmissionDropDown";
+import GestionDeCompteDropDown from "./GestionDeCompteDropDown";
 import GestionDesActeurs from "../GestionDesActeurs";
 
 const SideBar = async () => {
@@ -112,7 +112,7 @@ const SideBar = async () => {
           {userRole !== 0 && userRole !== 1 && (
             <NavbarLink
               link={{
-                href: "/chiffreseteditions",
+                href: "/chiffres-et-editions",
                 icon: <FileBarChart size={15} />,
                 label: t("chiffresEtEditions"),
               }}

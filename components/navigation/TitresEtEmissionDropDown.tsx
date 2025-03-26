@@ -11,7 +11,7 @@ import {
   BadgePercent,
   CheckCircle,
 } from "lucide-react";
-import NavbarLink from "./navigation/NavbarLink";
+import NavbarLink from "./NavbarLink";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useTranslations } from "next-intl";

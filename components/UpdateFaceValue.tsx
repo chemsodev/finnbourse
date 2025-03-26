@@ -107,7 +107,7 @@ const UpdateFaceValue = ({ securityId }: { securityId: string }) => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant={"secondary"}>{t("updateFaceValue")}</Button>
+        <Button variant={"outline"}>{t("updateFaceValue")}</Button>
       </DialogTrigger>
 
       <DialogContent>

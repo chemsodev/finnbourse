@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import MyPagination from "@/components/navigation/MyPagination";
 
 interface BankData {
   id: number;
@@ -160,8 +161,10 @@ export default function BankCodePage() {
   return (
     <div className="rounded-md shadow-inner bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <header className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-secondary">IOB</h1>
+        <h1 className="text-3xl font-bold text-secondary my-4">
+          Intermédiaires en Opérations de Bourse (IOB)
+        </h1>{" "}
+        <header className="flex items-center justify-end mb-8">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -182,7 +185,6 @@ export default function BankCodePage() {
             </Button>
           </div>
         </header>
-
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <Table>
             <TableHeader className="bg-primary">
@@ -258,7 +260,10 @@ export default function BankCodePage() {
             </TableBody>
           </Table>
         </div>
-
+        <div className="mt-4">
+          {" "}
+          <MyPagination />
+        </div>
         {/* Add/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-[800px]">
@@ -429,7 +434,6 @@ export default function BankCodePage() {
             </form>
           </DialogContent>
         </Dialog>
-
         {/* Info Dialog */}
         <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
@@ -500,7 +504,6 @@ export default function BankCodePage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
         {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={isDeleteDialogOpen}

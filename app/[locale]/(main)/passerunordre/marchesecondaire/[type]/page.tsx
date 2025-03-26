@@ -49,7 +49,7 @@ const page = async (props: { params: { type: string } }) => {
           <AjoutTitre type={type} />
         </div>
       )}
-      <div className="border ml-4 border-gray-100 rounded-md p-4 bg-primary/5 ">
+      <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50 shadow-inner">
         <TitresTable type={type} />
       </div>
     </>

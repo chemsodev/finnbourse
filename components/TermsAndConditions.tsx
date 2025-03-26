@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
+import { useTranslations } from "next-intl";
 
 interface TermsAndConditionsProps {
   onChange: (value: boolean) => void;
@@ -8,6 +9,7 @@ interface TermsAndConditionsProps {
 const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
   onChange,
 }) => {
+  const t = useTranslations("TermsAndConditions");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -34,14 +36,14 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
           htmlFor="terms"
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700"
         >
-          I accept the conditions of use
+          {t("acceptTerms")}
         </label>
       </div>
       <div className="w-full">
         <ReCAPTCHA
           sitekey="6LdCkPMqAAAAADafbnY4TpPH_F18Jt5GzimBw8KY"
           onChange={handleCaptchaChange}
-          className="w-full"
+          className="w-full z-50"
         />
       </div>
     </form>

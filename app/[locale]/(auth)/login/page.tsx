@@ -358,10 +358,9 @@ export default function Login() {
                 Trade Smart...
               </div>
               <div className="text-sm text-gray-500">
-                FinnBourse, subsidiary of RMGC Spa Holding, is a licensed
-                Securities Broker authorized by the Commission d'Organisation et
-                de Surveillance des Opérations de Bourse (COSOB) specializing in
-                the Algerian financial markets
+                FinnBourse, is a licensed Securities Broker authorized by the
+                Commission d'Organisation et de Surveillance des Opérations de
+                Bourse (COSOB) specializing in the Algerian financial markets
                 <ul className="list-disc ml-4 my-4">
                   <li>Proprietary trading in the Algerian Stock Exchange</li>
                   <li>Client securities trading and execution services</li>

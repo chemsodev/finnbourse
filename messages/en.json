@@ -310,7 +310,11 @@
     "marcheCotation": "Quotation Market",
     "nbActions": "Number of Shares",
     "SatimPaymentbutton": "Pay using CIB or Dahabiya",
-    "beforeContinuingPleaseProcessedePaymentWithCib": "Please process the payment with CIB or Dahabiya before continuing."
+    "beforeContinuingPleaseProcessedePaymentWithCib": "Please process the payment with CIB or Dahabiya before continuing.",
+    "paymentSuccess": "Payment successfully completed",
+    "paymentUpdateError": "Failed to update order paid with card.",
+    "popupBlockedError": "Failed to open payment window. Please check your popup blocker settings.",
+    "paymentFailedError": "Payment failed. Please try again."
   },
   "congrats": {
     "congrats": "Congratulations!",
@@ -1256,7 +1260,7 @@
     "user": "User"
   },
   "Actions": {
-    "title": "Stocks",
+    "title": "Add a Stock",
     "form": {
       "quantity": "Quantity",
       "quantityPlaceholder": "Enter quantity",
@@ -1503,5 +1507,8 @@
   },
   "SearchFilter": {
     "searchPlaceholder": "Search by name or sector..."
+  },
+  "TermsAndConditions": {
+    "acceptTerms": "I accept the conditions of use"
   }
 }

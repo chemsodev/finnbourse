@@ -53,6 +53,7 @@ export async function GET(
       }
     );
     userData = transformUserData(listData);
+    console.log("👺👺👺👺", order, userData);
   } catch (error) {
     console.error("Error fetching data:", error);
     return NextResponse.json(

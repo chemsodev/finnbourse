@@ -1,6 +1,6 @@
 "use client";
 import { Calculator, ChevronDown, Sparkle } from "lucide-react";
-import NavbarLink from "./navigation/NavbarLink";
+import NavbarLink from "./NavbarLink";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 
