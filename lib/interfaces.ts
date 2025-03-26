@@ -208,3 +208,24 @@ export interface SocieteCotee {
     numerosTelephone: string[];
   };
 }
+
+export interface CommissionTier {
+  minAmount: number;
+  maxAmount: number | null;
+  value: number;
+}
+
+export interface Commission {
+  id: string;
+  loiDeFrais: string;
+  marche: string;
+  libelle: string;
+  code: string;
+  commissionType: string;
+  commissionValue: number;
+  tva: number;
+  irgType1: number;
+  irgType2: number;
+  tiers: CommissionTier[];
+  createdAt: string;
+}

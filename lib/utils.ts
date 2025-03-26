@@ -149,3 +149,10 @@ export const handleNumberInput = (
   const cleanedValue = value.replace(/^0+/, "") || "0";
   field.onChange(Number(cleanedValue));
 };
+
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(amount);
+}

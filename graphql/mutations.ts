@@ -397,35 +397,49 @@ export const CREATE_SUPPORT_MESSAGE = `
 
 export const UPDATE_LISTED_COMPANY = `
   mutation UpdateListedCompany(
-    $id: ID!,
+    $id: String!,
     $nom: String!,
     $secteuractivite: String!,
     $capitalisationboursiere: String!,
-    $email: String!,
+    $siteofficiel: String!,
     $phone: String!,
+    $email: String!,
     $address: String!,
-    $siteofficiel: String
+    $notice: String!
   ) {
     updateListedCompany(
-      id: $id,
-      nom: $nom,
-      secteuractivite: $secteuractivite,
-      capitalisationboursiere: $capitalisationboursiere,
-      contact: {
-        email: $email,
-        phone: $phone,
-        address: $address
-      },
-      siteofficiel: $siteofficiel
+      where: { id: $id },
+      data: {
+        nom: { set: $nom },
+        secteuractivite: { set: $secteuractivite },
+        capitalisationboursiere: { set: $capitalisationboursiere },
+        siteofficiel: { set: $siteofficiel },
+        contact: {
+          phone: { set: $phone },
+          email: { set: $email },
+          address: { set: $address }
+        },
+        extrafields: {
+          notice: { set: $notice }
+        }
+      }
     ) {
       id
       nom
+      secteuractivite
+      capitalisationboursiere
+      siteofficiel 
+      contact
+      extrafields
     }
   }
 `;
 
 export const DELETE_LISTED_COMPANY = `
-  mutation DeleteListedCompany($id: ID!) {
-    deleteListedCompany(id: $id)
+ mutation DeleteListedCompany($id: String!) {
+  deleteListedCompany(where: { id: $id }) {
+    id
   }
+}
+
 `;

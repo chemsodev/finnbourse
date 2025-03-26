@@ -1,5 +1,5 @@
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
-import OrdreDeBourse from "@/components/OrdreDeBourse";
+import OrdreDeBourse from "@/components/pdf/OrdreDeBourse";
 import {
   GET_REST_USER_DATA,
   LIST_ORDERS_QUERY_ONE_ORDER,

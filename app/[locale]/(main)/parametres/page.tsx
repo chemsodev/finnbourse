@@ -9,6 +9,8 @@ import auth from "@/auth";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import AccessDenied from "@/components/AccessDenied";
+import { HandCoins } from "lucide-react";
+import { Link } from "@/i18n/routing";
 
 const page = async () => {
   const session = await getServerSession(auth);
@@ -43,6 +45,13 @@ const page = async () => {
           <SettingMessages />
           <SettingsQst />
           <AddNews />
+          <Link
+            href="/commissions"
+            className="border py-4 px-8 shadow hover:shadow-inner hover:bg-gray-50 rounded-md capitalize md:text-xl mt-10 font-bold flex justify-start gap-4 items-center"
+          >
+            <HandCoins size={35} />
+            <div className="flex w-full justify-center">Commissions</div>
+          </Link>
           {/*<Separator className="my-8" />
 
           <div>

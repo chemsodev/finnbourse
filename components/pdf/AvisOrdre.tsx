@@ -113,7 +113,7 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
                 textAlign: "center",
                 paddingHorizontal: 4,
                 paddingVertical: 12,
-                border: 1,
+                border: "solid",
 
                 fontFamily: "Helvetica-Bold",
               }}
