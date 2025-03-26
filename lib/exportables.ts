@@ -37,7 +37,7 @@ export const data: Marche[] = [
   },
   {
     id: 4,
-    titre: "Credit Populaire D’Algérie",
+    titre: "Credit Populaire D'Algérie",
     code: "cpa",
     ouverture: 1200.0,
     cloture: "NC",
@@ -314,5 +314,176 @@ export const messages = [
   {
     id: 5,
     titre: "Message 5",
+  },
+];
+
+export type AgencyData = {
+  id: number;
+  agenceCode: string;
+  libAgence: string;
+  codeVille: string;
+  ordreDe: string;
+  parDefault: string;
+  compensation: string;
+  nom: string;
+  prenom: string;
+  codeBanque?: string;
+  regionAgence?: string;
+  codeBC?: string;
+  nomCorrespondant?: string;
+  prenomCorrespondant?: string;
+  fonction?: string;
+  telephone1?: string;
+  telephone2?: string;
+  fax?: string;
+  email?: string;
+  telex?: string;
+  addresse?: string;
+  codePostal?: string;
+  commentaire?: string;
+};
+
+export const agencyData: AgencyData[] = [
+  {
+    id: 1,
+    agenceCode: "001",
+    libAgence: "AGENCE PRINCIPALE",
+    codeVille: "0001",
+    ordreDe: "0",
+    parDefault: "0",
+    compensation: "0",
+    nom: "NOM",
+    prenom: "PRENOM",
+    codeBanque: "91001",
+    regionAgence: "ALGER",
+    codeBC: "BC001",
+    nomCorrespondant: "DUPONT",
+    prenomCorrespondant: "JEAN",
+    fonction: "DIRECTEUR",
+    telephone1: "021-111-222",
+    telephone2: "021-333-444",
+    fax: "021-555-666",
+    email: "contact@agence.dz",
+    telex: "12345",
+    addresse: "123 Rue Principale, Alger",
+    codePostal: "16000",
+    commentaire: "Agence principale du réseau",
+  },
+  {
+    id: 2,
+    agenceCode: "002",
+    libAgence: "AGENCE SECONDAIRE",
+    codeVille: "0002",
+    ordreDe: "1",
+    parDefault: "0",
+    compensation: "0",
+    nom: "MARTIN",
+    prenom: "MARIE",
+  },
+  {
+    id: 3,
+    agenceCode: "003",
+    libAgence: "AGENCE ORAN",
+    codeVille: "0003",
+    ordreDe: "2",
+    parDefault: "0",
+    compensation: "1",
+    nom: "BENALI",
+    prenom: "KARIM",
+  },
+];
+
+export type AccountHolderData = {
+  id: number;
+  code: string;
+  libelle: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  pays: string;
+  telephone: string;
+  email: string;
+  statut: string;
+  dateCreation: string;
+  swift?: string;
+  typeCompte?: string;
+  iban?: string;
+  numeroCompte?: string;
+  devise?: string;
+  contactNom?: string;
+  contactPrenom?: string;
+  contactTelephone?: string;
+  contactEmail?: string;
+  numeroAgrement?: string;
+  dateAgrement?: string;
+  autoriteSurveillance?: string;
+  codeCorrespondant?: string;
+  nomCorrespondant?: string;
+  commissionFixe?: string;
+  commissionVariable?: string;
+  tauxTva?: string;
+  commentaire?: string;
+};
+
+export const accountHolderData: AccountHolderData[] = [
+  {
+    id: 1,
+    code: "TCT001",
+    libelle: "SOCIETE GENERALE",
+    adresse: "29 Boulevard Haussmann",
+    codePostal: "75009",
+    ville: "Paris",
+    pays: "France",
+    telephone: "+33-1-4213-9700",
+    email: "securities@socgen.fr",
+    statut: "Actif",
+    dateCreation: "2020-03-22",
+    swift: "SOGEFRPP",
+    typeCompte: "Conservateur",
+    iban: "FR7630003000502345678901833",
+    numeroCompte: "30003000502345678901833",
+    devise: "EUR",
+    contactNom: "Martin",
+    contactPrenom: "Sophie",
+    contactTelephone: "+33-1-4213-9701",
+    contactEmail: "sophie.martin@socgen.fr",
+    numeroAgrement: "AMF-2020-456",
+    dateAgrement: "2020-02-15",
+    autoriteSurveillance: "AMF",
+    codeCorrespondant: "CORR002",
+    nomCorrespondant: "Euroclear France",
+    commissionFixe: "12.50",
+    commissionVariable: "0.20",
+    tauxTva: "20.00",
+    commentaire: "Partenaire principal pour les marchés français",
+  },
+  {
+    id: 2,
+    code: "TCT002",
+    libelle: "BNP PARIBAS",
+    adresse: "16 Boulevard des Italiens",
+    codePostal: "75009",
+    ville: "Paris",
+    pays: "France",
+    telephone: "+33-1-4014-4546",
+    email: "custody@bnp.fr",
+    statut: "Actif",
+    dateCreation: "2020-01-15",
+    swift: "BNPAFRPP",
+    typeCompte: "Dépositaire",
+  },
+  {
+    id: 3,
+    code: "TCT003",
+    libelle: "BANQUE DE DEVELOPPEMENT LOCAL",
+    adresse: "5 Rue Gaci Amar",
+    codePostal: "16000",
+    ville: "Alger",
+    pays: "Algérie",
+    telephone: "+213-21-91-88-88",
+    email: "contact@bdl.dz",
+    statut: "Actif",
+    dateCreation: "2019-11-05",
+    typeCompte: "Banque Locale",
   },
 ];

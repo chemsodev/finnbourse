@@ -38,70 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
-// This is a mock database that would be replaced with real data in a production app
-export const accountHolderData = [
-  {
-    id: 1,
-    code: "TCT001",
-    libelle: "SOCIETE GENERALE",
-    adresse: "29 Boulevard Haussmann",
-    codePostal: "75009",
-    ville: "Paris",
-    pays: "France",
-    telephone: "+33-1-4213-9700",
-    email: "securities@socgen.fr",
-    statut: "Actif",
-    dateCreation: "2020-03-22",
-    swift: "SOGEFRPP",
-    typeCompte: "Conservateur",
-    iban: "FR7630003000502345678901833",
-    numeroCompte: "30003000502345678901833",
-    devise: "EUR",
-    contactNom: "Martin",
-    contactPrenom: "Sophie",
-    contactTelephone: "+33-1-4213-9701",
-    contactEmail: "sophie.martin@socgen.fr",
-    numeroAgrement: "AMF-2020-456",
-    dateAgrement: "2020-02-15",
-    autoriteSurveillance: "AMF",
-    codeCorrespondant: "CORR002",
-    nomCorrespondant: "Euroclear France",
-    commissionFixe: "12.50",
-    commissionVariable: "0.20",
-    tauxTva: "20.00",
-    commentaire: "Partenaire principal pour les marchés français",
-  },
-  {
-    id: 2,
-    code: "TCT002",
-    libelle: "BNP PARIBAS",
-    adresse: "16 Boulevard des Italiens",
-    codePostal: "75009",
-    ville: "Paris",
-    pays: "France",
-    telephone: "+33-1-4014-4546",
-    email: "custody@bnp.fr",
-    statut: "Actif",
-    dateCreation: "2020-01-15",
-    swift: "BNPAFRPP",
-    typeCompte: "Dépositaire",
-  },
-  {
-    id: 3,
-    code: "TCT003",
-    libelle: "BANQUE DE DEVELOPPEMENT LOCAL",
-    adresse: "5 Rue Gaci Amar",
-    codePostal: "16000",
-    ville: "Alger",
-    pays: "Algérie",
-    telephone: "+213-21-91-88-88",
-    email: "contact@bdl.dz",
-    statut: "Actif",
-    dateCreation: "2019-11-05",
-    typeCompte: "Banque Locale",
-  },
-];
+import { accountHolderData, type AccountHolderData } from "@/lib/exportables";
 
 export default function TeneurComptesTitresPage() {
   const router = useRouter();
@@ -109,9 +46,8 @@ export default function TeneurComptesTitresPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
-  const [selectedHolder, setSelectedHolder] = useState<
-    (typeof accountHolderData)[0] | null
-  >(null);
+  const [selectedHolder, setSelectedHolder] =
+    useState<AccountHolderData | null>(null);
 
   const handleAddClick = () => {
     setDialogMode("add");
@@ -119,17 +55,17 @@ export default function TeneurComptesTitresPage() {
     setIsDialogOpen(true);
   };
 
-  const handleEditClick = (holder: (typeof accountHolderData)[0]) => {
+  const handleEditClick = (holder: AccountHolderData) => {
     setDialogMode("edit");
     setSelectedHolder(holder);
     setIsDialogOpen(true);
   };
 
-  const handleInfoClick = (holder: (typeof accountHolderData)[0]) => {
+  const handleInfoClick = (holder: AccountHolderData) => {
     router.push(`/tcc/${holder.id}`);
   };
 
-  const handleDeleteClick = (holder: (typeof accountHolderData)[0]) => {
+  const handleDeleteClick = (holder: AccountHolderData) => {
     setSelectedHolder(holder);
     setIsDeleteDialogOpen(true);
   };
