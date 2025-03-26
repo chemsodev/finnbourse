@@ -32,7 +32,10 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
               flexDirection: "row",
             }}
           >
-            <Image src="public/LOGO.png" style={{ width: "8%" }} />
+            <Image
+              src="public/LOGO.png"
+              style={{ width: "8%", margin: "2%" }}
+            />
             <Text
               style={{
                 fontSize: "8",
@@ -41,7 +44,7 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
                 fontFamily: "Helvetica-Bold",
               }}
             >
-              FINNBOURSE…INVEST IN GROWTH
+              FINNBOURSE…Trade Smart
             </Text>
           </View>
           <View
@@ -113,8 +116,10 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
                 textAlign: "center",
                 paddingHorizontal: 4,
                 paddingVertical: 12,
-                border: "solid",
-
+                borderLeft: 1,
+                borderRight: 1,
+                borderBottom: 1,
+                borderTop: 1,
                 fontFamily: "Helvetica-Bold",
               }}
             >
@@ -207,139 +212,128 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
           </View>
           <View>
             {/* Table Rows */}
-            {orders?.listOrdersExtended
-              .filter((order) =>
-                order?.ordertypes?.some((type) =>
-                  [
-                    "action",
-                    "obligation",
-                    "sukukms",
-                    "titresparticipatifsmp",
-                  ].includes(type)
-                )
-              )
-              .map((order, index) => (
-                <View
-                  key={order.id}
+            {orders?.listOrdersExtended.map((order, index) => (
+              <View
+                key={order.id}
+                style={{
+                  flexDirection: "row",
+                }}
+              >
+                <Text
                   style={{
-                    flexDirection: "row",
+                    width: "25%",
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                    paddingVertical: 12,
+                    borderRight: 1,
+                    borderBottom: 1,
+                    borderLeft: 1,
+                    flexWrap: "wrap",
                   }}
+                  break
                 >
-                  <Text
-                    style={{
-                      width: "25%",
-                      textAlign: "center",
-                      paddingHorizontal: 4,
-                      paddingVertical: 12,
-                      borderRight: 1,
-                      borderBottom: 1,
-                      borderLeft: 1,
-                      flexWrap: "wrap",
-                    }}
-                    break
-                  >
-                    {order?.id
-                      ? order.id.split("-").slice(0, 2).join("-")
-                      : "N/A"}
-                  </Text>
-                  <Text
-                    style={{
-                      width: "25%",
-                      textAlign: "center",
-                      paddingHorizontal: 4,
-                      paddingVertical: 12,
-                      borderRight: 1,
-                      borderBottom: 1,
-                    }}
-                    break
-                  >
-                    {order?.securityid?.name}
-                  </Text>
-                  <Text
-                    style={{
-                      width: "25%",
-                      textAlign: "center",
-                      paddingHorizontal: 4,
-                      paddingVertical: 12,
-                      borderRight: 1,
-                      borderBottom: 1,
-                    }}
-                    break
-                  >
-                    {order?.orderdirection === 1 ? "Achat" : "Vente"}
-                  </Text>
-                  <Text
-                    style={{
-                      width: "25%",
-                      textAlign: "center",
-                      paddingHorizontal: 4,
-                      paddingVertical: 12,
-                      borderRight: 1,
-                      borderBottom: 1,
-                    }}
-                    break
-                  >
-                    {order?.quantity}
-                  </Text>
-                  <Text
-                    style={{
-                      width: "25%",
-                      textAlign: "center",
-                      paddingHorizontal: 4,
-                      paddingVertical: 12,
-                      borderRight: 1,
-                      borderBottom: 1,
-                    }}
-                    break
-                  >
-                    {order?.ordertypes?.includes("COMMANDE_A_COURS_LIMITE")
-                      ? "cours limité"
-                      : order?.ordertypes?.includes("COMMANDE_AU_MIEUX")
-                      ? "au mieux"
-                      : order?.ordertypes?.includes("COMMANDE_DE_JOUR")
-                      ? "de jour"
-                      : order?.ordertypes?.includes("COMMANDE_A_REVOCATION")
-                      ? "à révocation"
-                      : order?.ordertypes?.includes("COMMANDE_A_DUREE_LIMITEE")
-                      ? "à durée limitée"
-                      : order?.ordertypes?.includes("COMMANDE_A_EXECUTION")
-                      ? "à exécution"
-                      : order?.ordertypes?.includes("COMMANDE_TOUT_OU_RIEN")
-                      ? "tout ou rien"
-                      : order?.ordertypes?.includes("COMMANDE_SANS_STIPULATION")
-                      ? "sans stipulation"
-                      : "inconnu"}
-                  </Text>
-                  <Text
-                    style={{
-                      width: "25%",
-                      textAlign: "center",
-                      paddingHorizontal: 4,
-                      paddingVertical: 12,
-                      borderRight: 1,
-                      borderBottom: 1,
-                    }}
-                    break
-                  >
-                    {formatDate(order?.orderdate)}
-                  </Text>
-                  <Text
-                    style={{
-                      width: "25%",
-                      textAlign: "center",
-                      paddingHorizontal: 4,
-                      paddingVertical: 12,
-                      borderRight: 1,
-                      borderBottom: 1,
-                    }}
-                    break
-                  >
-                    {order?.negotiatorid?.followsbusiness
-                      ? "Entreprise"
-                      : "Particulier"}
-                  </Text>
-                </View>
-              ))}
+                  {order?.id
+                    ? order.id.split("-").slice(0, 2).join("-")
+                    : "N/A"}
+                </Text>
+                <Text
+                  style={{
+                    width: "25%",
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                    paddingVertical: 12,
+                    borderRight: 1,
+                    borderBottom: 1,
+                  }}
+                  break
+                >
+                  {order?.securityid?.name}
+                </Text>
+                <Text
+                  style={{
+                    width: "25%",
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                    paddingVertical: 12,
+                    borderRight: 1,
+                    borderBottom: 1,
+                  }}
+                  break
+                >
+                  {order?.orderdirection === 1 ? "Achat" : "Vente"}
+                </Text>
+                <Text
+                  style={{
+                    width: "25%",
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                    paddingVertical: 12,
+                    borderRight: 1,
+                    borderBottom: 1,
+                  }}
+                  break
+                >
+                  {order?.quantity}
+                </Text>
+                <Text
+                  style={{
+                    width: "25%",
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                    paddingVertical: 12,
+                    borderRight: 1,
+                    borderBottom: 1,
+                  }}
+                  break
+                >
+                  {order?.ordertypes?.includes("COMMANDE_A_COURS_LIMITE")
+                    ? "cours limité"
+                    : order?.ordertypes?.includes("COMMANDE_AU_MIEUX")
+                    ? "au mieux"
+                    : order?.ordertypes?.includes("COMMANDE_DE_JOUR")
+                    ? "de jour"
+                    : order?.ordertypes?.includes("COMMANDE_A_REVOCATION")
+                    ? "à révocation"
+                    : order?.ordertypes?.includes("COMMANDE_A_DUREE_LIMITEE")
+                    ? "à durée limitée"
+                    : order?.ordertypes?.includes("COMMANDE_A_EXECUTION")
+                    ? "à exécution"
+                    : order?.ordertypes?.includes("COMMANDE_TOUT_OU_RIEN")
+                    ? "tout ou rien"
+                    : order?.ordertypes?.includes("COMMANDE_SANS_STIPULATION")
+                    ? "sans stipulation"
+                    : "inconnu"}
+                </Text>
+                <Text
+                  style={{
+                    width: "25%",
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                    paddingVertical: 12,
+                    borderRight: 1,
+                    borderBottom: 1,
+                  }}
+                  break
+                >
+                  {formatDate(order?.orderdate)}
+                </Text>
+                <Text
+                  style={{
+                    width: "25%",
+                    textAlign: "center",
+                    paddingHorizontal: 4,
+                    paddingVertical: 12,
+                    borderRight: 1,
+                    borderBottom: 1,
+                  }}
+                  break
+                >
+                  {order?.negotiatorid?.followsbusiness
+                    ? "Entreprise"
+                    : "Particulier"}
+                </Text>
+              </View>
+            ))}
           </View>
         </View>
         {/* Cachet / Signature */}

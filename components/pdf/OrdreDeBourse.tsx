@@ -38,7 +38,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 fontFamily: "Helvetica-Bold",
               }}
             >
-              FINNBOURSE…INVEST IN GROWTH
+              FINNBOURSE…Trade Smart
             </Text>
           </View>
           <View

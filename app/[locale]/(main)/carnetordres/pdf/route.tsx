@@ -11,6 +11,7 @@ export async function GET(request: Request) {
   let orders: GetOrdersResponse | null = null;
   try {
     orders = await fetchGraphQL<GetOrdersResponse>(LIST_ORDERS_QUERY_PDF);
+    console.log("👺👺👺", orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
   }

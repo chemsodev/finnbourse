@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil } from "lucide-react";
-import { accountHolderData } from "../page";
+import { accountHolderData } from "@/lib/exportables";
 import {
   Table,
   TableBody,

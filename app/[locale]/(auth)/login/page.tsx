@@ -355,24 +355,26 @@ export default function Login() {
                 SARL FINNBOURSE
               </div>
               <div className="font-semibold text-primary text-2xl uppercase">
-                INVEST IN GROWTH...
+                Trade Smart...
               </div>
               <div className="text-sm text-gray-500">
-                FinnBourse, filiale de RMGC Spa Holding, est un Intermédiaire en
-                Opérations de Bourse (IOB) agréé par la Commission
-                d’Organisation et de Surveillance des Opérations de Bourse
-                (COSOB)
+                FinnBourse, subsidiary of RMGC Spa Holding, is a licensed
+                Securities Broker authorized by the Commission d'Organisation et
+                de Surveillance des Opérations de Bourse (COSOB) specializing in
+                the Algerian financial markets
                 <ul className="list-disc ml-4 my-4">
-                  <li>Négociation pour compte propre</li>
-                  <li>Négociation pour compte de tiers</li>
-                  <li>Conseil en placement de valeurs mobilières</li>
+                  <li>Proprietary trading in the Algerian Stock Exchange</li>
+                  <li>Client securities trading and execution services</li>
+                  <li>Investment advisory on Algerian market securities</li>
                   <li>
-                    Placement de valeurs mobilières et produits financiers
+                    Placement of Algerian securities and financial instruments
                   </li>
-                  <li>Gestion individuelle de portefeuille sous mandat</li>
                   <li>
-                    Conseil aux entreprises en matière de structure de capital,
-                    fusion et rachat d’entreprises
+                    Discretionary portfolio management within the local market
+                  </li>
+                  <li>
+                    Corporate advisory for Algerian businesses on capital
+                    structure, mergers and acquisitions
                   </li>
                 </ul>
               </div>
