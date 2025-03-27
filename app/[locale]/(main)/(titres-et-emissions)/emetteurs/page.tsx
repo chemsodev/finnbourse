@@ -19,13 +19,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  ExternalLink,
+  Loader2,
+  RefreshCw,
+  Info,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmettrice";
 import EditCompanyDialog from "@/components/listed-company/edit-company-dialog";
 import DeleteCompanyDialog from "@/components/listed-company/delete-company-dialog";
 import SearchFilter from "@/components/listed-company/search-filter";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { formatPrice } from "@/lib/utils";
 
 type Company = {
   id: string;
@@ -34,6 +48,7 @@ type Company = {
   capitalisationboursiere: string;
   contact: any;
   siteofficiel: string;
+  extrafields?: any;
 };
 
 export default function CompaniesPage() {
@@ -63,21 +78,58 @@ export default function CompaniesPage() {
         throw new Error(t("fetchError"));
       }
 
-      // Process the companies data to ensure contact is properly formatted
+      // Process the companies data to ensure contact and extrafields are properly formatted
       const processedCompanies = result.listListedCompanies.map((company) => {
-        // If contact is a string (JSON), try to parse it
-        if (company.contact && typeof company.contact === "string") {
-          try {
-            company.contact = JSON.parse(company.contact);
-          } catch (e) {
-            // If parsing fails, set a default structure
-            company.contact = { email: "", phone: "", address: "" };
+        // Process contact object
+        if (company.contact) {
+          // If the contact field contains nested 'set' properties
+          if (
+            typeof company.contact === "object" &&
+            (company.contact.email?.set ||
+              company.contact.phone?.set ||
+              company.contact.address?.set)
+          ) {
+            company.contact = {
+              email: company.contact.email?.set || "",
+              phone: company.contact.phone?.set || "",
+              address: company.contact.address?.set || "",
+            };
           }
-        }
-        // If contact is null or undefined, set a default structure
-        else if (!company.contact) {
+          // If contact is a string (JSON), try to parse it
+          else if (typeof company.contact === "string") {
+            try {
+              company.contact = JSON.parse(company.contact);
+            } catch (e) {
+              company.contact = { email: "", phone: "", address: "" };
+            }
+          }
+        } else {
           company.contact = { email: "", phone: "", address: "" };
         }
+
+        // Process extrafields object
+        if (company.extrafields) {
+          // If extrafields has a notice with a 'set' property
+          if (
+            typeof company.extrafields === "object" &&
+            company.extrafields.notice?.set !== undefined
+          ) {
+            company.extrafields = {
+              notice: company.extrafields.notice.set,
+            };
+          }
+          // If extrafields is a string (JSON), try to parse it
+          else if (typeof company.extrafields === "string") {
+            try {
+              company.extrafields = JSON.parse(company.extrafields);
+            } catch (e) {
+              company.extrafields = { notice: "" };
+            }
+          }
+        } else {
+          company.extrafields = { notice: "" };
+        }
+
         return company;
       });
 
@@ -169,6 +221,7 @@ export default function CompaniesPage() {
                     <TableHead>{t("marketCap")}</TableHead>
                     <TableHead>{t("contact")}</TableHead>
                     <TableHead>{t("website")}</TableHead>
+                    <TableHead>{t("notice")}</TableHead>
                     <TableHead>{t("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -186,7 +239,9 @@ export default function CompaniesPage() {
                           {company.nom}
                         </TableCell>
                         <TableCell>{company.secteuractivite}</TableCell>
-                        <TableCell>{company.capitalisationboursiere}</TableCell>
+                        <TableCell>
+                          {formatPrice(company.capitalisationboursiere)}
+                        </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1">
                             <span>
@@ -217,6 +272,50 @@ export default function CompaniesPage() {
                               {t("visit")}{" "}
                               <ExternalLink className="ml-1 h-3 w-3" />
                             </a>
+                          ) : (
+                            <span className="text-muted-foreground">
+                              {t("notAvailable")}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {company.extrafields && company.extrafields.notice ? (
+                            <div className="flex items-center">
+                              <span className="line-clamp-1 max-w-[200px]">
+                                {typeof company.extrafields.notice ===
+                                  "object" && company.extrafields.notice.set
+                                  ? company.extrafields.notice.set
+                                  : company.extrafields.notice}
+                              </span>
+                              {(typeof company.extrafields.notice === "string"
+                                ? company.extrafields.notice.length > 30
+                                : company.extrafields.notice.set &&
+                                  company.extrafields.notice.set.length >
+                                    30) && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="ml-1 h-6 w-6"
+                                      >
+                                        <Info className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                      <p>
+                                        {typeof company.extrafields.notice ===
+                                          "object" &&
+                                        company.extrafields.notice.set
+                                          ? company.extrafields.notice.set
+                                          : company.extrafields.notice}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-muted-foreground">
                               {t("notAvailable")}

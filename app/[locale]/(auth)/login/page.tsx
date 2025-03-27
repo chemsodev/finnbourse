@@ -352,7 +352,7 @@ export default function Login() {
             </div>
             <div className="hidden md:flex object-cover w-1/2 flex-col gap-4">
               <div className="text-secondary uppercase text-sm">
-                SARL FINNBOURSE
+                SARL Finnetude
               </div>
               <div className="font-semibold text-primary text-2xl uppercase">
                 Trade Smart...

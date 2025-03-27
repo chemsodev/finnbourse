@@ -10,6 +10,7 @@ import {
   Building,
   BadgePercent,
   CheckCircle,
+  HandCoins,
 } from "lucide-react";
 import NavbarLink from "./NavbarLink";
 import { motion, AnimatePresence } from "framer-motion";
@@ -68,11 +69,17 @@ const TitresEtEmissionDropDown = () => {
                 label: t("emissions"),
               }}
             />
-
+            <NavbarLink
+              link={{
+                href: "/commissions",
+                icon: <HandCoins size={14} />,
+                label: t("commissions"),
+              }}
+            />
             <div>
               <button
                 onClick={toggleGestionDropdown}
-                className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-primary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
+                className="flex items-center gap-4 py-2 px-6 w-full rounded-md hover:bg-secondary/20 hover:text-primary hover:shadow-sm text-left cursor-pointer text-xs"
               >
                 <Briefcase size={14} /> {t("gestionDesTitres")}
                 <motion.span

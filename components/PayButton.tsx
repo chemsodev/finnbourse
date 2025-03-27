@@ -32,11 +32,11 @@ const PayButton: React.FC<PayButtonProps> = ({
 
   return (
     <>
-      <div className="w-full flex gap-6 items-center justify-center mb-4 z-50">
+      <div className="w-full flex gap-6 items-center justify-center mb-4">
         <TermsAndConditions onChange={handleTermsChange} />
       </div>
       <Button
-        disabled={payedWithCard || !isTermsAccepted}
+        //  disabled={payedWithCard || !isTermsAccepted}
         type="button"
         className="w-full flex items-center justify-center bg-gradient-to-r from-secondary to-blue-700 hover:from-secondary hover:to-blue-800 text-white font-bold py-2 px-4 rounded shadow-md transition-colors duration-200 z-50"
         onClick={async () => {

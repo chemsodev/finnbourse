@@ -95,8 +95,8 @@ export default function BankCodePage() {
     {
       id: 4,
       codeBank: "91001",
-      shortName: "BNA",
-      longName: "BANQUE NATIONALE D'ALGERIE",
+      shortName: "CNEP",
+      longName: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
       correspondent: "1",
       address: "ALGER",
       phone: "11",

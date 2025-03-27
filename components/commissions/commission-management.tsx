@@ -98,9 +98,9 @@ export default function CommissionManagement() {
     <div className="bg-white rounded-lg shadow-md p-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
-          <TabsTrigger value="list">Commission List</TabsTrigger>
+          <TabsTrigger value="list">Liste des Commissions</TabsTrigger>
           <TabsTrigger value="form">
-            {editingCommission ? "Edit Commission" : "New Commission"}
+            {editingCommission ? "Modifier Commission" : "Nouvelle Commission"}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="list">

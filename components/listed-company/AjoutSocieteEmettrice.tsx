@@ -42,6 +42,26 @@ const formSchema = z.object({
     .min(1, "Capitalisation boursière est obligatoire"),
 });
 
+type Company = {
+  id: string;
+  nom: string;
+  secteuractivite: string;
+  capitalisationboursiere: string;
+  contact:
+    | {
+        email: string | { set?: string };
+        phone: string | { set?: string };
+        address: string | { set?: string };
+      }
+    | string;
+  siteofficiel: string;
+  extrafields?:
+    | {
+        notice?: string | { set?: string };
+      }
+    | string;
+};
+
 const AjoutSocieteEmettrice = () => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -58,7 +78,7 @@ const AjoutSocieteEmettrice = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      await fetchGraphQL<String>(CREATE_LISTED_COMPANY, {
+      await fetchGraphQL<{ id: string }>(CREATE_LISTED_COMPANY, {
         nom: values.nom,
         secteuractivite: values.secteurActivite,
         siteofficiel: values.siteOfficiel || null,
@@ -259,9 +279,9 @@ const AjoutSocieteEmettrice = () => {
                       <FormItem>
                         <FormLabel>{t("notice")}</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder={t("notice")}
-                            type="text"
+                          <textarea
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder={t("enterNotice")}
                             {...field}
                           />
                         </FormControl>

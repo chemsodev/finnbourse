@@ -32,7 +32,7 @@ export default async function Home() {
         <TopBarDash />
 
         {(userRole === 3 || userRole === 2) && (
-          <div className="flex justify-between mt-3">
+          <div className="flex justify-center md:justify-between mt-3 gap-4 flex-col md:flex-row">
             <DashWidgetTcc
               title={t("clientType")}
               value="12,347"

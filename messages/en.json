@@ -16,7 +16,7 @@
     "session": "Session",
     "utilisateurs": "Users",
     "operationsSurTitres": "Operations on securities",
-    "annonceOst": "OST Announcement",
+    "annonceOst": "OST Announcement Creation",
     "paiementDividendes": "Dividend Payment",
     "paiementDroitsDeGarde": "Custody Fee Payment",
     "paiementCoupon": "Coupon Payment",
@@ -721,6 +721,7 @@
   },
   "AjoutSocieteEmettrice": {
     "notice": "Notice",
+    "enterNotice": "Enter notice information",
     "ajouterUneSocieteEmettrice": "Add a company",
     "entrerLeNom": "Enter the name",
     "entrerLeSecteurDActivite": "Enter the sector of activity",
@@ -1038,8 +1039,10 @@
   },
   "UserFilter": {
     "investisseur": "Investor",
-    "negociateur": "Negotiator",
-    "manager": "Manager"
+    "IOB": "IOB",
+    "manager": "Manager",
+    "TTC": "TTC",
+    "Agence": "Agency"
   },
   "ClientDrawer": {
     "plus": "More",
@@ -1238,6 +1241,7 @@
     "emetteurs": "Issuers",
     "teneurDeCompte": "Account Holder",
     "emissions": "Issuances",
+    "commissions": "Commissions",
     "gestionDesTitres": "Securities Management",
     "action": "Stock",
     "obligation": "Bond",
@@ -1460,6 +1464,7 @@
     "marketCap": "Market Cap",
     "contact": "Contact",
     "website": "Website",
+    "notice": "Notice",
     "actions": "Actions",
     "loading": "Loading companies...",
     "error": "Error",
@@ -1487,6 +1492,8 @@
     "enterPhone": "Enter phone number",
     "address": "Address",
     "enterAddress": "Enter address",
+    "notice": "Notice",
+    "enterNotice": "Enter notice information",
     "cancel": "Cancel",
     "save": "Save Changes",
     "loading": "Saving",

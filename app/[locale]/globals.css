@@ -78,3 +78,16 @@
 *::-webkit-scrollbar {
   display: none; /* Chrome, Safari, and Opera */
 }
+
+/* reCAPTCHA fixes - ensure iframe appears above dialog and can be clicked */
+.grecaptcha-badge {
+  z-index: 10000 !important;
+}
+
+iframe[src*="recaptcha"] {
+  z-index: 10000 !important;
+}
+
+div[style*="z-index: 2000000000"] {
+  z-index: 10000 !important;
+}

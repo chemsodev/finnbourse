@@ -372,6 +372,7 @@
   },
   "AjoutSocieteEmettrice": {
     "notice": "إشعار",
+    "enterNotice": "أدخل معلومات الإشعار",
     "ajouterUneSocieteEmettrice": "إضافة شركة",
     "entrerLeNom": "أدخل الاسم",
     "entrerLeSecteurDActivite": "أدخل قطاع النشاط",
@@ -1044,8 +1045,10 @@
   },
   "UserFilter": {
     "investisseur": "مستثمر",
-    "negociateur": "متفاوض",
-    "manager": "مدير"
+    "IOB": "وسيط",
+    "manager": "مدير",
+    "TTC": "مكتب الخبرة",
+    "Agence": "وكالة"
   },
   "ClientDrawer": {
     "plus": "المزيد",
@@ -1244,6 +1247,7 @@
     "emetteurs": "المصدرون",
     "teneurDeCompte": "صاحب الحساب",
     "emissions": "الإصدارات",
+    "commissions": "العمولات",
     "gestionDesTitres": "إدارة الأوراق المالية",
     "action": "سهم",
     "obligation": "سند",
@@ -1493,6 +1497,8 @@
     "enterPhone": "أدخل رقم الهاتف",
     "address": "العنوان",
     "enterAddress": "أدخل العنوان",
+    "notice": "إشعار",
+    "enterNotice": "أدخل معلومات الإشعار",
     "cancel": "إلغاء",
     "save": "حفظ التغييرات",
     "loading": "جاري الحفظ",

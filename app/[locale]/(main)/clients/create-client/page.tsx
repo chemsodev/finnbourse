@@ -45,7 +45,7 @@ export default function ClientDetails() {
             </Button>
             <div className="flex items-end gap-3">
               <h1 className="text-3xl font-bold ">Client :</h1>
-              <span className="text-2xl text-secondary">SLIK PIS</span>
+              <span className="text-2xl text-secondary">Nouveau Client</span>
             </div>
           </div>
 
@@ -57,7 +57,7 @@ export default function ClientDetails() {
                   Type du client
                 </label>
                 <div className="flex gap-4">
-                  <Select defaultValue="C01">
+                  <Select>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
@@ -66,10 +66,7 @@ export default function ClientDetails() {
                       <SelectItem value="C02">(C02)</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Input
-                    defaultValue="Institution Financière"
-                    className="flex-1"
-                  />
+                  <Input placeholder="Description" className="flex-1" />
                 </div>
               </div>
 
@@ -77,7 +74,7 @@ export default function ClientDetails() {
                 <label className="block text-sm font-medium mb-1">
                   Nom, prénom / Raison social
                 </label>
-                <Input defaultValue="SLIK PIS" />
+                <Input placeholder="Nom/Raison sociale" />
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -85,7 +82,7 @@ export default function ClientDetails() {
                   <label className="block text-sm font-medium mb-1">
                     pièce d'identité
                   </label>
-                  <Select defaultValue="CIN">
+                  <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
@@ -99,7 +96,7 @@ export default function ClientDetails() {
                   <label className="block text-sm font-medium mb-1">
                     N° de la pièce
                   </label>
-                  <Input />
+                  <Input placeholder="Numéro" />
                 </div>
               </div>
 
@@ -108,7 +105,7 @@ export default function ClientDetails() {
                   N° de NIF
                 </label>
                 <div className="relative">
-                  <Input defaultValue="4235345 343445 4543524" />
+                  <Input placeholder="Numéro NIF" />
                   <Button
                     variant="ghost"
                     size="icon"
@@ -123,7 +120,7 @@ export default function ClientDetails() {
                 <label className="block text-sm font-medium mb-1">
                   Adresse
                 </label>
-                <Input defaultValue="08 DJNENE EL MALIK HYDRA ALGER 08 DJNENE EL MALIK HYDRA ALGER" />
+                <Input placeholder="Adresse complète" />
               </div>
             </div>
 
@@ -133,7 +130,7 @@ export default function ClientDetails() {
                   IOB associé
                 </label>
                 <div className="flex gap-4">
-                  <Select defaultValue="I005">
+                  <Select>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="IOB" />
                     </SelectTrigger>
@@ -142,7 +139,7 @@ export default function ClientDetails() {
                       <SelectItem value="I006">(I006)</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Input defaultValue="INVEST MARKET" className="flex-1" />
+                  <Input placeholder="Nom IOB" className="flex-1" />
                 </div>
               </div>
 
@@ -150,7 +147,7 @@ export default function ClientDetails() {
                 <label className="block text-sm font-medium mb-1">
                   Forme juridique
                 </label>
-                <Input defaultValue="SPA" />
+                <Input placeholder="SPA, SARL, etc." />
               </div>
 
               <div className="mb-4">
@@ -158,7 +155,7 @@ export default function ClientDetails() {
                   Délivré le
                 </label>
                 <div className="relative">
-                  <Input />
+                  <Input placeholder="Date" />
                   <Button
                     variant="ghost"
                     size="icon"
@@ -173,7 +170,7 @@ export default function ClientDetails() {
                 <label className="block text-sm font-medium mb-1">
                   N° de Registre
                 </label>
-                <Input defaultValue="RC 423RC 4235345" />
+                <Input placeholder="Numéro de registre" />
               </div>
 
               <div className="mb-4">
@@ -181,7 +178,7 @@ export default function ClientDetails() {
                   N° de Téléphone
                 </label>
                 <div className="relative">
-                  <Input defaultValue="045 45656 7547" />
+                  <Input placeholder="Numéro de téléphone" />
                 </div>
               </div>
             </div>
@@ -197,13 +194,13 @@ export default function ClientDetails() {
                     <label className="block text-sm font-medium mb-1">
                       N° du compte Espèce
                     </label>
-                    <Input defaultValue="4235345 343445 4543524" />
+                    <Input placeholder="Numéro du compte espèce" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Agence
                     </label>
-                    <Select defaultValue="176">
+                    <Select>
                       <SelectTrigger>
                         <SelectValue placeholder="Agence" />
                       </SelectTrigger>
@@ -215,13 +212,13 @@ export default function ClientDetails() {
                   </div>
                 </div>
                 <div className="mb-4">
-                  <Input defaultValue="Birkhsadem" />
+                  <Input placeholder="Nom de l'agence" />
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">
                     Commission
                   </label>
-                  <Input defaultValue="" />
+                  <Input placeholder="Commission" />
                 </div>
               </div>
 
@@ -231,13 +228,13 @@ export default function ClientDetails() {
                     <label className="block text-sm font-medium mb-1">
                       N° du compte Titre
                     </label>
-                    <Input defaultValue="4235345 343445 4543524" />
+                    <Input placeholder="Numéro du compte titre" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Agence
                     </label>
-                    <Select defaultValue="176">
+                    <Select>
                       <SelectTrigger>
                         <SelectValue placeholder="Agence" />
                       </SelectTrigger>
@@ -249,16 +246,16 @@ export default function ClientDetails() {
                   </div>
                 </div>
                 <div className="mb-4">
-                  <Input defaultValue="Birkhsadem" />
+                  <Input placeholder="Nom de l'agence" />
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">
                       Commission
                     </label>
-                    <Select defaultValue="Action">
+                    <Select>
                       <SelectTrigger>
-                        <SelectValue placeholder="Commission" />
+                        <SelectValue placeholder="Type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Action">Action</SelectItem>
@@ -284,14 +281,14 @@ export default function ClientDetails() {
                     <label className="block text-sm font-medium mb-1">
                       &nbsp;
                     </label>
-                    <Input defaultValue="1%" />
+                    <Input placeholder="%" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Users Section */}
+          {/* Users Section - Empty table for creation */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Utilisateurs affecté</h2>
             <div className="overflow-x-auto">
@@ -308,67 +305,13 @@ export default function ClientDetails() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell>sagi</TableCell>
-                    <TableCell>salim</TableCell>
-                    <TableCell>DG</TableCell>
-                    <TableCell className="text-green-500">
-                      validateur 2
-                    </TableCell>
-                    <TableCell>SLIK PIS</TableCell>
-                    <TableCell>Admin</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        ⋮
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>gadh</TableCell>
-                    <TableCell>mohamed</TableCell>
-                    <TableCell>DFC</TableCell>
-                    <TableCell className="text-amber-500">
-                      validateur1
-                    </TableCell>
-                    <TableCell>SLIK PIS</TableCell>
-                    <TableCell>Mbre</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        ⋮
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>slmi</TableCell>
-                    <TableCell>kadour</TableCell>
-                    <TableCell>Négociateur</TableCell>
-                    <TableCell>Initiateur</TableCell>
-                    <TableCell>SLIK PIS</TableCell>
-                    <TableCell>Mbre</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        ⋮
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Hamid</TableCell>
-                    <TableCell>Mokrane</TableCell>
-                    <TableCell>Négociateur</TableCell>
-                    <TableCell className="text-gray-500">
-                      Consultation
-                    </TableCell>
-                    <TableCell>SLIK PIS</TableCell>
-                    <TableCell>Mbre</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        ⋮
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  {/* Empty table - will be populated after client creation */}
                 </TableBody>
               </Table>
             </div>
+            <Button variant="outline" className="mt-4">
+              + Ajouter un utilisateur
+            </Button>
           </div>
 
           {/* Footer Actions */}

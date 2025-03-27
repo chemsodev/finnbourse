@@ -803,6 +803,7 @@ export const LIST_LISTED_COMPANIES = `
       capitalisationboursiere
       contact
       siteofficiel
+      extrafields
     }
   }
 `;

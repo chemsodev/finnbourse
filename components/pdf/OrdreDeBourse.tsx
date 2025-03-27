@@ -405,7 +405,7 @@ const OrdreDeBourse = ({ order, userData }: OrdreDeBourseProps) => {
                 fontFamily: "Helvetica-Bold",
               }}
             >
-              SARL FinnBourse
+              SARL Finnetude
             </Text>
             <Text style={{ fontSize: 8, marginLeft: 2 }}>
               au capital social de 100.000.000 DZD

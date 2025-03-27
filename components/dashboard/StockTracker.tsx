@@ -322,6 +322,7 @@ export function StockTracker() {
                     axisLine={false}
                     tickMargin={8}
                     tickCount={3}
+                    domain={["dataMin", "auto"]}
                   />
                   <ChartTooltip
                     cursor={false}

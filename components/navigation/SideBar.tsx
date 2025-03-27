@@ -140,7 +140,7 @@ const SideBar = async () => {
             <div className="capitalize text-xs">{t("parametres")}</div>
           </Link>
         )}
-        {userRole !== 0 && (
+        {userRole === 1 && (
           <NavbarLink
             link={{
               href: "/statistiques",

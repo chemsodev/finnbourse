@@ -34,9 +34,7 @@ import { useForm } from "react-hook-form";
 export default function ProgrammerPaiementDividende() {
   const [dates, setDates] = useState({
     dateExecution: undefined,
-    dateOperation: undefined,
     dateValeurPaiement: undefined,
-    dateArrete: undefined,
   });
 
   const form = useForm({
@@ -45,8 +43,6 @@ export default function ProgrammerPaiementDividende() {
       referenceost: "",
       evenement: "",
       descriptionOst: "",
-      typeOst: "",
-      titrePrincipalField: "",
       prixUnitaireNet: "",
       commentaire: "",
     },
@@ -62,6 +58,19 @@ export default function ProgrammerPaiementDividende() {
   const onSubmit = (data: any) => {
     console.log({ ...data, ...dates });
   };
+
+  const algerianSecurities = [
+    "Sonatrach Bonds",
+    "Air Algérie",
+    "Sonelgaz",
+    "Cevital",
+    "Groupe ETRHB",
+    "Société Générale Algérie",
+    "BDL (Banque de Développement Local)",
+    "CNEP-Banque",
+    "BNA (Banque Nationale d'Algérie)",
+    "Saidal",
+  ];
 
   return (
     <div className="container mx-auto py-10 px-4 max-w-5xl">
@@ -84,13 +93,23 @@ export default function ProgrammerPaiementDividende() {
                     <FormLabel className="text-gray-700">
                       Sélection du titre principal
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
+                          <SelectValue placeholder="Sélectionner un titre" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {algerianSecurities.map((security) => (
+                          <SelectItem key={security} value={security}>
+                            {security}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormItem>
                 )}
               />
@@ -101,23 +120,15 @@ export default function ProgrammerPaiementDividende() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Référence de OST
+                      Référence d'OST
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder="" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="option1">Option 1</SelectItem>
-                        <SelectItem value="option2">Option 2</SelectItem>
-                        <SelectItem value="option3">Option 3</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input
+                        placeholder=""
+                        {...field}
+                        className="border-gray-300 focus:border-blue-500"
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -166,31 +177,6 @@ export default function ProgrammerPaiementDividende() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="typeOst"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">Type d'OST</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder="" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="type1">Type 1</SelectItem>
-                        <SelectItem value="type2">Type 2</SelectItem>
-                        <SelectItem value="type3">Type 3</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-
               <FormItem>
                 <FormLabel className="text-gray-700">
                   Date d'exécution
@@ -220,43 +206,6 @@ export default function ProgrammerPaiementDividende() {
                       selected={dates.dateExecution}
                       onSelect={(date) =>
                         handleDateChange("dateExecution", date)
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-
-              {/* Row 3 */}
-              <FormItem>
-                <FormLabel className="text-gray-700">
-                  Date d'Opération
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                          !dates.dateOperation && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateOperation ? (
-                          format(dates.dateOperation, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dates.dateOperation}
-                      onSelect={(date) =>
-                        handleDateChange("dateOperation", date)
                       }
                       initialFocus
                     />
@@ -300,79 +249,22 @@ export default function ProgrammerPaiementDividende() {
                 </Popover>
               </FormItem>
 
-              <FormItem>
-                <FormLabel className="text-gray-700">Date d'arrêté</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                          !dates.dateArrete && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateArrete ? (
-                          format(dates.dateArrete, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dates.dateArrete}
-                      onSelect={(date) => handleDateChange("dateArrete", date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-
               {/* Row 4 */}
-              <FormField
-                control={form.control}
-                name="titrePrincipalField"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      Titre Principal
-                    </FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input
-                          placeholder=""
-                          {...field}
-                          className="border-gray-300 focus:border-blue-500 pr-10"
-                        />
-                      </FormControl>
-                      <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-                    </div>
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="prixUnitaireNet"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Prix Unitaire Net
+                      Montant unitaire Net
                     </FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input
-                          placeholder=""
-                          {...field}
-                          className="border-gray-300 focus:border-blue-500 pr-10"
-                        />
-                      </FormControl>
-                      <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
-                    </div>
+                    <FormControl>
+                      <Input
+                        placeholder=""
+                        {...field}
+                        className="border-gray-300 focus:border-blue-500"
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />

@@ -44,7 +44,7 @@ export default function EmissionForm() {
     <Card className="border-0 shadow-sm bg-white">
       <CardHeader className="pb-2 border-b">
         <CardTitle className="text-3xl font-bold text-secondary mb-4">
-          Emission
+          Émission
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
@@ -65,7 +65,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="issuer" className="font-medium">
-                Issuer:
+                Émetteur:
               </Label>
               <Input
                 id="issuer"
@@ -79,7 +79,7 @@ export default function EmissionForm() {
             {/* Row 2 */}
             <div className="space-y-2">
               <Label htmlFor="centralizingAgency" className="font-medium">
-                Centralizing Agency:
+                Agence Centralisatrice:
               </Label>
               <Input
                 id="centralizingAgency"
@@ -91,7 +91,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="viewAccountNumber" className="font-medium">
-                View Account Number:
+                Numéro de Compte:
               </Label>
               <Input
                 id="viewAccountNumber"
@@ -105,7 +105,7 @@ export default function EmissionForm() {
             {/* Row 3 */}
             <div className="space-y-2">
               <Label htmlFor="typeOfBroadcast" className="font-medium">
-                Type of Broadcast:
+                Type de Diffusion:
               </Label>
               <Input
                 id="typeOfBroadcast"
@@ -117,7 +117,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="issueAmount" className="font-medium">
-                Issue Amount:
+                Montant d'Émission:
               </Label>
               <Input
                 id="issueAmount"
@@ -131,7 +131,7 @@ export default function EmissionForm() {
             {/* Row 4 */}
             <div className="space-y-2">
               <Label htmlFor="issueDate" className="font-medium">
-                Issue Date:
+                Date d'Émission:
               </Label>
               <Input
                 id="issueDate"
@@ -144,7 +144,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="dueDate" className="font-medium">
-                Due Date:
+                Date d'Échéance:
               </Label>
               <Input
                 id="dueDate"
@@ -159,7 +159,7 @@ export default function EmissionForm() {
             {/* Row 5 */}
             <div className="space-y-2">
               <Label htmlFor="duration" className="font-medium">
-                Duration:
+                Durée:
               </Label>
               <Input
                 id="duration"
@@ -171,7 +171,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="cosobApproval" className="font-medium">
-                COSOB Approval:
+                Approbation COSOB:
               </Label>
               <Input
                 id="cosobApproval"
@@ -185,7 +185,7 @@ export default function EmissionForm() {
             {/* Row 6 */}
             <div className="space-y-2">
               <Label htmlFor="leader" className="font-medium">
-                Leader:
+                Chef de File:
               </Label>
               <Input
                 id="leader"
@@ -197,7 +197,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="coLead" className="font-medium">
-                Co-Lead:
+                Co-Chef de File:
               </Label>
               <Input
                 id="coLead"
@@ -211,7 +211,7 @@ export default function EmissionForm() {
             {/* Row 7 */}
             <div className="space-y-2">
               <Label htmlFor="memberNo01" className="font-medium">
-                Member No.01:
+                Membre N°01:
               </Label>
               <Input
                 id="memberNo01"
@@ -223,7 +223,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="memberNo02" className="font-medium">
-                Member No.02:
+                Membre N°02:
               </Label>
               <Input
                 id="memberNo02"
@@ -237,7 +237,7 @@ export default function EmissionForm() {
             {/* Row 8 */}
             <div className="space-y-2">
               <Label htmlFor="memberNo03" className="font-medium">
-                Member No.03:
+                Membre N°03:
               </Label>
               <Input
                 id="memberNo03"
@@ -249,7 +249,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="memberNo04" className="font-medium">
-                Member No.04:
+                Membre N°04:
               </Label>
               <Input
                 id="memberNo04"
@@ -266,7 +266,7 @@ export default function EmissionForm() {
               type="submit"
               className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
             >
-              Submit
+              Soumettre
             </button>
           </div>
         </form>

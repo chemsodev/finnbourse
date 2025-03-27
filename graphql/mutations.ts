@@ -26,14 +26,8 @@ export const CREATE_LISTED_COMPANY = `
       }
     ) {
       id
-      nom
-      secteuractivite
-      capitalisationboursiere
-      siteofficiel 
-      contact
-      extrafields 
+    }
   }
-}
 `;
 
 export const UPDATE_ORDER_PAYED_WITH_CARD = `
@@ -425,12 +419,6 @@ export const UPDATE_LISTED_COMPANY = `
       }
     ) {
       id
-      nom
-      secteuractivite
-      capitalisationboursiere
-      siteofficiel 
-      contact
-      extrafields
     }
   }
 `;

@@ -195,7 +195,6 @@ export default function ClientDashboard() {
                   Adresse
                 </TableHead>
                 <TableHead className="text-white font-medium">Status</TableHead>
-                <TableHead className="text-white font-medium w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -221,9 +220,6 @@ export default function ClientDashboard() {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <ClientActions />
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -231,65 +227,5 @@ export default function ClientDashboard() {
         </div>
       </div>
     </div>
-  );
-}
-
-function ClientActions() {
-  return (
-    <Dialog>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DialogTrigger asChild>
-            <DropdownMenuItem>Voir</DropdownMenuItem>
-          </DialogTrigger>
-          <DropdownMenuItem>Modifier</DropdownMenuItem>
-          <DropdownMenuItem>Valider</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Éditer le client</DialogTitle>
-          <DialogDescription>
-            Modifiez les informations du client ici. Cliquez sur enregistrer
-            lorsque vous avez terminé.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="name" className="text-right">
-              Nom
-            </label>
-            <Input id="name" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="type" className="text-right">
-              Type
-            </label>
-            <Input id="type" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="account" className="text-right">
-              N° de compte
-            </label>
-            <Input id="account" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="address" className="text-right">
-              Adresse
-            </label>
-            <Input id="address" className="col-span-3" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit">Enregistrer</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }

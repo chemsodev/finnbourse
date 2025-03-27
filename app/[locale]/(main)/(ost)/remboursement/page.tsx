@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -22,6 +22,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -31,13 +38,21 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 
+const algerianSecurities = [
+  { value: "SAIDAL", label: "SAIDAL" },
+  { value: "ALLIANCE", label: "ALLIANCE ASSURANCES" },
+  { value: "BIOPHARM", label: "BIOPHARM" },
+  { value: "AUR", label: "AUR" },
+  { value: "DAHLI", label: "DAHLI" },
+];
+
 export default function OperationsForm() {
   const [dates, setDates] = useState({
     dateExecution: undefined,
-    dateOperation: undefined,
     dateValeurPaiement: undefined,
-    dateArrete: undefined,
   });
+
+  const [open, setOpen] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -45,8 +60,6 @@ export default function OperationsForm() {
       referenceOst: "",
       evenement: "primaire-secondaire",
       descriptionOst: "",
-      typeOst: "",
-      titrePrincipalField: "",
       prixUnitaireNet: "",
       commentaire: "",
     },
@@ -68,7 +81,7 @@ export default function OperationsForm() {
       <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
         <div className="flex justify-between items-center mb-8 pb-8 border-b">
           <h1 className="text-3xl font-bold text-secondary">
-            programmer un Paiement Droit de garde
+            Programmer un Remboursement
           </h1>
         </div>
         <Form {...form}>
@@ -80,25 +93,57 @@ export default function OperationsForm() {
                   control={form.control}
                   name="titrePrincipal"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel className="text-gray-700">
                         Selection du titre principal
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-gray-50 border-gray-200">
-                            <SelectValue placeholder="" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="option1">Option 1</SelectItem>
-                          <SelectItem value="option2">Option 2</SelectItem>
-                          <SelectItem value="option3">Option 3</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={open}
+                              className="justify-between bg-gray-50 border-gray-200"
+                            >
+                              {field.value
+                                ? algerianSecurities.find(
+                                    (security) => security.value === field.value
+                                  )?.label
+                                : "Sélectionner un titre..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0">
+                          <Command>
+                            <CommandInput placeholder="Rechercher un titre..." />
+                            <CommandEmpty>Aucun titre trouvé.</CommandEmpty>
+                            <CommandGroup>
+                              {algerianSecurities.map((security) => (
+                                <CommandItem
+                                  key={security.value}
+                                  value={security.value}
+                                  onSelect={(value) => {
+                                    form.setValue("titrePrincipal", value);
+                                    setOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === security.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {security.label}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </FormItem>
                   )}
                 />
@@ -113,21 +158,13 @@ export default function OperationsForm() {
                       <FormLabel className="text-gray-700">
                         Reference de l'OST
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-gray-50 border-gray-200">
-                            <SelectValue placeholder="" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="option1">Option 1</SelectItem>
-                          <SelectItem value="option2">Option 2</SelectItem>
-                          <SelectItem value="option3">Option 3</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          placeholder=""
+                          {...field}
+                          className="bg-gray-50 border-gray-200"
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -187,27 +224,19 @@ export default function OperationsForm() {
               <div>
                 <FormField
                   control={form.control}
-                  name="typeOst"
+                  name="prixUnitaireNet"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700">
-                        Type d'OST
+                        Montant unitaire Net
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-gray-50 border-gray-200">
-                            <SelectValue placeholder="" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="type1">Type 1</SelectItem>
-                          <SelectItem value="type2">Type 2</SelectItem>
-                          <SelectItem value="type3">Type 3</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          placeholder=""
+                          {...field}
+                          className="bg-gray-50 border-gray-200"
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -215,7 +244,7 @@ export default function OperationsForm() {
             </div>
 
             {/* Date Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormItem>
                 <FormLabel className="text-gray-700">
                   Date d'exécution
@@ -245,42 +274,6 @@ export default function OperationsForm() {
                       selected={dates.dateExecution}
                       onSelect={(date) =>
                         handleDateChange("dateExecution", date)
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-
-              <FormItem>
-                <FormLabel className="text-gray-700">
-                  Date d'operation
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal bg-gray-50 border-gray-200",
-                          !dates.dateOperation && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateOperation ? (
-                          format(dates.dateOperation, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dates.dateOperation}
-                      onSelect={(date) =>
-                        handleDateChange("dateOperation", date)
                       }
                       initialFocus
                     />
@@ -323,79 +316,6 @@ export default function OperationsForm() {
                   </PopoverContent>
                 </Popover>
               </FormItem>
-
-              <FormItem>
-                <FormLabel className="text-gray-700">Date d'arrêté</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal bg-gray-50 border-gray-200",
-                          !dates.dateArrete && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateArrete ? (
-                          format(dates.dateArrete, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dates.dateArrete}
-                      onSelect={(date) => handleDateChange("dateArrete", date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-            </div>
-
-            {/* Titre and Prix Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="titrePrincipalField"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      Titre Principal
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="bg-gray-50 border-gray-200"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="prixUnitaireNet"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      Prix unitaire Net
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="bg-gray-50 border-gray-200"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
             </div>
 
             {/* Commentaire */}

@@ -37,6 +37,7 @@ const formSchema = z.object({
   capitalisationBoursiere: z
     .string()
     .min(1, "Capitalisation boursière est obligatoire"),
+  notice: z.string().optional(),
 });
 
 type Company = {
@@ -44,12 +45,19 @@ type Company = {
   nom: string;
   secteuractivite: string;
   capitalisationboursiere: string;
-  contact: {
-    email: string;
-    phone: string;
-    address: string;
-  };
+  contact:
+    | {
+        email: string | { set?: string };
+        phone: string | { set?: string };
+        address: string | { set?: string };
+      }
+    | string;
   siteofficiel: string;
+  extrafields?:
+    | {
+        notice?: string | { set?: string };
+      }
+    | string;
 };
 
 interface EditCompanyDialogProps {
@@ -69,6 +77,51 @@ const EditCompanyDialog = ({
   const { toast } = useToast();
   const t = useTranslations("EditCompany");
 
+  // Helper function to extract contact field values safely
+  const getContactValue = (field: string): string => {
+    if (!company.contact) return "";
+
+    if (typeof company.contact === "string") {
+      try {
+        const parsed = JSON.parse(company.contact);
+        return parsed[field] || "";
+      } catch {
+        return "";
+      }
+    }
+
+    const contactField = company.contact[field as keyof typeof company.contact];
+    if (!contactField) return "";
+
+    if (typeof contactField === "string") return contactField;
+    if (typeof contactField === "object" && "set" in contactField)
+      return contactField.set || "";
+
+    return "";
+  };
+
+  // Helper function to extract notice value safely
+  const getNoticeValue = (): string => {
+    if (!company.extrafields) return "";
+
+    if (typeof company.extrafields === "string") {
+      try {
+        const parsed = JSON.parse(company.extrafields);
+        return parsed.notice || "";
+      } catch {
+        return "";
+      }
+    }
+
+    const notice = company.extrafields.notice;
+    if (!notice) return "";
+
+    if (typeof notice === "string") return notice;
+    if (typeof notice === "object" && "set" in notice) return notice.set || "";
+
+    return "";
+  };
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,10 +129,11 @@ const EditCompanyDialog = ({
       nom: company.nom,
       secteurActivite: company.secteuractivite,
       siteOfficiel: company.siteofficiel,
-      email: company.contact.email,
-      phone: company.contact.phone,
-      adresse: company.contact.address,
+      email: getContactValue("email"),
+      phone: getContactValue("phone"),
+      adresse: getContactValue("address"),
       capitalisationBoursiere: company.capitalisationboursiere,
+      notice: getNoticeValue(),
     },
   });
 
@@ -87,7 +141,7 @@ const EditCompanyDialog = ({
     console.log("👽👽👽👽👽", values);
     setLoading(true);
     try {
-      await fetchGraphQL<string>(UPDATE_LISTED_COMPANY, {
+      await fetchGraphQL<{ id: string }>(UPDATE_LISTED_COMPANY, {
         id: values.id,
         nom: values.nom,
         secteuractivite: values.secteurActivite,
@@ -96,6 +150,7 @@ const EditCompanyDialog = ({
         email: values.email,
         address: values.adresse,
         capitalisationboursiere: values.capitalisationBoursiere,
+        notice: values.notice || "",
       });
 
       toast({
@@ -259,6 +314,25 @@ const EditCompanyDialog = ({
                         <Input
                           placeholder={t("enterAddress")}
                           type="text"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-12">
+                <FormField
+                  control={form.control}
+                  name="notice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("notice")}</FormLabel>
+                      <FormControl>
+                        <textarea
+                          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          placeholder={t("enterNotice")}
                           {...field}
                         />
                       </FormControl>

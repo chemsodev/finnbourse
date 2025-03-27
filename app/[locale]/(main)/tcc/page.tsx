@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Search, Plus, Pencil, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,17 @@ export default function TeneurComptesTitresPage() {
   const [selectedHolder, setSelectedHolder] =
     useState<AccountHolderData | null>(null);
 
+  // Filter to only show Algerian account holders
+  const filteredHolders = useMemo(() => {
+    return accountHolderData.filter(
+      (holder) =>
+        holder.pays === "Algérie" &&
+        (holder.libelle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          holder.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          holder.ville.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [searchQuery]);
+
   const handleAddClick = () => {
     setDialogMode("add");
     setSelectedHolder(null);
@@ -92,7 +103,7 @@ export default function TeneurComptesTitresPage() {
     <div className="shadow-inner rounded-md bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold my-4 text-secondary">
-          Teneur de Compte-Titres
+          Teneur de Compte-Conservateur
         </h1>
         <header className="flex items-center justify-end mb-8">
           <div className="flex items-center gap-4">
@@ -130,9 +141,6 @@ export default function TeneurComptesTitresPage() {
                   Ville
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Pays
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
                   Type
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
@@ -147,7 +155,7 @@ export default function TeneurComptesTitresPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {accountHolderData.map((holder, index) => (
+              {filteredHolders.map((holder, index) => (
                 <TableRow
                   key={holder.id}
                   className={index % 2 === 1 ? "bg-gray-100" : ""}
@@ -155,7 +163,6 @@ export default function TeneurComptesTitresPage() {
                   <TableCell>{holder.code}</TableCell>
                   <TableCell>{holder.libelle}</TableCell>
                   <TableCell>{holder.ville}</TableCell>
-                  <TableCell>{holder.pays}</TableCell>
                   <TableCell>{holder.typeCompte || "-"}</TableCell>
                   <TableCell>{holder.statut}</TableCell>
                   <TableCell>{holder.telephone}</TableCell>
@@ -202,8 +209,8 @@ export default function TeneurComptesTitresPage() {
             <DialogHeader>
               <DialogTitle>
                 {dialogMode === "add"
-                  ? "Ajouter un nouveau teneur de compte-titres"
-                  : "Modifier le teneur de compte-titres"}
+                  ? "Ajouter un nouveau teneur de compte-Conservateur"
+                  : "Modifier le teneur de compte-Conservateur"}
               </DialogTitle>
             </DialogHeader>
             <form className="space-y-6 py-4" onSubmit={handleSave}>
@@ -643,7 +650,7 @@ export default function TeneurComptesTitresPage() {
               <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
               <AlertDialogDescription>
                 Cette action ne peut pas être annulée. Cela supprimera
-                définitivement le teneur de compte-titres
+                définitivement le teneur de compte-Conservateur
                 <span className="font-medium"> {selectedHolder?.libelle}</span>.
               </AlertDialogDescription>
             </AlertDialogHeader>

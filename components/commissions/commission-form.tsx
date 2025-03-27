@@ -33,24 +33,24 @@ interface CommissionFormProps {
 }
 
 const formSchema = z.object({
-  loiDeFrais: z.string().min(1, "Loi de frais is required"),
-  marche: z.string().min(1, "Marché is required"),
-  libelle: z.string().min(1, "Libellé is required"),
-  code: z.string().min(1, "Code is required"),
+  loiDeFrais: z.string().min(1, "Loi de frais obligatoire"),
+  marche: z.string().min(1, "Marché obligatoire"),
+  libelle: z.string().min(1, "Libellé obligatoire"),
+  code: z.string().min(1, "Code obligatoire"),
   commissionType: z.enum(["fixed", "percentage", "tiered"]),
-  commissionValue: z.number().min(0, "Value must be positive"),
+  commissionValue: z.number().min(0, "La valeur doit être positive"),
   tva: z
     .number()
-    .min(0, "TVA must be positive")
-    .max(100, "TVA cannot exceed 100%"),
+    .min(0, "La TVA doit être positive")
+    .max(100, "La TVA ne peut pas dépasser 100%"),
   irgType1: z
     .number()
-    .min(0, "IRG must be positive")
-    .max(100, "IRG cannot exceed 100%"),
+    .min(0, "L'IRG doit être positif")
+    .max(100, "L'IRG ne peut pas dépasser 100%"),
   irgType2: z
     .number()
-    .min(0, "IRG must be positive")
-    .max(100, "IRG cannot exceed 100%"),
+    .min(0, "L'IRG doit être positif")
+    .max(100, "L'IRG ne peut pas dépasser 100%"),
 });
 
 export default function CommissionForm({
@@ -158,7 +158,7 @@ export default function CommissionForm({
               <FormItem>
                 <FormLabel>Loi de frais</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter loi de frais" {...field} />
+                  <Input placeholder="Saisir loi de frais" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -172,7 +172,7 @@ export default function CommissionForm({
               <FormItem>
                 <FormLabel>Marché</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter marché" {...field} />
+                  <Input placeholder="Saisir marché" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -186,7 +186,7 @@ export default function CommissionForm({
               <FormItem>
                 <FormLabel>Libellé</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter libellé" {...field} />
+                  <Input placeholder="Saisir libellé" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -200,7 +200,7 @@ export default function CommissionForm({
               <FormItem>
                 <FormLabel>Code</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter code" {...field} />
+                  <Input placeholder="Saisir code" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -212,7 +212,7 @@ export default function CommissionForm({
             name="commissionType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Commission Type</FormLabel>
+                <FormLabel>Type de commission</FormLabel>
                 <Select
                   onValueChange={(value) => {
                     field.onChange(value);
@@ -222,13 +222,13 @@ export default function CommissionForm({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select commission type" />
+                      <SelectValue placeholder="Sélectionner le type de commission" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="fixed">Fixed Amount</SelectItem>
-                    <SelectItem value="percentage">Percentage</SelectItem>
-                    <SelectItem value="tiered">Tiered</SelectItem>
+                    <SelectItem value="fixed">Montant fixe</SelectItem>
+                    <SelectItem value="percentage">Pourcentage</SelectItem>
+                    <SelectItem value="tiered">Par palier</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -243,7 +243,9 @@ export default function CommissionForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {commissionType === "fixed" ? "Fixed Amount" : "Percentage"}
+                    {commissionType === "fixed"
+                      ? "Montant fixe"
+                      : "Pourcentage"}
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -251,8 +253,8 @@ export default function CommissionForm({
                         type="number"
                         placeholder={
                           commissionType === "fixed"
-                            ? "Enter amount"
-                            : "Enter percentage"
+                            ? "Saisir montant"
+                            : "Saisir pourcentage"
                         }
                         {...field}
                         onChange={(e) =>
@@ -268,8 +270,8 @@ export default function CommissionForm({
                   </FormControl>
                   <FormDescription>
                     {commissionType === "fixed"
-                      ? "Enter the fixed amount for this commission"
-                      : "Enter the percentage rate for this commission"}
+                      ? "Saisissez le montant fixe pour cette commission"
+                      : "Saisissez le taux de pourcentage pour cette commission"}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -287,7 +289,7 @@ export default function CommissionForm({
                   <div className="relative">
                     <Input
                       type="number"
-                      placeholder="Enter TVA percentage"
+                      placeholder="Saisir pourcentage TVA"
                       {...field}
                       onChange={(e) =>
                         field.onChange(Number.parseFloat(e.target.value) || 0)
@@ -313,7 +315,7 @@ export default function CommissionForm({
                   <div className="relative">
                     <Input
                       type="number"
-                      placeholder="Enter IRG Type 1 percentage"
+                      placeholder="Saisir pourcentage IRG Type 1"
                       {...field}
                       onChange={(e) =>
                         field.onChange(Number.parseFloat(e.target.value) || 0)
@@ -339,7 +341,7 @@ export default function CommissionForm({
                   <div className="relative">
                     <Input
                       type="number"
-                      placeholder="Enter IRG Type 2 percentage"
+                      placeholder="Saisir pourcentage IRG Type 2"
                       {...field}
                       onChange={(e) =>
                         field.onChange(Number.parseFloat(e.target.value) || 0)
@@ -360,20 +362,21 @@ export default function CommissionForm({
           <Card>
             <CardContent className="pt-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Tiered Commission Rates</h3>
+                <h3 className="text-lg font-medium">Commission par paliers</h3>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={handleAddTier}
                 >
-                  <Plus className="mr-2 h-4 w-4" /> Add Tier
+                  <Plus className="mr-2 h-4 w-4" /> Ajouter palier
                 </Button>
               </div>
 
               {tiers.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
-                  No tiers defined. Click "Add Tier" to create your first tier.
+                  Aucun palier défini. Cliquez sur "Ajouter palier" pour créer
+                  votre premier palier.
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -383,36 +386,36 @@ export default function CommissionForm({
                       className="grid grid-cols-12 gap-4 items-center"
                     >
                       <div className="col-span-4">
-                        <FormLabel className="text-xs">Min Amount</FormLabel>
+                        <FormLabel className="text-xs">Montant min</FormLabel>
                         <Input
                           type="number"
                           value={tier.minAmount || ""}
                           onChange={(e) =>
                             handleTierChange(index, "minAmount", e.target.value)
                           }
-                          placeholder="Min amount"
+                          placeholder="Montant min"
                         />
                       </div>
                       <div className="col-span-4">
-                        <FormLabel className="text-xs">Max Amount</FormLabel>
+                        <FormLabel className="text-xs">Montant max</FormLabel>
                         <Input
                           type="number"
                           value={tier.maxAmount === null ? "" : tier.maxAmount}
                           onChange={(e) =>
                             handleTierChange(index, "maxAmount", e.target.value)
                           }
-                          placeholder="No limit"
+                          placeholder="Sans limite"
                         />
                       </div>
                       <div className="col-span-3">
-                        <FormLabel className="text-xs">Rate (%)</FormLabel>
+                        <FormLabel className="text-xs">Taux (%)</FormLabel>
                         <Input
                           type="number"
                           value={tier.value}
                           onChange={(e) =>
                             handleTierChange(index, "value", e.target.value)
                           }
-                          placeholder="Rate %"
+                          placeholder="Taux %"
                         />
                       </div>
                       <div className="col-span-1 pt-6">
@@ -435,9 +438,9 @@ export default function CommissionForm({
 
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            Annuler
           </Button>
-          <Button type="submit">Save Commission</Button>
+          <Button type="submit">Enregistrer</Button>
         </div>
       </form>
     </Form>

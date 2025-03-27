@@ -16,7 +16,7 @@
     "session": "Session",
     "utilisateurs": "Utilisateurs",
     "operationsSurTitres": "Opérations sur titres",
-    "annonceOst": "Annonce OST",
+    "annonceOst": "Création d'annonce OST",
     "paiementDividendes": "Paiement de dividendes",
     "paiementDroitsDeGarde": "Paiement de droits de garde",
     "paiementCoupon": "Paiement de coupon",
@@ -735,6 +735,7 @@
   },
   "AjoutSocieteEmettrice": {
     "notice": "Notice",
+    "enterNotice": "Entrez les informations de notice",
     "ajouterUneSocieteEmettrice": "Ajouter une société",
     "entrerLeNom": "Entrer le nom",
     "entrerLeSecteurDActivite": "Entrer le secteur d'activité",
@@ -1056,8 +1057,10 @@
   },
   "UserFilter": {
     "investisseur": "Investisseur",
-    "negociateur": "Negociateur",
-    "manager": "Manager"
+    "IOB": "IOB",
+    "manager": "Manager",
+    "TTC": "TTC",
+    "Agence": "Agence"
   },
   "ClientDrawer": {
     "plus": "Plus",
@@ -1251,6 +1254,7 @@
     "emetteurs": "Emetteurs",
     "teneurDeCompte": "Teneur de compte",
     "emissions": "Emissions",
+    "commissions": "Commissions",
     "gestionDesTitres": "Gestion des Titres",
     "action": "Action",
     "obligation": "Obligation",
@@ -1500,6 +1504,8 @@
     "enterPhone": "Entrez le numéro de téléphone",
     "address": "Adresse",
     "enterAddress": "Entrez l'adresse",
+    "notice": "Notice",
+    "enterNotice": "Entrez les informations de notice",
     "cancel": "Annuler",
     "save": "Enregistrer les Modifications",
     "loading": "Enregistrement",

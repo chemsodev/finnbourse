@@ -45,14 +45,14 @@ const page = async () => {
           <SettingMessages />
           <SettingsQst />
           <AddNews />
-          <Link
+          {/*  <Link
             href="/commissions"
             className="border py-4 px-8 shadow hover:shadow-inner hover:bg-gray-50 rounded-md capitalize md:text-xl mt-10 font-bold flex justify-start gap-4 items-center"
           >
             <HandCoins size={35} />
             <div className="flex w-full justify-center">Commissions</div>
           </Link>
-          {/*<Separator className="my-8" />
+       <Separator className="my-8" />
 
           <div>
             <div className=" text-xl font-semibold text-primary">

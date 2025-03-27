@@ -15,7 +15,7 @@ const DashWidgetTcc = ({
   icon = <Shuffle className="w-8" />,
 }: DashWidgetTccProps) => {
   return (
-    <div className="h-24 text-white bg-primary w-72 rounded-md flex justify-between p-2">
+    <div className="h-24 text-white bg-primary w-full  rounded-md flex justify-between p-2">
       <div className="flex flex-col text-sm justify-between gap-1">
         <div>{title}</div>
         <div className="text-lg font-bold">{value}</div>

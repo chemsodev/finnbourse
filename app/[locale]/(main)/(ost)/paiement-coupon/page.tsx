@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarIcon, PlusIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -22,22 +22,37 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useForm } from "react-hook-form";
+
+const algerianSecurities = [
+  { value: "SAIDAL", label: "SAIDAL" },
+  { value: "ALLIANCE", label: "ALLIANCE ASSURANCES" },
+  { value: "BIOPHARM", label: "BIOPHARM" },
+  { value: "AUR", label: "AUR" },
+  { value: "DAHLI", label: "DAHLI" },
+];
 
 export default function PaiementDuCoupon() {
   const [dates, setDates] = useState({
     dateExecution: undefined,
-    dateOperation: undefined,
     dateValeurPaiement: undefined,
-    dateArrete: undefined,
   });
+
+  const [open, setOpen] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -45,8 +60,6 @@ export default function PaiementDuCoupon() {
       referenceost: "",
       evenement: "",
       descriptionOst: "",
-      typeOst: "",
-      titrePrincipalField: "",
       prixUnitaireNet: "",
       commentaire: "",
     },
@@ -80,17 +93,57 @@ export default function PaiementDuCoupon() {
                 control={form.control}
                 name="titrePrincipal"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel className="text-gray-700">
                       Sélection du titre principal
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="justify-between"
+                          >
+                            {field.value
+                              ? algerianSecurities.find(
+                                  (security) => security.value === field.value
+                                )?.label
+                              : "Sélectionner un titre..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <Command>
+                          <CommandInput placeholder="Rechercher un titre..." />
+                          <CommandEmpty>Aucun titre trouvé.</CommandEmpty>
+                          <CommandGroup>
+                            {algerianSecurities.map((security) => (
+                              <CommandItem
+                                key={security.value}
+                                value={security.value}
+                                onSelect={(value) => {
+                                  form.setValue("titrePrincipal", value);
+                                  setOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value === security.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {security.label}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </FormItem>
                 )}
               />
@@ -101,23 +154,15 @@ export default function PaiementDuCoupon() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Référence de OST
+                      Référence d'OST
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder="" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="option1">Option 1</SelectItem>
-                        <SelectItem value="option2">Option 2</SelectItem>
-                        <SelectItem value="option3">Option 3</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input
+                        placeholder=""
+                        {...field}
+                        className="border-gray-300 focus:border-blue-500"
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -168,10 +213,12 @@ export default function PaiementDuCoupon() {
 
               <FormField
                 control={form.control}
-                name="typeOst"
+                name="prixUnitaireNet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Type d'OST</FormLabel>
+                    <FormLabel className="text-gray-700">
+                      Montant unitaire Net
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder=""
@@ -182,7 +229,10 @@ export default function PaiementDuCoupon() {
                   </FormItem>
                 )}
               />
+            </div>
 
+            {/* Date Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormItem>
                 <FormLabel className="text-gray-700">
                   Date d'exécution
@@ -212,43 +262,6 @@ export default function PaiementDuCoupon() {
                       selected={dates.dateExecution}
                       onSelect={(date) =>
                         handleDateChange("dateExecution", date)
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-
-              {/* Row 3 */}
-              <FormItem>
-                <FormLabel className="text-gray-700">
-                  Date d'operation
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                          !dates.dateOperation && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateOperation ? (
-                          format(dates.dateOperation, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dates.dateOperation}
-                      onSelect={(date) =>
-                        handleDateChange("dateOperation", date)
                       }
                       initialFocus
                     />
@@ -291,77 +304,6 @@ export default function PaiementDuCoupon() {
                   </PopoverContent>
                 </Popover>
               </FormItem>
-
-              <FormItem>
-                <FormLabel className="text-gray-700">Date d'arrêté</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                          !dates.dateArrete && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateArrete ? (
-                          format(dates.dateArrete, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dates.dateArrete}
-                      onSelect={(date) => handleDateChange("dateArrete", date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-
-              {/* Row 4 */}
-              <FormField
-                control={form.control}
-                name="titrePrincipalField"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      Titre Principal
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="prixUnitaireNet"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      Prix unitaire Net
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
             </div>
 
             {/* Commentaire */}

@@ -236,3 +236,24 @@ export interface AccountData {
   compteBancaire: string;
   orderDeTu: string;
 }
+
+export interface OstAnnouncement {
+  id: string;
+  titrePrincipal: string;
+  evenement: string;
+  descriptionOst: string;
+  typeOst: string;
+  dateOperation: Date;
+  dateDebut: Date;
+  dateFin: Date;
+  dateRep: Date;
+  dateValeurPaiement: Date;
+  rappel: Date;
+  titrePrincipalField: string;
+  titreResultat: string;
+  actionAnc: string;
+  nelleAction: string;
+  montantUnitaire: string;
+  montantBrut: string;
+  commentaire: string;
+}

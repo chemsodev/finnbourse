@@ -29,7 +29,7 @@ export default function TeneurComptesTitresDetailsPage({
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Teneur de compte-titres non trouvé
+            Teneur de compte-Conservateur non trouvé
           </h1>
           <Button onClick={() => router.push("/tcc")}>Retour à la liste</Button>
         </div>
@@ -45,7 +45,7 @@ export default function TeneurComptesTitresDetailsPage({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => router.push("/teneur-compte-titres")}
+              onClick={() => router.push("/tcc")}
             >
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Retour</span>

@@ -69,11 +69,11 @@ export default function CommissionList({
 
   const formatCommissionValue = (commission: Commission) => {
     if (commission.commissionType === "fixed") {
-      return `${commission.commissionValue.toLocaleString()} (Fixed)`;
+      return `${commission.commissionValue.toLocaleString()} (Fixe)`;
     } else if (commission.commissionType === "percentage") {
       return `${commission.commissionValue}%`;
     } else {
-      return "Tiered";
+      return "Par palier";
     }
   };
 
@@ -83,7 +83,7 @@ export default function CommissionList({
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search commissions..."
+            placeholder="Rechercher des commissions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
@@ -112,7 +112,7 @@ export default function CommissionList({
                   colSpan={8}
                   className="text-center py-6 text-muted-foreground"
                 >
-                  No commissions found
+                  Aucune commission trouvée
                 </TableCell>
               </TableRow>
             ) : (
@@ -135,10 +135,10 @@ export default function CommissionList({
                       }
                     >
                       {commission.commissionType === "fixed"
-                        ? "Fixed"
+                        ? "Fixe"
                         : commission.commissionType === "percentage"
-                        ? "Percentage"
-                        : "Tiered"}
+                        ? "Pourcentage"
+                        : "Par palier"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -146,20 +146,20 @@ export default function CommissionList({
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
+                          <span className="sr-only">Ouvrir menu</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(commission)}>
                           <Edit className="mr-2 h-4 w-4" />
-                          Edit
+                          Modifier
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleDeleteClick(commission.id)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          Supprimer
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -174,10 +174,10 @@ export default function CommissionList({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this commission? This action
-              cannot be undone.
+              Êtes-vous sûr de vouloir supprimer cette commission ? Cette action
+              ne peut pas être annulée.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -185,10 +185,10 @@ export default function CommissionList({
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              Annuler
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+              Supprimer
             </Button>
           </DialogFooter>
         </DialogContent>
