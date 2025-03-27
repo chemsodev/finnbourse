@@ -246,9 +246,8 @@ const BulletinSubmitDialog = ({
                 >
                   <button
                     // disabled={!payedWithCard}
-                    className={`bg-primary text-white w-full py-2 rounded-md text-center flex gap-4 justify-center items-center ${
-                      !payedWithCard ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    //${!payedWithCard ? "opacity-50 cursor-not-allowed" : ""}
+                    className={`bg-primary text-white w-full py-2 rounded-md text-center flex gap-4 justify-center items-center `}
                     onClick={() => payedWithCard && setDialogPage(2)}
                   >
                     {t("telechargerBulletin")} <Download />
