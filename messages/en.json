@@ -992,8 +992,9 @@
     "entreprise": "Company",
     "particulier": "Individual",
     "investisseur": "Investor",
-    "negociateur": "Negotiator",
-    "manager": "Manager",
+    "IOB": "IOB",
+    "TCC": "TCC",
+    "agence": "Agency",
     "adresse": "Address",
     "dateDeNaissance": "Date of Birth",
     "codePostal": "Postal Code",
@@ -1040,7 +1041,6 @@
   "UserFilter": {
     "investisseur": "Investor",
     "IOB": "IOB",
-    "manager": "Manager",
     "TTC": "TTC",
     "Agence": "Agency"
   },

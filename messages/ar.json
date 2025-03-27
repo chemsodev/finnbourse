@@ -1002,9 +1002,12 @@
     "entreprise": "شركة",
     "particulier": "فرد",
     "investisseur": "مستثمر",
+    "IOB": "وسيط",
+    "TTC": "مكتب خبرة",
+    "agence": "وكالة",
+    "adresse": "العنوان",
     "negociateur": "متفاوض",
     "manager": "مدير",
-    "adresse": "العنوان",
     "dateDeNaissance": "تاريخ الميلاد",
     "codePostal": "الرمز البريدي",
     "titre": "عنوان",
@@ -1046,8 +1049,7 @@
   "UserFilter": {
     "investisseur": "مستثمر",
     "IOB": "وسيط",
-    "manager": "مدير",
-    "TTC": "مكتب الخبرة",
+    "TTC": "مكتب خبرة",
     "Agence": "وكالة"
   },
   "ClientDrawer": {

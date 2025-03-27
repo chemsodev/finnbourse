@@ -37,15 +37,7 @@ const UserFilter = () => {
       >
         {t("IOB")}
       </button>
-      <button
-        className={`p-1 px-2 cursor-pointer ${
-          userType === "3" &&
-          "flex items-center bg-primary text-white rounded-md shadow"
-        }`}
-        onClick={() => handleUserTypeChange("3")}
-      >
-        {t("manager")}
-      </button>
+
       <button
         className={`p-1 px-2 cursor-pointer ${
           userType === "4" &&

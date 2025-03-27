@@ -53,11 +53,13 @@ const ChangerRoleDialog = ({
   const roleName =
     role === 0
       ? "visiteur"
-      : 1
+      : role === 1
       ? "investisseur"
       : role === 2
-      ? "negociateur"
-      : "manager";
+      ? "IOB"
+      : role === 3
+      ? "TCC"
+      : "agence";
   const t = useTranslations("clients");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -79,10 +81,12 @@ const ChangerRoleDialog = ({
             ? 0
             : values.role === "investisseur"
             ? 1
-            : values.role === "negociateur"
+            : values.role === "IOB"
             ? 2
-            : values.role === "manager"
+            : values.role === "TCC"
             ? 3
+            : values.role === "agence"
+            ? 4
             : 0,
         userid: userId,
       });
@@ -148,12 +152,9 @@ const ChangerRoleDialog = ({
                           <SelectItem value="investisseur">
                             {t("investisseur")}
                           </SelectItem>
-                          <SelectItem value="negociateur">
-                            {t("negociateur")}
-                          </SelectItem>
-                          <SelectItem value="manager">
-                            {t("manager")}
-                          </SelectItem>
+                          <SelectItem value="IOB">{t("IOB")}</SelectItem>
+                          <SelectItem value="TCC">{t("TCC")}</SelectItem>
+                          <SelectItem value="agence">{t("agence")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>{t("descriptionRole")}</FormDescription>

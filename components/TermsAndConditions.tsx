@@ -40,13 +40,12 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
         </label>
       </div>
       <div className="w-full">
-        <div className="relative" style={{ zIndex: 9999 }}>
-          <ReCAPTCHA
-            sitekey="6LdCkPMqAAAAADafbnY4TpPH_F18Jt5GzimBw8KY"
-            onChange={handleCaptchaChange}
-            className="w-full pointer-events-auto"
-          />
-        </div>
+        <ReCAPTCHA
+          sitekey="6LdCkPMqAAAAADafbnY4TpPH_F18Jt5GzimBw8KY"
+          onChange={handleCaptchaChange}
+          size="normal"
+          className="w-full"
+        />
       </div>
     </form>
   );

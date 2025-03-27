@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BsThreeDotsVertical } from "react-icons/bs";
+
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import MyPagination from "@/components/navigation/MyPagination";
@@ -14,13 +14,15 @@ import TabSearch from "@/components/TabSearch";
 import { LIST_NEGOCIATEURS_QUERY, LIST_USERS_QUERY } from "@/graphql/queries";
 import { User } from "@/lib/interfaces";
 import UserFilter from "@/components/UserFilter";
+import StatusFilter from "@/components/StatusFilter";
 import UsersTableSkeleton from "@/components/UsersTableSkeleton";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
-import Dropdown from "@/components/DropdownAddUsers";
+
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 import { Suspense } from "react";
 import LogOutAgent from "@/components/LogOutAgent";
+import RateLimitReached from "@/components/RateLimitReached";
 
 interface NegociateurGraphQLResponse {
   listUsers: {
@@ -102,26 +104,10 @@ const page = async (props: {
     t("type"),
     t("email"),
     t("telephone"),
-    ...(roleIdFilter === 1 ? [t("negociateur")] : []),
-    "Validation",
-    "Statut",
+    ...(roleIdFilter === 1 ? [t("IOB")] : []),
   ];
-  // Fonction pour générer des valeurs aléatoires
-  const getRandomValidation = () => {
-    const validations = [
-      "validateur 2",
-      "validateur 1",
-      "Initiateur",
-      "Consultation",
-    ];
-    return validations[Math.floor(Math.random() * validations.length)];
-  };
-
-  const getRandomStatus = () => {
-    return Math.random() > 0.5 ? "Verified" : "Not Verified"; // 50% chance pour chaque statut
-  };
   return (
-    <div className="motion-preset-focus motion-duration-2000">
+    <div className=" motion-preset-focus motion-duration-2000">
       <div className="mt-3"></div>
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 ">
         <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right capitalize">
@@ -135,9 +121,9 @@ const page = async (props: {
         <div className="flex justify-center gap-4 items-center md:justify-between flex-col md:flex-row">
           {userRole === 3 && <UserFilter />}
           {status === 2 && <div className="md:w-72"></div>}
-          <div className="w-full md:w-fit flex items-center gap-2">
+          <StatusFilter />
+          <div className="w-full md:w-fit">
             <TabSearch />
-            <Dropdown />
           </div>
         </div>
         <div className="my-4">
@@ -156,62 +142,36 @@ const page = async (props: {
               </TableHeader>
               <TableBody>
                 {users &&
-                  users?.listUsers.map((user: User) => {
-                    const randomValidation = getRandomValidation();
-                    const randomStatus = getRandomStatus();
-                    return (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.fullname}</TableCell>
-                        <TableCell className={"capitalize"}>
-                          {user.followsbusiness
-                            ? t("entreprise")
-                            : t("particulier")}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.phonenumber}</TableCell>
-                        {user.roleid === 1 && (
-                          <TableCell>
-                            {
-                              negociateurs?.listUsers.find(
-                                (negociateur) =>
-                                  negociateur.id === user.negotiatorid
-                              )?.fullname
-                            }
-                          </TableCell>
-                        )}
+                  users?.listUsers.map((user: User) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.fullname}</TableCell>
+                      <TableCell className={"capitalize"}>
+                        {user.followsbusiness
+                          ? t("entreprise")
+                          : t("particulier")}
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.phonenumber}</TableCell>
+                      {user.roleid === 1 && (
                         <TableCell>
-                          <span
-                            className={
-                              randomValidation === "validateur 2"
-                                ? "text-[#4BB543]"
-                                : randomValidation === "validateur 1"
-                                ? "text-[#F6A300]"
-                                : ""
-                            }
-                          >
-                            {randomValidation}
-                          </span>
+                          {
+                            negociateurs?.listUsers.find(
+                              (negociateur) =>
+                                negociateur.id === user.negotiatorid
+                            )?.fullname
+                          }
                         </TableCell>
-                        <TableCell>
-                          <span
-                            className={
-                              randomStatus === "Verified"
-                                ? "text-[#15383E] px-2 py-1 rounded-md bg-[rgba(34,120,68,0.14)] min-w-[100px]" // Définit une largeur minimale de 100px
-                                : "text-[#D71F1F] px-2 py-1 rounded-md bg-[rgba(215,31,31,0.11)] min-w-[100px]"
-                            }
-                          >
-                            {randomStatus}
-                          </span>
-                        </TableCell>
-
-                        <TableCell className="flex justify-center items-center">
-                          <Link href={`/utilisateurs/${user.id}`}>
-                            <BsThreeDotsVertical />
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                      )}
+                      <TableCell className="flex justify-center items-center">
+                        <Link
+                          href={`/utilisateurs/${user.id}`}
+                          className=" rounded-md bg-primary py-1 px-4 text-white hover:bg-primary/80 shadow"
+                        >
+                          {t("plus")}
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 {users?.listUsers.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
