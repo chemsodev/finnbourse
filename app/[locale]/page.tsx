@@ -35,25 +35,25 @@ export default async function Home() {
           <div className="flex justify-center md:justify-between mt-3 gap-4 flex-col md:flex-row">
             <DashWidgetTcc
               title={t("clientType")}
-              value="12,347"
+              value="12347"
               subtitle={t("physical")}
               icon={<Users className="w-8" />}
             />
             <DashWidgetTcc
               title={t("shareCount")}
-              value="5,033"
+              value="5033"
               subtitle={t("shares")}
               icon={<Database className="w-8" />}
             />
             <DashWidgetTcc
               title={t("portfolioValue")}
-              value="250,347"
+              value="250347"
               subtitle=""
               icon={<LineChart className="w-8" />}
             />
             <DashWidgetTcc
               title={t("accountCount")}
-              value="12,347"
+              value="12347"
               subtitle="IOB"
               icon={<BadgePercent className="w-8" />}
             />

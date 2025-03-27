@@ -1,3 +1,4 @@
+import { formatNumber, formatPrice } from "@/lib/utils";
 import { Shuffle } from "lucide-react";
 import React from "react";
 
@@ -18,7 +19,7 @@ const DashWidgetTcc = ({
     <div className="h-24 text-white bg-primary w-full  rounded-md flex justify-between p-2">
       <div className="flex flex-col text-sm justify-between gap-1">
         <div>{title}</div>
-        <div className="text-lg font-bold">{value}</div>
+        <div className="text-lg font-bold">{formatNumber(value)}</div>
         <div className="text-xs text-white">{subtitle}</div>
       </div>
       <div className="flex flex-col gap-10 items-end justify-end">
