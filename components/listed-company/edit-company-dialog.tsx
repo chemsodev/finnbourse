@@ -138,7 +138,6 @@ const EditCompanyDialog = ({
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log("👽👽👽👽👽", values);
     setLoading(true);
     try {
       await fetchGraphQL<{ id: string }>(UPDATE_LISTED_COMPANY, {

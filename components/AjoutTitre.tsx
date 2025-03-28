@@ -112,7 +112,7 @@ const formSchema = z.object({
 const AjoutTitre = ({ type }: { type: string }) => {
   const { toast } = useToast();
   const locale = useLocale();
-  const t = useTranslations("AjoutTitre");
+  const t = useTranslations("AjouterUnTitre");
   const [selectedMode, setSelectedMode] = useState("");
   const [companies, setCompanies] = useState<GetListedCompaniesResponse | null>(
     null

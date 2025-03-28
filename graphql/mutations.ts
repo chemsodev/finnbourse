@@ -414,7 +414,7 @@ export const UPDATE_LISTED_COMPANY = `
           address: { set: $address }
         },
         extrafields: {
-          notice: { set: $notice }
+          notice: $notice
         }
       }
     ) {

@@ -147,7 +147,7 @@ const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
         ) : (
           <>
             <SheetHeader>
-              <SheetTitle className="bg-gray-50 shadow-inner text-center text-primary font-bold text-2xl uppercase py-10 flex gap-4 justify-center items-center ">
+              <SheetTitle className="bg-gray-50/80 text-center text-primary font-bold text-2xl uppercase py-10 flex gap-4 justify-center items-center ">
                 <div>{data?.issuer}</div>
               </SheetTitle>
               <SheetDescription className="flex flex-col overflow-y-scroll h-[84%]">

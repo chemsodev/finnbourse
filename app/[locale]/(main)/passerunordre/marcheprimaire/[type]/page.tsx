@@ -52,7 +52,7 @@ const page = async (props: { params: { type: string } }) => {
         </div>
       )}
 
-      <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50 shadow-inner">
+      <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
         <TitresTable type={type} />
       </div>
     </div>

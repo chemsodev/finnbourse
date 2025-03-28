@@ -18,7 +18,7 @@ const UserFilter = () => {
   };
 
   return (
-    <div className="flex bg-gray-50 shadow-inner rounded-md p-1 text-sm items-center text-gray-300 font-medium capitalize">
+    <div className="flex bg-gray-50/80 rounded-md p-1 text-sm items-center text-gray-300 font-medium capitalize">
       <button
         className={`py-1 px-2 cursor-pointer ${
           userType === "1" &&

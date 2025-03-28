@@ -112,11 +112,18 @@ export default function CompaniesPage() {
           // If extrafields has a notice with a 'set' property
           if (
             typeof company.extrafields === "object" &&
-            company.extrafields.notice?.set !== undefined
+            company.extrafields.notice
           ) {
-            company.extrafields = {
-              notice: company.extrafields.notice.set,
-            };
+            // Handle the case where notice is an object with 'set' property
+            if (
+              typeof company.extrafields.notice === "object" &&
+              company.extrafields.notice.set !== undefined
+            ) {
+              company.extrafields = {
+                notice: company.extrafields.notice.set,
+              };
+            }
+            // Notice is already a string, keep it as is
           }
           // If extrafields is a string (JSON), try to parse it
           else if (typeof company.extrafields === "string") {
@@ -287,11 +294,14 @@ export default function CompaniesPage() {
                                   ? company.extrafields.notice.set
                                   : company.extrafields.notice}
                               </span>
-                              {(typeof company.extrafields.notice === "string"
-                                ? company.extrafields.notice.length > 30
-                                : company.extrafields.notice.set &&
+                              {((typeof company.extrafields.notice ===
+                                "string" &&
+                                company.extrafields.notice.length > 30) ||
+                                (typeof company.extrafields.notice ===
+                                  "object" &&
+                                  company.extrafields.notice.set &&
                                   company.extrafields.notice.set.length >
-                                    30) && (
+                                    30)) && (
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
