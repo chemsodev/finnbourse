@@ -139,7 +139,7 @@ export default function AgencePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {agencyData.map((agency, index) => (
+              {agencyData?.map((agency, index) => (
                 <TableRow
                   key={agency.id}
                   className={index % 2 === 1 ? "bg-gray-100" : ""}

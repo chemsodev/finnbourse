@@ -166,7 +166,7 @@ export function ListeOperationsSurTitres() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAnnouncements.map((announcement) => (
+                {filteredAnnouncements?.map((announcement) => (
                   <TableRow key={announcement.id}>
                     <TableCell className="font-medium">
                       {announcement.titrePrincipal}

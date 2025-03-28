@@ -128,7 +128,7 @@ const FinalisationInscriptionParticulier = () => {
         createOrUpdateManyData(
           items: [
             ${Object.entries(values)
-              .map(
+              ?.map(
                 ([name, data]) => `
               {
                 createArgs: {
@@ -738,7 +738,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {copieIDFiles &&
                               copieIDFiles.length > 0 &&
-                              copieIDFiles.map((file, i) => (
+                              copieIDFiles?.map((file, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -787,7 +787,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {residenceFiles &&
                               residenceFiles.length > 0 &&
-                              residenceFiles.map((residenceFiles, i) => (
+                              residenceFiles?.map((residenceFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -838,7 +838,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {ribFiles &&
                               ribFiles.length > 0 &&
-                              ribFiles.map((ribFiles, i) => (
+                              ribFiles?.map((ribFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -892,7 +892,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {attestationFiles &&
                               attestationFiles.length > 0 &&
-                              attestationFiles.map((attestationFiles, i) => (
+                              attestationFiles?.map((attestationFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -943,7 +943,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {auppFiles &&
                               auppFiles.length > 0 &&
-                              auppFiles.map((auppFiles, i) => (
+                              auppFiles?.map((auppFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -993,7 +993,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {ctctFiles &&
                               ctctFiles.length > 0 &&
-                              ctctFiles.map((ctctFiles, i) => (
+                              ctctFiles?.map((ctctFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -1044,7 +1044,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {conventionCourtageFiles &&
                               conventionCourtageFiles.length > 0 &&
-                              conventionCourtageFiles.map(
+                              conventionCourtageFiles?.map(
                                 (conventionCourtageFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1096,7 +1096,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {acteNaissanceFiles &&
                               acteNaissanceFiles.length > 0 &&
-                              acteNaissanceFiles.map(
+                              acteNaissanceFiles?.map(
                                 (acteNaissanceFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1149,7 +1149,7 @@ const FinalisationInscriptionParticulier = () => {
                           <FileUploaderContent className="w-60">
                             {spacimenFiles &&
                               spacimenFiles.length > 0 &&
-                              spacimenFiles.map((spacimenFiles, i) => (
+                              spacimenFiles?.map((spacimenFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">

@@ -194,7 +194,7 @@ export default function OperationsSurTitres() {
                         <CommandList>
                           <CommandEmpty>Aucun titre trouvé.</CommandEmpty>
                           <CommandGroup>
-                            {algeriansecurities.map((security) => (
+                            {algeriansecurities?.map((security) => (
                               <CommandItem
                                 key={security.value}
                                 value={security.value}

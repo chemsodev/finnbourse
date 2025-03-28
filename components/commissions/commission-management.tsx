@@ -80,7 +80,7 @@ export default function CommissionManagement() {
     if (editingCommission) {
       // Update existing commission
       setCommissions(
-        commissions.map((c) => (c.id === commission.id ? commission : c))
+        commissions?.map((c) => (c.id === commission.id ? commission : c))
       );
     } else {
       // Add new commission

@@ -166,7 +166,7 @@ const OrdresTable = async ({
         </TableHeader>
         <TableBody>
           {orders?.listOrdersExtended &&
-            orders?.listOrdersExtended.map((order: Order) => (
+            orders?.listOrdersExtended?.map((order: Order) => (
               <TableRow key={order.id}>
                 {pageType !== "dashboard" &&
                   (userRole === 2 || userRole === 3 ? (

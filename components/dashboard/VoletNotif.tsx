@@ -216,7 +216,7 @@ const VoletNotif = () => {
               </div>
             ) : (
               <div className="flex flex-col overflow-scroll h-fit z-50 text-xs">
-                {notifications.map((notification) => (
+                {notifications?.map((notification) => (
                   <button
                     onClick={() => {
                       setNotifsPage("oneNotif");

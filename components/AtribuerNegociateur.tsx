@@ -207,7 +207,7 @@ const AtribuerNegociateur = ({
                                     {t("noNegociateurFound")}
                                   </CommandEmpty>
                                   <CommandGroup>
-                                    {negociateurs?.listUsers.map(
+                                    {negociateurs?.listUsers?.map(
                                       (negociateur: {
                                         id: string;
                                         fullname: string;

@@ -79,7 +79,7 @@ export default function CompaniesPage() {
       }
 
       // Process the companies data to ensure contact and extrafields are properly formatted
-      const processedCompanies = result.listListedCompanies.map((company) => {
+      const processedCompanies = result.listListedCompanies?.map((company) => {
         // Process contact object
         if (company.contact) {
           // If the contact field contains nested 'set' properties
@@ -233,7 +233,7 @@ export default function CompaniesPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredCompanies.map((company) => (
+                    filteredCompanies?.map((company) => (
                       <TableRow key={company.id}>
                         <TableCell className="font-medium">
                           {company.nom}

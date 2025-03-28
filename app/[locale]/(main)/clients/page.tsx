@@ -198,7 +198,7 @@ export default function ClientDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients.map((client) => (
+              {clients?.map((client) => (
                 <TableRow key={client.id} className="hover:bg-slate-50">
                   <TableCell className="font-medium">{client.name}</TableCell>
                   <TableCell>{client.type}</TableCell>

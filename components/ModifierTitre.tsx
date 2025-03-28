@@ -250,7 +250,7 @@ const ModifierTitre = ({
 
     const fieldUpdates = Object.entries(changedFields)
       .filter(([key]) => key !== "id")
-      .map(([key, value]) => {
+      ?.map(([key, value]) => {
         if (typeof value === "string") {
           return `${key}: { set: "${value}" }`;
         }

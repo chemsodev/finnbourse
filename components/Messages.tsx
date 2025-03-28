@@ -54,7 +54,7 @@ const Messages = () => {
         </div>
       ) : (
         <div className="border rounded-md flex flex-col ">
-          {messages?.listSupportqas.map((message: SupportQuestion) => (
+          {messages?.listSupportqas?.map((message: SupportQuestion) => (
             <Message
               key={message.id}
               question={message.question}

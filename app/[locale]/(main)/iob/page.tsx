@@ -213,7 +213,7 @@ export default function BankCodePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bankData.map((bank, index) => (
+              {bankData?.map((bank, index) => (
                 <TableRow
                   key={bank.id}
                   className={index % 2 === 1 ? "bg-gray-100" : ""}

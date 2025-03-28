@@ -103,7 +103,7 @@ export default function ProgrammerPaiementDividende() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {algerianSecurities.map((security) => (
+                        {algerianSecurities?.map((security) => (
                           <SelectItem key={security} value={security}>
                             {security}
                           </SelectItem>

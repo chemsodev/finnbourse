@@ -116,7 +116,7 @@ export default function CommissionList({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCommissions.map((commission) => (
+              filteredCommissions?.map((commission) => (
                 <TableRow key={commission.id}>
                   <TableCell className="font-medium">
                     {commission.code}

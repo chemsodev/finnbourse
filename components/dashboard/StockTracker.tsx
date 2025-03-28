@@ -108,10 +108,10 @@ export function StockTracker() {
         result.listStocks[1].marketmetadata.cours
       ) {
         const allDates = [
-          ...result.listStocks[0].marketmetadata.cours.map(
+          ...result.listStocks[0].marketmetadata.cours?.map(
             (item: any) => new Date(item.date)
           ),
-          ...result.listStocks[1].marketmetadata.cours.map(
+          ...result.listStocks[1].marketmetadata.cours?.map(
             (item: any) => new Date(item.date)
           ),
         ];
@@ -381,7 +381,7 @@ export function StockTracker() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {snpData.map((t: any) => (
+                              {snpData?.map((t: any) => (
                                 <SelectItem value={t.id}>{t.issuer}</SelectItem>
                               ))}
                             </SelectContent>
@@ -408,7 +408,7 @@ export function StockTracker() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {snpData.map((t: any) => (
+                              {snpData?.map((t: any) => (
                                 <SelectItem value={t.id}>{t.issuer}</SelectItem>
                               ))}
                             </SelectContent>

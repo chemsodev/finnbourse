@@ -83,7 +83,7 @@ const SettingsQst = () => {
             </DialogTitle>
             <DialogDescription>
               <div className="border rounded-md flex flex-col ">
-                {questions?.listSupportqas.map((question) => (
+                {questions?.listSupportqas?.map((question) => (
                   <Question
                     question={question.question}
                     answer={question.answer}

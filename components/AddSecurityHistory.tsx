@@ -239,7 +239,7 @@ const AddSecurityHistory = ({ securityId }: { securityId: string }) => {
                           <FileUploaderContent>
                             {securiyHisoryFile &&
                               securiyHisoryFile.length > 0 &&
-                              securiyHisoryFile.map((file, i) => (
+                              securiyHisoryFile?.map((file, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className=" overflow-hidden max-w-80">

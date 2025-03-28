@@ -87,7 +87,7 @@ const page = async (props: {
             </TableHeader>
             <TableBody>
               {MyPortfolio &&
-                MyPortfolio?.listPortfolios.map((asset: any) => (
+                MyPortfolio?.listPortfolios?.map((asset: any) => (
                   <TableRow key={asset.id}>
                     <TableCell>{asset.issuer}</TableCell>
                     <TableCell>

@@ -14,7 +14,7 @@ const FloatingShapes = () => {
   // Precompute random positions for consistency
   const shapePositions = useMemo(
     () =>
-      shapes.map(() => ({
+      shapes?.map(() => ({
         top: `${Math.random() * 100}%`,
         left: `${Math.random() * 100}%`,
       })),
@@ -28,7 +28,7 @@ const FloatingShapes = () => {
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
-      {shapes.map((shape, index) => (
+      {shapes?.map((shape, index) => (
         <motion.div
           key={shape.id}
           className={`${shape.className} absolute z-0`}

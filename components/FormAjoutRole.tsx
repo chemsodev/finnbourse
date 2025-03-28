@@ -100,7 +100,7 @@ export function FormAjoutRole() {
                 <FormLabel className="text-base">{t("permissions")}</FormLabel>
                 <FormDescription>{t("permissionsDescription")}</FormDescription>
               </div>
-              {permissions.map((permission) => (
+              {permissions?.map((permission) => (
                 <FormField
                   key={permission.id}
                   control={form.control}

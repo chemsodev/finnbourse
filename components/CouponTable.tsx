@@ -37,7 +37,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {couponschedule.map((coupon) => (
+          {couponschedule?.map((coupon) => (
             <TableRow key={coupon.year}>
               <TableCell className="font-medium">{coupon.year}</TableCell>
               <TableCell>{coupon.rate} %</TableCell>

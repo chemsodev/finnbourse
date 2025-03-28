@@ -42,7 +42,7 @@ export function GraphHistoriqueOrdres(titre: { titre: string }) {
   const tStatus = useTranslations("status");
 
   const processData = (rawData: any[]): OrderStatusData[] => {
-    return rawData.map((item) => ({
+    return rawData?.map((item) => ({
       statusKey: item.orderstatus,
       status: getStatusLabel(item.orderstatus),
       count: item._count.id,

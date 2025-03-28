@@ -67,7 +67,7 @@ export function GraphPerfPortefeille(titre: { titre: string }) {
       });
     });
 
-    return Array.from(securityMap.values()).map((security) => ({
+    return Array.from(securityMap.values())?.map((security) => ({
       security: security.security,
       faceValue: security.faceValue,
       validatedPrice: security.validatedPrice / security.count,

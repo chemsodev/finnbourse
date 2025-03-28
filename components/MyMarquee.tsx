@@ -22,7 +22,7 @@ const MyMarquee = () => {
           { type: "action" }
         );
 
-        const stocks = data.listStocks.map((stock: any) => {
+        const stocks = data.listStocks?.map((stock: any) => {
           const marketMetadata = stock.marketmetadata;
           let variation = "0.00%";
           if (
@@ -60,7 +60,7 @@ const MyMarquee = () => {
       pauseOnHover
       className="bg-primary text-white rounded-md py-2 px-4"
     >
-      {stocksWithVariation.map((stock) => (
+      {stocksWithVariation?.map((stock) => (
         <MarqueeObject
           key={stock.id}
           stock={stock}

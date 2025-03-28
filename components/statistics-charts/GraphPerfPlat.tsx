@@ -48,7 +48,7 @@ export function GraphPerfPlat(titre: { titre: string }) {
   const t = useTranslations("SecurityIssuers");
 
   const processData = (rawData: any[]): SecurityTransaction[] => {
-    return rawData.map((item) => ({
+    return rawData?.map((item) => ({
       issuer: item.securityissuer || "Unknown",
       totalValue: item._sum?.validatedprice || 0,
       totalQuantity: item._sum?.validatedquantity || 0,

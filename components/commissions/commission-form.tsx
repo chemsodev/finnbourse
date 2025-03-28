@@ -380,7 +380,7 @@ export default function CommissionForm({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {tiers.map((tier, index) => (
+                  {tiers?.map((tier, index) => (
                     <div
                       key={index}
                       className="grid grid-cols-12 gap-4 items-center"

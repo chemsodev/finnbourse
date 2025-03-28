@@ -113,7 +113,7 @@ export default function ProgrammerPaiementDroitGarde() {
                           <CommandInput placeholder="Rechercher un titre..." />
                           <CommandEmpty>Aucun titre trouvé.</CommandEmpty>
                           <CommandGroup>
-                            {algerianSecurities.map((security) => (
+                            {algerianSecurities?.map((security) => (
                               <CommandItem
                                 key={security.value}
                                 value={security.value}

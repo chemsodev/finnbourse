@@ -132,7 +132,7 @@ export default function AdminDocuments() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {documents.map((doc, index) => (
+              {documents?.map((doc, index) => (
                 <TableRow
                   key={doc.id}
                   className={

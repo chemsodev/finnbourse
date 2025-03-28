@@ -320,7 +320,7 @@ const page = async (props: {
           {(userDetails?.findUniqueUser.followsbusiness
             ? entrepriseUserData
             : particulierUserData
-          ).map((item: any, index: any) => (
+          )?.map((item: any, index: any) => (
             <div key={index} className="flex gap-4 items-baseline">
               <div className="text-gray-400 capitalize">{item.label} :</div>
               <div className="text-primary font-semibold capitalize">
@@ -339,7 +339,7 @@ const page = async (props: {
             {(userDetails?.findUniqueUser.followsbusiness
               ? UserEntrepriseFiles
               : UserParticulierFiles
-            ).map((file, index) => (
+            )?.map((file, index) => (
               <ul key={index} className="w-60">
                 <PdfDialog fileKey={file.file}>{file.title}</PdfDialog>
               </ul>

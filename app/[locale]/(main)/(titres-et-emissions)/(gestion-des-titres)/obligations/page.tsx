@@ -200,7 +200,7 @@ export default function AjoutObligationPage() {
         facevalue: Number.parseFloat(values.nominal || "0"),
         repaymentmethod: values.modeRemboursement,
         yieldrate: Number.parseFloat(values.tauxRendement || "0"),
-        couponschedule: fields.map((field) => ({
+        couponschedule: fields?.map((field) => ({
           year: field.year,
           rate: field.rate,
         })),
@@ -1054,7 +1054,7 @@ export default function AjoutObligationPage() {
               <h3 className="text-lg font-medium">
                 {t("form.couponSchedule")}
               </h3>
-              {fields.map((field, index) => (
+              {fields?.map((field, index) => (
                 <div key={field.id} className="flex gap-4 items-end">
                   <FormField
                     control={form.control}

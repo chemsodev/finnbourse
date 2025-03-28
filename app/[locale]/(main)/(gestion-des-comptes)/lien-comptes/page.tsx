@@ -268,7 +268,7 @@ export default function AccountLinking() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {accounts.map((account, index) => (
+                {accounts?.map((account, index) => (
                   <TableRow
                     key={account.id}
                     className={

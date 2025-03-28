@@ -100,7 +100,7 @@ const SettingMessages = () => {
                   </div>
                 ) : (
                   <div className="border rounded-md flex flex-col">
-                    {messages?.listSupportqas.map(
+                    {messages?.listSupportqas?.map(
                       (message: SupportQuestion) => (
                         <Message
                           key={message.id}

@@ -352,7 +352,7 @@ const FormPassationOrdreMarchePrimaire = ({
                             <CommandEmpty>{t("noTitle")}</CommandEmpty>
                             <CommandGroup>
                               {securityData &&
-                                securityData.map((t: any) => (
+                                securityData?.map((t: any) => (
                                   <CommandItem
                                     key={t.id}
                                     value={t.name}

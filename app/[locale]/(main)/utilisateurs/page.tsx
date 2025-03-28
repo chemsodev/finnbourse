@@ -134,7 +134,7 @@ const page = async (props: {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {tableHeaders.map((header, index) => (
+                  {tableHeaders?.map((header, index) => (
                     <TableHead key={index}>{header}</TableHead>
                   ))}
                   <TableHead></TableHead>
@@ -142,7 +142,7 @@ const page = async (props: {
               </TableHeader>
               <TableBody>
                 {users &&
-                  users?.listUsers.map((user: User) => (
+                  users?.listUsers?.map((user: User) => (
                     <TableRow key={user.id}>
                       <TableCell>{user.fullname}</TableCell>
                       <TableCell className={"capitalize"}>

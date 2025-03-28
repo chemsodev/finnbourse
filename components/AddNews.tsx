@@ -58,7 +58,7 @@ const AddNews = () => {
           </DialogTitle>
           <DialogDescription>
             <div className="border rounded-md">
-              {news.map((article, index) => (
+              {news?.map((article, index) => (
                 <NewsEdit key={index} article={article} type="modification" />
               ))}
             </div>

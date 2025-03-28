@@ -685,7 +685,7 @@ const AjoutTitre = ({ type }: { type: string }) => {
                       type === "empruntobligataire") && (
                       <div className="flex flex-col gap-4">
                         <div className="font-medium">{t("couponSchedule")}</div>
-                        {fields.map((field, index) => (
+                        {fields?.map((field, index) => (
                           <div key={field.id} className="flex gap-4 items-end">
                             <FormField
                               control={form.control}

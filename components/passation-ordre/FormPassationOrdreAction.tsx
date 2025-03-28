@@ -362,7 +362,7 @@ const FormPassationOrdreAction = ({
                             <CommandEmpty>{t("noTitle")}</CommandEmpty>
                             <CommandGroup>
                               {stockData &&
-                                stockData.map((t: any) => (
+                                stockData?.map((t: any) => (
                                   <CommandItem
                                     key={t.id}
                                     value={t.name}

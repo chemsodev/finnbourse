@@ -155,7 +155,7 @@ const FinalisationInscriptionEntreprise = () => {
         createOrUpdateManyData(
           items: [
             ${Object.entries(values)
-              .map(
+              ?.map(
                 ([name, data]) => `
               {
                 createArgs: {
@@ -861,7 +861,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {registreCommerceFiles &&
                               registreCommerceFiles.length > 0 &&
-                              registreCommerceFiles.map((file, i) => (
+                              registreCommerceFiles?.map((file, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -914,7 +914,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {statutModificationFiles &&
                               statutModificationFiles.length > 0 &&
-                              statutModificationFiles.map((file, i) => (
+                              statutModificationFiles?.map((file, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -968,7 +968,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {identiteGerantFiles &&
                               identiteGerantFiles.length > 0 &&
-                              identiteGerantFiles.map(
+                              identiteGerantFiles?.map(
                                 (identiteGerantFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1022,7 +1022,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {identiteMandataireFiles &&
                               identiteMandataireFiles.length > 0 &&
-                              identiteMandataireFiles.map(
+                              identiteMandataireFiles?.map(
                                 (identiteMandataireFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1075,7 +1075,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {nifFiles &&
                               nifFiles.length > 0 &&
-                              nifFiles.map((nifFiles, i) => (
+                              nifFiles?.map((nifFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -1131,7 +1131,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {nisFiles &&
                               nisFiles.length > 0 &&
-                              nisFiles.map((nisFiles, i) => (
+                              nisFiles?.map((nisFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -1190,7 +1190,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {delegationSignatureFiles &&
                               delegationSignatureFiles.length > 0 &&
-                              delegationSignatureFiles.map(
+                              delegationSignatureFiles?.map(
                                 (delegationSignatureFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1242,7 +1242,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {specimenSignatureFiles &&
                               specimenSignatureFiles.length > 0 &&
-                              specimenSignatureFiles.map(
+                              specimenSignatureFiles?.map(
                                 (specimenSignatureFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1299,7 +1299,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {pvAssembleeFiles &&
                               pvAssembleeFiles.length > 0 &&
-                              pvAssembleeFiles.map((pvAssembleeFiles, i) => (
+                              pvAssembleeFiles?.map((pvAssembleeFiles, i) => (
                                 <FileUploaderItem key={i} index={i}>
                                   <Paperclip className="h-4 w-4 stroke-current" />
                                   <span className="overflow-hidden mr-8">
@@ -1352,7 +1352,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {attestationConservationFiles &&
                               attestationConservationFiles.length > 0 &&
-                              attestationConservationFiles.map(
+                              attestationConservationFiles?.map(
                                 (attestationConservationFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1409,7 +1409,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {attestationProtectionFiles &&
                               attestationProtectionFiles.length > 0 &&
-                              attestationProtectionFiles.map(
+                              attestationProtectionFiles?.map(
                                 (attestationProtectionFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1462,7 +1462,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {conventionCompteFiles &&
                               conventionCompteFiles.length > 0 &&
-                              conventionCompteFiles.map(
+                              conventionCompteFiles?.map(
                                 (conventionCompteFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />
@@ -1517,7 +1517,7 @@ const FinalisationInscriptionEntreprise = () => {
                           <FileUploaderContent className="w-60">
                             {conventionCourtageFiles &&
                               conventionCourtageFiles.length > 0 &&
-                              conventionCourtageFiles.map(
+                              conventionCourtageFiles?.map(
                                 (conventionCourtageFiles, i) => (
                                   <FileUploaderItem key={i} index={i}>
                                     <Paperclip className="h-4 w-4 stroke-current" />

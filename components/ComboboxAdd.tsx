@@ -65,7 +65,7 @@ export function ComboboxAdd({
                 <span>
                   {mode === "multiple" && Array.isArray(selected)
                     ? selected
-                        .map(
+                        ?.map(
                           (selectedValue: string) =>
                             options.find((item) => item.value === selectedValue)
                               ?.label
@@ -111,7 +111,7 @@ export function ComboboxAdd({
             <ScrollArea>
               <div className="max-h-80">
                 <CommandGroup>
-                  {options.map((option) => (
+                  {options?.map((option) => (
                     <CommandItem
                       key={option.label}
                       value={option.label}

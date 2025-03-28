@@ -42,7 +42,7 @@ export function GraphVueEnsembleTransactions(titre: { titre: string }) {
   const t = useTranslations("SecurityIssuers");
 
   const processData = (rawData: any[]): TransactionData[] => {
-    return rawData.map((item) => ({
+    return rawData?.map((item) => ({
       securityIssuer: item.securityissuer,
       totalPrice: item._sum.validatedprice || 0,
       totalQuantity: item._sum.validatedquantity || 0,
@@ -98,7 +98,7 @@ export function GraphVueEnsembleTransactions(titre: { titre: string }) {
                   <ChartTooltipContent>
                     <div className="flex flex-col gap-1">
                       <p className="font-medium">{label}</p>
-                      {payload.map((entry: any, index: number) => (
+                      {payload?.map((entry: any, index: number) => (
                         <div
                           key={`tooltip-${index}`}
                           className="flex items-center gap-2"

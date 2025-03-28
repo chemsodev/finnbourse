@@ -56,7 +56,7 @@ const DashNews: React.FC<DashNewsProps> = () => {
             {t("loading")}
           </div>
         ) : news && news.listNewsArticles.length > 0 ? (
-          news.listNewsArticles.map((news: NewsArticle) => (
+          news.listNewsArticles?.map((news: NewsArticle) => (
             <News key={news.id} title={news.title} content={news.content} />
           ))
         ) : (

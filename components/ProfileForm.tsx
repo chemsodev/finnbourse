@@ -198,7 +198,7 @@ export default function ProfileForm(props: {
           items: [
             ${Object.entries(data)
               .filter(([name]) => !excludedFields.includes(name))
-              .map(
+              ?.map(
                 ([name, data]) => `
               {
                 createArgs: {

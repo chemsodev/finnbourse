@@ -347,7 +347,7 @@ export function TitresTable({ type }: TitresTableProps) {
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              .map((column) => {
+              ?.map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -368,9 +368,9 @@ export function TitresTable({ type }: TitresTableProps) {
         <Suspense fallback={<TitresTableSkeleton />}>
           <Table className="bg-white rounded-md">
             <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
+              {table.getHeaderGroups()?.map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
+                  {headerGroup.headers?.map((header) => {
                     return (
                       <TableHead key={header.id}>
                         {header.isPlaceholder
@@ -387,12 +387,12 @@ export function TitresTable({ type }: TitresTableProps) {
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
+                table.getRowModel().rows?.map((row) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells()?.map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,

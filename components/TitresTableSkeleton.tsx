@@ -33,7 +33,7 @@ const TitresTableSkeleton = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from({ length: 8 }).map((_, index) => (
+            {Array.from({ length: 8 })?.map((_, index) => (
               <TableRow key={index}>
                 <TableCell className="font-semibold">
                   <Skeleton className="h-3" />

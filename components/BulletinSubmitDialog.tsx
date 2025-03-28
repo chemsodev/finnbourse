@@ -300,7 +300,7 @@ const BulletinSubmitDialog = ({
                             <FileUploaderContent>
                               {bulletinDeSouscriptionSigneFiles &&
                                 bulletinDeSouscriptionSigneFiles.length > 0 &&
-                                bulletinDeSouscriptionSigneFiles.map(
+                                bulletinDeSouscriptionSigneFiles?.map(
                                   (file, i) => (
                                     <FileUploaderItem key={i} index={i}>
                                       <Paperclip className="h-4 w-4 stroke-current" />

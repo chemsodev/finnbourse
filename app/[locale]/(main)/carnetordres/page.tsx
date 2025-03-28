@@ -40,7 +40,7 @@ const page = async (props: {
   }
 
   const data = orders?.listOrdersExtended || [];
-  const filteredData = data.map((order) => ({
+  const filteredData = data?.map((order) => ({
     id: order.id,
     ordertypes: order.ordertypes.toString(),
     direction: order.orderdirection == 1 ? "Achat" : "Vente",

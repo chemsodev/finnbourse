@@ -101,7 +101,7 @@ export function DashbpardPie() {
     );
   }
 
-  const dataWithColors = totalSecurities.map((item: any, index: number) => ({
+  const dataWithColors = totalSecurities?.map((item: any, index: number) => ({
     ...item._sum,
     ...item,
     fill: pastelColors[index % pastelColors.length],

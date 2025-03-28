@@ -54,7 +54,7 @@ export function GraphPerfNegociateurs({ titre }: { titre: string }) {
   const processPerformanceData = (rawData: any[]): NegotiatorPerformance[] => {
     if (!rawData) return [];
     return rawData
-      .map((item) => ({
+      ?.map((item) => ({
         negotiatorId: item.negotiatorid || "Unknown",
         totalValue: item._sum?.validatedprice ?? 0,
         totalQuantity: item._sum?.validatedquantity ?? 0,
@@ -85,7 +85,7 @@ export function GraphPerfNegociateurs({ titre }: { titre: string }) {
       });
 
       // Merge full names into performance data based on negotiatorId.
-      const mergedData = performanceData.map((item) => ({
+      const mergedData = performanceData?.map((item) => ({
         ...item,
         negotiatorName: usersMap[item.negotiatorId] || item.negotiatorId,
       }));

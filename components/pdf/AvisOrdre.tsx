@@ -212,7 +212,7 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
           </View>
           <View>
             {/* Table Rows */}
-            {orders?.listOrdersExtended.map((order, index) => (
+            {orders?.listOrdersExtended?.map((order, index) => (
               <View
                 key={order.id}
                 style={{

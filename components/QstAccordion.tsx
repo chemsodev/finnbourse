@@ -84,7 +84,7 @@ export async function QstAccordion() {
     </div>
   ) : (
     <Accordion type="single" collapsible className="w-full text-lg">
-      {questions.map((question: any) => (
+      {questions?.map((question: any) => (
         <AccordionItem value={question.question}>
           <AccordionTrigger>{question.question} </AccordionTrigger>
           <AccordionContent>{question.answer}</AccordionContent>

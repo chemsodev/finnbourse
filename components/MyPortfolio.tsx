@@ -14,7 +14,7 @@ const MyPortfolio = async () => {
     }
   );
 
-  const stocksWithVariation = data?.listStocks.map((stock: any) => {
+  const stocksWithVariation = data?.listStocks?.map((stock: any) => {
     const marketMetadata = stock.marketmetadata;
     let variation = "0.00%";
     if (
@@ -30,7 +30,7 @@ const MyPortfolio = async () => {
 
   return (
     <div className="flex flex-col md:grid md:grid-cols-2 gap-4 ">
-      {stocksWithVariation.map((stock) => (
+      {stocksWithVariation?.map((stock) => (
         <StockCard key={stock.id} stock={stock} variation={stock.variation} />
       ))}
     </div>

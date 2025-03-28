@@ -155,7 +155,7 @@ export default function TeneurComptesTitresPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredHolders.map((holder, index) => (
+              {filteredHolders?.map((holder, index) => (
                 <TableRow
                   key={holder.id}
                   className={index % 2 === 1 ? "bg-gray-100" : ""}
