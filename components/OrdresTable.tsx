@@ -151,7 +151,7 @@ const OrdresTable = async ({
                 <TableHead className="font-bold uppercase">ID</TableHead>
               ) : null)}
             <TableHead>{t("titre")}</TableHead>
-            {pageType === "carnetordres" && (
+            {pageType === "carnetordres" && userRole === 3 && (
               <TableHead>{t("investisseur")}</TableHead>
             )}
             <TableHead>{t("sens")}</TableHead>
@@ -186,7 +186,7 @@ const OrdresTable = async ({
                     </div>
                   </div>
                 </TableCell>
-                {pageType === "carnetordres" && (
+                {pageType === "carnetordres" && userRole === 3 && (
                   <TableCell> {order?.investorid?.fullname}</TableCell>
                 )}
                 <TableCell
