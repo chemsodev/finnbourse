@@ -103,6 +103,7 @@
     "noNews": "لا يوجد أخبار"
   },
   "DashLineChart": {
+    "compareStocks": "قارن مع سهم آخر",
     "title": "الرسم البياني المقارن",
     "graph": "الرسم البياني",
     "stocks": "الأسهم",
@@ -117,7 +118,8 @@
   },
   "TopBarDash": {
     "title": "قيمة المحفظة",
-    "currency": "د.ج"
+    "currency": "د.ج",
+    "tauxDeRendement": "معدل العائد"
   },
   "PasserUnOrdre": {
     "marche": "السوق",
@@ -188,6 +190,7 @@
     "lipo2": "تبادل السندات لتنويع محفظتك والاستفادة من دخل محتمل مستقر. هذه الواجهة البديهية توجهك خلال كل خطوة لتنفيذ معاملاتك بكفاءة وأمان."
   },
   "Inscription": {
+    "financialInstitution": "المؤسسة المالية",
     "nom": "الاسم واللقب",
     "email": "البريد الإلكتروني",
     "nomM": "الاسم واللقب للوكيل",
@@ -617,7 +620,8 @@
     "noData": "لا توجد بيانات",
     "sukuk": "سكوك",
     "opv": "عرض عام للبيع",
-    "titresParticipatifs": "أوراق المشاركة"
+    "titresParticipatifs": "أوراق المشاركة",
+    "reason": "السبب"
   },
   "PortefeuilleTitreDrawer": {
     "sens": "الاتجاه",
@@ -1558,5 +1562,12 @@
   },
   "TermsAndConditions": {
     "acceptTerms": "أوافق على شروط الاستخدام"
+  },
+  "IPOAnnouncement": {
+    "new_ipo": "طرح عام أولي جديد",
+    "closes_in": "ينتهي في",
+    "subscribe_now": "اشترك الآن",
+    "sonatrach_description": "طرح عام أولي جديد في قطاع الطاقة بإمكانيات نمو عالية",
+    "sonatrach": "سوناطراك"
   }
 }

@@ -29,7 +29,7 @@ const StockCard = async ({
       <Card className="py-3 px-4 hover:scale-110 transition-transform duration-300 cursor-pointer">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
-            <div>{stock.issuer || "N/A"}</div>
+            <div className="text-sm">{stock.issuer || "N/A"}</div>
             <div className="font-bold text-lg">
               {formatPrice(stock.facevalue || 0)} {t("dzd")}
             </div>

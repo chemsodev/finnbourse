@@ -16,15 +16,22 @@ import LogOutAgent from "@/components/LogOutAgent";
 import { StockTracker } from "@/components/dashboard/StockTracker";
 import DashWidgetTcc from "@/components/dashboard/dash-widget-tcc";
 import { BadgePercent, Database, LineChart, Users } from "lucide-react";
+import IPOAnnouncement from "@/components/dashboard/IPOAnnouncement";
 
 export default async function Home() {
   const t = await getTranslations("HomePage");
+  const ipoT = await getTranslations("IPOAnnouncement");
   const dateTime = new Date();
   const session = await getServerSession(auth);
   const userRole = session?.user?.roleid;
   if (session?.user.error === "RefreshAccessTokenError") {
     return <LogOutAgent />;
   }
+
+  // Example IPO data - replace with actual data from your API/database
+  const ipoEndDate = new Date();
+  ipoEndDate.setDate(ipoEndDate.getDate() + 7); // Set end date to 7 days from now
+
   return (
     <div className="flex ">
       <SideBar />

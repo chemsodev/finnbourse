@@ -2,7 +2,7 @@ import FloatingShapes from "@/components/FloatingShapes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/routing";
-import { ArrowLeft, Building, UserRound } from "lucide-react";
+import { ArrowLeft, Building, Landmark, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import React from "react";
@@ -25,17 +25,24 @@ const page = () => {
           <CardContent className="flex gap-6 justify-center my-6">
             <Link
               href="/inscription/particulier"
-              className="w-32 h-32 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2 text-primary"
+              className="w-32 h-32 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2 text-primary text-center"
             >
               <UserRound size={50} />
               <div>{t("particulier")}</div>
             </Link>
             <Link
               href="/inscription/entreprise"
-              className="w-32 h-32 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2 text-primary"
+              className="w-32 h-32 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2 text-primary text-center"
             >
               <Building size={50} />
               <div>{t("entreprise")}</div>
+            </Link>
+            <Link
+              href="/inscription/entreprise"
+              className="w-32 h-32 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2 text-primary text-center"
+            >
+              <Landmark size={50} />
+              <div>{t("financialInstitution")}</div>
             </Link>
           </CardContent>
         </Card>

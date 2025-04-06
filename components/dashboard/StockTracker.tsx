@@ -49,12 +49,14 @@ import { fr, ar, enUS } from "date-fns/locale";
 import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   firstAction: z.string().optional(),
   secondAction: z.string().optional(),
   fromDate: z.date().optional(),
   toDate: z.date().optional(),
+  compareMode: z.boolean().default(true),
 });
 
 export function StockTracker() {
@@ -69,6 +71,7 @@ export function StockTracker() {
   const [stockOneData, setStockOneData] = useState<any[]>([]);
   const [stockTwoData, setStockTwoData] = useState<any[]>([]);
   const [snpData, setSnpData] = useState<any[]>([]);
+  const [compareMode, setCompareMode] = useState(true);
 
   const mergeData = useCallback((data1: any[], data2: any[]) => {
     const dateMap = new Map();
@@ -178,20 +181,28 @@ export function StockTracker() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      compareMode: true,
+    },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      if (values.firstAction && values.secondAction) {
-        fetchTwoStocks(values.firstAction, values.secondAction);
+      if (values.firstAction) {
+        if (values.compareMode && values.secondAction) {
+          fetchTwoStocks(values.firstAction, values.secondAction);
+        } else {
+          // Fetch only one stock
+          fetchTwoStocks(values.firstAction, values.firstAction);
+        }
       }
       if (values.fromDate && values.toDate) {
         setFromDate(values.fromDate);
         setToDate(values.toDate);
-        console.log("Date range selected:", values.fromDate, values.toDate);
       }
 
+      setCompareMode(values.compareMode);
       setActiveTab("graphe");
     } catch (error) {
       console.error("Form submission error", error);
@@ -206,11 +217,24 @@ export function StockTracker() {
   }, [fetchTwoRandomStocks, fetchSnp]);
 
   const mergedData = useMemo(() => {
-    if (!stockOneData || !stockTwoData) return [];
+    if (!stockOneData) return [];
 
-    let data = mergeData(stockOneData, stockTwoData).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    let data;
+    if (compareMode && stockTwoData && stockTwoData.length > 0) {
+      data = mergeData(stockOneData, stockTwoData).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+    } else {
+      // For single stock view, create data with only stockOne
+      data = stockOneData
+        .map((item) => ({
+          date: item.date,
+          stockOne: item.price,
+        }))
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+    }
 
     if (fromDate && toDate) {
       data = data.filter((item) => {
@@ -228,7 +252,7 @@ export function StockTracker() {
       });
     }
     return data;
-  }, [stockOneData, stockTwoData, fromDate, toDate, mergeData]);
+  }, [stockOneData, stockTwoData, fromDate, toDate, mergeData, compareMode]);
 
   const chartConfig = {
     stockOne: {
@@ -346,13 +370,15 @@ export function StockTracker() {
                     stroke={chartConfig.stockOne.color}
                     strokeWidth={4}
                   />
-                  <Area
-                    dataKey="stockTwo"
-                    type="natural"
-                    fill="url(#fillStockTwo)"
-                    stroke={chartConfig.stockTwo.color}
-                    strokeWidth={4}
-                  />
+                  {compareMode && (
+                    <Area
+                      dataKey="stockTwo"
+                      type="natural"
+                      fill="url(#fillStockTwo)"
+                      stroke={chartConfig.stockTwo.color}
+                      strokeWidth={4}
+                    />
+                  )}
                   <ChartLegend content={<ChartLegendContent />} />
                 </AreaChart>
               </ChartContainer>
@@ -391,36 +417,60 @@ export function StockTracker() {
                       )}
                     />
                   </div>
-                  <div className="w-full">
-                    <FormField
-                      control={form.control}
-                      name="secondAction"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("stockTwo")}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={t("selectStock")} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {snpData?.map((t: any) => (
-                                <SelectItem value={t.id}>{t.issuer}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            {t("stockToCompare")}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="compareMode"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between space-x-2 space-y-0 rounded-md border p-4">
+                        <FormLabel className="text-sm">
+                          {t("compareStocks")}
+                        </FormLabel>
+
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("compareMode") && (
+                    <div className="w-full">
+                      <FormField
+                        control={form.control}
+                        name="secondAction"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("stockTwo")}</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t("selectStock")} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {snpData?.map((t: any) => (
+                                  <SelectItem value={t.id}>
+                                    {t.issuer}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              {t("stockToCompare")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
                 <Separator
                   orientation="vertical"

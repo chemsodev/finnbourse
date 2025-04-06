@@ -16,6 +16,7 @@ import { getServerSession } from "next-auth";
 import AccessDenied from "@/components/AccessDenied";
 import { LIST_PORTFOLIIOS_QUERY } from "@/graphql/queries";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { formatPrice } from "@/lib/utils";
 
 const page = async (props: {
   searchParams?: Promise<{
@@ -82,7 +83,7 @@ const page = async (props: {
                 <TableHead>{t("assetType")}</TableHead>
                 <TableHead>{t("quantity")}</TableHead>
                 <TableHead>{t("totalPaye")}</TableHead>
-                <TableHead>reason</TableHead>
+                <TableHead>{t("reason")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -104,8 +105,10 @@ const page = async (props: {
                           case "titresparticipatifsms":
                             return t("titresParticipatifs");
                           case "action":
+                          case "stock":
                             return t("action");
                           case "obligation":
+                          case "bond":
                             return t("obligation");
                           default:
                             return asset.assettype;
@@ -123,7 +126,8 @@ const page = async (props: {
                             : "inherit",
                       }}
                     >
-                      {asset.totalPayed}
+                      {formatPrice(asset.totalPayed)}{" "}
+                      <span className="text-primary">DA</span>
                     </TableCell>
                     <TableCell>{asset.reason}</TableCell>
                   </TableRow>

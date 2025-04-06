@@ -41,11 +41,19 @@ const TopBarDash = () => {
   return (
     <div className="bg-primary rounded-md flex justify-between text-white py-3 px-6 ">
       {userRole === 1 ? (
-        <div className="flex flex-col">
-          <div className="text-xs capitalize">{t("title")}</div>
-          <div className="flex items-baseline ">
-            <div className="text-xl font-semibold capitalize">
-              {(value && formatPrice(value)) || 0} {t("currency")}
+        <div className="flex gap-4">
+          <div className="flex flex-col">
+            <div className="text-xs capitalize">{t("title")}</div>
+            <div className="flex items-baseline ">
+              <div className="text-xl font-semibold capitalize">
+                {(value && formatPrice(value)) || 0} {t("currency")}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <div className="text-xs capitalize">{t("tauxDeRendement")}</div>
+            <div className="flex items-baseline ">
+              <div className="text-xl font-semibold capitalize">4 %</div>
             </div>
           </div>
         </div>

@@ -59,6 +59,7 @@
     "loading": "Loading..."
   },
   "DashLineChart": {
+    "compareStocks": "Compare with another stock",
     "title": "Comparative Chart",
     "graph": "Chart",
     "stocks": "Stocks",
@@ -73,7 +74,8 @@
   },
   "TopBarDash": {
     "title": "Portfolio Value",
-    "currency": "DA"
+    "currency": "DA",
+    "tauxDeRendement": "Yield Rate"
   },
   "PasserUnOrdre": {
     "marche": "Market",
@@ -139,6 +141,7 @@
     "lipo2": "Trade bonds to diversify your portfolio and benefit from potentially stable income. This intuitive interface guides you through each step to execute your transactions efficiently and securely."
   },
   "Inscription": {
+    "financialInstitution": "Financial Institution",
     "nom": "Name and Surname",
     "email": "Email",
     "nomM": "Agent's Name and Surname",
@@ -466,7 +469,8 @@
     "noData": "No data found.",
     "sukuk": "Sukuk",
     "opv": "IPO",
-    "titresParticipatifs": "Participative Titles"
+    "titresParticipatifs": "Participative Titles",
+    "reason": "Reason"
   },
   "PortefeuilleTitreDrawer": {
     "marcheDeCotation": "Quotation Market",
@@ -1552,5 +1556,12 @@
   },
   "TermsAndConditions": {
     "acceptTerms": "I accept the conditions of use"
+  },
+  "IPOAnnouncement": {
+    "new_ipo": "New IPO",
+    "closes_in": "Closes in",
+    "subscribe_now": "Subscribe Now",
+    "sonatrach_description": "New energy sector IPO with high growth potential",
+    "sonatrach": "Sonatrach"
   }
 }

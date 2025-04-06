@@ -58,6 +58,7 @@
     "noNews": "Aucune actualité trouvée."
   },
   "DashLineChart": {
+    "compareStocks": "Comparer avec une autre action",
     "title": "Graphe Comparatif",
     "graph": "Graphe",
     "stocks": "Actions",
@@ -72,7 +73,8 @@
   },
   "TopBarDash": {
     "title": "Valeur Du Portefeuille",
-    "currency": "DA"
+    "currency": "DA",
+    "tauxDeRendement": "Taux de rendement"
   },
   "PasserUnOrdre": {
     "marche": "Marché",
@@ -143,6 +145,7 @@
     "lipo2": "Échanger des obligations pour diversifier votre portefeuille et bénéficier de revenus potentiellement stables. Cette interface intuitive vous guide à chaque étape pour exécuter vos transactions de manière efficace et sécurisée."
   },
   "Inscription": {
+    "financialInstitution": "Institution Financière",
     "nom": "Nom et prénom",
     "email": "Email",
     "nomM": "Nom et prénom du mandataire",
@@ -480,7 +483,8 @@
     "noData": "Aucune donnée disponible",
     "sukuk": "Sukuk",
     "opv": "Offre à Prix Ferme",
-    "titresParticipatifs": "Titre Participatif"
+    "titresParticipatifs": "Titre Participatif",
+    "reason": "Motif"
   },
   "PortefeuilleTitreDrawer": {
     "sens": "Sens",
@@ -1486,5 +1490,12 @@
   },
   "TermsAndConditions": {
     "acceptTerms": "J'accepte les conditions d'utilisation"
+  },
+  "IPOAnnouncement": {
+    "new_ipo": "Nouvelle OPF",
+    "closes_in": "Se termine dans",
+    "subscribe_now": "Souscrire Maintenant",
+    "sonatrach_description": "Nouvelle OPF du secteur de l'énergie à fort potentiel de croissance",
+    "sonatrach": "Sonatrach"
   }
 }
