@@ -253,19 +253,7 @@ export default function AgencePage() {
                     defaultValue={selectedAgency?.codeVille || ""}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="ordreDeTu"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Ordre de Tu
-                  </label>
-                  <Input
-                    id="ordreDeTu"
-                    className="w-full"
-                    defaultValue={selectedAgency?.ordreDe || ""}
-                  />
-                </div>
+
                 <div className="space-y-2">
                   <label
                     htmlFor="regionAgence"

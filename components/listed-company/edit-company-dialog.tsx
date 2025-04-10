@@ -31,12 +31,14 @@ const formSchema = z.object({
   nom: z.string().min(1, "Nom est obligatoire"),
   secteurActivite: z.string().min(1, "Secteur d'activité est obligatoire"),
   siteOfficiel: z.string().url("URL invalide"),
+  contactNom: z.string().min(1, "Nom du contact est obligatoire"),
+  contactPrenom: z.string().min(1, "Prénom du contact est obligatoire"),
+  contactFonction: z.string().min(1, "Fonction du contact est obligatoire"),
   email: z.string().email("Email invalide"),
   phone: z.string().min(1, "Téléphone est obligatoire"),
+  mobile: z.string().min(1, "Mobile est obligatoire"),
   adresse: z.string().min(1, "Adresse est obligatoire"),
-  capitalisationBoursiere: z
-    .string()
-    .min(1, "Capitalisation boursière est obligatoire"),
+  capital: z.string().min(1, "Capital est obligatoire"),
   notice: z.string().optional(),
 });
 
@@ -47,8 +49,12 @@ type Company = {
   capitalisationboursiere: string;
   contact:
     | {
+        nom: string | { set?: string };
+        prenom: string | { set?: string };
+        fonction: string | { set?: string };
         email: string | { set?: string };
         phone: string | { set?: string };
+        mobile: string | { set?: string };
         address: string | { set?: string };
       }
     | string;
@@ -129,10 +135,14 @@ const EditCompanyDialog = ({
       nom: company.nom,
       secteurActivite: company.secteuractivite,
       siteOfficiel: company.siteofficiel,
+      contactNom: getContactValue("nom"),
+      contactPrenom: getContactValue("prenom"),
+      contactFonction: getContactValue("fonction"),
       email: getContactValue("email"),
       phone: getContactValue("phone"),
+      mobile: getContactValue("mobile"),
       adresse: getContactValue("address"),
-      capitalisationBoursiere: company.capitalisationboursiere,
+      capital: company.capitalisationboursiere,
       notice: getNoticeValue(),
     },
   });
@@ -145,10 +155,14 @@ const EditCompanyDialog = ({
         nom: values.nom,
         secteuractivite: values.secteurActivite,
         siteofficiel: values.siteOfficiel || null,
+        contactNom: values.contactNom,
+        contactPrenom: values.contactPrenom,
+        contactFonction: values.contactFonction,
         phone: values.phone,
+        mobile: values.mobile,
         email: values.email,
         address: values.adresse,
-        capitalisationboursiere: values.capitalisationBoursiere,
+        capitalisationboursiere: values.capital,
         notice: values.notice || "",
       });
 
@@ -248,13 +262,70 @@ const EditCompanyDialog = ({
               <div className="col-span-6">
                 <FormField
                   control={form.control}
-                  name="capitalisationBoursiere"
+                  name="capital"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("marketCap")}</FormLabel>
+                      <FormLabel>{t("capital")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder={t("enterMarketCap")}
+                          placeholder={t("enterCapital")}
+                          type="text"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-6">
+                <FormField
+                  control={form.control}
+                  name="contactNom"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("contactNom")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("enterContactNom")}
+                          type="text"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-6">
+                <FormField
+                  control={form.control}
+                  name="contactPrenom"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("contactPrenom")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("enterContactPrenom")}
+                          type="text"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-6">
+                <FormField
+                  control={form.control}
+                  name="contactFonction"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("contactFonction")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("enterContactFonction")}
                           type="text"
                           {...field}
                         />
@@ -293,6 +364,25 @@ const EditCompanyDialog = ({
                       <FormControl>
                         <Input
                           placeholder={t("enterPhone")}
+                          type="tel"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-6">
+                <FormField
+                  control={form.control}
+                  name="mobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("mobile")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("enterMobile")}
                           type="tel"
                           {...field}
                         />

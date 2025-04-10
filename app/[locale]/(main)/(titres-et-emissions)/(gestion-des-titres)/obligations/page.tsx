@@ -20,6 +20,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Command,
@@ -46,6 +47,7 @@ import { useTranslations, useLocale } from "next-intl";
 import MyMarquee from "@/components/MyMarquee";
 import { useFieldArray } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 
 // Define the form schema for obligations, TP, and sukuk
 const formSchema = z.object({
@@ -80,6 +82,7 @@ const formSchema = z.object({
   tauxRendement: z.string().optional(),
   tauxCoupon: z.string().optional(),
   modeRemboursement: z.string().optional(),
+  coteEnBourse: z.boolean().default(false),
   // Fields specific to sukuk
   tauxEstime: z.string().optional(),
   tauxVariable: z.string().optional(),
@@ -153,6 +156,7 @@ export default function AjoutObligationPage() {
       tauxVariable: "",
       tauxFixe: "",
       commission: "",
+      coteEnBourse: false,
     },
   });
 
@@ -1214,6 +1218,27 @@ export default function AjoutObligationPage() {
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="coteEnBourse"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Coté en bourse</FormLabel>
+                    <FormDescription>
+                      {field.value ? "Oui" : "Non"}
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

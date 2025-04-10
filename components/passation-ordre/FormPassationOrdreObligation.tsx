@@ -31,6 +31,7 @@ import {
   formatNumber,
   formatPrice,
   updateTotalAmount,
+  calculateGrossAmount,
 } from "@/lib/utils";
 
 import {
@@ -89,6 +90,7 @@ const FormPassationOrdreObligation = ({
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [grossAmount, setGrossAmount] = useState<number>(0);
   const [obligationData, setObligationData] = useState<any>(null);
   const [createdOrdreId, setCreatedOrdreId] = useState<string | null>(null);
   const [selectedTitreName, setSelectedTitreName] = useState<string | null>(
@@ -160,6 +162,12 @@ const FormPassationOrdreObligation = ({
                 selectedTitre.facevalue,
                 form.getValues("quantite"),
                 "obligation"
+              )
+            );
+            setGrossAmount(
+              calculateGrossAmount(
+                selectedTitre.facevalue,
+                form.getValues("quantite")
               )
             );
           }
@@ -266,6 +274,7 @@ const FormPassationOrdreObligation = ({
         setTotalAmount(
           calculateTotalValue(Number(selectedPrice), quantity, "obligation")
         );
+        setGrossAmount(calculateGrossAmount(Number(selectedPrice), quantity));
       }
     });
     return () => subscription.unsubscribe();
@@ -345,6 +354,12 @@ const FormPassationOrdreObligation = ({
                                         t.facevalue,
                                         form.getValues("quantite"),
                                         "obligation"
+                                      )
+                                    );
+                                    setGrossAmount(
+                                      calculateGrossAmount(
+                                        t.facevalue,
+                                        form.getValues("quantite")
                                       )
                                     );
                                     setOpen(false);
@@ -509,6 +524,13 @@ const FormPassationOrdreObligation = ({
                 </div>
                 <div className="text-lg font-semibold">
                   {formatNumber(data?.quantity || 0)}
+                </div>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-500">{t("montantBrut")}:</div>
+                <div className="font-semibold text-lg flex gap-1">
+                  <span>{formatPrice(grossAmount || 0)}</span>
+                  <span> {t("currency")}</span>
                 </div>
               </div>
               <div className="flex justify-between items-baseline">

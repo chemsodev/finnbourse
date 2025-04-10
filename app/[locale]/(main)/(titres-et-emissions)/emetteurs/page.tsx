@@ -87,11 +87,19 @@ export default function CompaniesPage() {
             typeof company.contact === "object" &&
             (company.contact.email?.set ||
               company.contact.phone?.set ||
-              company.contact.address?.set)
+              company.contact.address?.set ||
+              company.contact.nom?.set ||
+              company.contact.prenom?.set ||
+              company.contact.fonction?.set ||
+              company.contact.mobile?.set)
           ) {
             company.contact = {
+              nom: company.contact.nom?.set || "",
+              prenom: company.contact.prenom?.set || "",
+              fonction: company.contact.fonction?.set || "",
               email: company.contact.email?.set || "",
               phone: company.contact.phone?.set || "",
+              mobile: company.contact.mobile?.set || "",
               address: company.contact.address?.set || "",
             };
           }
@@ -100,11 +108,27 @@ export default function CompaniesPage() {
             try {
               company.contact = JSON.parse(company.contact);
             } catch (e) {
-              company.contact = { email: "", phone: "", address: "" };
+              company.contact = {
+                nom: "",
+                prenom: "",
+                fonction: "",
+                email: "",
+                phone: "",
+                mobile: "",
+                address: "",
+              };
             }
           }
         } else {
-          company.contact = { email: "", phone: "", address: "" };
+          company.contact = {
+            nom: "",
+            prenom: "",
+            fonction: "",
+            email: "",
+            phone: "",
+            mobile: "",
+            address: "",
+          };
         }
 
         // Process extrafields object
@@ -225,8 +249,8 @@ export default function CompaniesPage() {
                   <TableRow>
                     <TableHead>{t("name")}</TableHead>
                     <TableHead>{t("sector")}</TableHead>
-                    <TableHead>{t("marketCap")}</TableHead>
-                    <TableHead>{t("contact")}</TableHead>
+                    <TableHead>{t("capital")}</TableHead>
+                    <TableHead>{t("contactInfo")}</TableHead>
                     <TableHead>{t("website")}</TableHead>
                     <TableHead>{t("notice")}</TableHead>
                     <TableHead>{t("actions")}</TableHead>
@@ -235,7 +259,7 @@ export default function CompaniesPage() {
                 <TableBody>
                   {filteredCompanies.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
+                      <TableCell colSpan={7} className="text-center py-8">
                         {searchTerm ? t("noCompaniesFound") : t("noCompanies")}
                       </TableCell>
                     </TableRow>
@@ -251,21 +275,36 @@ export default function CompaniesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1">
-                            <span>
-                              {typeof company.contact === "object"
-                                ? company.contact.email
-                                : ""}
-                            </span>
-                            <span>
-                              {typeof company.contact === "object"
-                                ? company.contact.phone
-                                : ""}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {typeof company.contact === "object"
-                                ? company.contact.address
-                                : ""}
-                            </span>
+                            {typeof company.contact === "object" && (
+                              <>
+                                {(company.contact.nom ||
+                                  company.contact.prenom) && (
+                                  <span className="font-medium">
+                                    {company.contact.prenom}{" "}
+                                    {company.contact.nom}
+                                  </span>
+                                )}
+                                {company.contact.fonction && (
+                                  <span className="text-sm">
+                                    {company.contact.fonction}
+                                  </span>
+                                )}
+                                {company.contact.email && (
+                                  <span>Email: {company.contact.email}</span>
+                                )}
+                                {company.contact.phone && (
+                                  <span>Tél: {company.contact.phone}</span>
+                                )}
+                                {company.contact.mobile && (
+                                  <span>Mobile: {company.contact.mobile}</span>
+                                )}
+                                {company.contact.address && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Adresse: {company.contact.address}
+                                  </span>
+                                )}
+                              </>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>

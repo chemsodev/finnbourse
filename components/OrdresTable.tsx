@@ -154,6 +154,9 @@ const OrdresTable = async ({
             {pageType === "carnetordres" && userRole === 3 && (
               <TableHead>{t("investisseur")}</TableHead>
             )}
+            {pageType === "carnetordres" && userRole === 3 && (
+              <TableHead>IOB</TableHead>
+            )}
             <TableHead>{t("sens")}</TableHead>
             <TableHead> {t("type")}</TableHead>
             <TableHead>{t("quantity")}</TableHead>
@@ -188,6 +191,11 @@ const OrdresTable = async ({
                 </TableCell>
                 {pageType === "carnetordres" && userRole === 3 && (
                   <TableCell> {order?.investorid?.fullname}</TableCell>
+                )}
+                {pageType === "carnetordres" && userRole === 3 && (
+                  <TableCell>
+                    {order?.negotiatorid?.fullname || "N/A"}
+                  </TableCell>
                 )}
                 <TableCell
                   className={`${

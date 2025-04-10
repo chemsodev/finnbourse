@@ -1,16 +1,28 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  createEmission,
+  getEmission,
+  updateEmission,
+} from "@/app/actions/emissions-actions";
+import type { Emission } from "@/lib/interfaces";
 
 export default function EmissionForm() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string;
+  const locale = params?.locale as string;
+  const isEditMode = Boolean(id);
+
   const [formData, setFormData] = useState({
-    search: "",
     codeISIN: "",
     issuer: "",
     centralizingAgency: "",
@@ -29,22 +41,90 @@ export default function EmissionForm() {
     memberNo04: "",
   });
 
+  const [loading, setLoading] = useState(isEditMode);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Fetch emission data if in edit mode
+  useEffect(() => {
+    async function fetchEmission() {
+      if (isEditMode) {
+        try {
+          const emission = await getEmission(id);
+          if (emission) {
+            setFormData({
+              codeISIN: emission.codeISIN,
+              issuer: emission.issuer,
+              centralizingAgency: emission.centralizingAgency,
+              viewAccountNumber: emission.viewAccountNumber,
+              typeOfBroadcast: emission.typeOfBroadcast,
+              issueAmount: emission.issueAmount,
+              issueDate: emission.issueDate,
+              dueDate: emission.dueDate,
+              duration: emission.duration,
+              cosobApproval: emission.cosobApproval,
+              leader: emission.leader,
+              coLead: emission.coLead,
+              memberNo01: emission.memberNo01,
+              memberNo02: emission.memberNo02,
+              memberNo03: emission.memberNo03,
+              memberNo04: emission.memberNo04,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch emission:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchEmission();
+  }, [id, isEditMode]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Handle form submission logic here
+    setSubmitting(true);
+
+    try {
+      const formDataObj = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataObj.append(key, value);
+      });
+
+      if (isEditMode) {
+        await updateEmission(id, formDataObj);
+      } else {
+        await createEmission(formDataObj);
+      }
+
+      router.push(`/${locale}/emissions`);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Card className="border-0 shadow-sm bg-white">
+        <CardContent className="flex justify-center items-center h-52">
+          <p>Chargement des données...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-0 shadow-sm bg-white">
       <CardHeader className="pb-2 border-b">
         <CardTitle className="text-3xl font-bold text-secondary mb-4">
-          Émission
+          {isEditMode ? "Modifier l'Émission" : "Nouvelle Émission"}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
@@ -61,6 +141,7 @@ export default function EmissionForm() {
                 value={formData.codeISIN}
                 onChange={handleChange}
                 className="bg-background"
+                required
               />
             </div>
             <div className="space-y-2">
@@ -73,6 +154,7 @@ export default function EmissionForm() {
                 value={formData.issuer}
                 onChange={handleChange}
                 className="bg-background"
+                required
               />
             </div>
 
@@ -261,13 +343,26 @@ export default function EmissionForm() {
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end">
-            <button
-              type="submit"
-              className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+          <div className="mt-8 flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(`/${locale}/emissions`)}
+              disabled={submitting}
             >
-              Soumettre
-            </button>
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              className="bg-primary text-white hover:bg-primary/90"
+              disabled={submitting}
+            >
+              {submitting
+                ? "Traitement en cours..."
+                : isEditMode
+                ? "Mettre à jour"
+                : "Soumettre"}
+            </Button>
           </div>
         </form>
       </CardContent>

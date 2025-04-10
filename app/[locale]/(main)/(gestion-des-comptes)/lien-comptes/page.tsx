@@ -38,22 +38,31 @@ export default function AccountLinking() {
       id: "1",
       codeAgent: "AG001",
       compteEspece: "ESP123456",
+      compteTitre: "TTR123456",
       compteBancaire: "BNK789012",
       orderDeTu: "ORD001",
+      client: "Jean Dupont",
+      type: "Particulier",
     },
     {
       id: "2",
       codeAgent: "AG002",
       compteEspece: "ESP654321",
+      compteTitre: "TTR654321",
       compteBancaire: "BNK210987",
       orderDeTu: "ORD002",
+      client: "Société ABC",
+      type: "Entreprise",
     },
     {
       id: "3",
       codeAgent: "AG003",
       compteEspece: "ESP789012",
+      compteTitre: "TTR789012",
       compteBancaire: "BNK345678",
       orderDeTu: "ORD003",
+      client: "Banque XYZ",
+      type: "Institution Financière",
     },
   ]);
 
@@ -105,6 +114,33 @@ export default function AccountLinking() {
                       </div>
                       <div className="space-y-2">
                         <label
+                          htmlFor="typeClient"
+                          className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                        >
+                          Type
+                        </label>
+                        <Select>
+                          <SelectTrigger
+                            id="typeClient"
+                            className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+                          >
+                            <SelectValue placeholder="Sélectionnez un type" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white dark:bg-slate-800">
+                            <SelectItem value="particulier">
+                              Particulier
+                            </SelectItem>
+                            <SelectItem value="entreprise">
+                              Entreprise
+                            </SelectItem>
+                            <SelectItem value="institution">
+                              Institution Financière
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label
                           htmlFor="agent"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
@@ -139,14 +175,14 @@ export default function AccountLinking() {
                       </div>
                       <div className="space-y-2">
                         <label
-                          htmlFor="compteEspece1"
+                          htmlFor="compteEspece"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
                           Compte Espèce
                         </label>
                         <Select>
                           <SelectTrigger
-                            id="compteEspece1"
+                            id="compteEspece"
                             className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                           >
                             <SelectValue placeholder="Sélectionnez un compte" />
@@ -160,22 +196,22 @@ export default function AccountLinking() {
                       </div>
                       <div className="space-y-2">
                         <label
-                          htmlFor="compteEspece2"
+                          htmlFor="compteTitre"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Compte Espèce
+                          Compte Titre
                         </label>
                         <Select>
                           <SelectTrigger
-                            id="compteEspece2"
+                            id="compteTitre"
                             className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                           >
                             <SelectValue placeholder="Sélectionnez un compte" />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-slate-800">
-                            <SelectItem value="esp1">ESP001</SelectItem>
-                            <SelectItem value="esp2">ESP002</SelectItem>
-                            <SelectItem value="esp3">ESP003</SelectItem>
+                            <SelectItem value="ttr1">TTR001</SelectItem>
+                            <SelectItem value="ttr2">TTR002</SelectItem>
+                            <SelectItem value="ttr3">TTR003</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -253,10 +289,19 @@ export default function AccountLinking() {
               <TableHeader className="bg-slate-100 dark:bg-slate-800">
                 <TableRow>
                   <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                    Client
+                  </TableHead>
+                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                    Type
+                  </TableHead>
+                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
                     Code Agent
                   </TableHead>
                   <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Compte Espièce
+                    Compte Espèce
+                  </TableHead>
+                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
+                    Compte Titre
                   </TableHead>
                   <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
                     Compte Bancaire
@@ -278,6 +323,23 @@ export default function AccountLinking() {
                     }
                   >
                     <TableCell className="font-medium">
+                      {account.client}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          account.type === "Particulier"
+                            ? "bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+                            : account.type === "Entreprise"
+                            ? "bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
+                            : "bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200"
+                        }
+                      >
+                        {account.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <Badge
                         variant="outline"
                         className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800"
@@ -286,6 +348,7 @@ export default function AccountLinking() {
                       </Badge>
                     </TableCell>
                     <TableCell>{account.compteEspece}</TableCell>
+                    <TableCell>{account.compteTitre}</TableCell>
                     <TableCell>{account.compteBancaire}</TableCell>
                     <TableCell>{account.orderDeTu}</TableCell>
                     <TableCell>
@@ -335,6 +398,9 @@ interface AccountData {
   id: string;
   codeAgent: string;
   compteEspece: string;
+  compteTitre: string;
   compteBancaire: string;
   orderDeTu: string;
+  client: string;
+  type: string;
 }

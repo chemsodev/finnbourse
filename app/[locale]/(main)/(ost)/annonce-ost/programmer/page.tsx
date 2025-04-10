@@ -4,6 +4,8 @@ import { useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,8 @@ const algeriansecurities = [
 ];
 
 export default function OperationsSurTitres() {
+  const t = useTranslations("ProgrammerOST");
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [dates, setDates] = useState({
     dateOperation: undefined,
@@ -58,6 +62,7 @@ export default function OperationsSurTitres() {
     dateValeurPaiement: undefined,
     rappel: undefined,
   });
+  const [repetition, setRepetition] = useState("");
 
   const form = useForm({
     defaultValues: {
@@ -83,13 +88,30 @@ export default function OperationsSurTitres() {
   };
 
   const onSubmit = (data: any) => {
-    console.log({ ...data, ...dates });
+    console.log({ ...data, ...dates, repetition });
+  };
+
+  const handleCancel = () => {
+    // Reset the form
+    form.reset();
+    setDates({
+      dateOperation: undefined,
+      dateDebut: undefined,
+      dateFin: undefined,
+      dateRep: undefined,
+      dateValeurPaiement: undefined,
+      rappel: undefined,
+    });
+    setRepetition("");
+
+    // Navigate back to the previous page
+    router.back();
   };
 
   return (
     <div>
       <h1 className="text-3xl font-bold text-secondary mb-8 p-4 pb-8 border-b">
-        Programmer une Annonce d'OST
+        {t("title")}
       </h1>
 
       <Form {...form}>
@@ -102,7 +124,7 @@ export default function OperationsSurTitres() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700">
-                    Sélection du titre principal
+                    {t("selectionTitrePrincipal")}
                   </FormLabel>
                   <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
@@ -120,7 +142,7 @@ export default function OperationsSurTitres() {
                             ? algeriansecurities.find(
                                 (security) => security.value === field.value
                               )?.label
-                            : "Sélectionner un titre"}
+                            : t("selectTitle")}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
@@ -131,10 +153,10 @@ export default function OperationsSurTitres() {
                     >
                       <Command className="w-full">
                         <CommandInput
-                          placeholder="Rechercher un titre..."
+                          placeholder={t("searchTitle")}
                           className="h-9"
                         />
-                        <CommandEmpty>Aucun titre trouvé.</CommandEmpty>
+                        <CommandEmpty>{t("noTitleFound")}</CommandEmpty>
                         <CommandGroup>
                           {algeriansecurities?.map((security) => (
                             <CommandItem
@@ -173,19 +195,23 @@ export default function OperationsSurTitres() {
               name="evenement"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Evènement</FormLabel>
+                  <FormLabel className="text-gray-700">
+                    {t("evenement")}
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                        <SelectValue placeholder="Primaire/ Secondaire" />
+                        <SelectValue placeholder={t("primarySecondary")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="primaire">Primaire</SelectItem>
-                      <SelectItem value="secondaire">Secondaire</SelectItem>
+                      <SelectItem value="primaire">{t("primary")}</SelectItem>
+                      <SelectItem value="secondaire">
+                        {t("secondary")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
@@ -199,7 +225,7 @@ export default function OperationsSurTitres() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700">
-                    Description de l'OST
+                    {t("descriptionOST")}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -217,7 +243,9 @@ export default function OperationsSurTitres() {
               name="typeOst"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Type d'OST</FormLabel>
+                  <FormLabel className="text-gray-700">
+                    {t("typeOST")}
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -229,14 +257,16 @@ export default function OperationsSurTitres() {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="dividendes">
-                        Versement de dividendes
+                        {t("dividendPayment")}
                       </SelectItem>
                       <SelectItem value="droits_de_garde">
-                        Prélèvement des droits de garde
+                        {t("custodyFeesCollection")}
                       </SelectItem>
-                      <SelectItem value="coupon">Paiement de coupon</SelectItem>
+                      <SelectItem value="coupon">
+                        {t("couponPayment")}
+                      </SelectItem>
                       <SelectItem value="remboursement">
-                        Remboursement d'obligation
+                        {t("bondRepayment")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -246,7 +276,7 @@ export default function OperationsSurTitres() {
 
             {/* Row 3 */}
             <FormItem>
-              <FormLabel className="text-gray-700">Date de début</FormLabel>
+              <FormLabel className="text-gray-700">{t("startDate")}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -278,7 +308,7 @@ export default function OperationsSurTitres() {
             </FormItem>
 
             <FormItem>
-              <FormLabel className="text-gray-700">Date fin</FormLabel>
+              <FormLabel className="text-gray-700">{t("endDate")}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -311,40 +341,24 @@ export default function OperationsSurTitres() {
 
             {/* Row 4 */}
             <FormItem>
-              <FormLabel className="text-gray-700">Répetition</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                        !dates.dateRep && "text-muted-foreground"
-                      )}
-                    >
-                      {dates.dateRep ? (
-                        format(dates.dateRep, "P", { locale: fr })
-                      ) : (
-                        <span></span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dates.dateRep}
-                    onSelect={(date) => handleDateChange("dateRep", date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <FormLabel className="text-gray-700">{t("repetition")}</FormLabel>
+              <Select onValueChange={setRepetition} value={repetition}>
+                <SelectTrigger className="border-gray-300 focus:border-blue-500">
+                  <SelectValue placeholder={t("selectFrequency")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="annuel">{t("annual")}</SelectItem>
+                  <SelectItem value="mensuel">{t("monthly")}</SelectItem>
+                  <SelectItem value="trimestriel">{t("quarterly")}</SelectItem>
+                  <SelectItem value="semestriel">{t("semiannual")}</SelectItem>
+                  <SelectItem value="aucune">{t("noRepetition")}</SelectItem>
+                </SelectContent>
+              </Select>
             </FormItem>
 
             <FormItem>
               <FormLabel className="text-gray-700">
-                Date Valeur/Paiement
+                {t("valuePaymentDate")}
               </FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -379,7 +393,7 @@ export default function OperationsSurTitres() {
             </FormItem>
 
             <FormItem>
-              <FormLabel className="text-gray-700">Rappel</FormLabel>
+              <FormLabel className="text-gray-700">{t("reminder")}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -412,30 +426,11 @@ export default function OperationsSurTitres() {
 
             <FormField
               control={form.control}
-              name="titrePrincipalField"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">
-                    Titre Principal
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder=""
-                      {...field}
-                      className="border-gray-300 focus:border-blue-500"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="titreResultat"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700">
-                    Titre Résultat
+                    {t("resultTitle")}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -454,7 +449,9 @@ export default function OperationsSurTitres() {
               name="actionAnc"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Action anc</FormLabel>
+                  <FormLabel className="text-gray-700">
+                    {t("oldAction")}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder=""
@@ -471,7 +468,9 @@ export default function OperationsSurTitres() {
               name="nelleAction"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Nelle Action</FormLabel>
+                  <FormLabel className="text-gray-700">
+                    {t("newAction")}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder=""
@@ -490,7 +489,7 @@ export default function OperationsSurTitres() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700">
-                    Montant unitaire
+                    {t("unitAmount")}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -508,7 +507,9 @@ export default function OperationsSurTitres() {
               name="montantBrut"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Montant Brut</FormLabel>
+                  <FormLabel className="text-gray-700">
+                    {t("grossAmount")}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder=""
@@ -527,7 +528,7 @@ export default function OperationsSurTitres() {
             name="commentaire"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-700">Commentaire</FormLabel>
+                <FormLabel className="text-gray-700">{t("comment")}</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder=""
@@ -541,8 +542,16 @@ export default function OperationsSurTitres() {
 
           {/* Buttons */}
           <div className="flex justify-center gap-4 pt-4">
-            <Button type="submit" className="w-96">
-              Valider
+            <Button
+              type="button"
+              variant="outline"
+              className="w-48"
+              onClick={handleCancel}
+            >
+              {t("cancel")}
+            </Button>
+            <Button type="submit" className="w-48">
+              {t("validate")}
             </Button>
           </div>
         </form>

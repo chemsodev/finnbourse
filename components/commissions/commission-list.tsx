@@ -51,7 +51,9 @@ export default function CommissionList({
       commission.libelle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       commission.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       commission.marche.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      commission.loiDeFrais.toLowerCase().includes(searchTerm.toLowerCase())
+      commission.loiDeFrais.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (commission.titreType &&
+        commission.titreType.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleDeleteClick = (id: string) => {
@@ -97,9 +99,11 @@ export default function CommissionList({
             <TableRow>
               <TableHead>Code</TableHead>
               <TableHead>Libellé</TableHead>
+              <TableHead>Type du titre</TableHead>
               <TableHead>Loi de frais</TableHead>
               <TableHead>Marché</TableHead>
               <TableHead>Commission</TableHead>
+              <TableHead>Commission SGBV</TableHead>
               <TableHead>TVA (%)</TableHead>
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -109,7 +113,7 @@ export default function CommissionList({
             {filteredCommissions.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={10}
                   className="text-center py-6 text-muted-foreground"
                 >
                   Aucune commission trouvée
@@ -122,9 +126,21 @@ export default function CommissionList({
                     {commission.code}
                   </TableCell>
                   <TableCell>{commission.libelle}</TableCell>
+                  <TableCell>
+                    {commission.titreType === "action"
+                      ? "Action"
+                      : commission.titreType === "obligation"
+                      ? "Obligation"
+                      : "-"}
+                  </TableCell>
                   <TableCell>{commission.loiDeFrais}</TableCell>
                   <TableCell>{commission.marche}</TableCell>
                   <TableCell>{formatCommissionValue(commission)}</TableCell>
+                  <TableCell>
+                    {commission.commissionSGBV
+                      ? `${commission.commissionSGBV}%`
+                      : "-"}
+                  </TableCell>
                   <TableCell>{commission.tva}%</TableCell>
                   <TableCell>
                     <Badge

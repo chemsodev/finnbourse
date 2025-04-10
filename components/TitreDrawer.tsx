@@ -354,7 +354,7 @@ const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
                         <SupprimerTitre securityId={titreId} type={type} />
                       </div>
                     )}
-                  {userRole === 1 && (
+                  {(userRole === 1 || userRole === 2) && (
                     <Link
                       href={getHref()}
                       className="bg-primary text-white px-14 py-2 rounded-md text-center font-semibold flex justify-center my-5 "

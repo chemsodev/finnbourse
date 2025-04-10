@@ -72,6 +72,13 @@ export default function ClientDetails() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">
+                  Référence unique du client
+                </label>
+                <Input placeholder="Référence client" />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">
                   Nom, prénom / Raison social
                 </label>
                 <Input placeholder="Nom/Raison sociale" />
@@ -141,6 +148,13 @@ export default function ClientDetails() {
                   </Select>
                   <Input placeholder="Nom IOB" className="flex-1" />
                 </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">
+                  Compte titre
+                </label>
+                <Input placeholder="Compte titre" />
               </div>
 
               <div className="mb-4">

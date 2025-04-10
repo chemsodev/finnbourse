@@ -20,6 +20,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Command,
@@ -32,6 +33,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Save, X, Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -45,6 +47,7 @@ import { CREATE_STOCK } from "@/graphql/mutations";
 import { GET_LISTED_COMPANIES_QUERY } from "@/graphql/queries";
 import { useTranslations } from "next-intl";
 import MyMarquee from "@/components/MyMarquee";
+import { CalendarIcon } from "lucide-react";
 
 // Define the form schema based on the original ajout-titre.tsx
 const formSchema = z.object({
@@ -73,6 +76,7 @@ const formSchema = z.object({
   teneurRegistre: z.string().optional(),
   secteurEconomique: z.string().optional(),
   statusTitre: z.string().optional(),
+  coteEnBourse: z.boolean().default(false),
   droitGarde: z.boolean().default(false),
   fraisTransaction: z.boolean().default(false),
   plusInformation: z.boolean().default(false),
@@ -127,6 +131,7 @@ export default function AjoutActionPage() {
       teneurRegistre: "",
       secteurEconomique: "",
       statusTitre: "",
+      coteEnBourse: false,
       droitGarde: false,
       fraisTransaction: false,
       plusInformation: false,
@@ -193,20 +198,20 @@ export default function AjoutActionPage() {
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <div className="pb-6">
         <MyMarquee />
       </div>
       <h1 className="text-3xl text-secondary font-bold mb-6">{t("title")}</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="flex flex-wrap gap-4 ">
             {/* Row 1 - Emetteur first */}
             <FormField
               control={form.control}
               name="emetteur"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.issuer")}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -270,7 +275,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="quantite"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.quantity")}</FormLabel>
                   <FormControl>
                     <Input
@@ -289,7 +294,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="nombreTotalTitres"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.totalShares")}</FormLabel>
                   <FormControl>
                     <Input
@@ -309,7 +314,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="code1"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.code1")}</FormLabel>
                   <FormControl>
                     <Input
@@ -326,7 +331,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="code2"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.code2")}</FormLabel>
                   <FormControl>
                     <Input
@@ -343,7 +348,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="codeValeur"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.valueCode")}</FormLabel>
                   <FormControl>
                     <Input
@@ -356,12 +361,13 @@ export default function AjoutActionPage() {
               )}
             />
 
+            {/* Continue with the rest of the form fields, updating each FormItem with className="flex-1 min-w-[300px]" */}
             {/* Row 3 */}
             <FormField
               control={form.control}
               name="typeTitre"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.securityType")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -385,7 +391,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="codeISIN"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.isinCode")}</FormLabel>
                   <FormControl>
                     <Input
@@ -402,7 +408,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="nominal"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.nominal")}</FormLabel>
                   <FormControl>
                     <Input
@@ -422,7 +428,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="libelleCourt"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.shortLabel")}</FormLabel>
                   <FormControl>
                     <Input
@@ -439,7 +445,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="libelleLong"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.longLabel")}</FormLabel>
                   <FormControl>
                     <Input
@@ -456,7 +462,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="modeCotation"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.quotationMode")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -485,7 +491,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="natureJuridique"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.legalNature")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -513,7 +519,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="typeCotation"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.quotationType")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -547,7 +553,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="depositaire"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.custodian")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -576,7 +582,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="tauxVariation"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.variationRate")}</FormLabel>
                   <FormControl>
                     <Input
@@ -595,7 +601,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="devise"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.currency")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -621,7 +627,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="ordreCote"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.listingOrder")}</FormLabel>
                   <FormControl>
                     <Input
@@ -639,7 +645,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="titreParent"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.parentSecurity")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -666,7 +672,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="modeEnregistrement"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.registrationMode")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -698,7 +704,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="titreLocal"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.localSecurity")}</FormLabel>
                   <FormControl>
                     <Input
@@ -716,7 +722,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="refSource"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.sourceRef")}</FormLabel>
                   <FormControl>
                     <Input
@@ -733,8 +739,8 @@ export default function AjoutActionPage() {
               control={form.control}
               name="teneurRegistre"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.registryKeeper")}</FormLabel>
+                <FormItem className="flex-1 min-w-96">
+                  <FormLabel>TCC</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -765,7 +771,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="secteurEconomique"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.economicSector")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -804,42 +810,40 @@ export default function AjoutActionPage() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="statusTitre"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("form.securityStatus")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+            {/* Row 9 - Coté en bourse */}
+            <div className="flex flex-col w-full gap-4">
+              <FormField
+                control={form.control}
+                name="coteEnBourse"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Coté en bourse
+                      </FormLabel>
+                      <FormDescription>
+                        {field.value ? "Oui" : "Non"}
+                      </FormDescription>
+                    </div>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("form.selectStatus")} />
-                      </SelectTrigger>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Actif">{t("form.active")}</SelectItem>
-                      <SelectItem value="Suspendu">
-                        {t("form.suspended")}
-                      </SelectItem>
-                      <SelectItem value="Radié">{t("form.deleted")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
 
           {/* Date fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-wrap gap-4">
             <FormField
               control={form.control}
               name="dateEmission"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.issueDate")}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -847,7 +851,7 @@ export default function AjoutActionPage() {
                         <Button
                           variant="outline"
                           className={cn(
-                            "pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -858,7 +862,7 @@ export default function AjoutActionPage() {
                           ) : (
                             <span>{t("form.selectDate")}</span>
                           )}
-                          <span className="ml-auto h-4 w-4 opacity-50">📅</span>
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -867,6 +871,7 @@ export default function AjoutActionPage() {
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
+                        initialFocus
                         captionLayout="dropdown-buttons"
                         fromYear={1950}
                         toYear={2050}
@@ -883,7 +888,7 @@ export default function AjoutActionPage() {
               control={form.control}
               name="dateJouissance"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem className="flex-1 min-w-96">
                   <FormLabel>{t("form.enjoymentDate")}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -891,7 +896,7 @@ export default function AjoutActionPage() {
                         <Button
                           variant="outline"
                           className={cn(
-                            "pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -902,7 +907,7 @@ export default function AjoutActionPage() {
                           ) : (
                             <span>{t("form.selectDate")}</span>
                           )}
-                          <span className="ml-auto h-4 w-4 opacity-50">📅</span>
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -911,6 +916,7 @@ export default function AjoutActionPage() {
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
+                        initialFocus
                         captionLayout="dropdown-buttons"
                         fromYear={1950}
                         toYear={2050}
@@ -1011,6 +1017,6 @@ export default function AjoutActionPage() {
           </div>
         </form>
       </Form>
-    </>
+    </div>
   );
 }

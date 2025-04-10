@@ -33,13 +33,15 @@ const formSchema = z.object({
   nom: z.string().min(1, "Nom est obligatoire"),
   secteurActivite: z.string().min(1, "Secteur d'activité est obligatoire"),
   siteOfficiel: z.string().url("URL invalide"),
+  contactNom: z.string().min(1, "Nom du contact est obligatoire"),
+  contactPrenom: z.string().min(1, "Prénom du contact est obligatoire"),
+  contactFonction: z.string().min(1, "Fonction du contact est obligatoire"),
   email: z.string().email("Email invalide"),
-  notice: z.string().min(1, "Notice est obligatoire"),
   phone: z.string().min(1, "Téléphone est obligatoire"),
+  mobile: z.string().min(1, "Mobile est obligatoire"),
   adresse: z.string().min(1, "Adresse est obligatoire"),
-  capitalisationBoursiere: z
-    .string()
-    .min(1, "Capitalisation boursière est obligatoire"),
+  notice: z.string().min(1, "Notice est obligatoire"),
+  capital: z.string().min(1, "Capital est obligatoire"),
 });
 
 type Company = {
@@ -49,8 +51,12 @@ type Company = {
   capitalisationboursiere: string;
   contact:
     | {
+        nom: string | { set?: string };
+        prenom: string | { set?: string };
+        fonction: string | { set?: string };
         email: string | { set?: string };
         phone: string | { set?: string };
+        mobile: string | { set?: string };
         address: string | { set?: string };
       }
     | string;
@@ -82,10 +88,14 @@ const AjoutSocieteEmettrice = () => {
         nom: values.nom,
         secteuractivite: values.secteurActivite,
         siteofficiel: values.siteOfficiel || null,
+        contactNom: values.contactNom,
+        contactPrenom: values.contactPrenom,
+        contactFonction: values.contactFonction,
         phone: values.phone,
+        mobile: values.mobile,
         email: values.email,
         address: values.adresse,
-        capitalisationboursiere: values.capitalisationBoursiere,
+        capitalisationboursiere: values.capital,
         notice: values.notice,
       });
 
@@ -193,6 +203,121 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
+                    name="capital"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("capital")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("entrerLeCapital")}
+                            type="text"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-6">
+                  <FormField
+                    control={form.control}
+                    name="notice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("notice")}</FormLabel>
+                        <FormControl>
+                          <textarea
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder={t("enterNotice")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm leading-6">
+                  <span className="bg-white px-6 font-semibold text-primary">
+                    {t("contact")}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-6">
+                  <FormField
+                    control={form.control}
+                    name="contactNom"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("contactNom")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("entrerLeNomDuContact")}
+                            type="text"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="col-span-6">
+                  <FormField
+                    control={form.control}
+                    name="contactPrenom"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("contactPrenom")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("entrerLePrenomDuContact")}
+                            type="text"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-6">
+                  <FormField
+                    control={form.control}
+                    name="contactFonction"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("contactFonction")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("entrerLaFonctionDuContact")}
+                            type="text"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="col-span-6">
+                  <FormField
+                    control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -234,13 +359,13 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="adresse"
+                    name="mobile"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("adresse")}</FormLabel>
+                        <FormLabel>{t("mobile")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t("entrerLadresse")}
+                            placeholder="+213........."
                             type="text"
                             {...field}
                           />
@@ -251,37 +376,19 @@ const AjoutSocieteEmettrice = () => {
                   />
                 </div>
               </div>
+
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="capitalisationBoursiere"
+                    name="adresse"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("capitalisationBoursiere")}</FormLabel>
+                        <FormLabel>{t("adresse")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t("entrerUneCapitalisation")}
+                            placeholder={t("entrerLadresse")}
                             type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="notice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("notice")}</FormLabel>
-                        <FormControl>
-                          <textarea
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder={t("enterNotice")}
                             {...field}
                           />
                         </FormControl>

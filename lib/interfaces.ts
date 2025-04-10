@@ -221,8 +221,10 @@ export interface Commission {
   marche: string;
   libelle: string;
   code: string;
+  titreType?: "action" | "obligation"; // Type du titre
   commissionType: string;
   commissionValue: number;
+  commissionSGBV?: number; // Commission SGBV
   tva: number;
   irgType1: number;
   irgType2: number;
@@ -256,4 +258,24 @@ export interface OstAnnouncement {
   montantUnitaire: string;
   montantBrut: string;
   commentaire: string;
+}
+
+export interface Emission {
+  id: string;
+  codeISIN: string;
+  issuer: string;
+  centralizingAgency: string;
+  viewAccountNumber: string;
+  typeOfBroadcast: string;
+  issueAmount: string;
+  issueDate: string;
+  dueDate: string;
+  duration: string;
+  cosobApproval: string;
+  leader: string;
+  coLead: string;
+  memberNo01: string;
+  memberNo02: string;
+  memberNo03: string;
+  memberNo04: string;
 }

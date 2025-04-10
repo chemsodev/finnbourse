@@ -118,6 +118,13 @@ export const updateTotalAmount = (price: number, quantity: number) => {
   return price * quantity;
 };
 
+export const calculateGrossAmount = (price: number, quantity: number) => {
+  if (price < 0 || quantity < 0) {
+    throw new Error("Invalid input parameters");
+  }
+  return price * quantity;
+};
+
 export function calculateVariation(cours: any) {
   if (!Array.isArray(cours) || cours.length < 2) {
     return "0.00%";

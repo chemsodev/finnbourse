@@ -37,8 +37,10 @@ const formSchema = z.object({
   marche: z.string().min(1, "Marché obligatoire"),
   libelle: z.string().min(1, "Libellé obligatoire"),
   code: z.string().min(1, "Code obligatoire"),
+  titreType: z.enum(["action", "obligation"]).optional(),
   commissionType: z.enum(["fixed", "percentage", "tiered"]),
   commissionValue: z.number().min(0, "La valeur doit être positive"),
+  commissionSGBV: z.number().min(0, "La valeur doit être positive").optional(),
   tva: z
     .number()
     .min(0, "La TVA doit être positive")
@@ -62,6 +64,9 @@ export default function CommissionForm({
     commission?.commissionType || "percentage"
   );
   const [tiers, setTiers] = useState<CommissionTier[]>(commission?.tiers || []);
+  const [titreType, setTitreType] = useState<
+    "action" | "obligation" | undefined
+  >(commission?.titreType);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,10 +75,14 @@ export default function CommissionForm({
       marche: commission?.marche || "",
       libelle: commission?.libelle || "",
       code: commission?.code || "",
+      titreType: commission?.titreType,
       commissionType:
         (commission?.commissionType as "fixed" | "percentage" | "tiered") ||
         "percentage",
       commissionValue: commission?.commissionValue || 0,
+      commissionSGBV:
+        commission?.commissionSGBV ||
+        (titreType === "action" ? 0.15 : titreType === "obligation" ? 0.1 : 0),
       tva: commission?.tva || 19,
       irgType1: commission?.irgType1 || 0,
       irgType2: commission?.irgType2 || 0,
@@ -87,19 +96,30 @@ export default function CommissionForm({
         marche: commission.marche,
         libelle: commission.libelle,
         code: commission.code,
+        titreType: commission.titreType,
         commissionType: commission.commissionType as
           | "fixed"
           | "percentage"
           | "tiered",
         commissionValue: commission.commissionValue,
+        commissionSGBV: commission.commissionSGBV,
         tva: commission.tva,
         irgType1: commission.irgType1,
         irgType2: commission.irgType2,
       });
       setCommissionType(commission.commissionType);
       setTiers(commission.tiers || []);
+      setTitreType(commission.titreType);
     }
   }, [commission, form]);
+
+  useEffect(() => {
+    if (titreType === "action") {
+      form.setValue("commissionSGBV", 0.15);
+    } else if (titreType === "obligation") {
+      form.setValue("commissionSGBV", 0.1);
+    }
+  }, [titreType, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const savedCommission: Commission = {
@@ -209,6 +229,34 @@ export default function CommissionForm({
 
           <FormField
             control={form.control}
+            name="titreType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type du titre</FormLabel>
+                <Select
+                  onValueChange={(value: "action" | "obligation") => {
+                    field.onChange(value);
+                    setTitreType(value);
+                  }}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner le type de titre" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="action">Action</SelectItem>
+                    <SelectItem value="obligation">Obligation</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="commissionType"
             render={({ field }) => (
               <FormItem>
@@ -248,36 +296,58 @@ export default function CommissionForm({
                       : "Pourcentage"}
                   </FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        placeholder={
-                          commissionType === "fixed"
-                            ? "Saisir montant"
-                            : "Saisir pourcentage"
-                        }
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(Number.parseFloat(e.target.value) || 0)
-                        }
-                      />
-                      {commissionType === "percentage" && (
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          %
-                        </div>
-                      )}
-                    </div>
+                    <Input
+                      type="number"
+                      step={commissionType === "fixed" ? "1" : "0.01"}
+                      placeholder={
+                        commissionType === "fixed"
+                          ? "Saisir montant"
+                          : "Saisir pourcentage"
+                      }
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value === "" ? 0 : parseFloat(e.target.value)
+                        )
+                      }
+                    />
                   </FormControl>
-                  <FormDescription>
-                    {commissionType === "fixed"
-                      ? "Saisissez le montant fixe pour cette commission"
-                      : "Saisissez le taux de pourcentage pour cette commission"}
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
           )}
+
+          <FormField
+            control={form.control}
+            name="commissionSGBV"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Commission SGBV (%)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Commission SGBV"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? 0 : parseFloat(e.target.value)
+                      )
+                    }
+                  />
+                </FormControl>
+                <FormDescription>
+                  {titreType === "action"
+                    ? "Pour les actions, la valeur par défaut est de 0,15%"
+                    : titreType === "obligation"
+                    ? "Pour les obligations, la valeur par défaut est de 0,10%"
+                    : "Sélectionnez d'abord un type de titre"}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

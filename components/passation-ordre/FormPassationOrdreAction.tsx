@@ -35,6 +35,7 @@ import {
   getNextMonthDate,
   preventNonNumericInput,
   updateTotalAmount,
+  calculateGrossAmount,
 } from "@/lib/utils";
 import {
   Popover,
@@ -96,6 +97,7 @@ const FormPassationOrdreAction = ({
   const [titre, setTitre] = useState("");
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [grossAmount, setGrossAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [stockData, setStockData] = useState<any>(null);
@@ -131,6 +133,12 @@ const FormPassationOrdreAction = ({
                 selectedTitre.facevalue,
                 form.getValues("quantite"),
                 "action"
+              )
+            );
+            setGrossAmount(
+              calculateGrossAmount(
+                Number(selectedTitre.facevalue),
+                form.getValues("quantite")
               )
             );
           }
@@ -231,6 +239,7 @@ const FormPassationOrdreAction = ({
         setTotalAmount(
           calculateTotalValue(Number(selectedPrice), quantity, "action")
         );
+        setGrossAmount(calculateGrossAmount(Number(selectedPrice), quantity));
       }
     });
     return () => subscription.unsubscribe();
@@ -380,6 +389,12 @@ const FormPassationOrdreAction = ({
                                           t.facevalue,
                                           form.getValues("quantite"),
                                           "action"
+                                        )
+                                      );
+                                      setGrossAmount(
+                                        calculateGrossAmount(
+                                          Number(t.facevalue),
+                                          form.getValues("quantite")
                                         )
                                       );
                                       setOpen(false);
@@ -727,7 +742,13 @@ const FormPassationOrdreAction = ({
                   {(data?.quantity && formatNumber(data?.quantity)) || "N/A"}
                 </div>
               </div>
-
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-500">{t("montantBrut")}:</div>
+                <div className="font-semibold text-lg flex gap-1">
+                  <span>{formatPrice(grossAmount || 0)}</span>
+                  <span> {t("currency")}</span>
+                </div>
+              </div>
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-500">{t("commission")}:</div>
                 <div className="font-semibold text-lg">
