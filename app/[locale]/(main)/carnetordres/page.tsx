@@ -4,7 +4,7 @@ import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import Link from "next/link";
 import { Printer } from "lucide-react";
-import OrdresTable from "@/components/OrdresTable";
+import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 import { ExportButton } from "@/components/ExportButton";

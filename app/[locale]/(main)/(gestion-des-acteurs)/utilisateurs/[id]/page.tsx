@@ -11,7 +11,7 @@ import RejetUtilisateur from "@/components/RejetUtilisateur";
 import ChangerRoleDialog from "@/components/ChangerRoleDialog";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { User } from "@/lib/interfaces";
-import OrdresTable from "@/components/OrdresTable";
+import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import ValidateUser from "@/components/ValidateUser";
 import { formatDate } from "@/lib/utils";
 import RateLimitReached from "@/components/RateLimitReached";

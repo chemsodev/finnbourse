@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import StatCharts from "@/components/StatCharts";
-import OrdresTable from "@/components/OrdresTable";
+import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import DashGraph from "@/components/dashboard/DashGraph";
 
 const page = async (props: {

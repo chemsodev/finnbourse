@@ -5,7 +5,7 @@ import { IoReloadSharp } from "react-icons/io5";
 import { MdDoneOutline } from "react-icons/md";
 import { TbMessages } from "react-icons/tb";
 import { useTranslations } from "next-intl";
-import OrderCounter from "./OrderCounter";
+import OrderCounter from "./gestion-des-ordres/OrderCounter";
 import { useSession } from "next-auth/react";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import {

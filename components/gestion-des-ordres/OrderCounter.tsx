@@ -8,7 +8,7 @@ import { Link } from "@/i18n/routing";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import LogOutAgent from "./LogOutAgent";
+import LogOutAgent from "../LogOutAgent";
 
 const OrderCounter = () => {
   const session = useSession();

@@ -3,7 +3,7 @@ import auth from "@/auth";
 
 import NoAccess from "../navigation/NoAccess";
 
-import OrdresTable from "../OrdresTable";
+import OrdresTable from "../gestion-des-ordres/OrdresTable";
 
 const DashItem1 = async () => {
   const session = await getServerSession(auth);

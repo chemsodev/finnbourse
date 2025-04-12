@@ -12,19 +12,19 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { LIST_ORDERS_QUERY_ONE_ORDER } from "@/graphql/queries";
 import { formatDate } from "@/lib/utils";
-import { ValiderPartiellement } from "./ValiderPartiellement";
+import { ValiderPartiellement } from "../ValiderPartiellement";
 import { useState } from "react";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { Order } from "@/lib/interfaces";
-import BulletinSubmitDialog from "./BulletinSubmitDialog";
-import SupprimerOrdre from "./SupprimerOrdre";
+import BulletinSubmitDialog from "../BulletinSubmitDialog";
+import SupprimerOrdre from "../SupprimerOrdre";
 import { useSession } from "next-auth/react";
 
-import { ValiderTotallement } from "./ValiderTotallement";
-import { EchouerOrdre } from "./EchouerOrdre";
-import PdfDialog from "./PdfDialog";
-import { Button } from "./ui/button";
-import RateLimitReached from "./RateLimitReached";
+import { ValiderTotallement } from "../ValiderTotallement";
+import { EchouerOrdre } from "../EchouerOrdre";
+import PdfDialog from "../PdfDialog";
+import { Button } from "../ui/button";
+import RateLimitReached from "../RateLimitReached";
 
 interface QueryData {
   listOrdersExtended: Order[];

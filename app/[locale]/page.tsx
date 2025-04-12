@@ -33,7 +33,7 @@ export default async function Home() {
   ipoEndDate.setDate(ipoEndDate.getDate() + 7); // Set end date to 7 days from now
 
   return (
-    <div className="flex ">
+    <div className="flex">
       <SideBar />
       <div className="p-4 overflow-scroll h-screen md:w-5/6 mb-12 md:mb-0 motion-preset-focus motion-duration-2000">
         <TopBarDash />

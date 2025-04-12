@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "../ui/skeleton";
 
 const OrdersTableSkeleton = async () => {
   const t = await getTranslations("mesOrdres");

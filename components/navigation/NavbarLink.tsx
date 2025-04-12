@@ -1,7 +1,7 @@
 "use client";
 import { Link } from "@/i18n/routing";
 import { usePathname } from "next/navigation";
-import OrderCounter from "../OrderCounter";
+import OrderCounter from "../gestion-des-ordres/OrderCounter";
 import { useSession } from "next-auth/react";
 
 const NavbarLink = ({

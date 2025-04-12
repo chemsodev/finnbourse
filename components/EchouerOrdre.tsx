@@ -46,7 +46,7 @@ export function EchouerOrdre({ ordreId }: { ordreId: string }) {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to suspend user");
+        throw new Error("Failed");
       }
       router.refresh();
       toast({

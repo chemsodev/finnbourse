@@ -12,12 +12,12 @@ import {
   TableRow,
   TableHeader,
   Table,
-} from "./ui/table";
+} from "../ui/table";
 import OrdersTableSkeleton from "./OrdersTableSkeleton";
 import OrdreDrawer from "./OrdreDrawer";
 import OrderStateFilter from "./OrderStateFilter";
-import LogOutAgent from "./LogOutAgent";
-import RateLimitReached from "./RateLimitReached";
+import LogOutAgent from "../LogOutAgent";
+import RateLimitReached from "../RateLimitReached";
 
 interface GetOrdersResponse {
   listOrdersExtended: Order[];
