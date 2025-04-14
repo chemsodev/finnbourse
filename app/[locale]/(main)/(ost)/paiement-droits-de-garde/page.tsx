@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,8 @@ const algerianSecurities = [
 ];
 
 export default function ProgrammerPaiementDroitGarde() {
+  const t = useTranslations("PaiementDroitsDeGarde");
+
   const [dates, setDates] = useState({
     dateExecution: undefined,
   });
@@ -73,9 +76,7 @@ export default function ProgrammerPaiementDroitGarde() {
     <div className="container mx-auto py-10 px-4 max-w-5xl">
       <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
         <div className="flex justify-between items-center mb-8 pb-4 border-b">
-          <h1 className="text-3xl font-bold text-secondary">
-            programmer un Paiement Droit de garde
-          </h1>
+          <h1 className="text-3xl font-bold text-secondary">{t("title")}</h1>
         </div>
 
         <Form {...form}>
@@ -88,7 +89,7 @@ export default function ProgrammerPaiementDroitGarde() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel className="text-gray-700">
-                      Sélection du titre principal
+                      {t("selectionTitrePrincipal")}
                     </FormLabel>
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
@@ -103,15 +104,15 @@ export default function ProgrammerPaiementDroitGarde() {
                               ? algerianSecurities.find(
                                   (security) => security.value === field.value
                                 )?.label
-                              : "Sélectionner un titre..."}
+                              : t("selectTitle")}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="p-0">
                         <Command>
-                          <CommandInput placeholder="Rechercher un titre..." />
-                          <CommandEmpty>Aucun titre trouvé.</CommandEmpty>
+                          <CommandInput placeholder={t("searchTitle")} />
+                          <CommandEmpty>{t("noTitleFound")}</CommandEmpty>
                           <CommandGroup>
                             {algerianSecurities?.map((security) => (
                               <CommandItem
@@ -147,7 +148,7 @@ export default function ProgrammerPaiementDroitGarde() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Référence d'OST
+                      {t("referenceOST")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -166,7 +167,7 @@ export default function ProgrammerPaiementDroitGarde() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Description de l'OST
+                      {t("descriptionOST")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -185,7 +186,9 @@ export default function ProgrammerPaiementDroitGarde() {
                 name="actionAnc"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Action anc</FormLabel>
+                    <FormLabel className="text-gray-700">
+                      {t("actionAnc")}
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder=""
@@ -203,7 +206,7 @@ export default function ProgrammerPaiementDroitGarde() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Titre Resultant
+                      {t("titreResultant")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -222,7 +225,7 @@ export default function ProgrammerPaiementDroitGarde() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Nouvelle Action
+                      {t("nouvelleAction")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -240,7 +243,7 @@ export default function ProgrammerPaiementDroitGarde() {
             <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
               <FormItem>
                 <FormLabel className="text-gray-700">
-                  Date d'exécution
+                  {t("dateExecution")}
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -281,7 +284,9 @@ export default function ProgrammerPaiementDroitGarde() {
               name="commentaire"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Commentaire</FormLabel>
+                  <FormLabel className="text-gray-700">
+                    {t("commentaire")}
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder=""
@@ -300,10 +305,10 @@ export default function ProgrammerPaiementDroitGarde() {
                 variant="outline"
                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 border-none px-6"
               >
-                Annuler
+                {t("cancel")}
               </Button>
 
-              <Button type="submit">Valider</Button>
+              <Button type="submit">{t("validate")}</Button>
             </div>
           </form>
         </Form>

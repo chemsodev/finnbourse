@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Table,
   TableBody,
@@ -40,6 +41,7 @@ import type { Emission } from "@/lib/interfaces";
 export default function EmissionsPage() {
   const router = useRouter();
   const { locale } = useParams();
+  const t = useTranslations("Emissions");
   const [emissions, setEmissions] = useState<Emission[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -108,11 +110,11 @@ export default function EmissionsPage() {
     <Card className="border-0 shadow-sm bg-white">
       <CardHeader className="pb-2 border-b flex flex-row items-center justify-between">
         <CardTitle className="text-3xl font-bold text-secondary">
-          Émissions
+          {t("title")}
         </CardTitle>
         <Link href={`/${locale}/emissions/form`}>
           <Button className="bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" /> Nouvelle Émission
+            <Plus className="mr-2 h-4 w-4" /> {t("newEmission")}
           </Button>
         </Link>
       </CardHeader>
@@ -121,7 +123,7 @@ export default function EmissionsPage() {
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher par ISIN ou émetteur..."
+              placeholder={t("searchPlaceholder")}
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -131,27 +133,29 @@ export default function EmissionsPage() {
 
         {loading ? (
           <div className="flex justify-center items-center h-52">
-            <p>Chargement des données...</p>
+            <p>{t("loading")}</p>
           </div>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Code ISIN</TableHead>
-                  <TableHead>Émetteur</TableHead>
-                  <TableHead>Date d'Émission</TableHead>
-                  <TableHead>Date d'Échéance</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Chef de File</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("table.codeISIN")}</TableHead>
+                  <TableHead>{t("table.issuer")}</TableHead>
+                  <TableHead>{t("table.issueDate")}</TableHead>
+                  <TableHead>{t("table.dueDate")}</TableHead>
+                  <TableHead>{t("table.issueAmount")}</TableHead>
+                  <TableHead>{t("table.leader")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("table.actions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEmissions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">
-                      Aucune émission trouvée
+                      {t("noEmissionsFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -186,20 +190,20 @@ export default function EmissionsPage() {
                               }
                             >
                               <Eye className="mr-2 h-4 w-4" />
-                              Voir
+                              {t("actions.view")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleEditClick(emission)}
                             >
                               <Edit className="mr-2 h-4 w-4" />
-                              Modifier
+                              {t("actions.edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDeleteClick(emission.id)}
                               className="text-red-600"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Supprimer
+                              {t("actions.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -217,19 +221,18 @@ export default function EmissionsPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmDelete.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette émission ? Cette action
-              ne peut pas être annulée.
+              {t("confirmDelete.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("confirmDelete.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              Supprimer
+              {t("confirmDelete.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

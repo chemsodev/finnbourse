@@ -34,9 +34,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { agencyData, type AgencyData } from "@/lib/exportables";
 import MyPagination from "@/components/navigation/MyPagination";
+import { useTranslations } from "next-intl";
 
 export default function AgencePage() {
   const router = useRouter();
+  const t = useTranslations("AgencyPage");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -82,14 +84,14 @@ export default function AgencePage() {
   return (
     <div className="shadow-inner bg-gray-50 rounded-md">
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold text-secondary my-4">Agence</h1>
+        <h1 className="text-3xl font-bold text-secondary my-4">{t("title")}</h1>
         <header className="flex items-center justify-end mb-8">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Rechercher"
+                placeholder={t("search")}
                 className="pl-10 w-64 bg-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -100,7 +102,7 @@ export default function AgencePage() {
               onClick={handleAddClick}
             >
               <Plus className="h-4 w-4" />
-              Ajouter
+              {t("add")}
             </Button>
           </div>
         </header>
@@ -110,31 +112,31 @@ export default function AgencePage() {
             <TableHeader className="bg-primary">
               <TableRow>
                 <TableHead className="text-primary-foreground font-medium">
-                  Agence
+                  {t("agency")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Lib Agence
+                  {t("libAgency")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Code Ville
+                  {t("codeVille")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Ordre de
+                  {t("orderDe")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Par Default
+                  {t("parDefault")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Compensation
+                  {t("compensation")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Nom
+                  {t("name")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Prenom
+                  {t("firstName")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium w-[120px]">
-                  Actions
+                  {t("actions")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -161,7 +163,7 @@ export default function AgencePage() {
                         onClick={() => handleInfoClick(agency)}
                       >
                         <Info className="h-4 w-4" />
-                        <span className="sr-only">View details</span>
+                        <span className="sr-only">{t("viewDetails")}</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -170,7 +172,7 @@ export default function AgencePage() {
                         onClick={() => handleEditClick(agency)}
                       >
                         <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
+                        <span className="sr-only">{t("edit")}</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -179,7 +181,7 @@ export default function AgencePage() {
                         onClick={() => handleDeleteClick(agency)}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
+                        <span className="sr-only">{t("delete")}</span>
                       </Button>
                     </div>
                   </TableCell>
@@ -194,9 +196,7 @@ export default function AgencePage() {
           <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {dialogMode === "add"
-                  ? "Ajouter une nouvelle agence"
-                  : "Modifier l'agence"}
+                {dialogMode === "add" ? t("addNewAgency") : t("editAgency")}
               </DialogTitle>
             </DialogHeader>
             <form className="space-y-6 py-4" onSubmit={handleSave}>
@@ -206,7 +206,7 @@ export default function AgencePage() {
                     htmlFor="codeBanque"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code Banque
+                    {t("codeBanque")}
                   </label>
                   <Input
                     id="codeBanque"
@@ -219,7 +219,7 @@ export default function AgencePage() {
                     htmlFor="codeAgence"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code Agence
+                    {t("codeAgence")}
                   </label>
                   <Input
                     id="codeAgence"
@@ -232,7 +232,7 @@ export default function AgencePage() {
                     htmlFor="libelleAgence"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Libelle Agence
+                    {t("libelleAgence")}
                   </label>
                   <Input
                     id="libelleAgence"
@@ -245,7 +245,7 @@ export default function AgencePage() {
                     htmlFor="codeVille"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code ville
+                    {t("codeVille")}
                   </label>
                   <Input
                     id="codeVille"
@@ -259,7 +259,7 @@ export default function AgencePage() {
                     htmlFor="regionAgence"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Région d'Agence
+                    {t("regionAgence")}
                   </label>
                   <Input
                     id="regionAgence"
@@ -272,7 +272,7 @@ export default function AgencePage() {
                     htmlFor="codeBC"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code BC
+                    {t("codeBC")}
                   </label>
                   <Input
                     id="codeBC"
@@ -285,7 +285,7 @@ export default function AgencePage() {
                     htmlFor="nomCorrespondant"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Nom Correspondant
+                    {t("nomCorrespondant")}
                   </label>
                   <Input
                     id="nomCorrespondant"
@@ -298,7 +298,7 @@ export default function AgencePage() {
                     htmlFor="prenomCorrespondant"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Prenom Correspondant
+                    {t("prenomCorrespondant")}
                   </label>
                   <Input
                     id="prenomCorrespondant"
@@ -311,7 +311,7 @@ export default function AgencePage() {
                     htmlFor="fonction"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Fonction
+                    {t("fonction")}
                   </label>
                   <Input
                     id="fonction"
@@ -324,7 +324,7 @@ export default function AgencePage() {
                     htmlFor="telephone1"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Telephone 1
+                    {t("telephone1")}
                   </label>
                   <Input
                     id="telephone1"
@@ -337,7 +337,7 @@ export default function AgencePage() {
                     htmlFor="telephone2"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Telephone 2
+                    {t("telephone2")}
                   </label>
                   <Input
                     id="telephone2"
@@ -350,7 +350,7 @@ export default function AgencePage() {
                     htmlFor="fax"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Fax
+                    {t("fax")}
                   </label>
                   <Input
                     id="fax"
@@ -363,7 +363,7 @@ export default function AgencePage() {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Email
+                    {t("email")}
                   </label>
                   <Input
                     id="email"
@@ -377,7 +377,7 @@ export default function AgencePage() {
                     htmlFor="telex"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Telex
+                    {t("telex")}
                   </label>
                   <Input
                     id="telex"
@@ -390,7 +390,7 @@ export default function AgencePage() {
                     htmlFor="addresse"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Addresse
+                    {t("addresse")}
                   </label>
                   <Input
                     id="addresse"
@@ -403,7 +403,7 @@ export default function AgencePage() {
                     htmlFor="codePostal"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code Postal
+                    {t("codePostal")}
                   </label>
                   <Input
                     id="codePostal"
@@ -416,7 +416,7 @@ export default function AgencePage() {
                     htmlFor="commentaire"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Commentaire
+                    {t("commentaire")}
                   </label>
                   <Input
                     id="commentaire"
@@ -431,9 +431,9 @@ export default function AgencePage() {
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
-                <Button type="submit">Save</Button>
+                <Button type="submit">{t("save")}</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -446,10 +446,9 @@ export default function AgencePage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+              <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Cette action ne peut pas être annulée. Cela supprimera
-                définitivement l'agence
+                {t("deleteConfirmation")}
                 <span className="font-medium">
                   {" "}
                   {selectedAgency?.libAgence}
@@ -458,12 +457,12 @@ export default function AgencePage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
                 className="bg-red-600 hover:bg-red-700"
               >
-                Supprimer
+                {t("delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

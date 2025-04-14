@@ -7,8 +7,10 @@ import { Plus } from "lucide-react";
 import CommissionList from "./commission-list";
 import CommissionForm from "./commission-form";
 import type { Commission } from "@/lib/interfaces";
+import { useTranslations } from "next-intl";
 
 export default function CommissionManagement() {
+  const t = useTranslations("CommissionManagement");
   const [activeTab, setActiveTab] = useState("list");
   const [commissions, setCommissions] = useState<Commission[]>([
     {
@@ -104,9 +106,9 @@ export default function CommissionManagement() {
     <div className="bg-white rounded-lg shadow-md p-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
-          <TabsTrigger value="list">Liste des Commissions</TabsTrigger>
+          <TabsTrigger value="list">{t("commissionsList")}</TabsTrigger>
           <TabsTrigger value="form">
-            {editingCommission ? "Modifier Commission" : "Nouvelle Commission"}
+            {editingCommission ? t("editCommission") : t("newCommission")}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="list">

@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ export default function EmissionForm() {
   const id = params?.id as string;
   const locale = params?.locale as string;
   const isEditMode = Boolean(id);
+  const t = useTranslations("Emissions.form");
 
   const [formData, setFormData] = useState({
     codeISIN: "",
@@ -114,7 +116,7 @@ export default function EmissionForm() {
     return (
       <Card className="border-0 shadow-sm bg-white">
         <CardContent className="flex justify-center items-center h-52">
-          <p>Chargement des données...</p>
+          <p>{t("loading")}</p>
         </CardContent>
       </Card>
     );
@@ -124,7 +126,7 @@ export default function EmissionForm() {
     <Card className="border-0 shadow-sm bg-white">
       <CardHeader className="pb-2 border-b">
         <CardTitle className="text-3xl font-bold text-secondary mb-4">
-          {isEditMode ? "Modifier l'Émission" : "Nouvelle Émission"}
+          {isEditMode ? t("editTitle") : t("newTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
@@ -133,7 +135,7 @@ export default function EmissionForm() {
             {/* Row 1 */}
             <div className="space-y-2">
               <Label htmlFor="codeISIN" className="font-medium">
-                Code ISIN:
+                {t("codeISIN")}:
               </Label>
               <Input
                 id="codeISIN"
@@ -146,7 +148,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="issuer" className="font-medium">
-                Émetteur:
+                {t("issuer")}:
               </Label>
               <Input
                 id="issuer"
@@ -161,7 +163,7 @@ export default function EmissionForm() {
             {/* Row 2 */}
             <div className="space-y-2">
               <Label htmlFor="centralizingAgency" className="font-medium">
-                Agence Centralisatrice:
+                {t("centralizingAgency")}:
               </Label>
               <Input
                 id="centralizingAgency"
@@ -173,7 +175,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="viewAccountNumber" className="font-medium">
-                Numéro de Compte:
+                {t("accountNumber")}:
               </Label>
               <Input
                 id="viewAccountNumber"
@@ -187,7 +189,7 @@ export default function EmissionForm() {
             {/* Row 3 */}
             <div className="space-y-2">
               <Label htmlFor="typeOfBroadcast" className="font-medium">
-                Type de Diffusion:
+                {t("broadcastType")}:
               </Label>
               <Input
                 id="typeOfBroadcast"
@@ -199,7 +201,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="issueAmount" className="font-medium">
-                Montant d'Émission:
+                {t("issueAmount")}:
               </Label>
               <Input
                 id="issueAmount"
@@ -213,7 +215,7 @@ export default function EmissionForm() {
             {/* Row 4 */}
             <div className="space-y-2">
               <Label htmlFor="issueDate" className="font-medium">
-                Date d'Émission:
+                {t("issueDate")}:
               </Label>
               <Input
                 id="issueDate"
@@ -226,7 +228,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="dueDate" className="font-medium">
-                Date d'Échéance:
+                {t("dueDate")}:
               </Label>
               <Input
                 id="dueDate"
@@ -241,7 +243,7 @@ export default function EmissionForm() {
             {/* Row 5 */}
             <div className="space-y-2">
               <Label htmlFor="duration" className="font-medium">
-                Durée:
+                {t("duration")}:
               </Label>
               <Input
                 id="duration"
@@ -253,7 +255,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="cosobApproval" className="font-medium">
-                Approbation COSOB:
+                {t("cosobApproval")}:
               </Label>
               <Input
                 id="cosobApproval"
@@ -267,7 +269,7 @@ export default function EmissionForm() {
             {/* Row 6 */}
             <div className="space-y-2">
               <Label htmlFor="leader" className="font-medium">
-                Chef de File:
+                {t("leader")}:
               </Label>
               <Input
                 id="leader"
@@ -279,7 +281,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="coLead" className="font-medium">
-                Co-Chef de File:
+                {t("coLead")}:
               </Label>
               <Input
                 id="coLead"
@@ -293,7 +295,7 @@ export default function EmissionForm() {
             {/* Row 7 */}
             <div className="space-y-2">
               <Label htmlFor="memberNo01" className="font-medium">
-                Membre N°01:
+                {t("memberNo01")}:
               </Label>
               <Input
                 id="memberNo01"
@@ -305,7 +307,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="memberNo02" className="font-medium">
-                Membre N°02:
+                {t("memberNo02")}:
               </Label>
               <Input
                 id="memberNo02"
@@ -319,7 +321,7 @@ export default function EmissionForm() {
             {/* Row 8 */}
             <div className="space-y-2">
               <Label htmlFor="memberNo03" className="font-medium">
-                Membre N°03:
+                {t("memberNo03")}:
               </Label>
               <Input
                 id="memberNo03"
@@ -331,7 +333,7 @@ export default function EmissionForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="memberNo04" className="font-medium">
-                Membre N°04:
+                {t("memberNo04")}:
               </Label>
               <Input
                 id="memberNo04"
@@ -350,7 +352,7 @@ export default function EmissionForm() {
               onClick={() => router.push(`/${locale}/emissions`)}
               disabled={submitting}
             >
-              Annuler
+              {t("cancel")}
             </Button>
             <Button
               type="submit"
@@ -358,10 +360,10 @@ export default function EmissionForm() {
               disabled={submitting}
             >
               {submitting
-                ? "Traitement en cours..."
+                ? t("processing")
                 : isEditMode
-                ? "Mettre à jour"
-                : "Soumettre"}
+                ? t("update")
+                : t("submit")}
             </Button>
           </div>
         </form>

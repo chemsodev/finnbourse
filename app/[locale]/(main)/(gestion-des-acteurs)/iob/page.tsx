@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import MyPagination from "@/components/navigation/MyPagination";
+import { useTranslations } from "next-intl";
 
 interface BankData {
   id: number;
@@ -51,6 +52,7 @@ interface BankData {
 }
 
 export default function BankCodePage() {
+  const t = useTranslations("IOBPage");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
@@ -161,16 +163,14 @@ export default function BankCodePage() {
   return (
     <div className="rounded-md shadow-inner bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold text-secondary my-4">
-          Intermédiaires en Opérations de Bourse (IOB)
-        </h1>{" "}
+        <h1 className="text-3xl font-bold text-secondary my-4">{t("title")}</h1>
         <header className="flex items-center justify-end mb-8">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Rechercher"
+                placeholder={t("search")}
                 className="pl-10 w-64 bg-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -181,7 +181,7 @@ export default function BankCodePage() {
               onClick={handleAddClick}
             >
               <Plus className="h-4 w-4" />
-              Ajouter
+              {t("add")}
             </Button>
           </div>
         </header>
@@ -190,25 +190,25 @@ export default function BankCodePage() {
             <TableHeader className="bg-primary">
               <TableRow>
                 <TableHead className="text-primary-foreground font-medium">
-                  Code banque
+                  {t("bankCode")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Lib Court
+                  {t("shortName")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Lib Long
+                  {t("longName")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Correspondant
+                  {t("correspondent")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Adresse
+                  {t("address")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Teleph
+                  {t("phone")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium w-[120px]">
-                  Actions
+                  {t("actions")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -233,7 +233,7 @@ export default function BankCodePage() {
                         onClick={() => handleInfoClick(bank)}
                       >
                         <Info className="h-4 w-4" />
-                        <span className="sr-only">View details</span>
+                        <span className="sr-only">{t("viewDetails")}</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -242,7 +242,7 @@ export default function BankCodePage() {
                         onClick={() => handleEditClick(bank)}
                       >
                         <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
+                        <span className="sr-only">{t("edit")}</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -251,7 +251,7 @@ export default function BankCodePage() {
                         onClick={() => handleDeleteClick(bank)}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
+                        <span className="sr-only">{t("delete")}</span>
                       </Button>
                     </div>
                   </TableCell>
@@ -261,7 +261,6 @@ export default function BankCodePage() {
           </Table>
         </div>
         <div className="mt-4">
-          {" "}
           <MyPagination />
         </div>
         {/* Add/Edit Dialog */}
@@ -269,9 +268,7 @@ export default function BankCodePage() {
           <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
               <DialogTitle>
-                {dialogMode === "add"
-                  ? "Ajouter un nouveau code bancaire"
-                  : "Modifier le code bancaire"}
+                {dialogMode === "add" ? t("addNewIOB") : t("editIOB")}
               </DialogTitle>
             </DialogHeader>
             <form className="space-y-6 py-4" onSubmit={handleSave}>
@@ -281,7 +278,7 @@ export default function BankCodePage() {
                     htmlFor="codeIob"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code IOB
+                    {t("codeIOB")}
                   </label>
                   <Input
                     id="codeIob"
@@ -294,7 +291,7 @@ export default function BankCodePage() {
                     htmlFor="libelleCourt"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Libelle court
+                    {t("shortLabel")}
                   </label>
                   <Input
                     id="libelleCourt"
@@ -307,7 +304,7 @@ export default function BankCodePage() {
                     htmlFor="libelleLong"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Libelle Long
+                    {t("longLabel")}
                   </label>
                   <Input
                     id="libelleLong"
@@ -320,7 +317,7 @@ export default function BankCodePage() {
                     htmlFor="correspondant"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Correspondant
+                    {t("correspondent")}
                   </label>
                   <Input
                     id="correspondant"
@@ -333,7 +330,7 @@ export default function BankCodePage() {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Email
+                    {t("email")}
                   </label>
                   <Input
                     id="email"
@@ -347,7 +344,7 @@ export default function BankCodePage() {
                     htmlFor="fax"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Fax
+                    {t("fax")}
                   </label>
                   <Input
                     id="fax"
@@ -360,7 +357,7 @@ export default function BankCodePage() {
                     htmlFor="telephone1"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Telephone 1
+                    {t("phone1")}
                   </label>
                   <Input
                     id="telephone1"
@@ -373,7 +370,7 @@ export default function BankCodePage() {
                     htmlFor="telephone2"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Telephone 2
+                    {t("phone2")}
                   </label>
                   <Input
                     id="telephone2"
@@ -386,7 +383,7 @@ export default function BankCodePage() {
                     htmlFor="telephone3"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Telephone3
+                    {t("phone3")}
                   </label>
                   <Input
                     id="telephone3"
@@ -399,7 +396,7 @@ export default function BankCodePage() {
                     htmlFor="addresse"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Addresse
+                    {t("address")}
                   </label>
                   <Input
                     id="addresse"
@@ -412,7 +409,7 @@ export default function BankCodePage() {
                     htmlFor="ordreDeTu"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Ordre de Tu
+                    {t("orderTu")}
                   </label>
                   <Input
                     id="ordreDeTu"
@@ -427,9 +424,9 @@ export default function BankCodePage() {
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
-                <Button type="submit">Save</Button>
+                <Button type="submit">{t("save")}</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -438,69 +435,87 @@ export default function BankCodePage() {
         <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Détails du code bancaire</DialogTitle>
+              <DialogTitle>{t("details")}</DialogTitle>
               <DialogDescription>
-                Informations complètes pour {selectedBank?.shortName}
+                {t("completeInfo")} {selectedBank?.shortName}
               </DialogDescription>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4 py-4">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Code banque</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("bankCode")}
+                </p>
                 <p className="text-sm">{selectedBank?.codeBank}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-500">
-                  Libelle court
+                  {t("shortLabel")}
                 </p>
                 <p className="text-sm">{selectedBank?.shortName}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-500">
-                  Libelle long
+                  {t("longLabel")}
                 </p>
                 <p className="text-sm">{selectedBank?.longName}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-500">
-                  Correspondant
+                  {t("correspondent")}
                 </p>
                 <p className="text-sm">{selectedBank?.correspondent}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Adresse</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("address")}
+                </p>
                 <p className="text-sm">{selectedBank?.address}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Téléphone</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("phone")}
+                </p>
                 <p className="text-sm">{selectedBank?.phone}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Email</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("email")}
+                </p>
                 <p className="text-sm">{selectedBank?.email || "-"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Fax</p>
+                <p className="text-sm font-medium text-gray-500">{t("fax")}</p>
                 <p className="text-sm">{selectedBank?.fax || "-"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Téléphone 1</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("phone1")}
+                </p>
                 <p className="text-sm">{selectedBank?.telephone1 || "-"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Téléphone 2</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("phone2")}
+                </p>
                 <p className="text-sm">{selectedBank?.telephone2 || "-"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Téléphone 3</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("phone3")}
+                </p>
                 <p className="text-sm">{selectedBank?.telephone3 || "-"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-500">Ordre de Tu</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {t("orderTu")}
+                </p>
                 <p className="text-sm">{selectedBank?.ordreDeTu || "-"}</p>
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={() => setIsInfoDialogOpen(false)}>Fermer</Button>
+              <Button onClick={() => setIsInfoDialogOpen(false)}>
+                {t("close")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -511,20 +526,19 @@ export default function BankCodePage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+              <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Cette action ne peut pas être annulée. Cela supprimera
-                définitivement le code bancaire
+                {t("deleteConfirmation")}
                 <span className="font-medium"> {selectedBank?.shortName}</span>.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
                 className="bg-red-600 hover:bg-red-700"
               >
-                Supprimer
+                {t("delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

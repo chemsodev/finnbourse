@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CalendarIcon, PlusIcon } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 
 export default function ProgrammerPaiementDividende() {
+  const t = useTranslations("PaiementDividende");
   const [dates, setDates] = useState({
     dateExecution: undefined,
     dateValeurPaiement: undefined,
@@ -76,9 +78,7 @@ export default function ProgrammerPaiementDividende() {
     <div className="container mx-auto py-10 px-4 max-w-5xl">
       <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
         <div className="flex justify-between items-center mb-8 pb-4 border-b">
-          <h1 className="text-3xl font-bold text-secondary">
-            Programmer un Paiement de Dividende
-          </h1>
+          <h1 className="text-3xl font-bold text-secondary">{t("title")}</h1>
         </div>
 
         <Form {...form}>
@@ -91,7 +91,7 @@ export default function ProgrammerPaiementDividende() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Sélection du titre principal
+                      {t("selectionTitrePrincipal")}
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -99,7 +99,7 @@ export default function ProgrammerPaiementDividende() {
                     >
                       <FormControl>
                         <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder="Sélectionner un titre" />
+                          <SelectValue placeholder={t("selectTitle")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -120,7 +120,7 @@ export default function ProgrammerPaiementDividende() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Référence d'OST
+                      {t("referenceOST")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -138,19 +138,23 @@ export default function ProgrammerPaiementDividende() {
                 name="evenement"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Evènement</FormLabel>
+                    <FormLabel className="text-gray-700">
+                      {t("evenement")}
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder="Primaire/ Secondaire" />
+                          <SelectValue placeholder={t("primarySecondary")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="primaire">Primaire</SelectItem>
-                        <SelectItem value="secondaire">Secondaire</SelectItem>
+                        <SelectItem value="primaire">{t("primary")}</SelectItem>
+                        <SelectItem value="secondaire">
+                          {t("secondary")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -164,7 +168,7 @@ export default function ProgrammerPaiementDividende() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Description de l'OST
+                      {t("descriptionOST")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -179,7 +183,7 @@ export default function ProgrammerPaiementDividende() {
 
               <FormItem>
                 <FormLabel className="text-gray-700">
-                  Date d'exécution
+                  {t("executionDate")}
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -215,7 +219,7 @@ export default function ProgrammerPaiementDividende() {
 
               <FormItem>
                 <FormLabel className="text-gray-700">
-                  Date Valeur/Paiement
+                  {t("valuePaymentDate")}
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -256,7 +260,7 @@ export default function ProgrammerPaiementDividende() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700">
-                      Montant unitaire Net
+                      {t("netUnitAmount")}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -276,7 +280,9 @@ export default function ProgrammerPaiementDividende() {
               name="commentaire"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Commentaire</FormLabel>
+                  <FormLabel className="text-gray-700">
+                    {t("comment")}
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder=""
@@ -295,10 +301,10 @@ export default function ProgrammerPaiementDividende() {
                 variant="outline"
                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 border-none px-6"
               >
-                Annuler
+                {t("cancel")}
               </Button>
 
-              <Button type="submit">Valider</Button>
+              <Button type="submit">{t("validate")}</Button>
             </div>
           </form>
         </Form>

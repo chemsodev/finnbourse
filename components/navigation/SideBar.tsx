@@ -94,7 +94,9 @@ const SideBar = async () => {
           )}
           {userRole !== 0 && userRole !== 1 && (
             <>
-              {" "}
+              <TitresEtEmissionDropDown />
+              <GestionDeCompteDropDown />
+              <GestionDesActeurs />
               <OperationsSurTitresDropDown
                 titre={t("operationsSurTitres")}
                 annonceOst={t("annonceOst")}
@@ -103,9 +105,6 @@ const SideBar = async () => {
                 paiementCoupon={t("paiementCoupon")}
                 remboursement={t("remboursement")}
               />
-              <TitresEtEmissionDropDown />
-              <GestionDeCompteDropDown />
-              <GestionDesActeurs />
             </>
           )}
 

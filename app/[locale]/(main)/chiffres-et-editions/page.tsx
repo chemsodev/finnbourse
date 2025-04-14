@@ -8,40 +8,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getTranslations } from "next-intl/server";
 
-export default function ChiffresEtEditions() {
+export default async function ChiffresEtEditions() {
+  const t = await getTranslations("ChiffresEtEditions");
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold tracking-tight mb-8 text-secondary">
-        Chiffres et Editions
+        {t("title")}
       </h1>
 
       {/* Filters Section */}
       <div className="bg-card rounded-lg p-6 shadow-sm mb-8 border bg-primary cursor-pointer hover:scale-105 transition-transform duration-500 ease-in-out">
-        <h2 className="text-2xl font-medium mb-4 text-white">Période :</h2>
+        <h2 className="text-2xl font-medium mb-4 text-white">{t("period")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label htmlFor="debut" className="text-sm font-medium text-white">
-              Début:
+              {t("start")}
             </label>
-            <Input id="debut" type="date" placeholder="Date de début" />
+            <Input id="debut" type="date" placeholder={t("pickStartDate")} />
           </div>
           <div className="space-y-2">
             <label htmlFor="fin" className="text-sm font-medium text-white">
-              Fin:
+              {t("end")}
             </label>
-            <Input id="fin" type="date" placeholder="Date de fin" />
+            <Input id="fin" type="date" placeholder={t("pickEndDate")} />
           </div>
           <div className="space-y-2">
             <label htmlFor="isin" className="text-sm font-medium text-white">
-              Code ISIN:
+              {t("isinCode")}
             </label>
             <Select>
               <SelectTrigger id="isin">
-                <SelectValue placeholder="Sélectionner un code ISIN" />
+                <SelectValue placeholder={t("selectIsin")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les codes</SelectItem>
+                <SelectItem value="all">{t("allCodes")}</SelectItem>
                 <SelectItem value="fr0000123456">FR0000123456</SelectItem>
                 <SelectItem value="us0378331005">US0378331005</SelectItem>
                 <SelectItem value="de0007664039">DE0007664039</SelectItem>
@@ -54,23 +57,23 @@ export default function ChiffresEtEditions() {
       {/* Portefeuilles Titres Section */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4 pb-2 border-b text-secondary">
-          Portefeuilles Titres
+          {t("portfolioSecurities")}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           <OptionCard
-            title="Historique"
+            title={t("history")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Portefeuilles par Clients"
+            title={t("portfoliosByClient")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Historique PRTF par IOB"
+            title={t("prtfHistoryByIOB")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Portefeuille"
+            title={t("portfolio")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
         </div>
@@ -79,23 +82,23 @@ export default function ChiffresEtEditions() {
       {/* Pointage A/C Section */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4 pb-2 border-b text-secondary">
-          Pointage A/C
+          {t("accountReconciliation")}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           <OptionCard
-            title="Soldes Compte Propre / Titre"
+            title={t("ownAccountBalances")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Solde Avoirs Clientèle/ Titre"
+            title={t("clientAssetBalances")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Soldes Avoirs Globaux"
+            title={t("globalAssetBalances")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Nbre Operations/ Titres Boursiers"
+            title={t("stockMarketOperationsCount")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
         </div>
@@ -104,19 +107,19 @@ export default function ChiffresEtEditions() {
       {/* Transactions Section */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4 pb-2 border-b text-secondary">
-          Transactions
+          {t("transactions")}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           <OptionCard
-            title="Historique des Transactions par titre"
+            title={t("transactionHistoryByTitle")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Details Operations/ JC et par séance"
+            title={t("operationDetailsBySessionDate")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Transactions IOB / Titre"
+            title={t("iobTransactionsByTitle")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
         </div>
@@ -125,27 +128,27 @@ export default function ChiffresEtEditions() {
       {/* Autres Activités Section */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4 pb-2 border-b text-secondary">
-          Autres Activités
+          {t("otherActivities")}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           <OptionCard
-            title="Relevé de compte client/ Agence"
+            title={t("clientAccountStatementsByAgency")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Listing des comptes titre ouverts"
+            title={t("openSecuritiesAccountsListing")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Avoir Agence/ Titre"
+            title={t("agencyAssetsByTitle")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="Les Type des Clients"
+            title={t("clientTypes")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
           <OptionCard
-            title="NB Comptes Titres/Type Client"
+            title={t("securitiesAccountCountByClientType")}
             icon={<Folder className="h-6 w-6 text-primary" />}
           />
         </div>

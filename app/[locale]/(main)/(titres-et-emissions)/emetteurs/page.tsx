@@ -40,6 +40,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatPrice } from "@/lib/utils";
+import { ExportButton } from "@/components/ExportButton";
 
 type Company = {
   id: string;
@@ -199,6 +200,24 @@ export default function CompaniesPage() {
     await fetchCompanies();
   };
 
+  const prepareExportData = (companies: Company[]) => {
+    return companies.map((company) => ({
+      [t("name")]: company.nom,
+      [t("sector")]: company.secteuractivite,
+      [t("capital")]: formatPrice(company.capitalisationboursiere),
+      [t("contactName")]: `${company.contact?.prenom || ""} ${
+        company.contact?.nom || ""
+      }`.trim(),
+      [t("contactFunction")]: company.contact?.fonction || "",
+      [t("contactEmail")]: company.contact?.email || "",
+      [t("contactPhone")]: company.contact?.phone || "",
+      [t("contactMobile")]: company.contact?.mobile || "",
+      [t("contactAddress")]: company.contact?.address || "",
+      [t("website")]: company.siteofficiel || "",
+      [t("notice")]: company.extrafields?.notice || "",
+    }));
+  };
+
   return (
     <div className="container mx-auto py-8">
       <Card>
@@ -222,10 +241,13 @@ export default function CompaniesPage() {
         <CardContent>
           <div className="flex justify-between items-center mb-4">
             <AjoutSocieteEmettrice />
-            <SearchFilter
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
+            <div className="flex gap-2">
+              <ExportButton data={prepareExportData(filteredCompanies)} />
+              <SearchFilter
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+            </div>
           </div>
 
           {loading && (

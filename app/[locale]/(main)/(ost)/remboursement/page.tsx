@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,8 @@ const algerianSecurities = [
 ];
 
 export default function OperationsForm() {
+  const t = useTranslations("Remboursement");
+
   const [dates, setDates] = useState({
     dateExecution: undefined,
     dateValeurPaiement: undefined,
@@ -80,9 +83,7 @@ export default function OperationsForm() {
     <div className="container mx-auto py-10 px-4 max-w-5xl">
       <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
         <div className="flex justify-between items-center mb-8 pb-8 border-b">
-          <h1 className="text-3xl font-bold text-secondary">
-            Programmer un Remboursement
-          </h1>
+          <h1 className="text-3xl font-bold text-secondary">{t("title")}</h1>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -95,7 +96,7 @@ export default function OperationsForm() {
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel className="text-gray-700">
-                        Selection du titre principal
+                        {t("selectionTitrePrincipal")}
                       </FormLabel>
                       <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
@@ -110,15 +111,15 @@ export default function OperationsForm() {
                                 ? algerianSecurities.find(
                                     (security) => security.value === field.value
                                   )?.label
-                                : "Sélectionner un titre..."}
+                                : t("selectTitle")}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="p-0">
                           <Command>
-                            <CommandInput placeholder="Rechercher un titre..." />
-                            <CommandEmpty>Aucun titre trouvé.</CommandEmpty>
+                            <CommandInput placeholder={t("searchTitle")} />
+                            <CommandEmpty>{t("noTitleFound")}</CommandEmpty>
                             <CommandGroup>
                               {algerianSecurities?.map((security) => (
                                 <CommandItem
@@ -156,7 +157,7 @@ export default function OperationsForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700">
-                        Reference de l'OST
+                        {t("referenceOst")}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -176,21 +177,27 @@ export default function OperationsForm() {
                   name="evenement"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700">Evènement</FormLabel>
+                      <FormLabel className="text-gray-700">
+                        {t("evenement")}
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger className="bg-gray-400 text-white border-gray-400">
-                            <SelectValue placeholder="Primaire / Secondaire" />
+                            <SelectValue placeholder={t("primarySecondary")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="primaire">Primaire</SelectItem>
-                          <SelectItem value="secondaire">Secondaire</SelectItem>
+                          <SelectItem value="primaire">
+                            {t("primary")}
+                          </SelectItem>
+                          <SelectItem value="secondaire">
+                            {t("secondary")}
+                          </SelectItem>
                           <SelectItem value="primaire-secondaire">
-                            Primaire / Secondaire
+                            {t("primarySecondary")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -207,7 +214,7 @@ export default function OperationsForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700">
-                        Description de l'OST
+                        {t("descriptionOST")}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -228,7 +235,7 @@ export default function OperationsForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700">
-                        Montant unitaire Net
+                        {t("montantUnitaireNet")}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -241,34 +248,30 @@ export default function OperationsForm() {
                   )}
                 />
               </div>
-            </div>
 
-            {/* Date Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormItem>
+              {/* Row 3 */}
+              <div>
                 <FormLabel className="text-gray-700">
-                  Date d'exécution
+                  {t("dateExecution")}
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal bg-gray-50 border-gray-200",
-                          !dates.dateExecution && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateExecution ? (
-                          format(dates.dateExecution, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-gray-50 border-gray-200",
+                        !dates.dateExecution && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dates.dateExecution ? (
+                        format(dates.dateExecution, "PPP", { locale: fr })
+                      ) : (
+                        <span>{t("dateExecution")}</span>
+                      )}
+                    </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
                       selected={dates.dateExecution}
@@ -279,32 +282,32 @@ export default function OperationsForm() {
                     />
                   </PopoverContent>
                 </Popover>
-              </FormItem>
+              </div>
 
-              <FormItem>
+              <div>
                 <FormLabel className="text-gray-700">
-                  Date Valeur/Paiement
+                  {t("valuePaymentDate")}
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal bg-gray-50 border-gray-200",
-                          !dates.dateValeurPaiement && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateValeurPaiement ? (
-                          format(dates.dateValeurPaiement, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-gray-50 border-gray-200",
+                        !dates.dateValeurPaiement && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dates.dateValeurPaiement ? (
+                        format(dates.dateValeurPaiement, "PPP", {
+                          locale: fr,
+                        })
+                      ) : (
+                        <span>{t("valuePaymentDate")}</span>
+                      )}
+                    </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
                       selected={dates.dateValeurPaiement}
@@ -315,37 +318,41 @@ export default function OperationsForm() {
                     />
                   </PopoverContent>
                 </Popover>
-              </FormItem>
+              </div>
+
+              <div className="md:col-span-3">
+                <FormField
+                  control={form.control}
+                  name="commentaire"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700">
+                        {t("comment")}
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder=""
+                          className="resize-none h-32 bg-gray-50 border-gray-200"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            {/* Commentaire */}
-            <FormField
-              control={form.control}
-              name="commentaire"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Commentaire</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder=""
-                      {...field}
-                      className="bg-gray-50 border-gray-200 min-h-[100px]"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {/* Buttons */}
-            <div className="flex justify-center gap-4 pt-4">
+            <div className="flex justify-end space-x-4">
               <Button
                 type="button"
                 variant="outline"
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 border-none px-6"
+                className="border-gray-300 text-gray-700 hover:bg-gray-100"
               >
-                Cancel
+                {t("cancel")}
               </Button>
-              <Button type="submit">Valider</Button>
+              <Button type="submit" className="bg-primary text-white">
+                {t("validate")}
+              </Button>
             </div>
           </form>
         </Form>

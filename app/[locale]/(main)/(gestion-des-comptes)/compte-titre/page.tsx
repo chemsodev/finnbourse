@@ -35,18 +35,20 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from "next-intl";
 
 export default function CompteTitre() {
   const [openDate, setOpenDate] = useState<Date>();
   const [updateDate, setUpdateDate] = useState<Date>();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const t = useTranslations("CompteTitre");
 
   return (
     <div className="container mx-auto py-8 px-4">
       <Card className="w-full shadow-lg border-0">
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="text-2xl font-bold text-primary">
-            Compte Titre
+            {t("title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -54,7 +56,7 @@ export default function CompteTitre() {
             {/* First row */}
             <div className="space-y-2">
               <label htmlFor="dateOuverture" className="text-sm font-medium">
-                Date Ouverture
+                {t("dateOuverture")}
               </label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -67,7 +69,7 @@ export default function CompteTitre() {
                     {openDate ? (
                       format(openDate, "P", { locale: fr })
                     ) : (
-                      <span>Sélectionner une date</span>
+                      <span>{t("selectDate")}</span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -83,7 +85,7 @@ export default function CompteTitre() {
             </div>
             <div className="space-y-2">
               <label htmlFor="dateMiseAJour" className="text-sm font-medium">
-                Date de Mise à Jour
+                {t("dateMiseAJour")}
               </label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -96,7 +98,7 @@ export default function CompteTitre() {
                     {updateDate ? (
                       format(updateDate, "P", { locale: fr })
                     ) : (
-                      <span>Sélectionner une date</span>
+                      <span>{t("selectDate")}</span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -115,11 +117,11 @@ export default function CompteTitre() {
             {/* Second row */}
             <div className="space-y-2">
               <label htmlFor="codeAgent" className="text-sm font-medium">
-                Code Agent
+                {t("codeAgent")}
               </label>
               <Select>
                 <SelectTrigger id="codeAgent" className="w-full">
-                  <SelectValue placeholder="Sélectionner" />
+                  <SelectValue placeholder={t("select")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="agent1">Agent 1</SelectItem>
@@ -130,17 +132,17 @@ export default function CompteTitre() {
             </div>
             <div className="space-y-2">
               <label htmlFor="codeClient" className="text-sm font-medium">
-                Code Client
+                {t("codeClient")}
               </label>
-              <Input id="codeClient" placeholder="Entrez le code client" />
+              <Input id="codeClient" placeholder={t("enterCodeClient")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="compteEspece" className="text-sm font-medium">
-                Compte Espèce
+                {t("compteEspece")}
               </label>
               <Select>
                 <SelectTrigger id="compteEspece" className="w-full">
-                  <SelectValue placeholder="Sélectionner" />
+                  <SelectValue placeholder={t("select")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="compte1">Compte 1</SelectItem>
@@ -152,49 +154,43 @@ export default function CompteTitre() {
             {/* Third row */}
             <div className="space-y-2">
               <label htmlFor="nomRaison" className="text-sm font-medium">
-                Nom/Raison sociale
+                {t("nomRaison")}
               </label>
-              <Input
-                id="nomRaison"
-                placeholder="Entrez le nom ou la raison sociale"
-              />
+              <Input id="nomRaison" placeholder={t("enterNomRaison")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="prenomAbrev" className="text-sm font-medium">
-                Prénom/Abrév.R.S
+                {t("prenomAbrev")}
               </label>
-              <Input
-                id="prenomAbrev"
-                placeholder="Entrez le prénom ou l'abréviation"
-              />
+              <Input id="prenomAbrev" placeholder={t("enterPrenomAbrev")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="formeJuridique" className="text-sm font-medium">
-                Forme Juridique
+                {t("formeJuridique")}
               </label>
               <Input
                 id="formeJuridique"
-                placeholder="Entrez la forme juridique"
+                placeholder={t("enterFormeJuridique")}
               />
             </div>
             {/* Fourth row */}
             <div className="space-y-2">
               <label htmlFor="codeAgence" className="text-sm font-medium">
-                Code Agence
+                {t("codeAgence")}
               </label>
-              <Input id="codeAgence" placeholder="Entrez le code agence" />
+              <Input id="codeAgence" placeholder={t("enterCodeAgence")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="codeBanque" className="text-sm font-medium">
-                Code Banque
+                {t("codeBanque")}
               </label>
-              <Input id="codeBanque" placeholder="Entrez le code banque" />
+              <Input id="codeBanque" placeholder={t("enterCodeBanque")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="adresse" className="text-sm font-medium">
-                Adresse
+                {t("adresse")}
               </label>
-              <Input id="adresse" placeholder="Entrez l'adresse" />
+              <Input id="adresse" placeholder={t("enterAdresse")} />
             </div>
           </div>
 
@@ -205,105 +201,93 @@ export default function CompteTitre() {
               onClick={() => setDialogOpen(true)}
             >
               <PlusCircle className="h-4 w-4" />
-              Ajouter des informations complémentaires
+              {t("addAdditionalInfo")}
             </Button>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end gap-4 p-6 bg-muted/10 border-t">
-          <Button variant="outline">Annuler</Button>
-          <Button>Valider</Button>
+          <Button variant="outline">{t("cancel")}</Button>
+          <Button>{t("validate")}</Button>
         </CardFooter>
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Informations complémentaires</DialogTitle>
-            <DialogDescription>
-              Ajoutez des informations supplémentaires pour ce compte titre.
-            </DialogDescription>
+            <DialogTitle>{t("additionalInfo")}</DialogTitle>
+            <DialogDescription>{t("additionalInfoDesc")}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
               <label htmlFor="nom" className="text-sm font-medium">
-                Nom
+                {t("nom")}
               </label>
-              <Input id="nom" placeholder="Entrez le nom" />
+              <Input id="nom" placeholder={t("enterNom")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="prenom" className="text-sm font-medium">
-                Prénom
+                {t("prenom")}
               </label>
-              <Input id="prenom" placeholder="Entrez le prénom" />
+              <Input id="prenom" placeholder={t("enterPrenom")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="fonction" className="text-sm font-medium">
-                Fonction
+                {t("fonction")}
               </label>
-              <Input id="fonction" placeholder="Entrez la fonction" />
+              <Input id="fonction" placeholder={t("enterFonction")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="telephone1" className="text-sm font-medium">
-                Téléphone 1
+                {t("telephone1")}
               </label>
-              <Input
-                id="telephone1"
-                placeholder="Entrez le numéro de téléphone"
-              />
+              <Input id="telephone1" placeholder={t("enterTelephone")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="telephone2" className="text-sm font-medium">
-                Téléphone 2
+                {t("telephone2")}
               </label>
-              <Input
-                id="telephone2"
-                placeholder="Entrez un autre numéro de téléphone"
-              />
+              <Input id="telephone2" placeholder={t("enterTelephone2")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="fax" className="text-sm font-medium">
-                Fax
+                {t("fax")}
               </label>
-              <Input id="fax" placeholder="Entrez le numéro de fax" />
+              <Input id="fax" placeholder={t("enterFax")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
-                Email
+                {t("email")}
               </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Entrez l'adresse email"
-              />
+              <Input id="email" type="email" placeholder={t("enterEmail")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="telex" className="text-sm font-medium">
-                Telex
+                {t("telex")}
               </label>
-              <Input id="telex" placeholder="Entrez le numéro telex" />
+              <Input id="telex" placeholder={t("enterTelex")} />
             </div>
             <div className="space-y-2">
               <label htmlFor="codePostal" className="text-sm font-medium">
-                Code Postal
+                {t("codePostal")}
               </label>
-              <Input id="codePostal" placeholder="Entrez le code postal" />
+              <Input id="codePostal" placeholder={t("enterCodePostal")} />
             </div>
             <div className="space-y-2 md:col-span-2">
               <label htmlFor="commentaire" className="text-sm font-medium">
-                Commentaire
+                {t("commentaire")}
               </label>
               <Textarea
                 id="commentaire"
-                placeholder="Ajoutez un commentaire"
+                placeholder={t("enterCommentaire")}
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Annuler
+              {t("cancel")}
             </Button>
-            <Button onClick={() => setDialogOpen(false)}>Enregistrer</Button>
+            <Button onClick={() => setDialogOpen(false)}>{t("save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

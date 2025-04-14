@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn, preventNonNumericInput } from "@/lib/utils";
@@ -20,7 +20,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import {
   Command,
@@ -32,8 +31,6 @@ import {
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Save, X, Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -45,44 +42,25 @@ import { fr, ar, enUS } from "date-fns/locale";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { CREATE_STOCK } from "@/graphql/mutations";
 import { GET_LISTED_COMPANIES_QUERY } from "@/graphql/queries";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import MyMarquee from "@/components/MyMarquee";
-import { CalendarIcon } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-// Define the form schema based on the original ajout-titre.tsx
+// Define the form schema for actions
 const formSchema = z.object({
-  quantite: z.string().optional(),
-  nombreTotalTitres: z.string().optional(),
-  code1: z.string().optional(),
-  code2: z.string().optional(),
-  codeValeur: z.string().optional(),
-  typeTitre: z.string().optional(),
-  codeISIN: z.string().optional(),
-  nominal: z.string().optional(),
-  libelleCourt: z.string().optional(),
-  emetteur: z.string().optional(),
-  libelleLong: z.string().optional(),
-  modeCotation: z.string().optional(),
-  natureJuridique: z.string().optional(),
-  typeCotation: z.string().optional(),
-  depositaire: z.string().optional(),
-  tauxVariation: z.string().optional(),
-  devise: z.string().optional(),
-  ordreCote: z.string().optional(),
-  titreParent: z.string().optional(),
-  modeEnregistrement: z.string().optional(),
-  titreLocal: z.string().optional(),
-  refSource: z.string().optional(),
-  teneurRegistre: z.string().optional(),
-  secteurEconomique: z.string().optional(),
-  statusTitre: z.string().optional(),
-  coteEnBourse: z.boolean().default(false),
-  droitGarde: z.boolean().default(false),
-  fraisTransaction: z.boolean().default(false),
-  plusInformation: z.boolean().default(false),
-  dateBourse: z.boolean().default(false),
-  dateEmission: z.coerce.date().optional(),
-  dateJouissance: z.coerce.date().optional(),
+  societeEmettrice: z.string(),
+  MarcheCotation: z.string(),
+  codeBourse: z.string(),
+  isin: z.string(),
+  valeurNominale: z.number().min(0),
+  dateEmission: z.coerce.date(),
+  dateJouissance: z.coerce.date(),
+  nombreTitres: z.number().min(1),
+  dividendrate: z.number().min(0).optional(),
+  capitalOperation: z.string().optional(),
+  commission: z.number().min(0).optional(),
 });
 
 interface GetListedCompaniesResponse {
@@ -97,47 +75,17 @@ export default function AjoutActionPage() {
   const [companies, setCompanies] = useState<GetListedCompaniesResponse | null>(
     null
   );
-  const [open, setOpen] = useState(false);
-
-  // Get translations
+  const locale = useLocale();
   const t = useTranslations("Actions");
 
   // Initialize the form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quantite: "",
-      nombreTotalTitres: "",
-      code1: "",
-      code2: "",
-      codeValeur: "",
-      typeTitre: "",
-      codeISIN: "",
-      nominal: "",
-      libelleCourt: "",
-      emetteur: "",
-      libelleLong: "",
-      modeCotation: "",
-      natureJuridique: "",
-      typeCotation: "",
-      depositaire: "",
-      tauxVariation: "",
-      devise: "",
-      ordreCote: "",
-      titreParent: "",
-      modeEnregistrement: "",
-      titreLocal: "",
-      refSource: "",
-      teneurRegistre: "",
-      secteurEconomique: "",
-      statusTitre: "",
-      coteEnBourse: false,
-      droitGarde: false,
-      fraisTransaction: false,
-      plusInformation: false,
-      dateBourse: false,
       dateEmission: new Date(),
+      valeurNominale: 0,
       dateJouissance: new Date(),
+      dividendrate: 0,
     },
   });
 
@@ -164,19 +112,22 @@ export default function AjoutActionPage() {
       console.log(values);
 
       await fetchGraphQL(CREATE_STOCK, {
-        name: values.codeValeur,
-        isincode: values.codeISIN,
+        name: values.codeBourse,
+        isincode: values.isin,
         issuer: companies?.listListedCompanies?.find(
-          (company) => company.id === values.emetteur
+          (company) => company.id === values.societeEmettrice
         )?.nom,
-        code: values.codeValeur,
-        listedcompanyid: values.emetteur,
-        marketlisting: values.modeCotation,
-        emissiondate: values.dateEmission?.toISOString(),
-        enjoymentdate: values.dateJouissance?.toISOString(),
-        quantity: Number.parseInt(values.nombreTotalTitres || "0"),
+        code: values.codeBourse,
+        listedcompanyid: values.societeEmettrice,
+        marketlisting: values.MarcheCotation,
+        emissiondate: values.dateEmission.toISOString(),
+        enjoymentdate: values.dateJouissance.toISOString(),
+        quantity: values.nombreTitres,
         type: "action",
-        facevalue: Number.parseFloat(values.nominal || "0"),
+        facevalue: values.valeurNominale,
+        capitaloperation: values.capitalOperation,
+        commission: values.commission,
+        dividendrate: values.dividendrate,
       });
 
       // Reset form after successful submission
@@ -198,825 +149,416 @@ export default function AjoutActionPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="min-h-screen bg-background">
       <div className="pb-6">
         <MyMarquee />
       </div>
-      <h1 className="text-3xl text-secondary font-bold mb-6">{t("title")}</h1>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex flex-wrap gap-4 ">
-            {/* Row 1 - Emetteur first */}
-            <FormField
-              control={form.control}
-              name="emetteur"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.issuer")}</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "justify-between w-full",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value && companies
-                            ? companies.listListedCompanies?.find(
-                                (company) => company.id === field.value
-                              )?.nom || t("form.selectIssuer")
-                            : t("form.selectIssuer")}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-full">
-                      <Command>
-                        <CommandInput placeholder={t("form.searchIssuer")} />
-                        <CommandList>
-                          <CommandEmpty>{t("form.noIssuerFound")}</CommandEmpty>
-                          <CommandGroup>
-                            {companies?.listListedCompanies?.map((company) => (
-                              <CommandItem
-                                value={company.nom}
-                                key={company.id}
-                                onSelect={() => {
-                                  form.setValue(
-                                    "emetteur",
-                                    company.id.toString()
-                                  );
-                                }}
-                              >
-                                <Check
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            {t("title")}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            {t("form.description") || "Enter stock details below"}
+          </p>
+        </div>
+
+        <Card className="w-full max-w-5xl mx-auto shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold text-center">
+              {t("form.formTitle") || "Stock Information"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
+                {/* Company Information Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <h3 className="text-lg font-medium">
+                      {t("form.companyInfo") || "Company Information"}
+                    </h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="societeEmettrice"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>{t("form.issuer")}</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
                                   className={cn(
-                                    "mr-2 h-4 w-4",
-                                    company.id === field.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
+                                    "justify-between w-full",
+                                    !field.value && "text-muted-foreground"
                                   )}
+                                >
+                                  {field.value && companies
+                                    ? companies.listListedCompanies?.find(
+                                        (company) => company.id === field.value
+                                      )?.nom || t("form.selectIssuer")
+                                    : t("form.selectIssuer")}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0 w-[300px]">
+                              <Command>
+                                <CommandInput
+                                  placeholder={t("form.searchIssuer")}
                                 />
-                                {company.nom}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="quantite"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.quantity")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.quantityPlaceholder")}
-                      {...field}
-                      type="number"
-                      onKeyDown={preventNonNumericInput}
+                                <CommandList>
+                                  <CommandEmpty>
+                                    {t("form.noIssuerFound")}
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {companies?.listListedCompanies?.map(
+                                      (company) => (
+                                        <CommandItem
+                                          value={company.nom}
+                                          key={company.id}
+                                          onSelect={() => {
+                                            form.setValue(
+                                              "societeEmettrice",
+                                              company.id.toString()
+                                            );
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              company.id === field.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {company.nom}
+                                        </CommandItem>
+                                      )
+                                    )}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="nombreTotalTitres"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.totalShares")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.totalSharesPlaceholder")}
-                      {...field}
-                      type="number"
-                      onKeyDown={preventNonNumericInput}
+                    <FormField
+                      control={form.control}
+                      name="MarcheCotation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.market")}</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue
+                                  placeholder={t("form.selectMarket")}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Marché principal">
+                                {t("form.mainMarket")}
+                              </SelectItem>
+                              <SelectItem value="Marché PME">
+                                {t("form.smeMarket")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            {/* Row 2 */}
-            <FormField
-              control={form.control}
-              name="code1"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.code1")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.code1Placeholder")}
-                      {...field}
+                    <FormField
+                      control={form.control}
+                      name="codeBourse"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.stockCode")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.stockCodePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </div>
+                </div>
 
-            <FormField
-              control={form.control}
-              name="code2"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.code2")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.code2Placeholder")}
-                      {...field}
+                {/* Stock Details Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <h3 className="text-lg font-medium">
+                      {t("form.stockDetails") || "Stock Details"}
+                    </h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="isin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.isin")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.isinPlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="codeValeur"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.valueCode")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.valueCodePlaceholder")}
-                      {...field}
+                    <FormField
+                      control={form.control}
+                      name="valeurNominale"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.nominal")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.nominalPlaceholder")}
+                              type="number"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              onKeyDown={preventNonNumericInput}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            {/* Continue with the rest of the form fields, updating each FormItem with className="flex-1 min-w-[300px]" */}
-            {/* Row 3 */}
-            <FormField
-              control={form.control}
-              name="typeTitre"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.securityType")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("form.selectType")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="action">{t("form.action")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="codeISIN"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.isinCode")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.isinCodePlaceholder")}
-                      {...field}
+                    <FormField
+                      control={form.control}
+                      name="nombreTitres"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.quantity")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.quantityPlaceholder")}
+                              type="number"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              onKeyDown={preventNonNumericInput}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </div>
+                </div>
 
-            <FormField
-              control={form.control}
-              name="nominal"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.nominal")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.nominalPlaceholder")}
-                      {...field}
-                      type="number"
-                      onKeyDown={preventNonNumericInput}
+                {/* Dates Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <h3 className="text-lg font-medium">
+                      {t("form.dates") || "Important Dates"}
+                    </h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="dateEmission"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.issueDate")}</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP", {
+                                      locale:
+                                        locale === "fr"
+                                          ? fr
+                                          : locale === "en"
+                                          ? enUS
+                                          : ar,
+                                    })
+                                  ) : (
+                                    <span>{t("form.selectDate")}</span>
+                                  )}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            {/* Row 4 */}
-            <FormField
-              control={form.control}
-              name="libelleCourt"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.shortLabel")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.shortLabelPlaceholder")}
-                      {...field}
+                    <FormField
+                      control={form.control}
+                      name="dateJouissance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.enjoymentDate")}</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP", {
+                                      locale:
+                                        locale === "fr"
+                                          ? fr
+                                          : locale === "en"
+                                          ? enUS
+                                          : ar,
+                                    })
+                                  ) : (
+                                    <span>{t("form.selectDate")}</span>
+                                  )}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </div>
+                </div>
 
-            <FormField
-              control={form.control}
-              name="libelleLong"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.longLabel")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.longLabelPlaceholder")}
-                      {...field}
+                {/* Financial Details Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <h3 className="text-lg font-medium">
+                      {t("form.financialDetails") || "Financial Details"}
+                    </h3>
+                    <Separator className="flex-1 ml-4" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="dividendrate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.dividendRate")} </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.dividendRatePlaceholder")}
+                              type="number"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              onKeyDown={preventNonNumericInput}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="modeCotation"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.quotationMode")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("form.selectMode")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Continu">
-                        {t("form.continuous")}
-                      </SelectItem>
-                      <SelectItem value="Fixing">{t("form.fixing")}</SelectItem>
-                      <SelectItem value="Bloc">{t("form.block")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 5 */}
-            <FormField
-              control={form.control}
-              name="natureJuridique"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.legalNature")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("form.selectNature")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="SPA">SPA</SelectItem>
-                      <SelectItem value="SARL">SARL</SelectItem>
-                      <SelectItem value="EURL">EURL</SelectItem>
-                      <SelectItem value="SNC">SNC</SelectItem>
-                      <SelectItem value="SCS">SCS</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="typeCotation"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.quotationType")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={t("form.selectQuotationType")}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Ordinaire">
-                        {t("form.ordinary")}
-                      </SelectItem>
-                      <SelectItem value="Préférentielle">
-                        {t("form.preferential")}
-                      </SelectItem>
-                      <SelectItem value="Prioritaire">
-                        {t("form.priority")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="depositaire"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.custodian")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("form.selectCustodian")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Algérie Clearing">
-                        Algérie Clearing
-                      </SelectItem>
-                      <SelectItem value="Banque">{t("form.bank")}</SelectItem>
-                      <SelectItem value="Autre">{t("form.other")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 6 */}
-            <FormField
-              control={form.control}
-              name="tauxVariation"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.variationRate")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.variationRatePlaceholder")}
-                      {...field}
-                      type="number"
-                      onKeyDown={preventNonNumericInput}
+                    <FormField
+                      control={form.control}
+                      name="commission"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.commission")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.commissionPlaceholder")}
+                              type="number"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              onKeyDown={preventNonNumericInput}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </div>
+                </div>
 
-            <FormField
-              control={form.control}
-              name="devise"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.currency")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("form.selectCurrency")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="DZD">DZD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="ordreCote"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.listingOrder")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.listingOrderPlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 7 */}
-            <FormField
-              control={form.control}
-              name="titreParent"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.parentSecurity")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={t("form.selectParentSecurity")}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">{t("form.none")}</SelectItem>
-                      {/* This would ideally be populated from your API */}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="modeEnregistrement"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.registrationMode")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={t("form.selectRegistrationMode")}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Nominatif">
-                        {t("form.nominative")}
-                      </SelectItem>
-                      <SelectItem value="Au porteur">
-                        {t("form.bearer")}
-                      </SelectItem>
-                      <SelectItem value="Mixte">{t("form.mixed")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="titreLocal"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.localSecurity")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.localSecurityPlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 8 */}
-            <FormField
-              control={form.control}
-              name="refSource"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.sourceRef")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("form.sourceRefPlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="teneurRegistre"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>TCC</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={t("form.selectRegistryKeeper")}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Algérie Clearing">
-                        Algérie Clearing
-                      </SelectItem>
-                      <SelectItem value="Émetteur">
-                        {t("form.issuer")}
-                      </SelectItem>
-                      <SelectItem value="Autre">{t("form.other")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="secteurEconomique"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.economicSector")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={t("form.selectEconomicSector")}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Finance">
-                        {t("form.finance")}
-                      </SelectItem>
-                      <SelectItem value="Industrie">
-                        {t("form.industry")}
-                      </SelectItem>
-                      <SelectItem value="Services">
-                        {t("form.services")}
-                      </SelectItem>
-                      <SelectItem value="Agriculture">
-                        {t("form.agriculture")}
-                      </SelectItem>
-                      <SelectItem value="Technologie">
-                        {t("form.technology")}
-                      </SelectItem>
-                      <SelectItem value="Énergie">
-                        {t("form.energy")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Row 9 - Coté en bourse */}
-            <div className="flex flex-col w-full gap-4">
-              <FormField
-                control={form.control}
-                name="coteEnBourse"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">
-                        Coté en bourse
-                      </FormLabel>
-                      <FormDescription>
-                        {field.value ? "Oui" : "Non"}
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-
-          {/* Date fields */}
-          <div className="flex flex-wrap gap-4">
-            <FormField
-              control={form.control}
-              name="dateEmission"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.issueDate")}</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "dd/MM/yyyy", {
-                              locale: fr,
-                            })
-                          ) : (
-                            <span>{t("form.selectDate")}</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                        captionLayout="dropdown-buttons"
-                        fromYear={1950}
-                        toYear={2050}
-                        locale={fr}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="dateJouissance"
-              render={({ field }) => (
-                <FormItem className="flex-1 min-w-96">
-                  <FormLabel>{t("form.enjoymentDate")}</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "dd/MM/yyyy", {
-                              locale: fr,
-                            })
-                          ) : (
-                            <span>{t("form.selectDate")}</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                        captionLayout="dropdown-buttons"
-                        fromYear={1950}
-                        toYear={2050}
-                        locale={fr}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Checkboxes */}
-          <div className="flex flex-wrap gap-4 justify-center">
-            <FormField
-              control={form.control}
-              name="droitGarde"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-2 space-y-0 bg-muted/20 px-4 py-2 rounded-md">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">
-                    {t("form.custodyRight")}
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="fraisTransaction"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-2 space-y-0 bg-muted/20 px-4 py-2 rounded-md">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">
-                    {t("form.transactionFees")}
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="plusInformation"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-2 space-y-0 bg-muted/20 px-4 py-2 rounded-md">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">
-                    {t("form.moreInformation")}
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="dateBourse"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-2 space-y-0 bg-muted/20 px-4 py-2 rounded-md">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="font-normal cursor-pointer">
-                    {t("form.stockExchangeDate")}
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pt-4">
-            <Button type="button" variant="outline">
-              <X className="mr-2 h-4 w-4" /> {t("form.cancel")}
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Save className="mr-2 h-4 w-4" /> {t("form.validate")}
-            </Button>
-          </div>
-        </form>
-      </Form>
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-4 pt-6">
+                  <Button type="button" variant="outline" className="w-32">
+                    <X className="mr-2 h-4 w-4" /> {t("form.cancel")}
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
+                    {t("form.validate")}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

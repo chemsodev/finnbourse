@@ -25,6 +25,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Trash2, Plus } from "lucide-react";
 import type { Commission, CommissionTier } from "@/lib/interfaces";
+import { useTranslations } from "next-intl";
 
 interface CommissionFormProps {
   commission: Commission | null;
@@ -32,34 +33,27 @@ interface CommissionFormProps {
   onCancel: () => void;
 }
 
-const formSchema = z.object({
-  loiDeFrais: z.string().min(1, "Loi de frais obligatoire"),
-  marche: z.string().min(1, "Marché obligatoire"),
-  libelle: z.string().min(1, "Libellé obligatoire"),
-  code: z.string().min(1, "Code obligatoire"),
-  titreType: z.enum(["action", "obligation"]).optional(),
-  commissionType: z.enum(["fixed", "percentage", "tiered"]),
-  commissionValue: z.number().min(0, "La valeur doit être positive"),
-  commissionSGBV: z.number().min(0, "La valeur doit être positive").optional(),
-  tva: z
-    .number()
-    .min(0, "La TVA doit être positive")
-    .max(100, "La TVA ne peut pas dépasser 100%"),
-  irgType1: z
-    .number()
-    .min(0, "L'IRG doit être positif")
-    .max(100, "L'IRG ne peut pas dépasser 100%"),
-  irgType2: z
-    .number()
-    .min(0, "L'IRG doit être positif")
-    .max(100, "L'IRG ne peut pas dépasser 100%"),
-});
-
 export default function CommissionForm({
   commission,
   onSave,
   onCancel,
 }: CommissionFormProps) {
+  const t = useTranslations("CommissionForm");
+
+  const formSchema = z.object({
+    loiDeFrais: z.string().min(1, t("feeRuleRequired")),
+    marche: z.string().min(1, t("marketRequired")),
+    libelle: z.string().min(1, t("nameRequired")),
+    code: z.string().min(1, t("codeRequired")),
+    titreType: z.enum(["action", "obligation"]).optional(),
+    commissionType: z.enum(["fixed", "percentage", "tiered"]),
+    commissionValue: z.number().min(0, t("valueMustBePositive")),
+    commissionSGBV: z.number().min(0, t("valueMustBePositive")).optional(),
+    tva: z.number().min(0, t("vatMustBePositive")).max(100, t("vatMax")),
+    irgType1: z.number().min(0, t("irgMustBePositive")).max(100, t("irgMax")),
+    irgType2: z.number().min(0, t("irgMustBePositive")).max(100, t("irgMax")),
+  });
+
   const [commissionType, setCommissionType] = useState<string>(
     commission?.commissionType || "percentage"
   );
@@ -176,9 +170,9 @@ export default function CommissionForm({
             name="loiDeFrais"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Loi de frais</FormLabel>
+                <FormLabel>{t("feeRule")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Saisir loi de frais" {...field} />
+                  <Input placeholder={t("enterFeeRule")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -190,9 +184,9 @@ export default function CommissionForm({
             name="marche"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Marché</FormLabel>
+                <FormLabel>{t("market")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Saisir marché" {...field} />
+                  <Input placeholder={t("enterMarket")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -204,9 +198,9 @@ export default function CommissionForm({
             name="libelle"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Libellé</FormLabel>
+                <FormLabel>{t("name")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Saisir libellé" {...field} />
+                  <Input placeholder={t("enterName")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -218,9 +212,9 @@ export default function CommissionForm({
             name="code"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Code</FormLabel>
+                <FormLabel>{t("code")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Saisir code" {...field} />
+                  <Input placeholder={t("enterCode")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -232,22 +226,22 @@ export default function CommissionForm({
             name="titreType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Type du titre</FormLabel>
+                <FormLabel>{t("securityType")}</FormLabel>
                 <Select
-                  onValueChange={(value: "action" | "obligation") => {
+                  onValueChange={(value) => {
                     field.onChange(value);
-                    setTitreType(value);
+                    setTitreType(value as "action" | "obligation");
                   }}
                   value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner le type de titre" />
+                      <SelectValue placeholder={t("selectSecurityType")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="action">Action</SelectItem>
-                    <SelectItem value="obligation">Obligation</SelectItem>
+                    <SelectItem value="action">{t("stock")}</SelectItem>
+                    <SelectItem value="obligation">{t("bond")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -260,23 +254,25 @@ export default function CommissionForm({
             name="commissionType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Type de commission</FormLabel>
+                <FormLabel>{t("commissionType")}</FormLabel>
                 <Select
                   onValueChange={(value) => {
                     field.onChange(value);
                     setCommissionType(value);
                   }}
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner le type de commission" />
+                      <SelectValue placeholder={t("selectCommissionType")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="fixed">Montant fixe</SelectItem>
-                    <SelectItem value="percentage">Pourcentage</SelectItem>
-                    <SelectItem value="tiered">Par palier</SelectItem>
+                    <SelectItem value="fixed">{t("fixed")}</SelectItem>
+                    <SelectItem value="percentage">
+                      {t("percentage")}
+                    </SelectItem>
+                    <SelectItem value="tiered">{t("tiered")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -290,19 +286,14 @@ export default function CommissionForm({
               name="commissionValue"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {commissionType === "fixed"
-                      ? "Montant fixe"
-                      : "Pourcentage"}
-                  </FormLabel>
+                  <FormLabel>{t("commissionValue")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      step={commissionType === "fixed" ? "1" : "0.01"}
                       placeholder={
                         commissionType === "fixed"
-                          ? "Saisir montant"
-                          : "Saisir pourcentage"
+                          ? t("enterFixedAmount")
+                          : t("enterPercentage")
                       }
                       {...field}
                       onChange={(e) =>
@@ -312,6 +303,11 @@ export default function CommissionForm({
                       }
                     />
                   </FormControl>
+                  <FormDescription>
+                    {commissionType === "fixed"
+                      ? t("fixedAmountDescription")
+                      : t("percentageDescription")}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -323,12 +319,12 @@ export default function CommissionForm({
             name="commissionSGBV"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Commission SGBV (%)</FormLabel>
+                <FormLabel>{t("commissionSGBV")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="Commission SGBV"
+                    placeholder={t("enterSGBVPercentage")}
                     {...field}
                     onChange={(e) =>
                       field.onChange(
@@ -337,13 +333,7 @@ export default function CommissionForm({
                     }
                   />
                 </FormControl>
-                <FormDescription>
-                  {titreType === "action"
-                    ? "Pour les actions, la valeur par défaut est de 0,15%"
-                    : titreType === "obligation"
-                    ? "Pour les obligations, la valeur par défaut est de 0,10%"
-                    : "Sélectionnez d'abord un type de titre"}
-                </FormDescription>
+                <FormDescription>{t("sgbvDescription")}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -354,21 +344,18 @@ export default function CommissionForm({
             name="tva"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>TVA (%)</FormLabel>
+                <FormLabel>{t("vat")}</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      placeholder="Saisir pourcentage TVA"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(Number.parseFloat(e.target.value) || 0)
-                      }
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      %
-                    </div>
-                  </div>
+                  <Input
+                    type="number"
+                    placeholder={t("enterVAT")}
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? 0 : parseFloat(e.target.value)
+                      )
+                    }
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -380,21 +367,18 @@ export default function CommissionForm({
             name="irgType1"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>IRG Type 1 (%)</FormLabel>
+                <FormLabel>{t("irgType1")}</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      placeholder="Saisir pourcentage IRG Type 1"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(Number.parseFloat(e.target.value) || 0)
-                      }
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      %
-                    </div>
-                  </div>
+                  <Input
+                    type="number"
+                    placeholder={t("enterIRG")}
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? 0 : parseFloat(e.target.value)
+                      )
+                    }
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -406,21 +390,18 @@ export default function CommissionForm({
             name="irgType2"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>IRG Type 2 (%)</FormLabel>
+                <FormLabel>{t("irgType2")}</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      placeholder="Saisir pourcentage IRG Type 2"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(Number.parseFloat(e.target.value) || 0)
-                      }
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      %
-                    </div>
-                  </div>
+                  <Input
+                    type="number"
+                    placeholder={t("enterIRG")}
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? 0 : parseFloat(e.target.value)
+                      )
+                    }
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -431,86 +412,119 @@ export default function CommissionForm({
         {commissionType === "tiered" && (
           <Card>
             <CardContent className="pt-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Commission par paliers</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddTier}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Ajouter palier
-                </Button>
-              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">
+                    {t("commissionTiers")}
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddTier}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> {t("addTier")}
+                  </Button>
+                </div>
 
-              {tiers.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground">
-                  Aucun palier défini. Cliquez sur "Ajouter palier" pour créer
-                  votre premier palier.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {tiers?.map((tier, index) => (
-                    <div
-                      key={index}
-                      className="grid grid-cols-12 gap-4 items-center"
-                    >
-                      <div className="col-span-4">
-                        <FormLabel className="text-xs">Montant min</FormLabel>
-                        <Input
-                          type="number"
-                          value={tier.minAmount || ""}
-                          onChange={(e) =>
-                            handleTierChange(index, "minAmount", e.target.value)
-                          }
-                          placeholder="Montant min"
-                        />
+                {tiers.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground">
+                    {t("noTiersAdded")}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {tiers.map((tier, index) => (
+                      <div
+                        key={index}
+                        className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center border p-4 rounded-md"
+                      >
+                        <div>
+                          <FormLabel
+                            className="text-sm font-normal"
+                            htmlFor={`tier-min-${index}`}
+                          >
+                            {t("minAmount")}
+                          </FormLabel>
+                          <Input
+                            id={`tier-min-${index}`}
+                            type="number"
+                            value={tier.minAmount}
+                            onChange={(e) =>
+                              handleTierChange(
+                                index,
+                                "minAmount",
+                                e.target.value
+                              )
+                            }
+                            placeholder={t("enterMinAmount")}
+                          />
+                        </div>
+                        <div>
+                          <FormLabel
+                            className="text-sm font-normal"
+                            htmlFor={`tier-max-${index}`}
+                          >
+                            {t("maxAmount")}
+                          </FormLabel>
+                          <Input
+                            id={`tier-max-${index}`}
+                            type="number"
+                            value={
+                              tier.maxAmount === null ? "" : tier.maxAmount
+                            }
+                            onChange={(e) =>
+                              handleTierChange(
+                                index,
+                                "maxAmount",
+                                e.target.value
+                              )
+                            }
+                            placeholder={t("enterMaxAmount")}
+                          />
+                        </div>
+                        <div>
+                          <FormLabel
+                            className="text-sm font-normal"
+                            htmlFor={`tier-value-${index}`}
+                          >
+                            {t("commissionPercentage")}
+                          </FormLabel>
+                          <Input
+                            id={`tier-value-${index}`}
+                            type="number"
+                            value={tier.value}
+                            onChange={(e) =>
+                              handleTierChange(index, "value", e.target.value)
+                            }
+                            placeholder={t("enterPercentage")}
+                          />
+                        </div>
+                        <div className="flex items-end justify-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveTier(index)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {t("remove")}
+                          </Button>
+                        </div>
                       </div>
-                      <div className="col-span-4">
-                        <FormLabel className="text-xs">Montant max</FormLabel>
-                        <Input
-                          type="number"
-                          value={tier.maxAmount === null ? "" : tier.maxAmount}
-                          onChange={(e) =>
-                            handleTierChange(index, "maxAmount", e.target.value)
-                          }
-                          placeholder="Sans limite"
-                        />
-                      </div>
-                      <div className="col-span-3">
-                        <FormLabel className="text-xs">Taux (%)</FormLabel>
-                        <Input
-                          type="number"
-                          value={tier.value}
-                          onChange={(e) =>
-                            handleTierChange(index, "value", e.target.value)
-                          }
-                          placeholder="Taux %"
-                        />
-                      </div>
-                      <div className="col-span-1 pt-6">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemoveTier(index)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
 
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end space-x-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
+            {t("cancel")}
           </Button>
-          <Button type="submit">Enregistrer</Button>
+          <Button type="submit">{t("save")}</Button>
         </div>
       </form>
     </Form>

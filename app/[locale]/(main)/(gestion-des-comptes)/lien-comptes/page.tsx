@@ -30,8 +30,11 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslations } from "next-intl";
 
 export default function AccountLinking() {
+  const t = useTranslations("AccountLinking");
+
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState<AccountData[]>([
     {
@@ -79,7 +82,7 @@ export default function AccountLinking() {
           <CardHeader className="pb-4 border-b bg-primary">
             <div className="flex items-center justify-between">
               <CardTitle className="text-2xl font-bold text-white">
-                Lier le compte Espèce au compte Titre
+                {t("pageTitle")}
               </CardTitle>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
@@ -88,13 +91,13 @@ export default function AccountLinking() {
                     className="gap-1 bg-white text-indigo-700 hover:bg-indigo-50 font-medium"
                   >
                     <Plus className="h-4 w-4" />
-                    <span>Ajouter</span>
+                    <span>{t("add")}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none shadow-2xl">
                   <DialogHeader className="p-6 bg-gradient-to-r bg-primary text-white">
                     <DialogTitle className="text-xl font-bold">
-                      Ajouter une nouvelle liaison
+                      {t("addNewLink")}
                     </DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="p-6">
@@ -104,11 +107,11 @@ export default function AccountLinking() {
                           htmlFor="client"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Client
+                          {t("client")}
                         </label>
                         <Input
                           id="client"
-                          placeholder="Entrez le nom du client"
+                          placeholder={t("enterClientName")}
                           className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                         />
                       </div>
@@ -117,24 +120,24 @@ export default function AccountLinking() {
                           htmlFor="typeClient"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Type
+                          {t("type")}
                         </label>
                         <Select>
                           <SelectTrigger
                             id="typeClient"
                             className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                           >
-                            <SelectValue placeholder="Sélectionnez un type" />
+                            <SelectValue placeholder={t("selectType")} />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-slate-800">
                             <SelectItem value="particulier">
-                              Particulier
+                              {t("individual")}
                             </SelectItem>
                             <SelectItem value="entreprise">
-                              Entreprise
+                              {t("company")}
                             </SelectItem>
                             <SelectItem value="institution">
-                              Institution Financière
+                              {t("financialInstitution")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -144,14 +147,14 @@ export default function AccountLinking() {
                           htmlFor="agent"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Agent
+                          {t("agent")}
                         </label>
                         <Select>
                           <SelectTrigger
                             id="agent"
                             className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                           >
-                            <SelectValue placeholder="Sélectionnez un agent" />
+                            <SelectValue placeholder={t("selectAgent")} />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-slate-800">
                             <SelectItem value="agent1">Agent 1</SelectItem>
@@ -165,11 +168,11 @@ export default function AccountLinking() {
                           htmlFor="codeBanque"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Code Banque
+                          {t("bankCode")}
                         </label>
                         <Input
                           id="codeBanque"
-                          placeholder="Entrez le code banque"
+                          placeholder={t("enterBankCode")}
                           className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                         />
                       </div>
@@ -178,14 +181,14 @@ export default function AccountLinking() {
                           htmlFor="compteEspece"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Compte Espèce
+                          {t("cashAccount")}
                         </label>
                         <Select>
                           <SelectTrigger
                             id="compteEspece"
                             className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                           >
-                            <SelectValue placeholder="Sélectionnez un compte" />
+                            <SelectValue placeholder={t("selectAccount")} />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-slate-800">
                             <SelectItem value="esp1">ESP001</SelectItem>
@@ -199,14 +202,14 @@ export default function AccountLinking() {
                           htmlFor="compteTitre"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Compte Titre
+                          {t("securitiesAccount")}
                         </label>
                         <Select>
                           <SelectTrigger
                             id="compteTitre"
                             className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                           >
-                            <SelectValue placeholder="Sélectionnez un compte" />
+                            <SelectValue placeholder={t("selectAccount")} />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-slate-800">
                             <SelectItem value="ttr1">TTR001</SelectItem>
@@ -220,14 +223,14 @@ export default function AccountLinking() {
                           htmlFor="compteBancaire"
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          Compte Bancaire
+                          {t("bankAccount")}
                         </label>
                         <Select>
                           <SelectTrigger
                             id="compteBancaire"
                             className="border-slate-300  dark:border-slate-700 dark:bg-slate-800"
                           >
-                            <SelectValue placeholder="Sélectionnez un compte" />
+                            <SelectValue placeholder={t("selectAccount")} />
                           </SelectTrigger>
                           <SelectContent className="bg-white dark:bg-slate-800">
                             <SelectItem value="bnk1">BNK001</SelectItem>
@@ -244,10 +247,10 @@ export default function AccountLinking() {
                         onClick={() => setOpen(false)}
                         className="border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                       >
-                        Annuler
+                        {t("cancel")}
                       </Button>
                       <Button type="submit" className="bg-primary text-white">
-                        Valider
+                        {t("validate")}
                       </Button>
                     </div>
                   </form>
@@ -259,7 +262,7 @@ export default function AccountLinking() {
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Rechercher..."
+                placeholder={t("search")}
                 className="pl-9 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
               />
             </div>
@@ -270,45 +273,31 @@ export default function AccountLinking() {
                 className="border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <Filter className="h-4 w-4 mr-1" />
-                Filtrer
+                {t("filter")}
               </Button>
               <Select>
                 <SelectTrigger className="w-[180px] border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800">
-                  <SelectValue placeholder="Trier par" />
+                  <SelectValue placeholder={t("sortBy")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Plus récent</SelectItem>
-                  <SelectItem value="oldest">Plus ancien</SelectItem>
-                  <SelectItem value="agent">Code Agent</SelectItem>
+                  <SelectItem value="newest">{t("newest")}</SelectItem>
+                  <SelectItem value="oldest">{t("oldest")}</SelectItem>
+                  <SelectItem value="agent">{t("agentCode")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-slate-100 dark:bg-slate-800">
+              <TableHeader>
                 <TableRow>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Client
-                  </TableHead>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Type
-                  </TableHead>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Code Agent
-                  </TableHead>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Compte Espèce
-                  </TableHead>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Compte Titre
-                  </TableHead>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Compte Bancaire
-                  </TableHead>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300">
-                    Order de Tu
-                  </TableHead>
+                  <TableHead>{t("client")}</TableHead>
+                  <TableHead>{t("type")}</TableHead>
+                  <TableHead>{t("agentCode")}</TableHead>
+                  <TableHead>{t("cashAccount")}</TableHead>
+                  <TableHead>{t("securitiesAccount")}</TableHead>
+                  <TableHead>{t("bankAccount")}</TableHead>
+                  <TableHead>{t("tuOrder")}</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -366,7 +355,11 @@ export default function AccountLinking() {
             </Table>
             <div className="p-4 border-t flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
               <div>
-                Affichage de 1 à {accounts.length} sur {accounts.length} entrées
+                {t("showing", {
+                  from: 1,
+                  to: accounts.length,
+                  total: accounts.length,
+                })}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -375,7 +368,7 @@ export default function AccountLinking() {
                   disabled
                   className="h-8 px-3 border-slate-300 dark:border-slate-700"
                 >
-                  Précédent
+                  {t("previous")}
                 </Button>
                 <Button
                   variant="outline"
@@ -383,7 +376,7 @@ export default function AccountLinking() {
                   disabled
                   className="h-8 px-3 border-slate-300 dark:border-slate-700"
                 >
-                  Suivant
+                  {t("next")}
                 </Button>
               </div>
             </div>

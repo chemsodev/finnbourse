@@ -37,8 +37,10 @@ import { fr } from "date-fns/locale";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 
 export default function CompteEspece() {
+  const t = useTranslations("CompteEspece");
   const [date, setDate] = useState<Date>();
   const [openDate, setOpenDate] = useState<Date>();
   const [closeDate, setCloseDate] = useState<Date>();
@@ -63,21 +65,21 @@ export default function CompteEspece() {
     agenceSaisie: "",
   });
 
-  // TIB Complet (calculated field)
-  const [tibComplet, setTibComplet] = useState("");
+  // rib Complet (calculated field)
+  const [ribComplet, setRibComplet] = useState("");
 
   // Update form state
   const updateForm = (field: string, value: any) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Calculate TIB when RIB fields change
+  // Calculate RIB when RIB fields change
   useEffect(() => {
     const { ribBanque, ribAgence, ribCompte, ribCle } = formState;
     if (ribBanque || ribAgence || ribCompte || ribCle) {
-      setTibComplet(`${ribBanque} ${ribAgence} ${ribCompte} ${ribCle}`);
+      setRibComplet(`${ribBanque} ${ribAgence} ${ribCompte} ${ribCle}`);
     } else {
-      setTibComplet("");
+      setRibComplet("");
     }
   }, [
     formState.ribBanque,
@@ -91,39 +93,43 @@ export default function CompteEspece() {
       <Card className="w-full shadow-lg border-0">
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="text-2xl font-bold text-primary">
-            Compte Espèce
+            {t("title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-8">
           {/* Informations principales */}
           <div>
-            <h3 className="text-lg font-medium mb-4">
-              Informations principales
-            </h3>
+            <h3 className="text-lg font-medium mb-4">{t("infoPrincipales")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="natureClient" className="text-sm font-medium">
-                  Nature Client <span className="text-red-500">*</span>
+                  {t("natureClient")} <span className="text-red-500">*</span>
                 </Label>
                 <Select>
                   <SelectTrigger id="natureClient" className="w-full">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="particulier">Particulier</SelectItem>
-                    <SelectItem value="entreprise">Entreprise</SelectItem>
-                    <SelectItem value="association">Association</SelectItem>
+                    <SelectItem value="particulier">
+                      {t("natureOptions.particulier")}
+                    </SelectItem>
+                    <SelectItem value="entreprise">
+                      {t("natureOptions.entreprise")}
+                    </SelectItem>
+                    <SelectItem value="association">
+                      {t("natureOptions.association")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="nomRaison" className="text-sm font-medium">
-                  Nom/Raison sociale <span className="text-red-500">*</span>
+                  {t("nomRaison")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="nomRaison"
-                  placeholder="Entrez le nom ou la raison sociale"
+                  placeholder={t("nomRaison")}
                   value={formState.nomRaison}
                   onChange={(e) => updateForm("nomRaison", e.target.value)}
                 />
@@ -131,34 +137,40 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="prenomAbrev" className="text-sm font-medium">
-                  Prénom/Abrév.R.S
+                  {t("prenomAbrev")}
                 </Label>
                 <Select>
                   <SelectTrigger id="prenomAbrev" className="w-full">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="m">M.</SelectItem>
-                    <SelectItem value="mme">Mme.</SelectItem>
-                    <SelectItem value="sa">S.A.</SelectItem>
-                    <SelectItem value="sarl">S.A.R.L.</SelectItem>
+                    <SelectItem value="m">{t("prefixeOptions.m")}</SelectItem>
+                    <SelectItem value="mme">
+                      {t("prefixeOptions.mme")}
+                    </SelectItem>
+                    <SelectItem value="sa">{t("prefixeOptions.sa")}</SelectItem>
+                    <SelectItem value="sarl">
+                      {t("prefixeOptions.sarl")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="formeJuridique" className="text-sm font-medium">
-                  Forme Juridique
+                  {t("formeJuridique")}
                 </Label>
                 <Select>
                   <SelectTrigger id="formeJuridique" className="w-full">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sa">SA</SelectItem>
-                    <SelectItem value="sarl">SARL</SelectItem>
-                    <SelectItem value="sas">SAS</SelectItem>
-                    <SelectItem value="ei">EI</SelectItem>
+                    <SelectItem value="sa">{t("formeOptions.sa")}</SelectItem>
+                    <SelectItem value="sarl">
+                      {t("formeOptions.sarl")}
+                    </SelectItem>
+                    <SelectItem value="sas">{t("formeOptions.sas")}</SelectItem>
+                    <SelectItem value="ei">{t("formeOptions.ei")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -168,23 +180,29 @@ export default function CompteEspece() {
                   htmlFor="categorieCompte"
                   className="text-sm font-medium"
                 >
-                  Catégorie Compte <span className="text-red-500">*</span>
+                  {t("categorieCompte")} <span className="text-red-500">*</span>
                 </Label>
                 <Select>
                   <SelectTrigger id="categorieCompte" className="w-full">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="courant">Courant</SelectItem>
-                    <SelectItem value="epargne">Épargne</SelectItem>
-                    <SelectItem value="professionnel">Professionnel</SelectItem>
+                    <SelectItem value="courant">
+                      {t("categorieOptions.courant")}
+                    </SelectItem>
+                    <SelectItem value="epargne">
+                      {t("categorieOptions.epargne")}
+                    </SelectItem>
+                    <SelectItem value="professionnel">
+                      {t("categorieOptions.professionnel")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="dateNaissance" className="text-sm font-medium">
-                  Date de Naissance
+                  {t("dateNaissance")}
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -197,7 +215,7 @@ export default function CompteEspece() {
                       {birthDate ? (
                         format(birthDate, "P", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>{t("selectionnerDate")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -219,15 +237,15 @@ export default function CompteEspece() {
 
           {/* Informations bancaires */}
           <div>
-            <h3 className="text-lg font-medium mb-4">Informations bancaires</h3>
+            <h3 className="text-lg font-medium mb-4">{t("infoBancaires")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="banque" className="text-sm font-medium">
-                  Banque
+                  {t("banque")}
                 </Label>
                 <Input
                   id="banque"
-                  placeholder="Entrez le nom de la banque"
+                  placeholder={t("banque")}
                   value={formState.banque}
                   onChange={(e) => updateForm("banque", e.target.value)}
                 />
@@ -235,11 +253,11 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="agence" className="text-sm font-medium">
-                  Agence
+                  {t("agence")}
                 </Label>
                 <Input
                   id="agence"
-                  placeholder="Entrez le nom de l'agence"
+                  placeholder={t("agence")}
                   value={formState.agence}
                   onChange={(e) => updateForm("agence", e.target.value)}
                 />
@@ -247,11 +265,11 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="agenceSaisie" className="text-sm font-medium">
-                  Agence qui saisie le compte
+                  {t("agenceSaisie")}
                 </Label>
                 <Input
                   id="agenceSaisie"
-                  placeholder="Entrez l'agence qui saisie"
+                  placeholder={t("agenceSaisie")}
                   value={formState.agenceSaisie}
                   onChange={(e) => updateForm("agenceSaisie", e.target.value)}
                 />
@@ -261,22 +279,22 @@ export default function CompteEspece() {
 
           <Separator />
 
-          {/* Informations RIB/TIB */}
+          {/* Informations RIB */}
           <div>
             <div className="flex items-center gap-2 mb-4">
               <CreditCard className="h-5 w-5 text-primary" />
               <h3 className="text-lg font-medium">
-                Coordonnées bancaires (RIB/TIB)
+                {t("coordonneesBancaires")}
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
               <div className="space-y-2">
                 <Label htmlFor="ribBanque" className="text-sm font-medium">
-                  Code Banque
+                  {t("codeBanque")}
                 </Label>
                 <Input
                   id="ribBanque"
-                  placeholder="Banque"
+                  placeholder={t("codeBanque")}
                   maxLength={5}
                   value={formState.ribBanque}
                   onChange={(e) => updateForm("ribBanque", e.target.value)}
@@ -285,11 +303,11 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="ribAgence" className="text-sm font-medium">
-                  Code Agence
+                  {t("codeAgence")}
                 </Label>
                 <Input
                   id="ribAgence"
-                  placeholder="Agence"
+                  placeholder={t("codeAgence")}
                   maxLength={5}
                   value={formState.ribAgence}
                   onChange={(e) => updateForm("ribAgence", e.target.value)}
@@ -298,11 +316,11 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="ribCompte" className="text-sm font-medium">
-                  Numéro de Compte
+                  {t("numeroCompte")}
                 </Label>
                 <Input
                   id="ribCompte"
-                  placeholder="N° Compte"
+                  placeholder={t("numeroCompte")}
                   maxLength={11}
                   value={formState.ribCompte}
                   onChange={(e) => updateForm("ribCompte", e.target.value)}
@@ -311,11 +329,11 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="ribCle" className="text-sm font-medium">
-                  Clé RIB
+                  {t("cleRib")}
                 </Label>
                 <Input
                   id="ribCle"
-                  placeholder="Clé"
+                  placeholder={t("cleRib")}
                   maxLength={2}
                   value={formState.ribCle}
                   onChange={(e) => updateForm("ribCle", e.target.value)}
@@ -325,17 +343,16 @@ export default function CompteEspece() {
 
             <div className="bg-muted/30 p-4 rounded-md">
               <Label
-                htmlFor="tibComplet"
+                htmlFor="ribComplet"
                 className="text-sm font-medium mb-2 block"
               >
-                TIB Complet
+                {t("ribComplet")}
               </Label>
               <div
-                id="tibComplet"
+                id="ribComplet"
                 className="font-mono text-base bg-background p-3 rounded border"
               >
-                {tibComplet ||
-                  "Remplissez les champs du RIB pour générer le TIB complet"}
+                {ribComplet || t("ribPlaceholder")}
               </div>
             </div>
           </div>
@@ -344,11 +361,11 @@ export default function CompteEspece() {
 
           {/* Dates */}
           <div>
-            <h3 className="text-lg font-medium mb-4">Dates</h3>
+            <h3 className="text-lg font-medium mb-4">{t("dates")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="dateCreation" className="text-sm font-medium">
-                  Date de création
+                  {t("dateCreation")}
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -361,7 +378,7 @@ export default function CompteEspece() {
                       {date ? (
                         format(date, "P", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>{t("selectionnerDate")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -379,7 +396,7 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="dateOuverture" className="text-sm font-medium">
-                  Date d'ouverture
+                  {t("dateOuverture")}
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -392,7 +409,7 @@ export default function CompteEspece() {
                       {openDate ? (
                         format(openDate, "P", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>{t("selectionnerDate")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -410,7 +427,7 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="dateFermeture" className="text-sm font-medium">
-                  Date de fermeture
+                  {t("dateFermeture")}
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -423,7 +440,7 @@ export default function CompteEspece() {
                       {closeDate ? (
                         format(closeDate, "P", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>{t("selectionnerDate")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -441,7 +458,7 @@ export default function CompteEspece() {
 
               <div className="space-y-2">
                 <Label htmlFor="dateMiseAJour" className="text-sm font-medium">
-                  Date de mise à jour
+                  {t("dateMiseAJour")}
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -454,7 +471,7 @@ export default function CompteEspece() {
                       {updateDate ? (
                         format(updateDate, "P", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>{t("selectionnerDate")}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -479,17 +496,17 @@ export default function CompteEspece() {
               onClick={() => setDialogOpen(true)}
             >
               <PlusCircle className="h-4 w-4" />
-              Ajouter des informations complémentaires
+              {t("ajouterInfos")}
             </Button>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between gap-4 p-6 bg-muted/10 border-t">
           <div className="text-sm text-muted-foreground">
-            <span className="text-red-500">*</span> Champs obligatoires
+            <span className="text-red-500">*</span> {t("champsObligatoires")}
           </div>
           <div className="flex gap-4">
-            <Button variant="outline">Annuler</Button>
-            <Button>Valider</Button>
+            <Button variant="outline">{t("annuler")}</Button>
+            <Button>{t("valider")}</Button>
           </div>
         </CardFooter>
       </Card>
@@ -497,91 +514,82 @@ export default function CompteEspece() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Informations complémentaires</DialogTitle>
-            <DialogDescription>
-              Ajoutez des informations supplémentaires pour ce compte.
-            </DialogDescription>
+            <DialogTitle>{t("infoComp.title")}</DialogTitle>
+            <DialogDescription>{t("infoComp.description")}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="nom" className="text-sm font-medium">
-                Nom
+                {t("infoComp.nom")}
               </Label>
-              <Input id="nom" placeholder="Entrez le nom" />
+              <Input id="nom" placeholder={t("infoComp.nom")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="prenom" className="text-sm font-medium">
-                Prénom
+                {t("infoComp.prenom")}
               </Label>
-              <Input id="prenom" placeholder="Entrez le prénom" />
+              <Input id="prenom" placeholder={t("infoComp.prenom")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fonction" className="text-sm font-medium">
-                Fonction
+                {t("infoComp.fonction")}
               </Label>
-              <Input id="fonction" placeholder="Entrez la fonction" />
+              <Input id="fonction" placeholder={t("infoComp.fonction")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="telephone1" className="text-sm font-medium">
-                Téléphone 1
+                {t("infoComp.telephone1")}
               </Label>
-              <Input
-                id="telephone1"
-                placeholder="Entrez le numéro de téléphone"
-              />
+              <Input id="telephone1" placeholder={t("infoComp.telephone1")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="telephone2" className="text-sm font-medium">
-                Téléphone 2
+                {t("infoComp.telephone2")}
               </Label>
-              <Input
-                id="telephone2"
-                placeholder="Entrez un autre numéro de téléphone"
-              />
+              <Input id="telephone2" placeholder={t("infoComp.telephone2")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fax" className="text-sm font-medium">
-                Fax
+                {t("infoComp.fax")}
               </Label>
-              <Input id="fax" placeholder="Entrez le numéro de fax" />
+              <Input id="fax" placeholder={t("infoComp.fax")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="numeroPiece" className="text-sm font-medium">
-                Numéro Pièce d'identité
+                {t("infoComp.numeroPiece")}
               </Label>
-              <Input
-                id="numeroPiece"
-                placeholder="Entrez le numéro de pièce d'identité"
-              />
+              <Input id="numeroPiece" placeholder={t("infoComp.numeroPiece")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="adresse" className="text-sm font-medium">
-                Adresse
+                {t("infoComp.adresse")}
               </Label>
-              <Input id="adresse" placeholder="Entrez l'adresse" />
+              <Input id="adresse" placeholder={t("infoComp.adresse")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="codePostal" className="text-sm font-medium">
-                Code Postal
+                {t("infoComp.codePostal")}
               </Label>
-              <Input id="codePostal" placeholder="Entrez le code postal" />
+              <Input id="codePostal" placeholder={t("infoComp.codePostal")} />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="commentaire" className="text-sm font-medium">
-                Commentaire
+                {t("infoComp.commentaire")}
               </Label>
               <Textarea
                 id="commentaire"
-                placeholder="Ajoutez un commentaire"
+                placeholder={t("infoComp.commentaire")}
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Annuler
+              {t("infoComp.annuler")}
             </Button>
-            <Button onClick={() => setDialogOpen(false)}>Enregistrer</Button>
+            <Button onClick={() => setDialogOpen(false)}>
+              {t("infoComp.enregistrer")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -28,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
 
 interface CommissionListProps {
   commissions: Commission[];
@@ -40,6 +41,7 @@ export default function CommissionList({
   onEdit,
   onDelete,
 }: CommissionListProps) {
+  const t = useTranslations("CommissionList");
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [commissionToDelete, setCommissionToDelete] = useState<string | null>(
@@ -71,11 +73,11 @@ export default function CommissionList({
 
   const formatCommissionValue = (commission: Commission) => {
     if (commission.commissionType === "fixed") {
-      return `${commission.commissionValue.toLocaleString()} (Fixe)`;
+      return `${commission.commissionValue.toLocaleString()} (${t("fixed")})`;
     } else if (commission.commissionType === "percentage") {
       return `${commission.commissionValue}%`;
     } else {
-      return "Par palier";
+      return t("tiered");
     }
   };
 
@@ -85,7 +87,7 @@ export default function CommissionList({
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher des commissions..."
+            placeholder={t("searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
@@ -97,16 +99,16 @@ export default function CommissionList({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Libellé</TableHead>
-              <TableHead>Type du titre</TableHead>
-              <TableHead>Loi de frais</TableHead>
-              <TableHead>Marché</TableHead>
-              <TableHead>Commission</TableHead>
-              <TableHead>Commission SGBV</TableHead>
-              <TableHead>TVA (%)</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t("code")}</TableHead>
+              <TableHead>{t("name")}</TableHead>
+              <TableHead>{t("securityType")}</TableHead>
+              <TableHead>{t("feeRule")}</TableHead>
+              <TableHead>{t("market")}</TableHead>
+              <TableHead>{t("commission")}</TableHead>
+              <TableHead>{t("commissionSGBV")}</TableHead>
+              <TableHead>{t("vat")}</TableHead>
+              <TableHead>{t("type")}</TableHead>
+              <TableHead className="text-right">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -116,7 +118,7 @@ export default function CommissionList({
                   colSpan={10}
                   className="text-center py-6 text-muted-foreground"
                 >
-                  Aucune commission trouvée
+                  {t("noCommissionsFound")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -128,9 +130,9 @@ export default function CommissionList({
                   <TableCell>{commission.libelle}</TableCell>
                   <TableCell>
                     {commission.titreType === "action"
-                      ? "Action"
+                      ? t("stock")
                       : commission.titreType === "obligation"
-                      ? "Obligation"
+                      ? t("bond")
                       : "-"}
                   </TableCell>
                   <TableCell>{commission.loiDeFrais}</TableCell>
@@ -151,10 +153,10 @@ export default function CommissionList({
                       }
                     >
                       {commission.commissionType === "fixed"
-                        ? "Fixe"
+                        ? t("fixed")
                         : commission.commissionType === "percentage"
-                        ? "Pourcentage"
-                        : "Par palier"}
+                        ? t("percentage")
+                        : t("tiered")}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -162,20 +164,20 @@ export default function CommissionList({
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Ouvrir menu</span>
+                          <span className="sr-only">{t("openMenu")}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(commission)}>
                           <Edit className="mr-2 h-4 w-4" />
-                          Modifier
+                          {t("edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleDeleteClick(commission.id)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Supprimer
+                          {t("delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -190,10 +192,9 @@ export default function CommissionList({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("confirmDeletion")}</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette commission ? Cette action
-              ne peut pas être annulée.
+              {t("deleteConfirmationMessage")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -201,10 +202,10 @@ export default function CommissionList({
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Annuler
+              {t("cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              Supprimer
+              {t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

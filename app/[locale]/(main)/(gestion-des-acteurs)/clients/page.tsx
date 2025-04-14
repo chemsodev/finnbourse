@@ -37,8 +37,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 export default function ClientDashboard() {
+  const t = useTranslations("ClientDashboard");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Sample client data based on the screenshot
@@ -113,14 +116,14 @@ export default function ClientDashboard() {
       <div className="flex flex-col space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold tracking-tight text-secondary">
-            Clients
+            {t("title")}
           </h1>
           <div className="flex justify-end gap-4">
             <div className="bg-primary justify-between gap-20 p-2 text-sm rounded-md shadow-sm flex text-white">
               <div className="flex flex-col gap-1">
-                <div>Total clients</div>
+                <div>{t("totalClients")}</div>
                 <div className="font-bold text-2xl">11 000</div>
-                <div>TOTAL</div>
+                <div>{t("total")}</div>
               </div>
               <div className="flex flex-col justify-end">
                 <Shuffle />
@@ -128,9 +131,9 @@ export default function ClientDashboard() {
             </div>
             <div className="bg-primary justify-between gap-8 p-2 text-sm rounded-md shadow-sm flex text-white">
               <div className="flex flex-col gap-1">
-                <div>Nombre par Type de client</div>
+                <div>{t("numberByClientType")}</div>
                 <div className="font-bold text-2xl">1 230</div>
-                <div>Physiques</div>
+                <div>{t("individuals")}</div>
               </div>
               <div className="flex flex-col justify-end">
                 <Shuffle />
@@ -144,7 +147,7 @@ export default function ClientDashboard() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Recherche..."
+              placeholder={t("search")}
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -171,11 +174,11 @@ export default function ClientDashboard() {
                 <path d="M10 16h4" />
                 <path d="M10 8h1" />
               </svg>
-              Exporter Excel
+              {t("exportExcel")}
             </Button>
             <Link href="/clients/create-client">
               <Button>
-                <Plus className="mr-2 h-4 w-4" /> Ajouter
+                <Plus className="mr-2 h-4 w-4" /> {t("add")}
               </Button>
             </Link>
           </div>
@@ -185,16 +188,24 @@ export default function ClientDashboard() {
           <Table>
             <TableHeader className="bg-primary">
               <TableRow>
-                <TableHead className="text-white font-medium">Nom</TableHead>
-                <TableHead className="text-white font-medium">Type</TableHead>
-                <TableHead className="text-white font-medium">Date</TableHead>
                 <TableHead className="text-white font-medium">
-                  N° de compte
+                  {t("name")}
                 </TableHead>
                 <TableHead className="text-white font-medium">
-                  Adresse
+                  {t("type")}
                 </TableHead>
-                <TableHead className="text-white font-medium">Status</TableHead>
+                <TableHead className="text-white font-medium">
+                  {t("date")}
+                </TableHead>
+                <TableHead className="text-white font-medium">
+                  {t("accountNumber")}
+                </TableHead>
+                <TableHead className="text-white font-medium">
+                  {t("address")}
+                </TableHead>
+                <TableHead className="text-white font-medium">
+                  {t("status")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -209,13 +220,15 @@ export default function ClientDashboard() {
                     {client.status === "verified" ? (
                       <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">
                         <Check className="h-3.5 w-3.5" />
-                        <span className="text-xs font-medium">Verified</span>
+                        <span className="text-xs font-medium">
+                          {t("verified")}
+                        </span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1 rounded-full w-fit">
                         <X className="h-3.5 w-3.5" />
                         <span className="text-xs font-medium">
-                          Not verified
+                          {t("notVerified")}
                         </span>
                       </div>
                     )}

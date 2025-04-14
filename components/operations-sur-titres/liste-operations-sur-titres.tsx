@@ -33,8 +33,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getOstAnnouncements, deleteOstAnnouncement } from "@/lib/ost-service";
 import type { OstAnnouncement } from "@/lib/interfaces";
+import { useTranslations } from "next-intl";
 
 export function ListeOperationsSurTitres() {
+  const t = useTranslations("OperationsSurTitres");
   const router = useRouter();
   const [announcements, setAnnouncements] = useState<OstAnnouncement[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +59,7 @@ export function ListeOperationsSurTitres() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette annonce?")) {
+    if (window.confirm(t("confirmationSuppression"))) {
       try {
         await deleteOstAnnouncement(id);
         setAnnouncements(
@@ -97,19 +99,19 @@ export function ListeOperationsSurTitres() {
     if (now < new Date(dateDebut)) {
       return (
         <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-          À venir
+          {t("aVenir")}
         </Badge>
       );
     } else if (now > new Date(dateFin)) {
       return (
         <Badge variant="outline" className="bg-gray-100 text-gray-800">
-          Terminé
+          {t("termine")}
         </Badge>
       );
     } else {
       return (
         <Badge variant="outline" className="bg-green-100 text-green-800">
-          En cours
+          {t("enCours")}
         </Badge>
       );
     }
@@ -119,11 +121,11 @@ export function ListeOperationsSurTitres() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-bold text-secondary">
-          Liste des Annonces d'OST
+          {t("listeTitle")}
         </CardTitle>
         <Button onClick={handleAddNew} className="flex items-center gap-2">
           <Plus size={16} />
-          <span>Ajouter</span>
+          <span>{t("ajouter")}</span>
         </Button>
       </CardHeader>
       <CardContent>
@@ -132,7 +134,7 @@ export function ListeOperationsSurTitres() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               type="search"
-              placeholder="Rechercher..."
+              placeholder={t("rechercher")}
               className="pl-8 w-full"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -140,7 +142,7 @@ export function ListeOperationsSurTitres() {
           </div>
           <Button variant="outline" className="flex items-center gap-2">
             <FileDown size={16} />
-            <span>Exporter</span>
+            <span>{t("exporter")}</span>
           </Button>
         </div>
 
@@ -150,19 +152,18 @@ export function ListeOperationsSurTitres() {
           </div>
         ) : filteredAnnouncements.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-gray-500">Aucune annonce d'OST trouvée</p>
+            <p className="text-gray-500">{t("aucuneAnnonce")}</p>
           </div>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Titre</TableHead>
-                  <TableHead>Type d'OST</TableHead>
-
-                  <TableHead>Période</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("titre")}</TableHead>
+                  <TableHead>{t("typeOst")}</TableHead>
+                  <TableHead>{t("periode")}</TableHead>
+                  <TableHead>{t("statut")}</TableHead>
+                  <TableHead className="text-right">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -172,7 +173,6 @@ export function ListeOperationsSurTitres() {
                       {announcement.titrePrincipal}
                     </TableCell>
                     <TableCell>{announcement.typeOst}</TableCell>
-
                     <TableCell>
                       {format(new Date(announcement.dateDebut), "dd/MM/yyyy", {
                         locale: fr,
@@ -192,29 +192,31 @@ export function ListeOperationsSurTitres() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Ouvrir menu</span>
+                            <span className="sr-only">{t("ouvrirMenu")}</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => handleView(announcement.id)}
+                            className="cursor-pointer"
                           >
                             <Eye className="mr-2 h-4 w-4" />
-                            <span>Voir</span>
+                            <span>{t("voir")}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleEdit(announcement.id)}
+                            className="cursor-pointer"
                           >
                             <Edit className="mr-2 h-4 w-4" />
-                            <span>Modifier</span>
+                            <span>{t("modifier")}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDelete(announcement.id)}
-                            className="text-red-600 focus:text-red-600"
+                            className="cursor-pointer text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Supprimer</span>
+                            <span>{t("supprimer")}</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

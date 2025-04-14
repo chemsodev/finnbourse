@@ -40,9 +40,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { accountHolderData, type AccountHolderData } from "@/lib/exportables";
 import MyPagination from "@/components/navigation/MyPagination";
+import { useTranslations } from "next-intl";
 
 export default function TeneurComptesTitresPage() {
   const router = useRouter();
+  const t = useTranslations("TCCPage");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -102,16 +104,14 @@ export default function TeneurComptesTitresPage() {
   return (
     <div className="shadow-inner rounded-md bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold my-4 text-secondary">
-          Teneur de Compte-Conservateur
-        </h1>
+        <h1 className="text-3xl font-bold my-4 text-secondary">{t("title")}</h1>
         <header className="flex items-center justify-end mb-8">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Rechercher"
+                placeholder={t("search")}
                 className="pl-10 w-64 bg-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -122,7 +122,7 @@ export default function TeneurComptesTitresPage() {
               onClick={handleAddClick}
             >
               <Plus className="h-4 w-4" />
-              Ajouter
+              {t("add")}
             </Button>
           </div>
         </header>
@@ -132,25 +132,25 @@ export default function TeneurComptesTitresPage() {
             <TableHeader className="bg-primary">
               <TableRow>
                 <TableHead className="text-primary-foreground font-medium">
-                  Code
+                  {t("code")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Libellé
+                  {t("label")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Ville
+                  {t("city")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Type
+                  {t("type")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Statut
+                  {t("status")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium">
-                  Téléphone
+                  {t("phone")}
                 </TableHead>
                 <TableHead className="text-primary-foreground font-medium w-[120px]">
-                  Actions
+                  {t("actions")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -175,7 +175,7 @@ export default function TeneurComptesTitresPage() {
                         onClick={() => handleInfoClick(holder)}
                       >
                         <Info className="h-4 w-4" />
-                        <span className="sr-only">View details</span>
+                        <span className="sr-only">{t("viewDetails")}</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -184,7 +184,7 @@ export default function TeneurComptesTitresPage() {
                         onClick={() => handleEditClick(holder)}
                       >
                         <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
+                        <span className="sr-only">{t("edit")}</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -193,7 +193,7 @@ export default function TeneurComptesTitresPage() {
                         onClick={() => handleDeleteClick(holder)}
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
+                        <span className="sr-only">{t("delete")}</span>
                       </Button>
                     </div>
                   </TableCell>
@@ -209,8 +209,8 @@ export default function TeneurComptesTitresPage() {
             <DialogHeader>
               <DialogTitle>
                 {dialogMode === "add"
-                  ? "Ajouter un nouveau teneur de compte-Conservateur"
-                  : "Modifier le teneur de compte-Conservateur"}
+                  ? t("addNewAccountHolder")
+                  : t("editAccountHolder")}
               </DialogTitle>
             </DialogHeader>
             <form className="space-y-6 py-4" onSubmit={handleSave}>
@@ -221,7 +221,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="code"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code
+                    {t("code")}
                   </label>
                   <Input
                     id="code"
@@ -234,7 +234,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="libelle"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Libellé
+                    {t("label")}
                   </label>
                   <Input
                     id="libelle"
@@ -249,22 +249,26 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="typeCompte"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Type
+                    {t("type")}
                   </label>
                   <Select defaultValue={selectedHolder?.typeCompte || ""}>
                     <SelectTrigger id="typeCompte" className="w-full">
-                      <SelectValue placeholder="Sélectionner" />
+                      <SelectValue placeholder={t("select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Dépositaire">Dépositaire</SelectItem>
-                      <SelectItem value="Conservateur">Conservateur</SelectItem>
+                      <SelectItem value="Dépositaire">
+                        {t("depositary")}
+                      </SelectItem>
+                      <SelectItem value="Conservateur">
+                        {t("custodian")}
+                      </SelectItem>
                       <SelectItem value="Banque Locale">
-                        Banque Locale
+                        {t("localBank")}
                       </SelectItem>
                       <SelectItem value="Banque Internationale">
-                        Banque Internationale
+                        {t("internationalBank")}
                       </SelectItem>
-                      <SelectItem value="Autre">Autre</SelectItem>
+                      <SelectItem value="Autre">{t("other")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -273,16 +277,16 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="statut"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Statut
+                    {t("status")}
                   </label>
                   <Select defaultValue={selectedHolder?.statut || "Actif"}>
                     <SelectTrigger id="statut" className="w-full">
-                      <SelectValue placeholder="Sélectionner" />
+                      <SelectValue placeholder={t("select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Actif">Actif</SelectItem>
-                      <SelectItem value="Inactif">Inactif</SelectItem>
-                      <SelectItem value="Suspendu">Suspendu</SelectItem>
+                      <SelectItem value="Actif">{t("active")}</SelectItem>
+                      <SelectItem value="Inactif">{t("inactive")}</SelectItem>
+                      <SelectItem value="Suspendu">{t("suspended")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -291,7 +295,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="dateCreation"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Date de Création
+                    {t("creationDate")}
                   </label>
                   <Input
                     id="dateCreation"
@@ -307,7 +311,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="swift"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code SWIFT/BIC
+                    {t("swiftCode")}
                   </label>
                   <Input
                     id="swift"
@@ -320,7 +324,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="iban"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    IBAN
+                    {t("iban")}
                   </label>
                   <Input
                     id="iban"
@@ -333,7 +337,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="numeroCompte"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Numéro de Compte
+                    {t("accountNumber")}
                   </label>
                   <Input
                     id="numeroCompte"
@@ -346,11 +350,11 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="devise"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Devise
+                    {t("currency")}
                   </label>
                   <Select defaultValue={selectedHolder?.devise || "EUR"}>
                     <SelectTrigger id="devise" className="w-full">
-                      <SelectValue placeholder="Sélectionner" />
+                      <SelectValue placeholder={t("select")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="EUR">EUR</SelectItem>
@@ -368,7 +372,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="adresse"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Adresse
+                    {t("address")}
                   </label>
                   <Input
                     id="adresse"
@@ -381,7 +385,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="codePostal"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code Postal
+                    {t("postalCode")}
                   </label>
                   <Input
                     id="codePostal"
@@ -394,7 +398,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="ville"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Ville
+                    {t("city")}
                   </label>
                   <Input
                     id="ville"
@@ -407,7 +411,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="pays"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Pays
+                    {t("country")}
                   </label>
                   <Input
                     id="pays"
@@ -422,7 +426,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="contactNom"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Nom du Contact
+                    {t("contactLastName")}
                   </label>
                   <Input
                     id="contactNom"
@@ -435,7 +439,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="contactPrenom"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Prénom du Contact
+                    {t("contactFirstName")}
                   </label>
                   <Input
                     id="contactPrenom"
@@ -448,7 +452,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="contactTelephone"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Téléphone du Contact
+                    {t("contactPhone")}
                   </label>
                   <Input
                     id="contactTelephone"
@@ -461,7 +465,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="contactEmail"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Email du Contact
+                    {t("contactEmail")}
                   </label>
                   <Input
                     id="contactEmail"
@@ -477,7 +481,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="telephone"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Téléphone
+                    {t("phone")}
                   </label>
                   <Input
                     id="telephone"
@@ -490,7 +494,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Email
+                    {t("email")}
                   </label>
                   <Input
                     id="email"
@@ -506,7 +510,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="numeroAgrement"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Numéro d'Agrément
+                    {t("approvalNumber")}
                   </label>
                   <Input
                     id="numeroAgrement"
@@ -519,7 +523,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="dateAgrement"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Date d'Agrément
+                    {t("approvalDate")}
                   </label>
                   <Input
                     id="dateAgrement"
@@ -533,7 +537,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="autoriteSurveillance"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Autorité de Surveillance
+                    {t("supervisionAuthority")}
                   </label>
                   <Input
                     id="autoriteSurveillance"
@@ -548,7 +552,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="codeCorrespondant"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Code Correspondant
+                    {t("correspondentCode")}
                   </label>
                   <Input
                     id="codeCorrespondant"
@@ -561,7 +565,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="nomCorrespondant"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Nom Correspondant
+                    {t("correspondentName")}
                   </label>
                   <Input
                     id="nomCorrespondant"
@@ -576,7 +580,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="commissionFixe"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Commission Fixe
+                    {t("fixedCommission")}
                   </label>
                   <Input
                     id="commissionFixe"
@@ -589,7 +593,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="commissionVariable"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Commission Variable (%)
+                    {t("variableCommission")}
                   </label>
                   <Input
                     id="commissionVariable"
@@ -602,7 +606,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="tauxTva"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Taux TVA (%)
+                    {t("vatRate")}
                   </label>
                   <Input
                     id="tauxTva"
@@ -617,7 +621,7 @@ export default function TeneurComptesTitresPage() {
                     htmlFor="commentaire"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Commentaire
+                    {t("comment")}
                   </label>
                   <Textarea
                     id="commentaire"
@@ -632,9 +636,9 @@ export default function TeneurComptesTitresPage() {
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
-                <Button type="submit">Save</Button>
+                <Button type="submit">{t("save")}</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -647,20 +651,19 @@ export default function TeneurComptesTitresPage() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+              <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Cette action ne peut pas être annulée. Cela supprimera
-                définitivement le teneur de compte-Conservateur
+                {t("deleteConfirmation")}
                 <span className="font-medium"> {selectedHolder?.libelle}</span>.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
                 className="bg-red-600 hover:bg-red-700"
               >
-                Supprimer
+                {t("delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
