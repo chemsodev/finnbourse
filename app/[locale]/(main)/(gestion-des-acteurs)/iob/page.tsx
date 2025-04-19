@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import MyPagination from "@/components/navigation/MyPagination";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 
 interface BankData {
   id: number;
@@ -54,11 +55,10 @@ interface BankData {
 export default function BankCodePage() {
   const t = useTranslations("IOBPage");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
   const [selectedBank, setSelectedBank] = useState<BankData | null>(null);
+  const router = useRouter();
 
   const bankData: BankData[] = [
     {
@@ -124,15 +124,11 @@ export default function BankCodePage() {
   ];
 
   const handleAddClick = () => {
-    setDialogMode("add");
-    setSelectedBank(null);
-    setIsDialogOpen(true);
+    router.push("/iob/form");
   };
 
   const handleEditClick = (bank: BankData) => {
-    setDialogMode("edit");
-    setSelectedBank(bank);
-    setIsDialogOpen(true);
+    router.push(`/iob/form/${bank.id}`);
   };
 
   const handleInfoClick = (bank: BankData) => {
@@ -149,14 +145,6 @@ export default function BankCodePage() {
     // In a real app, you would delete the item from your database
     console.log(`Deleting bank with ID: ${selectedBank?.id}`);
     setIsDeleteDialogOpen(false);
-    // Then refresh your data
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would save the form data to your database
-    console.log(`${dialogMode === "add" ? "Adding" : "Updating"} bank data`);
-    setIsDialogOpen(false);
     // Then refresh your data
   };
 
@@ -263,174 +251,6 @@ export default function BankCodePage() {
         <div className="mt-4">
           <MyPagination />
         </div>
-        {/* Add/Edit Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[800px]">
-            <DialogHeader>
-              <DialogTitle>
-                {dialogMode === "add" ? t("addNewIOB") : t("editIOB")}
-              </DialogTitle>
-            </DialogHeader>
-            <form className="space-y-6 py-4" onSubmit={handleSave}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codeIob"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("codeIOB")}
-                  </label>
-                  <Input
-                    id="codeIob"
-                    className="w-full"
-                    defaultValue={selectedBank?.codeBank || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="libelleCourt"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("shortLabel")}
-                  </label>
-                  <Input
-                    id="libelleCourt"
-                    className="w-full"
-                    defaultValue={selectedBank?.shortName || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="libelleLong"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("longLabel")}
-                  </label>
-                  <Input
-                    id="libelleLong"
-                    className="w-full"
-                    defaultValue={selectedBank?.longName || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="correspondant"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("correspondent")}
-                  </label>
-                  <Input
-                    id="correspondant"
-                    className="w-full"
-                    defaultValue={selectedBank?.correspondent || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("email")}
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    className="w-full"
-                    defaultValue={selectedBank?.email || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="fax"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("fax")}
-                  </label>
-                  <Input
-                    id="fax"
-                    className="w-full"
-                    defaultValue={selectedBank?.fax || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="telephone1"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("phone1")}
-                  </label>
-                  <Input
-                    id="telephone1"
-                    className="w-full"
-                    defaultValue={selectedBank?.telephone1 || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="telephone2"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("phone2")}
-                  </label>
-                  <Input
-                    id="telephone2"
-                    className="w-full"
-                    defaultValue={selectedBank?.telephone2 || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="telephone3"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("phone3")}
-                  </label>
-                  <Input
-                    id="telephone3"
-                    className="w-full"
-                    defaultValue={selectedBank?.telephone3 || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="addresse"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("address")}
-                  </label>
-                  <Input
-                    id="addresse"
-                    className="w-full"
-                    defaultValue={selectedBank?.address || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="ordreDeTu"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("orderTu")}
-                  </label>
-                  <Input
-                    id="ordreDeTu"
-                    className="w-full"
-                    defaultValue={selectedBank?.ordreDeTu || ""}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  {t("cancel")}
-                </Button>
-                <Button type="submit">{t("save")}</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
         {/* Info Dialog */}
         <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">

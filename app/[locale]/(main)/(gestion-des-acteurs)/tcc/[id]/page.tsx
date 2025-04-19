@@ -57,7 +57,10 @@ export default function TeneurComptesTitresDetailsPage({
               {holder.libelle}
             </h1>
           </div>
-          <Button className="flex items-center gap-2">
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => router.push(`/tcc/form/${holder.id}`)}
+          >
             <Pencil className="h-4 w-4" />
             {t("edit")}
           </Button>

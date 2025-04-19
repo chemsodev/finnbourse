@@ -16,13 +16,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -40,21 +33,15 @@ export default function AgencePage() {
   const router = useRouter();
   const t = useTranslations("AgencyPage");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
   const [selectedAgency, setSelectedAgency] = useState<AgencyData | null>(null);
 
   const handleAddClick = () => {
-    setDialogMode("add");
-    setSelectedAgency(null);
-    setIsDialogOpen(true);
+    router.push("/agence/new");
   };
 
   const handleEditClick = (agency: AgencyData) => {
-    setDialogMode("edit");
-    setSelectedAgency(agency);
-    setIsDialogOpen(true);
+    router.push(`/agence/${agency.id}`);
   };
 
   const handleInfoClick = (agency: AgencyData) => {
@@ -70,14 +57,6 @@ export default function AgencePage() {
     // In a real app, you would delete the item from your database
     console.log(`Deleting agency with ID: ${selectedAgency?.id}`);
     setIsDeleteDialogOpen(false);
-    // Then refresh your data
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would save the form data to your database
-    console.log(`${dialogMode === "add" ? "Adding" : "Updating"} agency data`);
-    setIsDialogOpen(false);
     // Then refresh your data
   };
 
@@ -191,254 +170,6 @@ export default function AgencePage() {
           </Table>
         </div>
         <MyPagination />
-        {/* Add/Edit Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {dialogMode === "add" ? t("addNewAgency") : t("editAgency")}
-              </DialogTitle>
-            </DialogHeader>
-            <form className="space-y-6 py-4" onSubmit={handleSave}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codeBanque"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("codeBanque")}
-                  </label>
-                  <Input
-                    id="codeBanque"
-                    className="w-full"
-                    defaultValue={selectedAgency?.codeBanque || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codeAgence"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("codeAgence")}
-                  </label>
-                  <Input
-                    id="codeAgence"
-                    className="w-full"
-                    defaultValue={selectedAgency?.agenceCode || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="libelleAgence"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("libelleAgence")}
-                  </label>
-                  <Input
-                    id="libelleAgence"
-                    className="w-full"
-                    defaultValue={selectedAgency?.libAgence || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codeVille"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("codeVille")}
-                  </label>
-                  <Input
-                    id="codeVille"
-                    className="w-full"
-                    defaultValue={selectedAgency?.codeVille || ""}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="regionAgence"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("regionAgence")}
-                  </label>
-                  <Input
-                    id="regionAgence"
-                    className="w-full"
-                    defaultValue={selectedAgency?.regionAgence || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codeBC"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("codeBC")}
-                  </label>
-                  <Input
-                    id="codeBC"
-                    className="w-full"
-                    defaultValue={selectedAgency?.codeBC || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="nomCorrespondant"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("nomCorrespondant")}
-                  </label>
-                  <Input
-                    id="nomCorrespondant"
-                    className="w-full"
-                    defaultValue={selectedAgency?.nomCorrespondant || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="prenomCorrespondant"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("prenomCorrespondant")}
-                  </label>
-                  <Input
-                    id="prenomCorrespondant"
-                    className="w-full"
-                    defaultValue={selectedAgency?.prenomCorrespondant || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="fonction"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("fonction")}
-                  </label>
-                  <Input
-                    id="fonction"
-                    className="w-full"
-                    defaultValue={selectedAgency?.fonction || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="telephone1"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("telephone1")}
-                  </label>
-                  <Input
-                    id="telephone1"
-                    className="w-full"
-                    defaultValue={selectedAgency?.telephone1 || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="telephone2"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("telephone2")}
-                  </label>
-                  <Input
-                    id="telephone2"
-                    className="w-full"
-                    defaultValue={selectedAgency?.telephone2 || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="fax"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("fax")}
-                  </label>
-                  <Input
-                    id="fax"
-                    className="w-full"
-                    defaultValue={selectedAgency?.fax || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("email")}
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    className="w-full"
-                    defaultValue={selectedAgency?.email || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="telex"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("telex")}
-                  </label>
-                  <Input
-                    id="telex"
-                    className="w-full"
-                    defaultValue={selectedAgency?.telex || ""}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label
-                    htmlFor="addresse"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("addresse")}
-                  </label>
-                  <Input
-                    id="addresse"
-                    className="w-full"
-                    defaultValue={selectedAgency?.addresse || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codePostal"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("codePostal")}
-                  </label>
-                  <Input
-                    id="codePostal"
-                    className="w-full"
-                    defaultValue={selectedAgency?.codePostal || ""}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-3">
-                  <label
-                    htmlFor="commentaire"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("commentaire")}
-                  </label>
-                  <Input
-                    id="commentaire"
-                    className="w-full"
-                    defaultValue={selectedAgency?.commentaire || ""}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  {t("cancel")}
-                </Button>
-                <Button type="submit">{t("save")}</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
         {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={isDeleteDialogOpen}

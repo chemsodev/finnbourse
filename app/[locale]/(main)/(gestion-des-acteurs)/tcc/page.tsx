@@ -64,15 +64,11 @@ export default function TeneurComptesTitresPage() {
   }, [searchQuery]);
 
   const handleAddClick = () => {
-    setDialogMode("add");
-    setSelectedHolder(null);
-    setIsDialogOpen(true);
+    router.push("/tcc/form");
   };
 
   const handleEditClick = (holder: AccountHolderData) => {
-    setDialogMode("edit");
-    setSelectedHolder(holder);
-    setIsDialogOpen(true);
+    router.push(`/tcc/form/${holder.id}`);
   };
 
   const handleInfoClick = (holder: AccountHolderData) => {
