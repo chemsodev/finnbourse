@@ -484,6 +484,8 @@
     "explMP": "Explorez les opportunités sur le marché primaire et ajustez vos stratégies."
   },
   "TitresTable": {
+    "souscrire": "Souscrire",
+    "passerUnOrdre": "Passer Un Ordre",
     "valeurOuverture": "Valeur d'ouverture",
     "valeurCloture": "Valeur de clôture",
     "issuer": "Société émettrice",

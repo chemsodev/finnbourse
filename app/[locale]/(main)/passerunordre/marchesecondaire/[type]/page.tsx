@@ -2,7 +2,7 @@ import auth from "@/auth";
 import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmettrice";
 import AjoutTitre from "@/components/AjoutTitre";
 import MyMarquee from "@/components/MyMarquee";
-import { TitresTable } from "@/components/TitresTable";
+import { TitresTable } from "@/components/gestion-des-titres/TitresTable";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { getServerSession } from "next-auth";

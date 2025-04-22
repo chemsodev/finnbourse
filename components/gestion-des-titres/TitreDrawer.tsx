@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/sheet";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { SupprimerTitre } from "./SupprimerTitre";
-import ModifierTitre from "./ModifierTitre";
+import { SupprimerTitre } from "../SupprimerTitre";
+import ModifierTitre from "../ModifierTitre";
 import {
   FIND_UNIQUE_BOND_QUERY,
   FIND_UNIQUE_STOCKS_QUERY,
@@ -22,7 +22,9 @@ import { useState } from "react";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { formatDate } from "@/lib/utils";
 import { useSession } from "next-auth/react";
-import RateLimitReached from "./RateLimitReached";
+import RateLimitReached from "../RateLimitReached";
+import { Info } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface TitreDrawerProps {
   titreId: string;
@@ -118,8 +120,10 @@ const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
 
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger className="capitalize rounded-md  px-4 py-1 bg-primary text-white hover:bg-primary/80 shadow">
-        {t("plus")}
+      <SheetTrigger asChild>
+        <Button size="icon">
+          <Info className="w-4 h-4" />
+        </Button>
       </SheetTrigger>
       <SheetContent className="overflow-y-scroll">
         {loading ? (

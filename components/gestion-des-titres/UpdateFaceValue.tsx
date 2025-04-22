@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 import {
   Form,
@@ -27,7 +27,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckIcon, CircleAlert, DollarSign, Loader2 } from "lucide-react";
-import { Input } from "./ui/input";
+import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { preventNonNumericInput } from "@/lib/utils";
 

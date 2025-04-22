@@ -6,10 +6,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import TabSearch from "./TabSearch";
-import { Button } from "react-day-picker";
+import TabSearch from "@/components/TabSearch";
+import { Button } from "../ui/button";
 
 const TitresTableSkeleton = () => {
   const t = useTranslations("TitresTable");
@@ -18,7 +18,7 @@ const TitresTableSkeleton = () => {
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">
         <div className=" border rounded-md bg-white h-9 w-72 "></div>
-        <button className="w-28 h-10 bg-primary shadow text-white rounded-md"></button>
+        <Button className="w-28 h-10 bg-primary shadow text-white rounded-md"></Button>
       </div>
       <div>
         <Table>

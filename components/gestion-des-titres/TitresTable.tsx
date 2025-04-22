@@ -37,14 +37,15 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import TitresTableSkeleton from "./TitresTableSkeleton";
 import { LIST_STOCKS_QUERY, LIST_BOND_QUERY } from "@/graphql/queries";
 import { Suspense, useState } from "react";
-import { Bond, Stock, Sukuk, TitreParticipatif } from "@/lib/interfaces";
+import { Bond, Stock } from "@/lib/interfaces";
 
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
-import AddSecurityHistory from "./AddSecurityHistory";
+import AddSecurityHistory from "../AddSecurityHistory";
 import { useSession } from "next-auth/react";
 import UpdateFaceValue from "./UpdateFaceValue";
-import LogOutAgent from "./LogOutAgent";
-import RateLimitReached from "./RateLimitReached";
+import LogOutAgent from "../LogOutAgent";
+import RateLimitReached from "../RateLimitReached";
+import { Link } from "@/i18n/routing";
 
 // Define the expected data structure for each query
 interface QueryData {
@@ -257,7 +258,35 @@ export function TitresTable({ type }: TitresTableProps) {
       header: t("plusInfo"),
       cell: ({ row }) => (
         <div className="flex gap-4">
+          {(roleId === 1 || roleId === 2) && (
+            <Link
+              href={(() => {
+                const titreId = String(row.getValue("id"));
+                if (type === "empruntobligataire" || type === "opv") {
+                  return `/passerunordre/marcheprimaire/${type}/${titreId}`;
+                } else if (type === "action" || type === "obligation") {
+                  return `/passerunordre/marchesecondaire/${type}/${titreId}`;
+                } else if (
+                  type === "sukukmp" ||
+                  type === "titresparticipatifsmp"
+                ) {
+                  return `/passerunordre/marcheprimaire/${type}/${titreId}`;
+                } else if (
+                  type === "sukukms" ||
+                  type === "titresparticipatifsms"
+                ) {
+                  return `/passerunordre/marchesecondaire/${type}/${titreId}`;
+                }
+                return "/";
+              })()}
+            >
+              <Button>
+                {subscriptionTypes ? t("souscrire") : t("passerUnOrdre")}
+              </Button>
+            </Link>
+          )}
           <TitreDrawer titreId={String(row.getValue("id"))} type={type} />
+
           {(type === "action" ||
             type === "obligation" ||
             type === "sukukms" ||

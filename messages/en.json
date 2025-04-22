@@ -297,6 +297,8 @@
     "explMP": "Explore opportunities on the primary market and adjust your strategies."
   },
   "TitresTable": {
+    "souscrire": "Subscribe",
+    "passerUnOrdre": "Place an Order",
     "valeurOuverture": "Opening Value",
     "valeurCloture": "Closing Value",
     "issuer": "Issuing company",

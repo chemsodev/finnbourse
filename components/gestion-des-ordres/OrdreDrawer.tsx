@@ -25,6 +25,7 @@ import { EchouerOrdre } from "../EchouerOrdre";
 import PdfDialog from "../PdfDialog";
 import { Button } from "../ui/button";
 import RateLimitReached from "../RateLimitReached";
+import { Info } from "lucide-react";
 
 interface QueryData {
   listOrdersExtended: Order[];
@@ -71,14 +72,13 @@ const OrdreDrawer = ({ titreId }: OrdreDrawer) => {
   };
 
   const order = data?.listOrdersExtended?.[0];
-  console.log(order);
+
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger
-        disabled={loading}
-        className="capitalize rounded-md  px-4 py-1 bg-primary text-white hover:bg-primary/80 shadow"
-      >
-        {t("info")}
+      <SheetTrigger disabled={loading} asChild>
+        <Button size="icon">
+          <Info className="w-4 h-4" />
+        </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col justify-between overflow-y-scroll">
         {loading ? (
