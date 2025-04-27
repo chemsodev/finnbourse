@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import RelatedUsersTable from "./RelatedUsersTable";
-import { type RelatedUser } from "./types";
+import RelatedUsersTable, { RelatedUser } from "./RelatedUsersTable";
 
 // Define the form schema for the agency details
 const agenceFormSchema = z.object({
@@ -70,17 +69,15 @@ export default function AgenceFormSteps({
             id: "1",
             fullName: "Sagi Salim",
             position: "DG",
-            role: "Validator 2",
-            status: "Admin",
-            organization: "SLIK PIS",
+            phoneNumber: "+123456789",
+            email: "sagi@example.com",
           },
           {
             id: "2",
             fullName: "Gadh Mohamed",
             position: "DFC",
-            role: "Validator 1",
-            status: "Member",
-            organization: "SLIK PIS",
+            phoneNumber: "+987654321",
+            email: "gadh@example.com",
           },
         ]
       : []

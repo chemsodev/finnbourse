@@ -51,11 +51,10 @@ export const custodianFormSchema = z.object({
 // Schema for related users (Step 2)
 export const relatedUserSchema = z.object({
   id: z.string().optional(), // Only present when editing an existing user
-  fullName: z.string().min(1, "Full name is required"),
+  name: z.string().min(1, "Name is required"),
   position: z.string().min(1, "Position is required"),
-  role: z.string().min(1, "Role is required"),
-  status: z.string().min(1, "Status is required"),
-  organization: z.string().optional(),
+  phoneNumber: z.string().min(1, "Phone number is required"),
+  email: z.string().email("Invalid email format").min(1, "Email is required"),
 });
 
 export const relatedUsersFormSchema = z.object({
