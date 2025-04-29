@@ -1,13 +1,13 @@
 import React from "react";
 import AvisExecution from "./AvisExecution";
 import CreditPopulaireD from "./CreditPopulaireD";
-import OrdreAchatCpa from "./OrdreAchatCpa";
+import OrdreAchatCpaMochiri from "./OrdreAchatCpaMochiri";
 const page = () => {
   return (
     <div>
       <AvisExecution />
       <CreditPopulaireD />
-      <OrdreAchatCpa />
+      <OrdreAchatCpaMochiri />
     </div>
   );
 };

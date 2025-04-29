@@ -2,9 +2,10 @@
 
 import { PDFDocument, PDFTextField, StandardFonts } from "pdf-lib";
 
+//add fields in pdf using https://www.sejda.com/pdf-editor
 interface FormValues {
   N: string;
-  segment: string; //  "A", "B", "C", or "D"
+  segment: string; //   "A", "B", "C", or "D"
   propmand: string; // "propre" or "mandataire" or "tuteur_legal"
   phy_morale: string; // "physique" or "morale"
   paiement: string; // "paiement1", "paiement2", or "paiement3"
@@ -44,10 +45,10 @@ interface FormValues {
   fait_le: string;
 }
 
-export default function OrdreAchatCpa() {
+export default function OrdreAchatCpaMochiri() {
   const defaultFormValues: FormValues = {
     N: "OA-20250424-001",
-    segment: "D", //  "A", "B", "C", or "D"
+    segment: "B", //   "A", "B", "C", or "D"
     propmand: "mandataire", // "propre" or "mandataire" or "tuteur_legal"
     phy_morale: "physique", // "physique" or "morale"
     paiement: "paiement3", // "paiement1", "paiement2", or "paiement3"
@@ -87,8 +88,7 @@ export default function OrdreAchatCpa() {
     fait_le: "24/04/2025",
   };
 
-  const handleDownload = async () => {
-    const pdfUrl = "/ordre-achat-opv_action-cpa_15012024.pdf";
+  const fillPdfForm = async (pdfUrl: string) => {
     const existingPdfBytes = await fetch(pdfUrl).then((res) =>
       res.arrayBuffer()
     );
@@ -100,7 +100,9 @@ export default function OrdreAchatCpa() {
       seg_a: defaultFormValues.segment === "A" ? "X" : "",
       seg_b: defaultFormValues.segment === "B" ? "X" : "",
       seg_c: defaultFormValues.segment === "C" ? "X" : "",
-      seg_d: defaultFormValues.segment === "D" ? "X" : "",
+      ...(pdfUrl.includes("cpa") && {
+        seg_d: defaultFormValues.segment === "D" ? "X" : "",
+      }),
       propre: defaultFormValues.propmand === "propre" ? "x" : "",
       mandataire: defaultFormValues.propmand === "mandataire" ? "x" : "",
       tuteur_legal: defaultFormValues.propmand === "tuteur_legal" ? "x" : "",
@@ -164,21 +166,41 @@ export default function OrdreAchatCpa() {
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "ordre-achat-cpa-completed.pdf";
+    link.download = pdfUrl.includes("cpa")
+      ? "ordre-achat-cpa-completed.pdf"
+      : "mouchiri-completed.pdf";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const handleDownloadCpa = async () => {
+    const cpaPdfUrl = "/ordre-achat-opv_action-cpa_15012024.pdf";
+    await fillPdfForm(cpaPdfUrl);
+  };
+
+  const handleDownloadMouchiri = async () => {
+    const mouchiriPdfUrl = "/mouchiri_model_souscription.pdf";
+    await fillPdfForm(mouchiriPdfUrl);
+  };
+
   return (
     <div className="p-4 rounded-xl shadow-md max-w-2xl mx-auto space-y-4">
-      <h2 className="text-xl font-semibold">PDF ORDRE ACHAT CPA</h2>
-      <button
-        onClick={handleDownload}
-        className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
-      >
-        Télécharger le PDF
-      </button>
+      <h2 className="text-xl font-semibold">PDF ORDRE ACHAT</h2>
+      <div className="flex space-x-4">
+        <button
+          onClick={handleDownloadCpa}
+          className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+        >
+          Télécharger Ordre Achat CPA
+        </button>
+        <button
+          onClick={handleDownloadMouchiri}
+          className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
+        >
+          Télécharger Mouchiri Souscription
+        </button>
+      </div>
     </div>
   );
 }
