@@ -61,27 +61,6 @@ export interface TitreParticipatif {
   enjoymentDate: string | null;
   quantity: number;
 }
-export interface Order {
-  id: string;
-  issuer: string;
-  validity: string;
-  ordertypes: string[];
-  securityissuer: string;
-  orderdirection: number;
-  securityid: Security;
-  securitytype: string;
-  quantity: number;
-  pricelimitmax: number;
-  pricelimitmin: number;
-  duration: string | null;
-  orderdate: string;
-  orderstatus: number;
-  signeddocumnet: string;
-  payedWithCard: boolean;
-  createdat: string;
-  investorid: Person;
-  negotiatorid: Person;
-}
 
 export interface Security {
   id: string;
@@ -278,4 +257,36 @@ export interface Emission {
   memberNo02: string;
   memberNo03: string;
   memberNo04: string;
+}
+
+export interface BourseSession {
+  id: string;
+  name: string;
+  date: Date;
+  status: "scheduled" | "active" | "completed";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Update your Order interface to include sessionId
+export interface Order {
+  id: string;
+  ordertypes: number[];
+  orderdirection: number;
+  securityid: any;
+  securitytype: string;
+  quantity: number;
+  pricelimitmin: number;
+  pricelimitmax: number;
+  duration: number;
+  orderdate: string;
+  orderstatus: number;
+  investorid: any;
+  negotiatorid: any;
+  securityissuer: string;
+  payedWithCard?: boolean;
+  signeddocumnet?: string;
+  validity: string;
+  createdat: string;
+  sessionId?: string; // New field to link orders to bourse sessions
 }

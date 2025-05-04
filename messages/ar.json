@@ -2073,7 +2073,14 @@
     "valuePaymentDate": "تاريخ القيمة/الدفع",
     "comment": "تعليق",
     "cancel": "إلغاء",
-    "validate": "تأكيد"
+    "validate": "تأكيد",
+    "addNew": "إضافة",
+    "actions": "الإجراءات",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "noRemboursements": "لم يتم العثور على تسديدات",
+    "editRemboursement": "تعديل التسديد",
+    "addRemboursement": "إضافة تسديد"
   },
   "AgencyPage": {
     "next": "التالي",

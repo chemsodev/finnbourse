@@ -2105,7 +2105,14 @@
     "valuePaymentDate": "Value/Payment Date",
     "comment": "Comment",
     "cancel": "Cancel",
-    "validate": "Confirm"
+    "validate": "Confirm",
+    "addNew": "Add",
+    "actions": "Actions",
+    "delete": "Delete",
+    "edit": "Edit",
+    "noRemboursements": "No reimbursements found",
+    "editRemboursement": "Edit reimbursement",
+    "addRemboursement": "Add reimbursement"
   },
   "TCCPage": {
     "title": "Account Holder Custodian",

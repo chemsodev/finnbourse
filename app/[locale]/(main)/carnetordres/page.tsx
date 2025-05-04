@@ -3,14 +3,14 @@ import { getTranslations } from "next-intl/server";
 import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import Link from "next/link";
-import { Printer } from "lucide-react";
+import { Printer, CalendarClock } from "lucide-react";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
 import { ExportButton } from "@/components/ExportButton";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { LIST_ORDERS_QUERY_EXCEL } from "@/graphql/queries";
-import { Order } from "@/lib/interfaces";
+import type { Order } from "@/lib/interfaces";
 
 interface GetOrdersResponse {
   listOrdersExtended: Order[];
@@ -89,11 +89,11 @@ const page = async (props: {
   }));
 
   return (
-    <div className=" motion-preset-focus motion-duration-2000 ">
+    <div className="motion-preset-focus motion-duration-2000">
       <div className="mt-3">
         <MyMarquee />
       </div>
-      <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 ">
+      <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
         <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
           {userRole === 1 ? t("mesOrdres") : t("carnetOrdres")}
         </div>
@@ -117,11 +117,20 @@ const page = async (props: {
               </Link>
             )}
             {(userRole === 2 || userRole === 3) && (
+              <Link
+                href="/carnetordres/sessions"
+                className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
+              >
+                <CalendarClock size={20} />
+                Sessions de Bourse
+              </Link>
+            )}
+            {(userRole === 2 || userRole === 3) && (
               <ExportButton data={filteredData} />
             )}
           </div>
         </div>
-        <div className=" my-8">
+        <div className="my-8">
           <OrdresTable
             searchquery={searchquery}
             skip={currentPage}

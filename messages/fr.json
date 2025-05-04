@@ -2136,7 +2136,14 @@
     "valuePaymentDate": "Date Valeur/Paiement",
     "comment": "Commentaire",
     "cancel": "Annuler",
-    "validate": "Valider"
+    "validate": "Valider",
+    "addNew": "Ajouter",
+    "actions": "Actions",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "noRemboursements": "Aucun remboursement trouvé",
+    "editRemboursement": "Modifier le remboursement",
+    "addRemboursement": "Ajouter un remboursement"
   },
   "TCCPage": {
     "title": "Teneur de Compte-Conservateur",

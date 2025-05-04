@@ -1,7 +1,7 @@
 import React from "react";
 import AvisExecution from "./AvisExecution";
 import CreditPopulaireD from "./CreditPopulaireD";
-import OrdreAchatCpaMochiri from "./OrdreAchatCpaMochiri";
+import OrdreAchatCpaMochiri from "./OrdreAchatCpa";
 const page = () => {
   return (
     <div>

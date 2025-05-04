@@ -107,7 +107,7 @@ const OrdreDrawer = ({ titreId }: OrdreDrawer) => {
           <>
             <SheetHeader>
               <SheetTitle className="bg-gray-50 text-center text-primary font-bold text-2xl uppercase pt-10 flex gap-4 justify-center items-center ">
-                <div>{order?.issuer}</div>
+                <div>{order?.securityissuer}</div>
               </SheetTitle>
             </SheetHeader>
             <SheetDescription className="p-6 flex flex-col justify-between overflow-y-scroll">
