@@ -286,21 +286,21 @@ const AvisOrdre: React.FC<{ orders: GetOrdersResponse | null }> = ({
                   }}
                   break
                 >
-                  {order?.ordertypes?.includes("COMMANDE_A_COURS_LIMITE")
+                  {order?.ordertypes?.includes(1)
                     ? "cours limité"
-                    : order?.ordertypes?.includes("COMMANDE_AU_MIEUX")
+                    : order?.ordertypes?.includes(2)
                     ? "au mieux"
-                    : order?.ordertypes?.includes("COMMANDE_DE_JOUR")
+                    : order?.ordertypes?.includes(3)
                     ? "de jour"
-                    : order?.ordertypes?.includes("COMMANDE_A_REVOCATION")
+                    : order?.ordertypes?.includes(4)
                     ? "à révocation"
-                    : order?.ordertypes?.includes("COMMANDE_A_DUREE_LIMITEE")
+                    : order?.ordertypes?.includes(5)
                     ? "à durée limitée"
-                    : order?.ordertypes?.includes("COMMANDE_A_EXECUTION")
+                    : order?.ordertypes?.includes(6)
                     ? "à exécution"
-                    : order?.ordertypes?.includes("COMMANDE_TOUT_OU_RIEN")
+                    : order?.ordertypes?.includes(7)
                     ? "tout ou rien"
-                    : order?.ordertypes?.includes("COMMANDE_SANS_STIPULATION")
+                    : order?.ordertypes?.includes(8)
                     ? "sans stipulation"
                     : "inconnu"}
                 </Text>
