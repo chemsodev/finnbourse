@@ -14,6 +14,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -32,15 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-// Updated type definition
-export type RelatedUser = {
-  id: string;
-  fullName: string;
-  position: string;
-  phoneNumber: string;
-  email: string;
-};
+import { type RelatedUser } from "./types";
 
 interface RelatedUsersTableProps {
   users: RelatedUser[];
@@ -59,8 +58,9 @@ export default function RelatedUsersTable({
   const [newUser, setNewUser] = useState<Omit<RelatedUser, "id">>({
     fullName: "",
     position: "",
-    phoneNumber: "",
-    email: "",
+    role: "Member",
+    status: "Active",
+    organization: "",
   });
 
   const [editUser, setEditUser] = useState<RelatedUser | null>(null);
@@ -75,8 +75,9 @@ export default function RelatedUsersTable({
     setNewUser({
       fullName: "",
       position: "",
-      phoneNumber: "",
-      email: "",
+      role: "Member",
+      status: "Active",
+      organization: "",
     });
     setIsAddDialogOpen(false);
   };
@@ -156,27 +157,63 @@ export default function RelatedUsersTable({
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="phoneNumber" className="text-sm font-medium">
-                  {t("phoneNumber")}
+                <label htmlFor="role" className="text-sm font-medium">
+                  {t("role")}
                 </label>
-                <Input
-                  id="phoneNumber"
-                  value={newUser.phoneNumber}
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, phoneNumber: e.target.value })
+                <Select
+                  value={newUser.role}
+                  onValueChange={(value) =>
+                    setNewUser({ ...newUser, role: value })
                   }
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectRole")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Initiator">{t("initiator")}</SelectItem>
+                    <SelectItem value="Validator 1">
+                      {t("validator1")}
+                    </SelectItem>
+                    <SelectItem value="Validator 2">
+                      {t("validator2")}
+                    </SelectItem>
+                    <SelectItem value="Consultation">
+                      {t("consultation")}
+                    </SelectItem>
+                    <SelectItem value="Member">{t("member")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  {t("email")}
+                <label htmlFor="status" className="text-sm font-medium">
+                  {t("status")}
+                </label>
+                <Select
+                  value={newUser.status}
+                  onValueChange={(value) =>
+                    setNewUser({ ...newUser, status: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectStatus")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Active">{t("active")}</SelectItem>
+                    <SelectItem value="Inactive">{t("inactive")}</SelectItem>
+                    <SelectItem value="Admin">{t("admin")}</SelectItem>
+                    <SelectItem value="Member">{t("member")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="organization" className="text-sm font-medium">
+                  {t("organization")}
                 </label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={newUser.email}
+                  id="organization"
+                  value={newUser.organization}
                   onChange={(e) =>
-                    setNewUser({ ...newUser, email: e.target.value })
+                    setNewUser({ ...newUser, organization: e.target.value })
                   }
                 />
               </div>
@@ -200,8 +237,9 @@ export default function RelatedUsersTable({
             <TableRow className="bg-muted">
               <TableHead>{t("fullName")}</TableHead>
               <TableHead>{t("position")}</TableHead>
-              <TableHead>{t("phoneNumber")}</TableHead>
-              <TableHead>{t("email")}</TableHead>
+              <TableHead>{t("role")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
+              <TableHead>{t("organization")}</TableHead>
               <TableHead className="text-right">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -209,7 +247,7 @@ export default function RelatedUsersTable({
             {users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-6 text-muted-foreground"
                 >
                   {t("noUsersYet")}
@@ -220,8 +258,9 @@ export default function RelatedUsersTable({
                 <TableRow key={user.id}>
                   <TableCell>{user.fullName}</TableCell>
                   <TableCell>{user.position}</TableCell>
-                  <TableCell>{user.phoneNumber}</TableCell>
-                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>{user.status}</TableCell>
+                  <TableCell>{user.organization}</TableCell>
                   <TableCell className="text-right space-x-1">
                     <Button
                       variant="ghost"
@@ -280,30 +319,66 @@ export default function RelatedUsersTable({
                 />
               </div>
               <div className="space-y-2">
-                <label
-                  htmlFor="edit-phoneNumber"
-                  className="text-sm font-medium"
-                >
-                  {t("phoneNumber")}
+                <label htmlFor="edit-role" className="text-sm font-medium">
+                  {t("role")}
                 </label>
-                <Input
-                  id="edit-phoneNumber"
-                  value={editUser.phoneNumber}
-                  onChange={(e) =>
-                    setEditUser({ ...editUser, phoneNumber: e.target.value })
+                <Select
+                  value={editUser.role}
+                  onValueChange={(value) =>
+                    setEditUser({ ...editUser, role: value })
                   }
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectRole")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Initiator">{t("initiator")}</SelectItem>
+                    <SelectItem value="Validator 1">
+                      {t("validator1")}
+                    </SelectItem>
+                    <SelectItem value="Validator 2">
+                      {t("validator2")}
+                    </SelectItem>
+                    <SelectItem value="Consultation">
+                      {t("consultation")}
+                    </SelectItem>
+                    <SelectItem value="Member">{t("member")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <label htmlFor="edit-email" className="text-sm font-medium">
-                  {t("email")}
+                <label htmlFor="edit-status" className="text-sm font-medium">
+                  {t("status")}
+                </label>
+                <Select
+                  value={editUser.status}
+                  onValueChange={(value) =>
+                    setEditUser({ ...editUser, status: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectStatus")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Active">{t("active")}</SelectItem>
+                    <SelectItem value="Inactive">{t("inactive")}</SelectItem>
+                    <SelectItem value="Admin">{t("admin")}</SelectItem>
+                    <SelectItem value="Member">{t("member")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label
+                  htmlFor="edit-organization"
+                  className="text-sm font-medium"
+                >
+                  {t("organization")}
                 </label>
                 <Input
-                  id="edit-email"
-                  type="email"
-                  value={editUser.email}
+                  id="edit-organization"
+                  value={editUser.organization}
                   onChange={(e) =>
-                    setEditUser({ ...editUser, email: e.target.value })
+                    setEditUser({ ...editUser, organization: e.target.value })
                   }
                 />
               </div>

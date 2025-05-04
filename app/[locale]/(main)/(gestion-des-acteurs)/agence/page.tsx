@@ -108,12 +108,6 @@ export default function AgencePage() {
                 <TableHead className="text-primary-foreground font-medium">
                   {t("compensation")}
                 </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("name")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("firstName")}
-                </TableHead>
                 <TableHead className="text-primary-foreground font-medium w-[120px]">
                   {t("actions")}
                 </TableHead>
@@ -131,8 +125,6 @@ export default function AgencePage() {
                   <TableCell>{agency.ordreDe}</TableCell>
                   <TableCell>{agency.parDefault}</TableCell>
                   <TableCell>{agency.compensation}</TableCell>
-                  <TableCell>{agency.nom}</TableCell>
-                  <TableCell>{agency.prenom}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button
@@ -202,3 +194,4 @@ export default function AgencePage() {
     </div>
   );
 }
+

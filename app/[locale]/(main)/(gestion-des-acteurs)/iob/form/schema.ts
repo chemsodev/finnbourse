@@ -8,9 +8,7 @@ export const iobFormSchema = z.object({
   correspondant: z.string().min(1, "Correspondent is required"),
   email: z.string().email().optional().or(z.literal("")),
   fax: z.string().optional(),
-  telephone1: z.string().optional(),
-  telephone2: z.string().optional(),
-  telephone3: z.string().optional(),
+  telephone: z.string().optional(),
   addresse: z.string().min(1, "Address is required"),
   ordreDeTu: z.string().optional(),
 });

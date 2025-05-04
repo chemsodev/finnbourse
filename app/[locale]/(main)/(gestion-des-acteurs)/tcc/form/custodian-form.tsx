@@ -298,76 +298,7 @@ export function CustodianForm({
             />
           </div>
 
-          {/* Contact principal */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="contactNom"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("contactLastName")}</FormLabel>
-                  <FormControl>
-                    <Input id="contactNom" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="contactPrenom"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("contactFirstName")}</FormLabel>
-                  <FormControl>
-                    <Input id="contactPrenom" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="contactTelephone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("contactPhone")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="contactTelephone"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="contactEmail"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("contactEmail")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="contactEmail"
-                      type="email"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+
 
           {/* Informations générales */}
           <div className="space-y-2">

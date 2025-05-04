@@ -1,3 +1,140 @@
+export type AccountHolderData = {
+  id: number;
+  code: string;
+  libelle: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  pays: string;
+  telephone: string;
+  email: string;
+  statut: string;
+  dateCreation: string;
+  swift?: string;
+  typeCompte?: string;
+  iban?: string;
+  numeroCompte?: string;
+  devise?: string;
+  contactNom?: string;
+  contactPrenom?: string;
+  contactTelephone?: string;
+  contactEmail?: string;
+  numeroAgrement?: string;
+  dateAgrement?: string;
+  autoriteSurveillance?: string;
+  codeCorrespondant?: string;
+  nomCorrespondant?: string;
+  commissionFixe?: string;
+  commissionVariable?: string;
+  tauxTva?: string;
+  commentaire?: string;
+};
+
+export const accountHolderData: AccountHolderData[] = [
+  {
+    id: 1,
+    code: "TCT001",
+    libelle: "BANQUE DE DEVELOPPEMENT LOCAL",
+    adresse: "38, Rue des Frères Bouaddou, Bir Mourad Rais",
+    codePostal: "16000",
+    ville: "Alger",
+    pays: "Algérie",
+    telephone: "+213 23 56 91 57",
+    email: "contact@bdl.dz",
+    statut: "Actif",
+    dateCreation: "2019-11-05",
+    typeCompte: "Banque Locale",
+    numeroAgrement: "COSOB-BDL-01",
+    autoriteSurveillance: "COSOB",
+    commentaire:
+      "Direction de la Trésorerie et des Marchés(DTM), Département des Valeurs Mobilières (DVM)",
+  },
+  {
+    id: 2,
+    code: "TCT002",
+    libelle: "BANQUE EXTERIEURE D'ALGERIE",
+    adresse: "2, Boulevard Mohamed V",
+    codePostal: "16000",
+    ville: "Alger",
+    pays: "Algérie",
+    telephone: "+213 21 63 72 42",
+    email: "contact@bea.dz",
+    statut: "Actif",
+    dateCreation: "2019-10-15",
+    typeCompte: "Banque Locale",
+    numeroAgrement: "COSOB-BEA-02",
+    autoriteSurveillance: "COSOB",
+    commentaire: "Direction de la Trésorerie et du Marché (DTM)",
+  },
+  {
+    id: 3,
+    code: "TCT003",
+    libelle: "BANQUE DE L'AGRICULTURE ET DU DÉVELOPPEMENT RURAL",
+    adresse: "01, Rue Azile Ali",
+    codePostal: "16000",
+    ville: "Alger",
+    pays: "Algérie",
+    telephone: "+213 21 74 31 93",
+    email: "contact@badr.dz",
+    statut: "Actif",
+    dateCreation: "2019-09-20",
+    typeCompte: "Banque Locale",
+    numeroAgrement: "COSOB-BADR-03",
+    autoriteSurveillance: "COSOB",
+    commentaire: "Direction de la Trésorerie et des Marchés des Capitaux",
+  },
+  {
+    id: 4,
+    code: "TCT004",
+    libelle: "CREDIT POPULAIRE D'ALGERIE",
+    adresse: "Résidence Chaabani Bloc A3, Val d'Hydra",
+    codePostal: "16035",
+    ville: "Alger",
+    pays: "Algérie",
+    telephone: "+213 21 60 12 65",
+    email: "contact@cpa.dz",
+    statut: "Actif",
+    dateCreation: "2020-02-10",
+    typeCompte: "Conservateur",
+    numeroAgrement: "COSOB-CPA-04",
+    autoriteSurveillance: "COSOB",
+    commentaire: "Direction de la Gestion des Valeurs Mobilières (DGVM)",
+  },
+  {
+    id: 5,
+    code: "TCT005",
+    libelle: "BANQUE NATIONALE D'ALGERIE",
+    adresse: "12, Rue Hassiba Ben Bouali",
+    codePostal: "16000",
+    ville: "Alger",
+    pays: "Algérie",
+    telephone: "+213 21 73 29 51",
+    email: "contact@bna.dz",
+    statut: "Actif",
+    dateCreation: "2019-05-20",
+    typeCompte: "Dépositaire",
+    numeroAgrement: "COSOB-BNA-05",
+    autoriteSurveillance: "COSOB",
+    commentaire: "Direction des Finances et des Marchés Financiers (DMF)",
+  },
+  {
+    id: 6,
+    code: "TCT006",
+    libelle: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
+    adresse: "Tour Les Halls Hassiba Ben Bouali",
+    codePostal: "16000",
+    ville: "Alger",
+    pays: "Algérie",
+    telephone: "+213 21 51 12 22",
+    email: "contact@cnepbanque.dz",
+    statut: "Actif",
+    dateCreation: "2019-04-15",
+    typeCompte: "Banque Locale",
+    numeroAgrement: "COSOB-CNEP-06",
+    autoriteSurveillance: "COSOB",
+    commentaire: "Direction des finances (DF)",
+  },
+];
 export type Marche = {
   id: number;
   titre: string;
@@ -325,16 +462,11 @@ export type AgencyData = {
   ordreDe: string;
   parDefault: string;
   compensation: string;
-  nom: string;
-  prenom: string;
   codeBanque?: string;
   regionAgence?: string;
   codeBC?: string;
-  nomCorrespondant?: string;
-  prenomCorrespondant?: string;
   fonction?: string;
-  telephone1?: string;
-  telephone2?: string;
+  telephone?: string;
   fax?: string;
   email?: string;
   telex?: string;
@@ -342,7 +474,6 @@ export type AgencyData = {
   codePostal?: string;
   commentaire?: string;
 };
-
 export const agencyData: AgencyData[] = [
   {
     id: 1,
@@ -352,16 +483,11 @@ export const agencyData: AgencyData[] = [
     ordreDe: "0",
     parDefault: "1",
     compensation: "0",
-    nom: "BENABDALLAH",
-    prenom: "MOHAMED",
     codeBanque: "91001",
     regionAgence: "ORAN",
     codeBC: "BC001",
-    nomCorrespondant: "BENAMARA",
-    prenomCorrespondant: "KARIM",
     fonction: "DIRECTEUR",
-    telephone1: "041-456-789",
-    telephone2: "041-123-456",
+    telephone: "041-456-789",
     fax: "041-789-012",
     email: "contact@agence-bir-el-djir.dz",
     telex: "12345",
@@ -377,16 +503,11 @@ export const agencyData: AgencyData[] = [
     ordreDe: "1",
     parDefault: "0",
     compensation: "0",
-    nom: "HADJADJ",
-    prenom: "AMINA",
     codeBanque: "91002",
     regionAgence: "ALGER",
     codeBC: "BC002",
-    nomCorrespondant: "BOUCHAKOUR",
-    prenomCorrespondant: "FARID",
     fonction: "DIRECTEUR ADJOINT",
-    telephone1: "021-556-789",
-    telephone2: "021-890-123",
+    telephone: "021-556-789",
     fax: "021-234-567",
     email: "contact@agence-kouba.dz",
     telex: "23456",
@@ -402,16 +523,11 @@ export const agencyData: AgencyData[] = [
     ordreDe: "2",
     parDefault: "0",
     compensation: "1",
-    nom: "BOULMERKA",
-    prenom: "YACINE",
     codeBanque: "91003",
     regionAgence: "ALGER",
     codeBC: "BC003",
-    nomCorrespondant: "CHAOUI",
-    prenomCorrespondant: "SALIMA",
     fonction: "DIRECTEUR",
-    telephone1: "023-856-741",
-    telephone2: "023-963-852",
+    telephone: "023-856-741",
     fax: "023-147-258",
     email: "contact@agence-bab-ezzouar.dz",
     telex: "34567",
@@ -427,16 +543,11 @@ export const agencyData: AgencyData[] = [
     ordreDe: "3",
     parDefault: "0",
     compensation: "0",
-    nom: "BOUDIAF",
-    prenom: "MERIEM",
     codeBanque: "91004",
     regionAgence: "CONSTANTINE",
     codeBC: "BC004",
-    nomCorrespondant: "MESBAH",
-    prenomCorrespondant: "SOFIANE",
     fonction: "DIRECTEUR",
-    telephone1: "031-963-741",
-    telephone2: "031-852-147",
+    telephone: "031-963-741",
     fax: "031-369-258",
     email: "contact@agence-constantine.dz",
     telex: "45678",
@@ -452,16 +563,11 @@ export const agencyData: AgencyData[] = [
     ordreDe: "4",
     parDefault: "0",
     compensation: "0",
-    nom: "ZIANI",
-    prenom: "AHMED",
     codeBanque: "91005",
     regionAgence: "TLEMCEN",
     codeBC: "BC005",
-    nomCorrespondant: "BELHADJ",
-    prenomCorrespondant: "FATIMA",
     fonction: "DIRECTEUR",
-    telephone1: "043-275-941",
-    telephone2: "043-186-352",
+    telephone: "043-275-941",
     fax: "043-619-753",
     email: "contact@agence-tlemcen.dz",
     telex: "56789",
@@ -477,16 +583,11 @@ export const agencyData: AgencyData[] = [
     ordreDe: "5",
     parDefault: "0",
     compensation: "0",
-    nom: "BENMESSAOUD",
-    prenom: "NADIR",
     codeBanque: "91006",
     regionAgence: "ANNABA",
     codeBC: "BC006",
-    nomCorrespondant: "LATRECHE",
-    prenomCorrespondant: "SABRINA",
     fonction: "DIRECTEUR",
-    telephone1: "038-852-741",
-    telephone2: "038-963-147",
+    telephone: "038-852-741",
     fax: "038-456-258",
     email: "contact@agence-annaba.dz",
     telex: "67890",
@@ -502,159 +603,16 @@ export const agencyData: AgencyData[] = [
     ordreDe: "6",
     parDefault: "0",
     compensation: "0",
-    nom: "FERAOUN",
-    prenom: "YOUNES",
     codeBanque: "91007",
     regionAgence: "SETIF",
     codeBC: "BC007",
-    nomCorrespondant: "CHERIFI",
-    prenomCorrespondant: "OUAHIBA",
     fonction: "DIRECTEUR",
-    telephone1: "036-741-852",
-    telephone2: "036-963-147",
+    telephone: "036-741-852",
     fax: "036-258-369",
     email: "contact@agence-setif.dz",
     telex: "78901",
     addresse: "03 Rue des Frères Khettabi, Sétif",
     codePostal: "19000",
     commentaire: "Agence des Hauts Plateaux",
-  },
-];
-
-export type AccountHolderData = {
-  id: number;
-  code: string;
-  libelle: string;
-  adresse: string;
-  codePostal: string;
-  ville: string;
-  pays: string;
-  telephone: string;
-  email: string;
-  statut: string;
-  dateCreation: string;
-  swift?: string;
-  typeCompte?: string;
-  iban?: string;
-  numeroCompte?: string;
-  devise?: string;
-  contactNom?: string;
-  contactPrenom?: string;
-  contactTelephone?: string;
-  contactEmail?: string;
-  numeroAgrement?: string;
-  dateAgrement?: string;
-  autoriteSurveillance?: string;
-  codeCorrespondant?: string;
-  nomCorrespondant?: string;
-  commissionFixe?: string;
-  commissionVariable?: string;
-  tauxTva?: string;
-  commentaire?: string;
-};
-
-export const accountHolderData: AccountHolderData[] = [
-  {
-    id: 1,
-    code: "TCT001",
-    libelle: "BANQUE DE DEVELOPPEMENT LOCAL",
-    adresse: "38, Rue des Frères Bouaddou, Bir Mourad Rais",
-    codePostal: "16000",
-    ville: "Alger",
-    pays: "Algérie",
-    telephone: "+213 23 56 91 57",
-    email: "contact@bdl.dz",
-    statut: "Actif",
-    dateCreation: "2019-11-05",
-    typeCompte: "Banque Locale",
-    numeroAgrement: "COSOB-BDL-01",
-    autoriteSurveillance: "COSOB",
-    commentaire:
-      "Direction de la Trésorerie et des Marchés(DTM), Département des Valeurs Mobilières (DVM)",
-  },
-  {
-    id: 2,
-    code: "TCT002",
-    libelle: "BANQUE EXTERIEURE D'ALGERIE",
-    adresse: "2, Boulevard Mohamed V",
-    codePostal: "16000",
-    ville: "Alger",
-    pays: "Algérie",
-    telephone: "+213 21 63 72 42",
-    email: "contact@bea.dz",
-    statut: "Actif",
-    dateCreation: "2019-10-15",
-    typeCompte: "Banque Locale",
-    numeroAgrement: "COSOB-BEA-02",
-    autoriteSurveillance: "COSOB",
-    commentaire: "Direction de la Trésorerie et du Marché (DTM)",
-  },
-  {
-    id: 3,
-    code: "TCT003",
-    libelle: "BANQUE DE L'AGRICULTURE ET DU DÉVELOPPEMENT RURAL",
-    adresse: "01, Rue Azile Ali",
-    codePostal: "16000",
-    ville: "Alger",
-    pays: "Algérie",
-    telephone: "+213 21 74 31 93",
-    email: "contact@badr.dz",
-    statut: "Actif",
-    dateCreation: "2019-09-20",
-    typeCompte: "Banque Locale",
-    numeroAgrement: "COSOB-BADR-03",
-    autoriteSurveillance: "COSOB",
-    commentaire: "Direction de la Trésorerie et des Marchés des Capitaux",
-  },
-  {
-    id: 4,
-    code: "TCT004",
-    libelle: "CREDIT POPULAIRE D'ALGERIE",
-    adresse: "Résidence Chaabani Bloc A3, Val d'Hydra",
-    codePostal: "16035",
-    ville: "Alger",
-    pays: "Algérie",
-    telephone: "+213 21 60 12 65",
-    email: "contact@cpa.dz",
-    statut: "Actif",
-    dateCreation: "2020-02-10",
-    typeCompte: "Conservateur",
-    numeroAgrement: "COSOB-CPA-04",
-    autoriteSurveillance: "COSOB",
-    commentaire: "Direction de la Gestion des Valeurs Mobilières (DGVM)",
-  },
-  {
-    id: 5,
-    code: "TCT005",
-    libelle: "BANQUE NATIONALE D'ALGERIE",
-    adresse: "12, Rue Hassiba Ben Bouali",
-    codePostal: "16000",
-    ville: "Alger",
-    pays: "Algérie",
-    telephone: "+213 21 73 29 51",
-    email: "contact@bna.dz",
-    statut: "Actif",
-    dateCreation: "2019-05-20",
-    typeCompte: "Dépositaire",
-    numeroAgrement: "COSOB-BNA-05",
-    autoriteSurveillance: "COSOB",
-    commentaire: "Direction des Finances et des Marchés Financiers (DMF)",
-  },
-  {
-    id: 6,
-    code: "TCT006",
-    libelle: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
-    adresse: "Tour Les Halls Hassiba Ben Bouali",
-    codePostal: "16000",
-    ville: "Alger",
-    pays: "Algérie",
-    telephone: "+213 21 51 12 22",
-    email: "contact@cnepbanque.dz",
-    statut: "Actif",
-    dateCreation: "2019-04-15",
-    typeCompte: "Banque Locale",
-    numeroAgrement: "COSOB-CNEP-06",
-    autoriteSurveillance: "COSOB",
-    commentaire: "Direction des finances (DF)",
   },
 ];

@@ -45,10 +45,6 @@ export default function FormPage({ params }: FormPageProps) {
       iban: "",
       numeroCompte: "",
       devise: "EUR",
-      contactNom: "",
-      contactPrenom: "",
-      contactTelephone: "",
-      contactEmail: "",
       numeroAgrement: "",
       dateAgrement: "",
       autoriteSurveillance: "",
@@ -90,10 +86,6 @@ export default function FormPage({ params }: FormPageProps) {
             iban: holder.iban || "",
             numeroCompte: holder.numeroCompte || "",
             devise: holder.devise || "EUR",
-            contactNom: holder.contactNom || "",
-            contactPrenom: holder.contactPrenom || "",
-            contactTelephone: holder.contactTelephone || "",
-            contactEmail: holder.contactEmail || "",
             numeroAgrement: holder.numeroAgrement || "",
             dateAgrement: holder.dateAgrement || "",
             autoriteSurveillance: holder.autoriteSurveillance || "",
@@ -109,24 +101,27 @@ export default function FormPage({ params }: FormPageProps) {
             // These are mock related users for demonstration
             {
               id: "1",
-              name: "Sagi Salim",
+              fullName: "Sagi Salim",
               position: "DG",
-              phoneNumber: "+213 123456789",
-              email: "sagi.salim@example.com",
+              role: "validator2",
+              status: "admin",
+              organization: "SLIK PIS",
             },
             {
               id: "2",
-              name: "Gadh Mohamed",
+              fullName: "Gadh Mohamed",
               position: "DFC",
-              phoneNumber: "+213 234567890",
-              email: "gadh.mohamed@example.com",
+              role: "validator1",
+              status: "member",
+              organization: "SLIK PIS",
             },
             {
               id: "3",
-              name: "Slmi Kadour",
+              fullName: "Slmi Kadour",
               position: "Trader",
-              phoneNumber: "+213 345678901",
-              email: "slmi.kadour@example.com",
+              role: "initiator",
+              status: "member",
+              organization: "SLIK PIS",
             },
           ],
         }));
@@ -234,3 +229,4 @@ export default function FormPage({ params }: FormPageProps) {
     </div>
   );
 }
+

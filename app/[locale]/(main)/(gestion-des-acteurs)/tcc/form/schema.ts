@@ -20,12 +20,6 @@ export const custodianFormSchema = z.object({
   ville: z.string().min(1, "City is required"),
   pays: z.string().min(1, "Country is required"),
 
-  // Main contact
-  contactNom: z.string().optional(),
-  contactPrenom: z.string().optional(),
-  contactTelephone: z.string().optional(),
-  contactEmail: z.string().email().optional().or(z.literal("")),
-
   // General information
   telephone: z.string().min(1, "Phone number is required"),
   email: z.string().email().min(1, "Email is required"),
@@ -51,10 +45,11 @@ export const custodianFormSchema = z.object({
 // Schema for related users (Step 2)
 export const relatedUserSchema = z.object({
   id: z.string().optional(), // Only present when editing an existing user
-  name: z.string().min(1, "Name is required"),
+  fullName: z.string().min(1, "Full name is required"),
   position: z.string().min(1, "Position is required"),
-  phoneNumber: z.string().min(1, "Phone number is required"),
-  email: z.string().email("Invalid email format").min(1, "Email is required"),
+  role: z.string().min(1, "Role is required"),
+  status: z.string().min(1, "Status is required"),
+  organization: z.string().optional(),
 });
 
 export const relatedUsersFormSchema = z.object({
@@ -71,3 +66,4 @@ export type CustodianFormValues = z.infer<typeof custodianFormSchema>;
 export type RelatedUserFormValues = z.infer<typeof relatedUserSchema>;
 export type RelatedUsersFormValues = z.infer<typeof relatedUsersFormSchema>;
 export type CombinedFormValues = z.infer<typeof combinedFormSchema>;
+

@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import RelatedUsersTable, { RelatedUser } from "./RelatedUsersTable";
+import RelatedUsersTable from "./RelatedUsersTable";
+import { type RelatedUser } from "./types";
 
 // Define the form schema for the agency details
 const agenceFormSchema = z.object({
@@ -31,13 +32,8 @@ const agenceFormSchema = z.object({
   ordreDe: z.string().optional(),
   parDefault: z.string().optional(),
   compensation: z.string().optional(),
-  nom: z.string().optional(),
-  prenom: z.string().optional(),
   fonction: z.string().optional(),
-  nomCorrespondant: z.string().optional(),
-  prenomCorrespondant: z.string().optional(),
-  telephone1: z.string().optional(),
-  telephone2: z.string().optional(),
+  telephone: z.string().optional(),
   fax: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
   telex: z.string().optional(),
@@ -69,15 +65,17 @@ export default function AgenceFormSteps({
             id: "1",
             fullName: "Sagi Salim",
             position: "DG",
-            phoneNumber: "+123456789",
-            email: "sagi@example.com",
+            role: "Validator 2",
+            status: "Admin",
+            organization: "SLIK PIS",
           },
           {
             id: "2",
             fullName: "Gadh Mohamed",
             position: "DFC",
-            phoneNumber: "+987654321",
-            email: "gadh@example.com",
+            role: "Validator 1",
+            status: "Member",
+            organization: "SLIK PIS",
           },
         ]
       : []
@@ -97,13 +95,8 @@ export default function AgenceFormSteps({
           ordreDe: initialData.ordreDe || "",
           parDefault: initialData.parDefault || "",
           compensation: initialData.compensation || "",
-          nom: initialData.nom || "",
-          prenom: initialData.prenom || "",
           fonction: initialData.fonction || "",
-          nomCorrespondant: initialData.nomCorrespondant || "",
-          prenomCorrespondant: initialData.prenomCorrespondant || "",
-          telephone1: initialData.telephone1 || "",
-          telephone2: initialData.telephone2 || "",
+          telephone: initialData.telephone || "",
           fax: initialData.fax || "",
           email: initialData.email || "",
           telex: initialData.telex || "",
@@ -121,13 +114,8 @@ export default function AgenceFormSteps({
           ordreDe: "",
           parDefault: "",
           compensation: "",
-          nom: "",
-          prenom: "",
           fonction: "",
-          nomCorrespondant: "",
-          prenomCorrespondant: "",
-          telephone1: "",
-          telephone2: "",
+          telephone: "",
           fax: "",
           email: "",
           telex: "",
@@ -330,32 +318,6 @@ export default function AgenceFormSteps({
                   />
                   <FormField
                     control={form.control}
-                    name="nom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("name")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="prenom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("firstName")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
                     name="fonction"
                     render={({ field }) => (
                       <FormItem>
@@ -367,51 +329,13 @@ export default function AgenceFormSteps({
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
-                    name="nomCorrespondant"
+                    name="telephone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("nomCorrespondant")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="prenomCorrespondant"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("prenomCorrespondant")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="telephone1"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("telephone1")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="telephone2"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("telephone2")}</FormLabel>
+                        <FormLabel>{t("telephone")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -542,3 +466,4 @@ export default function AgenceFormSteps({
     </div>
   );
 }
+

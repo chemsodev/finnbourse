@@ -136,48 +136,19 @@ export function IobForm({ defaultValues, onFormChange }: IobFormProps) {
           <div className="space-y-2">
             <FormField
               control={form.control}
-              name="telephone1"
+              name="telephone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("phone1")}</FormLabel>
+                  <FormLabel>{t("phone")}</FormLabel>
                   <FormControl>
-                    <Input id="telephone1" className="w-full" {...field} />
+                    <Input id="telephone" className="w-full" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="telephone2"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("phone2")}</FormLabel>
-                  <FormControl>
-                    <Input id="telephone2" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="telephone3"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("phone3")}</FormLabel>
-                  <FormControl>
-                    <Input id="telephone3" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+
           <div className="space-y-2">
             <FormField
               control={form.control}

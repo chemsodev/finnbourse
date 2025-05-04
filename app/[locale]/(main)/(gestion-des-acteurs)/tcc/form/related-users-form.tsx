@@ -22,6 +22,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -57,10 +64,11 @@ export function RelatedUsersForm({
   const userForm = useForm<RelatedUserFormValues>({
     resolver: zodResolver(relatedUserSchema),
     defaultValues: {
-      name: "",
+      fullName: "",
       position: "",
-      phoneNumber: "",
-      email: "",
+      role: "",
+      status: "member",
+      organization: "",
     },
   });
 
@@ -73,10 +81,11 @@ export function RelatedUsersForm({
   // Open dialog to add a new user
   const handleAddUser = () => {
     userForm.reset({
-      name: "",
+      fullName: "",
       position: "",
-      phoneNumber: "",
-      email: "",
+      role: "",
+      status: "member",
+      organization: "",
     });
     setEditingIndex(null);
     setIsDialogOpen(true);
@@ -127,10 +136,11 @@ export function RelatedUsersForm({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("name")}</TableHead>
+              <TableHead>{t("lastName")}</TableHead>
               <TableHead>{t("position")}</TableHead>
-              <TableHead>{t("phoneNumber")}</TableHead>
-              <TableHead>{t("email")}</TableHead>
+              <TableHead>{t("validation")}</TableHead>
+              <TableHead>{t("organization")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
               <TableHead className="w-[100px]">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -138,7 +148,7 @@ export function RelatedUsersForm({
             {users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-4 text-muted-foreground"
                 >
                   {t("noUsers")}
@@ -147,10 +157,11 @@ export function RelatedUsersForm({
             ) : (
               users.map((user, index) => (
                 <TableRow key={index}>
-                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.fullName}</TableCell>
                   <TableCell>{user.position}</TableCell>
-                  <TableCell>{user.phoneNumber}</TableCell>
-                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{t(user.role)}</TableCell>
+                  <TableCell>{user.organization || "-"}</TableCell>
+                  <TableCell>{t(user.status)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button
@@ -196,10 +207,10 @@ export function RelatedUsersForm({
             >
               <FormField
                 control={userForm.control}
-                name="name"
+                name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("name")}</FormLabel>
+                    <FormLabel>{t("fullName")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -213,7 +224,7 @@ export function RelatedUsersForm({
                 name="position"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("position")}</FormLabel>
+                    <FormLabel>{t("positionInCompany")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -224,12 +235,33 @@ export function RelatedUsersForm({
 
               <FormField
                 control={userForm.control}
-                name="phoneNumber"
+                name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("phoneNumber")}</FormLabel>
+                    <FormLabel>{t("role")}</FormLabel>
                     <FormControl>
-                      <Input {...field} type="tel" />
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("selectRole")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="initiator">
+                            {t("initiator")}
+                          </SelectItem>
+                          <SelectItem value="validator1">
+                            {t("validator1")}
+                          </SelectItem>
+                          <SelectItem value="validator2">
+                            {t("validator2")}
+                          </SelectItem>
+                          <SelectItem value="viewOnly">
+                            {t("viewOnly")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -238,12 +270,37 @@ export function RelatedUsersForm({
 
               <FormField
                 control={userForm.control}
-                name="email"
+                name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("email")}</FormLabel>
+                    <FormLabel>{t("status")}</FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" />
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("selectStatus")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">{t("admin")}</SelectItem>
+                          <SelectItem value="member">{t("member")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={userForm.control}
+                name="organization"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("organization")}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
