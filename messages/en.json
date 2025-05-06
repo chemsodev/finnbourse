@@ -1463,7 +1463,7 @@
     "user": "User"
   },
   "Actions": {
-    "title": "Add a Stock",
+    "title": "Add Stock",
     "form": {
       "isin": "ISIN Code",
       "isinPlaceholder": "Enter ISIN code",
@@ -1569,18 +1569,54 @@
       "success": "Form submitted successfully!",
       "error": "Error submitting form",
       "unknownError": "Unknown error"
+    },
+    "tabTitles": {
+      "list": "Stocks List",
+      "create": "Create New Stock"
+    },
+    "description": "Manage stock securities and create new stocks",
+    "table": {
+      "title": "Stocks List",
+      "description": "View and manage existing stocks",
+      "name": "Name",
+      "issuer": "Issuer",
+      "isin": "ISIN Code",
+      "market": "Market",
+      "nominal": "Nominal Value",
+      "quantity": "Quantity",
+      "actions": "Actions",
+      "openMenu": "Open menu",
+      "view": "View details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "createNew": "Create new stock",
+      "searchPlaceholder": "Search by name, issuer or ISIN...",
+      "noStocks": "No stocks found",
+      "noResults": "No results match your search",
+      "confirmDeletion": "Confirm Deletion",
+      "deleteConfirmationMessage": "Are you sure you want to delete this stock? This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Stock deleted",
+      "stockDeleted": "The stock has been successfully deleted",
+      "deleteError": "Error deleting stock",
+      "fetchError": "Error fetching stocks",
+      "cancel": "Cancel",
+      "maturityDate": "Maturity Date",
+      "allTypes": "All Types",
+      "stockType": "Regular Stock",
+      "ipoType": "IPO"
     }
   },
   "Obligations": {
     "tabs": {
       "obligation": "Bond",
-      "tp": "Participative Securities",
+      "tp": "Participative Certificate",
       "sukuk": "Sukuk"
     },
     "title": {
-      "obligation": "Add a Bond",
-      "tp": "Add a Participative Security",
-      "sukuk": "Add a Sukuk"
+      "obligation": "Add Bond",
+      "tp": "Add Participative Certificate",
+      "sukuk": "Add Sukuk"
     },
     "form": {
       "basicInfo": "Basic Information",
@@ -1635,6 +1671,44 @@
       "success": "Bond created successfully",
       "error": "Error during creation",
       "unknownError": "An unknown error occurred"
+    },
+    "tabTitles": {
+      "list": "Bonds List",
+      "create": "Create New Bond"
+    },
+    "description": "Manage bonds and create new bonds",
+    "table": {
+      "title": "Bonds List",
+      "description": "View and manage existing bonds, sukuk, and other debt securities",
+      "name": "Name",
+      "issuer": "Issuer",
+      "isin": "ISIN Code",
+      "market": "Market",
+      "nominal": "Nominal Value",
+      "quantity": "Quantity",
+      "maturityDate": "Maturity Date",
+      "actions": "Actions",
+      "openMenu": "Open menu",
+      "view": "View details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "createNew": "Create new bond",
+      "searchPlaceholder": "Search by name, issuer or ISIN...",
+      "noBonds": "No bonds found",
+      "noResults": "No results match your search",
+      "confirmDeletion": "Confirm Deletion",
+      "deleteConfirmationMessage": "Are you sure you want to delete this bond? This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Bond deleted",
+      "bondDeleted": "The bond has been successfully deleted",
+      "deleteError": "Error deleting bond",
+      "fetchError": "Error fetching bonds",
+      "cancel": "Cancel",
+      "allTypes": "All Types",
+      "obligationType": "Bond",
+      "sukukType": "Sukuk",
+      "tpType": "Participative Certificate",
+      "ebType": "Bond Loan"
     }
   },
   "Companies": {
@@ -1977,7 +2051,19 @@
     "enterCodePostal": "Enter postal code",
     "commentaire": "Comment",
     "enterCommentaire": "Add a comment",
-    "save": "Save"
+    "save": "Save",
+    "createNew": "Create New",
+    "search": "Search...",
+    "actions": "Actions",
+    "openMenu": "Open menu",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Confirm Deletion",
+    "deleteConfirmDescription": "Are you sure you want to delete this securities account? This action cannot be undone.",
+    "noResults": "No securities accounts found",
+    "createTitle": "Create New Securities Account",
+    "editTitle": "Edit Securities Account",
+    "update": "Update"
   },
   "AccountLinking": {
     "pageTitle": "Link Cash Account to Securities Account",

@@ -1,0 +1,861 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { cn, preventNonNumericInput } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import {
+  Save,
+  X,
+  Check,
+  ChevronsUpDown,
+  Loader2,
+  Plus,
+  Trash,
+} from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { fr, ar, enUS } from "date-fns/locale";
+import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { CREATE_BOND } from "@/graphql/mutations";
+import { GET_LISTED_COMPANIES_QUERY } from "@/graphql/queries";
+import { useTranslations, useLocale } from "next-intl";
+import MyMarquee from "@/components/MyMarquee";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useRouter } from "@/i18n/routing";
+
+// Define the form schema for obligations, TP, and sukuk
+const formSchema = z.object({
+  titre: z.string().min(1, { message: "Le titre est requis" }),
+  marche: z.string().min(1, { message: "Le marché est requis" }),
+  codeISIN: z.string().min(1, { message: "Le code ISIN est requis" }),
+  codeValeur: z.string().min(1, { message: "Le code valeur est requis" }),
+  emetteur: z.string().min(1, { message: "L'émetteur est requis" }),
+  nombreTotalTitres: z
+    .string()
+    .min(1, { message: "Le nombre total de titres est requis" }),
+  nominal: z.string().min(1, { message: "Le nominal est requis" }),
+  dateEmission: z.coerce.date(),
+  dateJouissance: z.coerce.date(),
+  dateEcheance: z.coerce.date().optional(),
+  tauxRendement: z.string().optional(),
+  modeRemboursement: z.string().optional(),
+  // Fields specific to sukuk
+  tauxEstime: z.string().optional(),
+  tauxVariable: z.string().optional(),
+  // Fields specific to TP
+  tauxFixe: z.string().optional(),
+  // Common fields for all types
+  commission: z.string().optional(),
+  couponSchedule: z
+    .array(
+      z.object({
+        year: z.number().int().positive(),
+        rate: z.number().positive(),
+      })
+    )
+    .optional(),
+});
+
+interface GetListedCompaniesResponse {
+  listListedCompanies: {
+    id: string;
+    nom: string;
+  }[];
+}
+
+export default function CreateObligationPage() {
+  const [loading, setLoading] = useState(false);
+  const [companies, setCompanies] = useState<GetListedCompaniesResponse | null>(
+    null
+  );
+  const [selectedType, setSelectedType] = useState("obligation");
+  const locale = useLocale();
+  const t = useTranslations("Obligations");
+  const router = useRouter();
+
+  // Initialize the form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      titre: "",
+      marche: "",
+      codeISIN: "",
+      codeValeur: "",
+      emetteur: "",
+      nombreTotalTitres: "",
+      nominal: "",
+      dateEmission: new Date(),
+      dateJouissance: new Date(),
+      dateEcheance: new Date(
+        new Date().setFullYear(new Date().getFullYear() + 5)
+      ),
+      tauxRendement: "",
+      modeRemboursement: "",
+      tauxEstime: "",
+      tauxVariable: "",
+      tauxFixe: "",
+      commission: "",
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "couponSchedule",
+  });
+
+  // Fetch companies on component mount
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await fetchGraphQL<GetListedCompaniesResponse>(
+          GET_LISTED_COMPANIES_QUERY
+        );
+        setCompanies(response);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
+  // Handle form submission
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      setLoading(true);
+
+      await fetchGraphQL(CREATE_BOND, {
+        name: values.titre,
+        isincode: values.codeISIN,
+        issuer: companies?.listListedCompanies?.find(
+          (company) => company.id === values.emetteur
+        )?.nom,
+        code: values.codeValeur,
+        listedcompanyid: values.emetteur,
+        marketlisting: values.marche,
+        emissiondate: values.dateEmission.toISOString(),
+        enjoymentdate: values.dateJouissance.toISOString(),
+        maturitydate: values.dateEcheance?.toISOString(),
+        quantity: Number.parseInt(values.nombreTotalTitres || "0"),
+        type: selectedType,
+        facevalue: Number.parseFloat(values.nominal || "0"),
+        repaymentmethod: values.modeRemboursement,
+        yieldrate: Number.parseFloat(values.tauxRendement || "0"),
+        couponschedule: fields?.map((field) => ({
+          year: field.year,
+          rate: field.rate,
+        })),
+        fixedrate: values.tauxFixe,
+        variablerate: values.tauxVariable,
+        estimatedrate: values.tauxEstime,
+        commission: Number.parseFloat(values.commission || "0"),
+      });
+
+      // Reset form after successful submission
+      form.reset();
+
+      // Show success message
+      alert(t("form.success"));
+
+      // Navigate back to the list
+      router.push("/obligations");
+    } catch (error) {
+      console.error("Form submission error", error);
+      // Show error message
+      alert(
+        `${t("form.error")}: ${
+          error instanceof Error ? error.message : t("form.unknownError")
+        }`
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="container mx-auto pb-6">
+      <div className="pb-6">
+        <MyMarquee />
+      </div>
+
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          {t("title.obligation")}
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          {t("description") || "Manage bonds and create new obligations"}
+        </p>
+      </div>
+
+      <div className="flex justify-between mb-6">
+        <Button variant="outline" onClick={() => router.push("/obligations")}>
+          <X className="mr-2 h-4 w-4" /> {t("form.cancel")}
+        </Button>
+      </div>
+
+      <div className="bg-card rounded-lg shadow-lg p-6 mb-6">
+        <Tabs
+          defaultValue="obligation"
+          onValueChange={setSelectedType}
+          className="mb-6"
+        >
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="obligation">{t("tabs.obligation")}</TabsTrigger>
+            <TabsTrigger value="titresparticipatifs">
+              {t("tabs.tp")}
+            </TabsTrigger>
+            <TabsTrigger value="sukuk">{t("tabs.sukuk")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <h2 className="text-2xl text-secondary font-bold mb-6">
+          {selectedType === "obligation"
+            ? t("title.obligation")
+            : selectedType === "titresparticipatifs"
+            ? t("title.tp")
+            : t("title.sukuk")}
+        </h2>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Basic Information Card */}
+            <div className="bg-background rounded-lg p-6 shadow-sm border">
+              <h2 className="text-xl font-semibold mb-4">
+                {t("form.basicInfo")}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Title */}
+                <FormField
+                  control={form.control}
+                  name="titre"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.title")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("form.titlePlaceholder")}
+                          {...field}
+                          className="w-full"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Issuer */}
+                <FormField
+                  control={form.control}
+                  name="emetteur"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.issuer")}</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "justify-between w-full",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value && companies
+                                ? companies.listListedCompanies?.find(
+                                    (company) => company.id === field.value
+                                  )?.nom || t("form.selectIssuer")
+                                : t("form.selectIssuer")}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0 w-[300px]">
+                          <Command>
+                            <CommandInput
+                              placeholder={t("form.searchIssuer")}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {t("form.noIssuerFound")}
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {companies?.listListedCompanies?.map(
+                                  (company) => (
+                                    <CommandItem
+                                      value={company.nom}
+                                      key={company.id}
+                                      onSelect={() => {
+                                        form.setValue(
+                                          "emetteur",
+                                          company.id.toString()
+                                        );
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          company.id === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {company.nom}
+                                    </CommandItem>
+                                  )
+                                )}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Market */}
+                <FormField
+                  control={form.control}
+                  name="marche"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.market")}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("form.selectMarket")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Marché principal">
+                            {t("form.mainMarket")}
+                          </SelectItem>
+                          <SelectItem value="Marché PME">
+                            {t("form.smeMarket")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Code ISIN */}
+                <FormField
+                  control={form.control}
+                  name="codeISIN"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.isinCode")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("form.isinCodePlaceholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Value Code */}
+                <FormField
+                  control={form.control}
+                  name="codeValeur"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.valueCode")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("form.valueCodePlaceholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Nominal Value */}
+                <FormField
+                  control={form.control}
+                  name="nominal"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.nominal")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("form.nominalPlaceholder")}
+                          {...field}
+                          type="number"
+                          onKeyDown={preventNonNumericInput}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Dates Card */}
+            <div className="bg-background rounded-lg p-6 shadow-sm border">
+              <h2 className="text-xl font-semibold mb-4">{t("form.dates")}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Issue Date */}
+                <FormField
+                  control={form.control}
+                  name="dateEmission"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.issueDate")}</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", {
+                                  locale:
+                                    locale === "fr"
+                                      ? fr
+                                      : locale === "en"
+                                      ? enUS
+                                      : ar,
+                                })
+                              ) : (
+                                <span>{t("form.selectDate")}</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Enjoyment Date */}
+                <FormField
+                  control={form.control}
+                  name="dateJouissance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.enjoymentDate")}</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", {
+                                  locale:
+                                    locale === "fr"
+                                      ? fr
+                                      : locale === "en"
+                                      ? enUS
+                                      : ar,
+                                })
+                              ) : (
+                                <span>{t("form.selectDate")}</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Maturity Date */}
+                <FormField
+                  control={form.control}
+                  name="dateEcheance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.maturityDate")}</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", {
+                                  locale:
+                                    locale === "fr"
+                                      ? fr
+                                      : locale === "en"
+                                      ? enUS
+                                      : ar,
+                                })
+                              ) : (
+                                <span>{t("form.selectDate")}</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Type-specific fields */}
+            <div className="bg-background rounded-lg p-6 shadow-sm border">
+              <h2 className="text-xl font-semibold mb-4">
+                {selectedType === "obligation"
+                  ? t("form.bondDetails")
+                  : selectedType === "titresparticipatifs"
+                  ? t("form.tpDetails")
+                  : t("form.sukukDetails")}
+              </h2>
+
+              <div className="space-y-6">
+                {/* Total Number of Securities */}
+                <FormField
+                  control={form.control}
+                  name="nombreTotalTitres"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.totalShares")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("form.totalSharesPlaceholder")}
+                          {...field}
+                          type="number"
+                          onKeyDown={preventNonNumericInput}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {selectedType === "obligation" && (
+                  <>
+                    {/* Repayment Method */}
+                    <FormField
+                      control={form.control}
+                      name="modeRemboursement"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.repaymentMethod")}</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t("form.selectRepaymentMethod")}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Infine">Infine</SelectItem>
+                              <SelectItem value="Par capital constant">
+                                {t("form.constantCapital")}
+                              </SelectItem>
+                              <SelectItem value="Par annuité constante">
+                                {t("form.constantAnnuity")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Yield Rate */}
+                    <FormField
+                      control={form.control}
+                      name="tauxRendement"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.yieldRate")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.yieldRatePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Coupon Schedule */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium">
+                          {t("form.couponSchedule")}
+                        </h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => append({ year: 1, rate: 0 })}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="w-4 h-4" /> {t("form.addCoupon")}
+                        </Button>
+                      </div>
+                      {fields?.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex gap-4 items-end p-4 bg-muted rounded-lg"
+                        >
+                          <FormField
+                            control={form.control}
+                            name={`couponSchedule.${index}.year`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>{t("form.year")}</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    placeholder={t("form.yearPlaceholder")}
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                    onKeyDown={preventNonNumericInput}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`couponSchedule.${index}.rate`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>{t("form.rate")} (%)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder={t("form.ratePlaceholder")}
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                    onKeyDown={preventNonNumericInput}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => remove(index)}
+                            className="mb-1"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {selectedType === "sukuk" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="tauxEstime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.estimatedRate")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.estimatedRatePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tauxVariable"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.variableRate")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.variableRatePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
+                {selectedType === "titresparticipatifs" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="tauxFixe"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.fixedRate")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.fixedRatePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tauxVariable"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.variableRate")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("form.variableRatePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
+                {/* Commission (common for all types) */}
+                <FormField
+                  control={form.control}
+                  name="commission"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("form.commission")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("form.commissionPlaceholder")}
+                          {...field}
+                          type="number"
+                          onKeyDown={preventNonNumericInput}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/obligations")}
+              >
+                <X className="mr-2 h-4 w-4" /> {t("form.cancel")}
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Save className="mr-2 h-4 w-4" /> {t("form.validate")}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+    </div>
+  );
+}
