@@ -20,6 +20,7 @@ import {
   CreditCard,
   Building2,
   FileText,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +63,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
+import {
+  createClient,
+  uploadClientDocuments,
+  createClientUsers,
+} from "@/lib/client-service";
+import { useTranslations } from "next-intl";
+import { ClientFormValues } from "../schema";
+import { formSchema, type FormValues } from "../schema";
 
 interface SectionHeaderProps {
   icon: React.ReactNode;
@@ -93,90 +103,10 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   </div>
 );
 
-interface ClientFormData {
-  clientType:
-    | "personne_physique"
-    | "personne_morale"
-    | "institution_financiere";
-  clientSource: "CPA" | "extern";
-  name: string;
-  email: string;
-  phoneFixed?: string;
-  phoneNumber: string;
-  mobilePhone: string;
-  idType: "passport" | "permit_conduite" | "nin";
-  idNumber: string;
-  nin: string;
-  nationalite: string;
-  wilaya: string;
-  address: string;
-  dateNaissance?: Date;
-  iobType: "intern" | "extern";
-  iobCategory?: string | null;
-  hasCompteTitre: boolean;
-  numeroCompteTitre: string;
-  ribBanque: string;
-  ribAgence: string;
-  ribCompte: string;
-  ribCle: string;
-  observation?: string;
-  isEmployeeCPA?: boolean;
-  matricule?: string;
-  poste?: string;
-  agenceCPA?: string;
-  selectedAgence?: string;
-  raisonSociale?: string;
-  nif?: string;
-  regNumber?: string;
-  legalForm?: string;
-}
-
 interface Agency {
   id: string;
   name: string;
 }
-
-interface FormValues extends ClientFormData {
-  // extend from existing ClientFormData
-}
-
-const formSchema = z.object({
-  clientType: z.enum([
-    "personne_physique",
-    "personne_morale",
-    "institution_financiere",
-  ]),
-  clientSource: z.enum(["CPA", "extern"]),
-  name: z.string(),
-  email: z.string().email().optional(),
-  phoneNumber: z.string().optional(),
-  mobilePhone: z.string().optional(),
-  idType: z.enum(["passport", "permit_conduite", "nin"]),
-  idNumber: z.string(),
-  nin: z.string(),
-  nationalite: z.string(),
-  wilaya: z.string(),
-  address: z.string().optional(),
-  dateNaissance: z.date().optional(),
-  iobType: z.enum(["intern", "extern"]),
-  iobCategory: z.string().nullable(),
-  hasCompteTitre: z.boolean(),
-  numeroCompteTitre: z.string(),
-  ribBanque: z.string().length(5, "Bank code must be 5 digits"),
-  ribAgence: z.string().length(5, "Agency code must be 5 digits"),
-  ribCompte: z.string().length(11, "Account number must be 11 digits"),
-  ribCle: z.string().length(2, "RIB key must be 2 digits"),
-  observation: z.string().optional(),
-  isEmployeeCPA: z.boolean().optional(),
-  matricule: z.string().optional(),
-  poste: z.string().optional(),
-  agenceCPA: z.string().optional(),
-  selectedAgence: z.string().optional(),
-  raisonSociale: z.string().optional(),
-  nif: z.string().optional(),
-  regNumber: z.string().optional(),
-  legalForm: z.string().optional(),
-});
 
 interface DocumentType {
   id: number;
@@ -186,9 +116,12 @@ interface DocumentType {
   file: File | null;
   status?: string;
 }
+
 export default function CreateClientWizard() {
   const router = useRouter();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [skipUsers, setSkipUsers] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [users, setUsers] = useState<
@@ -197,7 +130,13 @@ export default function CreateClientWizard() {
       firstName: string;
       lastName: string;
       role: string;
-      validated: boolean;
+      address: string;
+      wilaya: string;
+      nationality: string;
+      birthDate: string;
+      idNumber: string;
+      isOwner: boolean;
+      isMandatory: boolean;
     }>
   >([]);
 
@@ -326,26 +265,33 @@ export default function CreateClientWizard() {
       name: "",
       email: "",
       phoneNumber: "",
-      phoneFixed: "",
-      idType: "nin",
+      mobilePhone: "",
+      idType: "passport" as const,
       idNumber: "",
       nin: "",
       nationalite: "",
       wilaya: "",
       address: "",
-      iobType: "intern",
-      iobCategory: "cpa_iob",
-      hasCompteTitre: true,
+      dateNaissance: undefined,
+      iobType: "intern" as const,
+      iobCategory: null,
+      hasCompteTitre: false,
       numeroCompteTitre: "",
       ribBanque: "",
       ribAgence: "",
       ribCompte: "",
       ribCle: "",
+      observation: "",
       isEmployeeCPA: false,
+      matricule: "",
+      poste: "",
+      agenceCPA: "",
+      selectedAgence: "",
       raisonSociale: "",
       nif: "",
       regNumber: "",
       legalForm: "",
+      lieuNaissance: "",
     },
   });
 
@@ -373,7 +319,7 @@ export default function CreateClientWizard() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    form.setValue(name as any, value);
+    form.setValue(name as keyof FormValues, value);
   };
 
   const handleClientSourceChange = (checked: boolean) => {
@@ -415,7 +361,13 @@ export default function CreateClientWizard() {
         firstName: "",
         lastName: "",
         role: "",
-        validated: false,
+        address: "",
+        wilaya: "",
+        nationality: "",
+        birthDate: "",
+        idNumber: "",
+        isOwner: false,
+        isMandatory: false,
       },
     ]);
   };
@@ -431,8 +383,92 @@ export default function CreateClientWizard() {
     );
   };
 
-  const nextStep = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 3));
+  const validateStep1 = async () => {
+    const clientType = form.getValues("clientType");
+
+    if (clientType === "personne_physique") {
+      const fields = [
+        "name",
+        "idNumber",
+        "nin",
+        "nationalite",
+        "wilaya",
+      ] as const;
+      const result = await form.trigger(fields);
+      if (!result) {
+        toast({
+          title: "Erreur de validation",
+          description:
+            "Veuillez remplir tous les champs obligatoires pour une personne physique",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } else {
+      // For personne morale and institution financiere
+      const fields = [
+        "raisonSociale",
+        "nif",
+        "regNumber",
+        "legalForm",
+      ] as const;
+      const result = await form.trigger(fields);
+      if (!result) {
+        toast({
+          title: "Erreur de validation",
+          description:
+            "Veuillez remplir tous les champs obligatoires pour une personne morale",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    // For step 2, we don't require any validation as documents are optional
+    return true;
+  };
+
+  const validateStep3 = () => {
+    if (skipUsers) return true;
+
+    // Validate users if they exist
+    if (users.length > 0) {
+      const invalidUsers = users.filter(
+        (user) => !user.firstName || !user.lastName || !user.role
+      );
+      if (invalidUsers.length > 0) {
+        toast({
+          title: "Erreur de validation",
+          description: "Veuillez remplir tous les champs des utilisateurs",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const nextStep = async () => {
+    let canProceed = false;
+
+    switch (currentStep) {
+      case 1:
+        canProceed = await validateStep1();
+        break;
+      case 2:
+        canProceed = validateStep2();
+        break;
+      case 3:
+        canProceed = validateStep3();
+        break;
+    }
+
+    if (canProceed) {
+      setCurrentStep((prev) => Math.min(prev + 1, 3));
+    }
   };
 
   const prevStep = () => {
@@ -444,647 +480,1116 @@ export default function CreateClientWizard() {
     // Add your upload logic here
   };
 
+  const t = useTranslations("Clients");
+
+  const onSubmit = async (data: FormValues) => {
+    try {
+      setIsLoading(true);
+
+      // Transform the form data to match the expected ClientFormValues format
+      const clientData =
+        data.clientType === "personne_physique"
+          ? {
+              clientType: "personne_physique" as const,
+              name: data.name,
+              idType: data.idType,
+              idNumber: data.idNumber,
+              nin: data.nin,
+              nationalite: data.nationalite,
+              dateNaissance: data.dateNaissance,
+              wilaya: data.wilaya || "",
+              clientSource: data.clientSource,
+              email: data.email || "",
+              phoneNumber: data.phoneNumber || "",
+              mobilePhone: data.mobilePhone || "",
+              address: data.address || "",
+              iobType: data.iobType,
+              iobCategory: data.iobCategory,
+              hasCompteTitre: data.hasCompteTitre,
+              numeroCompteTitre: data.numeroCompteTitre || "",
+              ribBanque: data.ribBanque || "",
+              ribAgence: data.ribAgence || "",
+              ribCompte: data.ribCompte || "",
+              ribCle: data.ribCle || "",
+              observation: data.observation || "",
+              isEmployeeCPA: data.isEmployeeCPA || false,
+              matricule: data.matricule || "",
+              poste: data.poste || "",
+              agenceCPA: data.agenceCPA || "",
+              selectedAgence: data.selectedAgence || "",
+              lieuNaissance: data.lieuNaissance || "",
+            }
+          : data.clientType === "personne_morale"
+          ? {
+              clientType: "personne_morale" as const,
+              raisonSociale: data.raisonSociale,
+              nif: data.nif,
+              regNumber: data.regNumber,
+              legalForm: data.legalForm,
+              clientSource: data.clientSource,
+              wilaya: data.wilaya || "",
+              email: data.email || "",
+              phoneNumber: data.phoneNumber || "",
+              mobilePhone: data.mobilePhone || "",
+              address: data.address || "",
+              iobType: data.iobType,
+              iobCategory: data.iobCategory,
+              hasCompteTitre: data.hasCompteTitre,
+              numeroCompteTitre: data.numeroCompteTitre || "",
+              ribBanque: data.ribBanque || "",
+              ribAgence: data.ribAgence || "",
+              ribCompte: data.ribCompte || "",
+              ribCle: data.ribCle || "",
+              observation: data.observation || "",
+              isEmployeeCPA: data.isEmployeeCPA || false,
+              matricule: data.matricule || "",
+              poste: data.poste || "",
+              agenceCPA: data.agenceCPA || "",
+              selectedAgence: data.selectedAgence || "",
+            }
+          : {
+              clientType: "institution_financiere" as const,
+              raisonSociale: data.raisonSociale,
+              nif: data.nif,
+              regNumber: data.regNumber,
+              legalForm: data.legalForm,
+              clientSource: data.clientSource,
+              wilaya: data.wilaya || "",
+              email: data.email || "",
+              phoneNumber: data.phoneNumber || "",
+              mobilePhone: data.mobilePhone || "",
+              address: data.address || "",
+              iobType: data.iobType,
+              iobCategory: data.iobCategory,
+              hasCompteTitre: data.hasCompteTitre,
+              numeroCompteTitre: data.numeroCompteTitre || "",
+              ribBanque: data.ribBanque || "",
+              ribAgence: data.ribAgence || "",
+              ribCompte: data.ribCompte || "",
+              ribCle: data.ribCle || "",
+              observation: data.observation || "",
+              isEmployeeCPA: data.isEmployeeCPA || false,
+              matricule: data.matricule || "",
+              poste: data.poste || "",
+              agenceCPA: data.agenceCPA || "",
+              selectedAgence: data.selectedAgence || "",
+            };
+
+      // Create the client with properly typed data
+      const newClient = await createClient(clientData);
+
+      // Handle file uploads - only include files that are not null
+      const uploadedFiles = documents
+        .filter((doc) => doc.file !== null)
+        .map((doc) => ({
+          clientId: newClient.id,
+          documentId: doc.id,
+          file: doc.file as File,
+          status: doc.status || "En attente",
+        }));
+
+      // Handle users
+      const clientUsers = users.map((user) => ({
+        clientId: newClient.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        address: user.address,
+        wilaya: user.wilaya,
+        nationality: user.nationality,
+        birthDate: user.birthDate,
+        idNumber: user.idNumber,
+        isOwner: user.isOwner,
+        isMandatory: user.isMandatory,
+      }));
+
+      // Upload documents and create users
+      if (uploadedFiles.length > 0) {
+        await uploadClientDocuments(uploadedFiles);
+      }
+
+      if (clientUsers.length > 0) {
+        await createClientUsers(clientUsers);
+      }
+
+      toast({
+        title: t("success"),
+        description: t("createSuccess"),
+        variant: "success",
+      });
+
+      // Add a small delay before redirecting to ensure the toast is visible
+      setTimeout(() => {
+        router.push("/clients");
+      }, 1000);
+    } catch (error) {
+      console.error("Error creating client:", error);
+      toast({
+        title: t("error"),
+        description: t("createError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <FormProvider {...form}>
-      <div>
-        <div className="flex items-center justify-between my-8 gap-4 bg-slate-100 p-4 rounded-md">
-          <div className="flex items-center gap-4">
-            <Button size="sm" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h1 className="text-3xl font-bold tracking-tight text-secondary dark:text-gray-400">
-              Création Client
-            </h1>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div>
+          <div className="flex items-center justify-between my-8 gap-4 bg-slate-100 p-4 rounded-md">
+            <div className="flex items-center gap-4">
+              <Button size="sm" onClick={() => router.back()}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-3xl font-bold tracking-tight text-secondary dark:text-gray-400">
+                {t("createClient")}
+              </h1>
+            </div>
           </div>
-        </div>
 
-        <Card className="w-full shadow-lg border-0 overflow-hidden">
-          <CardContent className="p-8 space-y-10">
-            {currentStep === 1 && (
-              <div>
-                <SectionHeader
-                  icon={<User className="h-5 w-5" />}
-                  title="Informations principales"
-                  id="main"
-                  badge="Étape 1"
-                />
-
-                {/* Add CPA/Extern switch at the top */}
-                <div className="mb-6 flex items-center justify-end space-x-2">
-                  <Label>CPA</Label>
-                  <Switch
-                    checked={formData.clientSource === "extern"}
-                    onCheckedChange={handleClientSourceChange}
+          <Card className="w-full shadow-lg border-0 overflow-hidden">
+            <CardContent className="p-8 space-y-10">
+              {currentStep === 1 && (
+                <div>
+                  <SectionHeader
+                    icon={<User className="h-5 w-5" />}
+                    title={t("mainInfo")}
+                    id="main"
+                    badge={t("step", { number: 1 })}
                   />
-                  <Label>Externe</Label>
-                </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Left Column */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Type de client</Label>
-                      <Select
-                        value={formData.clientType}
-                        onValueChange={(v) =>
-                          handleSelectChange("clientType", v)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Personne physique" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="personne_physique">
-                            Personne Physique
-                          </SelectItem>
-                          <SelectItem value="personne_morale">
-                            Personne Morale
-                          </SelectItem>
-                          <SelectItem value="institution_financiere">
-                            Institution Financière
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {formData.clientType === "personne_physique" ? (
-                      <>
-                        <div className="space-y-2">
-                          <Label>Nom/Prénom</Label>
-                          <Input
-                            name="name"
-                            value={formData.name}
-                            onChange={handleFormChange}
-                            placeholder="Nom et prénom"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>NIN</Label>
-                          <Input
-                            name="nin"
-                            value={formData.nin}
-                            onChange={handleFormChange}
-                            placeholder="Numéro d'identification National"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Type de pièce d'identité</Label>
-                          <Select
-                            value={formData.idType}
-                            onValueChange={(v) =>
-                              handleSelectChange("idType", v)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="nin">NIN</SelectItem>
-                              <SelectItem value="passport">Passport</SelectItem>
-                              <SelectItem value="permit_conduite">
-                                Permis de conduite
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>N° de pièce d'identité</Label>
-                          <Input
-                            name="idNumber"
-                            value={formData.idNumber}
-                            onChange={handleFormChange}
-                            placeholder="Numéro"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Nationalité</Label>
-                          <Input
-                            name="nationalite"
-                            value={formData.nationalite}
-                            onChange={handleFormChange}
-                            placeholder="Nationalité"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Wilaya</Label>
-                          <Input
-                            name="wilaya"
-                            value={formData.wilaya}
-                            onChange={handleFormChange}
-                            placeholder="Wilaya"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox
-                              checked={formData.isEmployeeCPA}
-                              onCheckedChange={(checked) =>
-                                handleSelectChange("isEmployeeCPA", checked)
-                              }
-                              id="isEmployeeCPA"
-                            />
-                            <label
-                              htmlFor="isEmployeeCPA"
-                              className="text-sm font-medium"
-                            >
-                              Employé CPA
-                            </label>
-                          </div>
-
-                          {formData.isEmployeeCPA && (
-                            <div className="grid grid-cols-2 gap-2 mt-2">
-                              <Input
-                                name="matricule"
-                                value={formData.matricule}
-                                onChange={handleFormChange}
-                                placeholder="Matricule employé"
-                              />
-                              <Input
-                                name="poste"
-                                value={formData.poste}
-                                onChange={handleFormChange}
-                                placeholder="Poste occupé"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="space-y-2">
-                          <Label>Raison sociale</Label>
-                          <Input
-                            name="raisonSociale"
-                            value={formData.raisonSociale}
-                            onChange={handleFormChange}
-                            placeholder="Raison sociale"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>NIF</Label>
-                          <Input
-                            name="nif"
-                            value={formData.nif}
-                            onChange={handleFormChange}
-                            placeholder="Numéro d'Identification Fiscale"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>N° Registre</Label>
-                          <Input
-                            name="regNumber"
-                            value={formData.regNumber}
-                            onChange={handleFormChange}
-                            placeholder="Numéro du registre de commerce"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Forme juridique</Label>
-                          <Select
-                            value={formData.legalForm}
-                            onValueChange={(v) =>
-                              handleSelectChange("legalForm", v)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner la forme juridique" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="sarl">SARL</SelectItem>
-                              <SelectItem value="eurl">EURL</SelectItem>
-                              <SelectItem value="spa">SPA</SelectItem>
-                              <SelectItem value="sas">SAS</SelectItem>
-                              <SelectItem value="autre">Autre</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </>
-                    )}
+                  {/* Add CPA/Extern switch at the top */}
+                  <div className="mb-6 flex items-center justify-end space-x-2">
+                    <Label>CPA</Label>
+                    <Switch
+                      checked={formData.clientSource === "extern"}
+                      onCheckedChange={handleClientSourceChange}
+                    />
+                    <Label>Externe</Label>
                   </div>
 
-                  {/* Right Column */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Adresse email</Label>
-                      <Input
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleFormChange}
-                        placeholder="Adresse email"
-                      />
-                    </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Type de client</Label>
+                        <FormField
+                          control={form.control}
+                          name="clientType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Personne physique" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="personne_physique">
+                                    Personne Physique
+                                  </SelectItem>
+                                  <SelectItem value="personne_morale">
+                                    Personne Morale
+                                  </SelectItem>
+                                  <SelectItem value="institution_financiere">
+                                    Institution Financière
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label>Téléphone mobile</Label>
-                      <Input
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleFormChange}
-                        placeholder="Téléphone mobile"
-                      />
-                    </div>
+                      {formData.clientType === "personne_physique" ? (
+                        <>
+                          <div className="space-y-2">
+                            <Label>
+                              Nom/Prénom <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Nom et prénom"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                    <div className="space-y-2">
-                      <Label>Téléphone fixe</Label>
-                      <Input
-                        name="phoneFixed"
-                        value={formData.phoneFixed}
-                        onChange={handleFormChange}
-                        placeholder="Téléphone fixe"
-                      />
-                    </div>
+                          <div className="space-y-2">
+                            <Label>
+                              NIN <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="nin"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Numéro d'identification National"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                    <div className="space-y-2">
-                      <Label>Adresse</Label>
-                      <Input
-                        name="address"
-                        value={formData.address}
-                        onChange={handleFormChange}
-                        placeholder="Adresse complète"
-                      />
-                    </div>
+                          <div className="space-y-2">
+                            <Label>
+                              Type de pièce d'identité{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="idType"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select
+                                    value={field.value}
+                                    onValueChange={field.onChange}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="nin">NIN</SelectItem>
+                                      <SelectItem value="passport">
+                                        Passport
+                                      </SelectItem>
+                                      <SelectItem value="permit_conduite">
+                                        Permis de conduite
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                    <div className="space-y-2">
-                      <Label>Type IOB</Label>
-                      {formData.clientSource === "CPA" ? (
-                        <Input value="Intern" disabled className="bg-muted" />
+                          <div className="space-y-2">
+                            <Label>
+                              N° de pièce d'identité{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="idNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input {...field} placeholder="Numéro" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>
+                              Nationalité{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="nationalite"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Nationalité"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>
+                              Wilaya <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="wilaya"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input {...field} placeholder="Wilaya" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Date de naissance</Label>
+                            <FormField
+                              control={form.control}
+                              name="dateNaissance"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="date"
+                                      className="w-full"
+                                      {...field}
+                                      value={
+                                        field.value
+                                          ? format(field.value, "yyyy-MM-dd")
+                                          : ""
+                                      }
+                                      onChange={(e) => {
+                                        const date = e.target.value
+                                          ? new Date(e.target.value)
+                                          : null;
+                                        field.onChange(date);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Lieu de naissance</Label>
+                            <FormField
+                              control={form.control}
+                              name="lieuNaissance"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Lieu de naissance"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          {formData.clientSource === "CPA" && (
+                            <div className="space-y-2">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  checked={formData.isEmployeeCPA}
+                                  onCheckedChange={(checked) =>
+                                    handleSelectChange("isEmployeeCPA", checked)
+                                  }
+                                  id="isEmployeeCPA"
+                                />
+                                <label
+                                  htmlFor="isEmployeeCPA"
+                                  className="text-sm font-medium"
+                                >
+                                  Employé CPA
+                                </label>
+                              </div>
+
+                              {formData.isEmployeeCPA && (
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <Input
+                                    name="matricule"
+                                    value={formData.matricule}
+                                    onChange={handleFormChange}
+                                    placeholder="Matricule employé"
+                                  />
+                                  <Input
+                                    name="poste"
+                                    value={formData.poste}
+                                    onChange={handleFormChange}
+                                    placeholder="Poste occupé"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
                       ) : (
-                        <Input value="Extern" disabled className="bg-muted" />
+                        <>
+                          <div className="space-y-2">
+                            <Label>
+                              Raison sociale{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="raisonSociale"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Raison sociale"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>
+                              NIF <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="nif"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Numéro d'Identification Fiscale"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>
+                              N° Registre{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="regNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="Numéro du registre de commerce"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>
+                              Forme juridique{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <FormField
+                              control={form.control}
+                              name="legalForm"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select
+                                    value={field.value}
+                                    onValueChange={field.onChange}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Sélectionner la forme juridique" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="sarl">SARL</SelectItem>
+                                      <SelectItem value="eurl">EURL</SelectItem>
+                                      <SelectItem value="spa">SPA</SelectItem>
+                                      <SelectItem value="sas">SAS</SelectItem>
+                                      <SelectItem value="autre">
+                                        Autre
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>IOB</Label>
-                      {formData.clientSource === "CPA" ? (
-                        <Input value="CPA IOB" disabled className="bg-muted" />
-                      ) : (
+                    {/* Right Column */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Adresse email</Label>
+                        <Input
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleFormChange}
+                          placeholder="Adresse email"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="mobilePhone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone mobile</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Téléphone mobile"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="phoneNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Téléphone fixe</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Téléphone fixe"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Adresse</Label>
+                        <Input
+                          name="address"
+                          value={formData.address}
+                          onChange={handleFormChange}
+                          placeholder="Adresse complète"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Type IOB</Label>
+                        {formData.clientSource === "CPA" ? (
+                          <Input value="Intern" disabled className="bg-muted" />
+                        ) : (
+                          <Input value="Extern" disabled className="bg-muted" />
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>IOB</Label>
+                        {formData.clientSource === "CPA" ? (
+                          <Input
+                            value="CPA IOB"
+                            disabled
+                            className="bg-muted"
+                          />
+                        ) : (
+                          <Select
+                            value={formData.iobCategory || undefined}
+                            onValueChange={(v) =>
+                              handleSelectChange("iobCategory", v)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner un IOB" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="iob_sga_dz">
+                                IOB SGA
+                              </SelectItem>
+                              <SelectItem value="iob_invest_market">
+                                IOB Invest Market
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Agence</Label>
                         <Select
-                          value={formData.iobCategory || undefined}
+                          value={
+                            formData.clientSource === "CPA"
+                              ? formData.agenceCPA
+                              : formData.selectedAgence
+                          }
                           onValueChange={(v) =>
-                            handleSelectChange("iobCategory", v)
+                            handleSelectChange(
+                              formData.clientSource === "CPA"
+                                ? "agenceCPA"
+                                : "selectedAgence",
+                              v
+                            )
                           }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un IOB" />
+                            <SelectValue
+                              placeholder={
+                                formData.clientSource === "CPA"
+                                  ? "Sélectionner une agence CPA"
+                                  : "Sélectionner votre agence"
+                              }
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="iob_sga_dz">IOB SGA</SelectItem>
-                            <SelectItem value="iob_invest_market">
-                              IOB Invest Market
-                            </SelectItem>
+                            {(formData.clientSource === "CPA"
+                              ? cpaAgencies
+                              : externalAgencies
+                            ).map((agency) => (
+                              <SelectItem key={agency.id} value={agency.id}>
+                                {agency.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Agence</Label>
-                      <Select
-                        value={
-                          formData.clientSource === "CPA"
-                            ? formData.agenceCPA
-                            : formData.selectedAgence
-                        }
-                        onValueChange={(v) =>
-                          handleSelectChange(
-                            formData.clientSource === "CPA"
-                              ? "agenceCPA"
-                              : "selectedAgence",
-                            v
-                          )
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              formData.clientSource === "CPA"
-                                ? "Sélectionner une agence CPA"
-                                : "Sélectionner votre agence"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(formData.clientSource === "CPA"
-                            ? cpaAgencies
-                            : externalAgencies
-                          ).map((agency) => (
-                            <SelectItem key={agency.id} value={agency.id}>
-                              {agency.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Observation</Label>
-                      <textarea
-                        name="observation"
-                        value={formData.observation}
-                        onChange={handleFormChange}
-                        className="w-full min-h-[100px] p-2 border rounded-md"
-                        placeholder="Observations..."
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bank Account Section */}
-                  <div className="col-span-2 space-y-4 mt-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
-                        <h3 className="text-lg font-medium">Compte Espece</h3>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-4">
+
                       <div className="space-y-2">
-                        <Label>Code Banque</Label>
-                        <Input
-                          name="ribBanque"
-                          value={formData.ribBanque}
+                        <Label>Observation</Label>
+                        <textarea
+                          name="observation"
+                          value={formData.observation}
                           onChange={handleFormChange}
-                          placeholder="Code banque"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Code Agence</Label>
-                        <Input
-                          name="ribAgence"
-                          value={formData.ribAgence}
-                          onChange={handleFormChange}
-                          placeholder="Code agence"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>N° de Compte</Label>
-                        <Input
-                          name="ribCompte"
-                          value={formData.ribCompte}
-                          onChange={handleFormChange}
-                          placeholder="Numéro de compte"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Clé RIB</Label>
-                        <Input
-                          name="ribCle"
-                          value={formData.ribCle}
-                          onChange={handleFormChange}
-                          placeholder="Clé RIB"
+                          className="w-full min-h-[100px] p-2 border rounded-md"
+                          placeholder="Observations..."
                         />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>RIB Complet</Label>
-                      <Input value={ribComplet} disabled className="bg-muted" />
-                    </div>
-                  </div>
 
-                  {/* Securities Account Section */}
-                  <div className="col-span-2 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-5 w-5" />
-                        <h3 className="text-lg font-medium">Compte Titre</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {formData.hasCompteTitre &&
-                            "Vous avez un compte titre"}
-                        </span>
-                        <Switch
-                          checked={formData.hasCompteTitre}
-                          onCheckedChange={(checked) =>
-                            handleSelectChange("hasCompteTitre", checked)
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>N° du compte titre</Label>
-                      <Input
-                        name="numeroCompteTitre"
-                        value={formData.numeroCompteTitre}
-                        onChange={handleFormChange}
-                        placeholder="Numéro du compte titre"
-                        disabled={!formData.hasCompteTitre}
-                        className={!formData.hasCompteTitre ? "bg-muted" : ""}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="space-y-8">
-                <SectionHeader
-                  icon={<Upload className="h-5 w-5" />}
-                  title="Documents requis"
-                  id="documents"
-                  badge="Étape 2"
-                />
-                <div className="grid gap-6">
-                  {documents.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-4 border rounded-lg bg-card"
-                    >
-                      <div className="flex items-center gap-4">
-                        {doc.icon}
-                        <div>
-                          <p className="font-medium">{doc.description}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {doc.poste}
-                          </p>
+                    {/* Bank Account Section */}
+                    <div className="col-span-2 space-y-4 mt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-5 w-5" />
+                          <h3 className="text-lg font-medium">Compte Espece</h3>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <Badge
-                          variant="secondary"
-                          className={getStatusColor(doc.status)}
-                        >
-                          {doc.status}
-                        </Badge>
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                          <Label>Code Banque</Label>
+                          <FormField
+                            control={form.control}
+                            name="ribBanque"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input {...field} placeholder="Code banque" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Code Agence</Label>
+                          <FormField
+                            control={form.control}
+                            name="ribAgence"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input {...field} placeholder="Code agence" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>N° de Compte</Label>
+                          <FormField
+                            control={form.control}
+                            name="ribCompte"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Numéro de compte"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Clé RIB</Label>
+                          <FormField
+                            control={form.control}
+                            name="ribCle"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input {...field} placeholder="Clé RIB" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>RIB Complet</Label>
                         <Input
-                          type="file"
-                          className="max-w-[200px]"
-                          onChange={(e) => handleFileSelect(doc.id, e)}
+                          value={ribComplet}
+                          disabled
+                          className="bg-muted"
                         />
                       </div>
                     </div>
-                  ))}
-                </div>
 
-                {showConfirmDialog && (
-                  <Dialog
-                    open={showConfirmDialog}
-                    onOpenChange={setShowConfirmDialog}
-                  >
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Continue to iterate?</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to upload this file?
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowConfirmDialog(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button onClick={handleConfirmUpload}>Continue</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-            )}
-
-            {currentStep === 3 && (
-              <div className="space-y-8">
-                <SectionHeader
-                  icon={<Users className="h-5 w-5" />}
-                  title="Utilisateurs associés"
-                  id="users"
-                  badge="Étape 3"
-                />
-
-                <div className="flex items-center gap-4 mb-6">
-                  <Button onClick={addUser} variant="outline">
-                    Ajouter un utilisateur
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={skipUsers}
-                      onCheckedChange={(checked) =>
-                        setSkipUsers(checked as boolean)
-                      }
-                      id="skipUsers"
-                    />
-                    <label htmlFor="skipUsers" className="text-sm">
-                      Passer cette étape
-                    </label>
-                  </div>
-                </div>
-
-                {!skipUsers && (
-                  <div className="space-y-6">
-                    {users.map((user) => (
-                      <div
-                        key={user.id}
-                        className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg"
-                      >
-                        <div>
-                          <Label>Prénom</Label>
-                          <Input
-                            value={user.firstName}
-                            onChange={(e) =>
-                              handleUserChange(
-                                user.id,
-                                "firstName",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label>Nom</Label>
-                          <Input
-                            value={user.lastName}
-                            onChange={(e) =>
-                              handleUserChange(
-                                user.id,
-                                "lastName",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label>Rôle</Label>
-                          <Select
-                            value={user.role}
-                            onValueChange={(value) =>
-                              handleUserChange(user.id, "role", value)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner un rôle" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">
-                                Administrateur
-                              </SelectItem>
-                              <SelectItem value="user">Utilisateur</SelectItem>
-                              <SelectItem value="viewer">Lecteur</SelectItem>
-                            </SelectContent>
-                          </Select>
+                    {/* Securities Account Section */}
+                    <div className="col-span-2 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-5 w-5" />
+                          <h3 className="text-lg font-medium">Compte Titre</h3>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={user.validated}
+                          <span className="text-sm text-muted-foreground">
+                            {formData.hasCompteTitre &&
+                              "Vous avez un compte titre"}
+                          </span>
+                          <Switch
+                            checked={formData.hasCompteTitre}
                             onCheckedChange={(checked) =>
-                              handleUserChange(
-                                user.id,
-                                "validated",
-                                checked as boolean
-                              )
+                              handleSelectChange("hasCompteTitre", checked)
                             }
                           />
-                          <Label>Validé</Label>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>N° du compte titre</Label>
+                        <Input
+                          name="numeroCompteTitre"
+                          value={formData.numeroCompteTitre}
+                          onChange={handleFormChange}
+                          placeholder="Numéro du compte titre"
+                          disabled={!formData.hasCompteTitre}
+                          className={!formData.hasCompteTitre ? "bg-muted" : ""}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 2 && (
+                <div className="space-y-8">
+                  <SectionHeader
+                    icon={<Users className="h-5 w-5" />}
+                    title={t("associatedUsers")}
+                    id="users"
+                    badge={t("step", { number: 2 })}
+                  />
+
+                  <div className="flex items-center gap-4 mb-6">
+                    <Button onClick={addUser} variant="outline">
+                      Ajouter un utilisateur
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={skipUsers}
+                        onCheckedChange={(checked) =>
+                          setSkipUsers(checked as boolean)
+                        }
+                        id="skipUsers"
+                      />
+                      <label htmlFor="skipUsers" className="text-sm">
+                        Passer cette étape
+                      </label>
+                    </div>
+                  </div>
+
+                  {!skipUsers && (
+                    <div className="space-y-6">
+                      {users.map((user) => (
+                        <div
+                          key={user.id}
+                          className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg"
+                        >
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Nom/Prénom</Label>
+                              <Input
+                                value={user.firstName}
+                                onChange={(e) =>
+                                  handleUserChange(
+                                    user.id,
+                                    "firstName",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Nom et prénom"
+                              />
+                            </div>
+                            <div>
+                              <Label>Né(e) (Nom de jeune fille)</Label>
+                              <Input
+                                value={user.lastName}
+                                onChange={(e) =>
+                                  handleUserChange(
+                                    user.id,
+                                    "lastName",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Nom de jeune fille"
+                              />
+                            </div>
+                            <div>
+                              <Label>Adresse</Label>
+                              <Input
+                                value={user.address}
+                                onChange={(e) =>
+                                  handleUserChange(
+                                    user.id,
+                                    "address",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Adresse complète"
+                              />
+                            </div>
+                            <div>
+                              <Label>Wilaya</Label>
+                              <Input
+                                value={user.wilaya}
+                                onChange={(e) =>
+                                  handleUserChange(
+                                    user.id,
+                                    "wilaya",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Wilaya"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Nationalité</Label>
+                              <Input
+                                value={user.nationality}
+                                onChange={(e) =>
+                                  handleUserChange(
+                                    user.id,
+                                    "nationality",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Nationalité"
+                              />
+                            </div>
+                            <div>
+                              <Label>Date de naissance</Label>
+                              <Input
+                                type="date"
+                                value={user.birthDate}
+                                onChange={(e) =>
+                                  handleUserChange(
+                                    user.id,
+                                    "birthDate",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </div>
+                            <div>
+                              <Label>Numéro de pièce d'identité</Label>
+                              <Input
+                                value={user.idNumber}
+                                onChange={(e) =>
+                                  handleUserChange(
+                                    user.id,
+                                    "idNumber",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Numéro de pièce d'identité"
+                              />
+                            </div>
+                            <div>
+                              <Label>Rôle</Label>
+                              <Select
+                                value={user.role}
+                                onValueChange={(value) =>
+                                  handleUserChange(user.id, "role", value)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sélectionner un rôle" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="validator1">
+                                    Validateur 1
+                                  </SelectItem>
+                                  <SelectItem value="validator2">
+                                    Validateur 2
+                                  </SelectItem>
+                                  <SelectItem value="consultation">
+                                    Consultation
+                                  </SelectItem>
+                                  <SelectItem value="initiator">
+                                    Initiateur
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            {formData.clientType === "personne_physique" && (
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    checked={user.isOwner}
+                                    onCheckedChange={(checked) =>
+                                      handleUserChange(
+                                        user.id,
+                                        "isOwner",
+                                        checked as boolean
+                                      )
+                                    }
+                                    id={`isOwner-${user.id}`}
+                                  />
+                                  <Label htmlFor={`isOwner-${user.id}`}>
+                                    Propriétaire
+                                  </Label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    checked={user.isMandatory}
+                                    onCheckedChange={(checked) =>
+                                      handleUserChange(
+                                        user.id,
+                                        "isMandatory",
+                                        checked as boolean
+                                      )
+                                    }
+                                    id={`isMandatory-${user.id}`}
+                                  />
+                                  <Label htmlFor={`isMandatory-${user.id}`}>
+                                    Mandataire
+                                  </Label>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {currentStep === 3 && (
+                <div className="space-y-8">
+                  <SectionHeader
+                    icon={<Upload className="h-5 w-5" />}
+                    title={t("requiredDocuments")}
+                    id="documents"
+                    badge={t("step", { number: 3 })}
+                  />
+                  <div className="grid gap-6">
+                    {documents.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-4 border rounded-lg bg-card"
+                      >
+                        <div className="flex items-center gap-4">
+                          {doc.icon}
+                          <div>
+                            <p className="font-medium">{doc.description}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {doc.poste}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Badge
+                            variant="secondary"
+                            className={getStatusColor(doc.status)}
+                          >
+                            {doc.status}
+                          </Badge>
+                          <Input
+                            type="file"
+                            className="max-w-[200px]"
+                            onChange={(e) => handleFileSelect(doc.id, e)}
+                          />
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            )}
-
-            <div className="flex justify-between p-6 border-t">
-              <div className="flex gap-4">
-                {currentStep > 1 && (
-                  <Button variant="outline" onClick={prevStep}>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Retour
-                  </Button>
-                )}
-                {currentStep < 3 && (
-                  <Button onClick={nextStep}>
-                    Suivant
-                    <Play className="h-4 w-4 ml-2" />
-                  </Button>
-                )}
-              </div>
-
-              {currentStep === 3 && (
-                <div className="flex gap-4">
-                  <Button variant="outline" className="flex items-center gap-2">
-                    Enregistrer brouillon
-                    <PenBoxIcon className="h-4 w-4" />
-                  </Button>
-                  <Button className="flex items-center gap-2">
-                    Valider
-                    <CheckCheck className="h-4 w-4" />
-                  </Button>
                 </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+
+              <div className="flex justify-between mt-8">
+                {currentStep > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    disabled={isLoading}
+                  >
+                    {t("previous")}
+                  </Button>
+                )}
+                {currentStep < 3 ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={isLoading}
+                    className="ml-auto"
+                  >
+                    {t("next")}
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="ml-auto"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t("creating")}
+                      </>
+                    ) : (
+                      t("createClientButton")
+                    )}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </form>
     </FormProvider>
   );
 }

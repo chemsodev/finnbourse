@@ -20,6 +20,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { useTranslations } from "next-intl";
 
 // Mock data for demonstration
 const sessionStats = [
@@ -40,14 +41,32 @@ const orderTypeData = [
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function SessionStats() {
+  const t = useTranslations("bourseSessions.stats");
+
+  // Translate order type names
+  const translatedOrderTypeData = orderTypeData.map((item) => ({
+    name: t(
+      `orderTypes.${
+        item.name === "Actions"
+          ? "stocks"
+          : item.name === "Obligations"
+          ? "bonds"
+          : item.name === "Sukuk"
+          ? "sukuk"
+          : item.name === "OPV"
+          ? "ipo"
+          : "participative"
+      }`
+    ),
+    value: item.value,
+  }));
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Statistiques des sessions</CardTitle>
-          <CardDescription>
-            Nombre d'ordres validés, rejetés et en attente par session
-          </CardDescription>
+          <CardTitle>{t("sessionsStatsTitle")}</CardTitle>
+          <CardDescription>{t("sessionsStatsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-80">
@@ -66,9 +85,21 @@ export default function SessionStats() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="validated" name="Validés" fill="#22c55e" />
-                <Bar dataKey="rejected" name="Rejetés" fill="#ef4444" />
-                <Bar dataKey="pending" name="En attente" fill="#f59e0b" />
+                <Bar
+                  dataKey="validated"
+                  name={t("chart.validated")}
+                  fill="#22c55e"
+                />
+                <Bar
+                  dataKey="rejected"
+                  name={t("chart.rejected")}
+                  fill="#ef4444"
+                />
+                <Bar
+                  dataKey="pending"
+                  name={t("chart.pending")}
+                  fill="#f59e0b"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -77,17 +108,15 @@ export default function SessionStats() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Types d'ordres</CardTitle>
-          <CardDescription>
-            Répartition des ordres par type de titre
-          </CardDescription>
+          <CardTitle>{t("orderTypesTitle")}</CardTitle>
+          <CardDescription>{t("orderTypesDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={orderTypeData}
+                  data={translatedOrderTypeData}
                   cx="50%"
                   cy="50%"
                   labelLine={true}
@@ -102,7 +131,7 @@ export default function SessionStats() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {orderTypeData.map((entry, index) => (
+                  {translatedOrderTypeData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}

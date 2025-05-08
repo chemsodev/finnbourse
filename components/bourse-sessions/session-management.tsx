@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,18 +9,35 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Plus, Pencil, Trash2 } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Plus, Pencil, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +48,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
 
 // Mock data for demonstration
 const mockSessions = [
@@ -59,18 +77,19 @@ const mockSessions = [
     ordersCount: 0,
     processedCount: 0,
   },
-]
+];
 
 export default function SessionManagement() {
-  const [sessions, setSessions] = useState(mockSessions)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [currentSession, setCurrentSession] = useState<any>(null)
+  const t = useTranslations("bourseSessions.management");
+  const [sessions, setSessions] = useState(mockSessions);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [currentSession, setCurrentSession] = useState<any>(null);
   const [newSession, setNewSession] = useState({
     name: "",
     date: new Date(),
     status: "scheduled",
-  })
+  });
 
   const handleCreateSession = () => {
     const session = {
@@ -80,69 +99,73 @@ export default function SessionManagement() {
       status: newSession.status,
       ordersCount: 0,
       processedCount: 0,
-    }
-    setSessions([...sessions, session])
-    setNewSession({ name: "", date: new Date(), status: "scheduled" })
-    setIsCreateOpen(false)
-  }
+    };
+    setSessions([...sessions, session]);
+    setNewSession({ name: "", date: new Date(), status: "scheduled" });
+    setIsCreateOpen(false);
+  };
 
   const handleEditSession = () => {
-    const updatedSessions = sessions.map((session) => (session.id === currentSession.id ? currentSession : session))
-    setSessions(updatedSessions)
-    setIsEditOpen(false)
-  }
+    const updatedSessions = sessions.map((session) =>
+      session.id === currentSession.id ? currentSession : session
+    );
+    setSessions(updatedSessions);
+    setIsEditOpen(false);
+  };
 
   const handleDeleteSession = (id: string) => {
-    setSessions(sessions.filter((session) => session.id !== id))
-  }
+    setSessions(sessions.filter((session) => session.id !== id));
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-600">Active</Badge>
+        return <Badge className="bg-green-600">{t("status.active")}</Badge>;
       case "completed":
-        return <Badge className="bg-blue-600">Terminée</Badge>
+        return <Badge className="bg-blue-600">{t("status.completed")}</Badge>;
       case "scheduled":
-        return <Badge className="bg-yellow-600">Planifiée</Badge>
+        return <Badge className="bg-yellow-600">{t("status.scheduled")}</Badge>;
       default:
-        return <Badge className="bg-gray-600">Inconnue</Badge>
+        return <Badge className="bg-gray-600">{t("status.unknown")}</Badge>;
     }
-  }
+  };
 
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Sessions de Bourse</CardTitle>
-          <CardDescription>Gérez les sessions de négociation et leurs ordres associés</CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" />
-              Nouvelle Session
+              {t("newButton")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Créer une nouvelle session</DialogTitle>
-              <DialogDescription>Définissez les détails de la nouvelle session de bourse</DialogDescription>
+              <DialogTitle>{t("createTitle")}</DialogTitle>
+              <DialogDescription>{t("createDescription")}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
-                  Nom
+                  {t("name")}
                 </Label>
                 <Input
                   id="name"
                   value={newSession.name}
-                  onChange={(e) => setNewSession({ ...newSession, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewSession({ ...newSession, name: e.target.value })
+                  }
                   className="col-span-3"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="date" className="text-right">
-                  Date
+                  {t("date")}
                 </Label>
                 <div className="col-span-3">
                   <Popover>
@@ -151,18 +174,27 @@ export default function SessionManagement() {
                         variant={"outline"}
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !newSession.date && "text-muted-foreground",
+                          !newSession.date && "text-muted-foreground"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newSession.date ? format(newSession.date, "PPP") : <span>Choisir une date</span>}
+                        {newSession.date ? (
+                          format(newSession.date, "PPP")
+                        ) : (
+                          <span>{t("chooseDate")}</span>
+                        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
                         selected={newSession.date}
-                        onSelect={(date) => setNewSession({ ...newSession, date: date || new Date() })}
+                        onSelect={(date) =>
+                          setNewSession({
+                            ...newSession,
+                            date: date || new Date(),
+                          })
+                        }
                         initialFocus
                       />
                     </PopoverContent>
@@ -172,7 +204,7 @@ export default function SessionManagement() {
             </div>
             <DialogFooter>
               <Button type="submit" onClick={handleCreateSession}>
-                Créer la session
+                {t("createButton")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -182,12 +214,14 @@ export default function SessionManagement() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nom</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead>Ordres</TableHead>
-              <TableHead>Traités</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t("tableHeaders.name")}</TableHead>
+              <TableHead>{t("tableHeaders.date")}</TableHead>
+              <TableHead>{t("tableHeaders.status")}</TableHead>
+              <TableHead>{t("tableHeaders.orders")}</TableHead>
+              <TableHead>{t("tableHeaders.processed")}</TableHead>
+              <TableHead className="text-right">
+                {t("tableHeaders.actions")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -206,33 +240,40 @@ export default function SessionManagement() {
                       variant="outline"
                       size="icon"
                       onClick={() => {
-                        setCurrentSession(session)
-                        setIsEditOpen(true)
+                        setCurrentSession(session);
+                        setIsEditOpen(true);
                       }}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="icon" className="text-red-500">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="text-red-500"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            {t("deleteTitle")}
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
-                            Cette action ne peut pas être annulée. Cela supprimera définitivement la session et pourrait
-                            affecter les ordres associés.
+                            {t("deleteDescription")}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogCancel>
+                            {t("cancelButton")}
+                          </AlertDialogCancel>
                           <AlertDialogAction
                             className="bg-red-500 hover:bg-red-600"
                             onClick={() => handleDeleteSession(session.id)}
                           >
-                            Supprimer
+                            {t("deleteButton")}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -249,30 +290,40 @@ export default function SessionManagement() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Modifier la session</DialogTitle>
-            <DialogDescription>Modifiez les détails de la session de bourse</DialogDescription>
+            <DialogTitle>{t("editTitle")}</DialogTitle>
+            <DialogDescription>{t("editDescription")}</DialogDescription>
           </DialogHeader>
           {currentSession && (
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-name" className="text-right">
-                  Nom
+                  {t("name")}
                 </Label>
                 <Input
                   id="edit-name"
                   value={currentSession.name}
-                  onChange={(e) => setCurrentSession({ ...currentSession, name: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentSession({
+                      ...currentSession,
+                      name: e.target.value,
+                    })
+                  }
                   className="col-span-3"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-date" className="text-right">
-                  Date
+                  {t("date")}
                 </Label>
                 <div className="col-span-3">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal")}>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal"
+                        )}
+                      >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {format(currentSession.date, "PPP")}
                       </Button>
@@ -281,7 +332,12 @@ export default function SessionManagement() {
                       <Calendar
                         mode="single"
                         selected={currentSession.date}
-                        onSelect={(date) => setCurrentSession({ ...currentSession, date: date || new Date() })}
+                        onSelect={(date) =>
+                          setCurrentSession({
+                            ...currentSession,
+                            date: date || new Date(),
+                          })
+                        }
                         initialFocus
                       />
                     </PopoverContent>
@@ -290,28 +346,33 @@ export default function SessionManagement() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-status" className="text-right">
-                  Statut
+                  {t("tableHeaders.status")}
                 </Label>
                 <select
                   id="edit-status"
                   value={currentSession.status}
-                  onChange={(e) => setCurrentSession({ ...currentSession, status: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentSession({
+                      ...currentSession,
+                      status: e.target.value,
+                    })
+                  }
                   className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <option value="scheduled">Planifiée</option>
-                  <option value="active">Active</option>
-                  <option value="completed">Terminée</option>
+                  <option value="scheduled">{t("status.scheduled")}</option>
+                  <option value="active">{t("status.active")}</option>
+                  <option value="completed">{t("status.completed")}</option>
                 </select>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button type="submit" onClick={handleEditSession}>
-              Enregistrer les modifications
+              {t("updateButton")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </Card>
-  )
+  );
 }

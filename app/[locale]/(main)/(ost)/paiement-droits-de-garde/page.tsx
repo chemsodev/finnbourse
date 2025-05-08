@@ -1,318 +1,228 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { useTranslations } from "next-intl";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import { Textarea } from "@/components/ui/textarea";
-import { useForm } from "react-hook-form";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { getDroitsGarde, deleteDroitsGarde } from "@/lib/droits-garde-service";
+import type { DroitsGarde } from "./schema";
 
-const algerianSecurities = [
-  { value: "SAIDAL", label: "SAIDAL" },
-  { value: "ALLIANCE", label: "ALLIANCE ASSURANCES" },
-  { value: "BIOPHARM", label: "BIOPHARM" },
-  { value: "AUR", label: "AUR" },
-  { value: "DAHLI", label: "DAHLI" },
-];
-
-export default function ProgrammerPaiementDroitGarde() {
+export default function PaiementDroitsGardePage() {
+  const router = useRouter();
   const t = useTranslations("PaiementDroitsDeGarde");
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<DroitsGarde | null>(
+    null
+  );
+  const [payments, setPayments] = useState<DroitsGarde[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [dates, setDates] = useState({
-    dateExecution: undefined,
-  });
+  // Fetch payments on component mount
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const data = await getDroitsGarde();
+        setPayments(data);
+      } catch (error) {
+        console.error("Error fetching payments:", error);
+        toast({
+          title: t("error"),
+          description: t("errorFetchingPayments"),
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const [open, setOpen] = useState(false);
+    fetchPayments();
+  }, [toast, t]);
 
-  const form = useForm({
-    defaultValues: {
-      titrePrincipal: "",
-      referenceost: "",
-      descriptionOst: "",
-      actionAnc: "",
-      titreResultant: "",
-      nouvelleAction: "",
-      commentaire: "",
-    },
-  });
+  // Filter payments based on search query
+  const filteredPayments = payments.filter(
+    (payment) =>
+      payment.titrePrincipal
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      payment.referenceost.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const handleDateChange = (field: any, value: any) => {
-    setDates((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleAddClick = () => {
+    router.push("/paiement-droits-de-garde/nouveau");
   };
 
-  const onSubmit = (data: any) => {
-    console.log({ ...data, ...dates });
+  const handleEditClick = (payment: DroitsGarde) => {
+    router.push(`/paiement-droits-de-garde/${payment.id}`);
   };
+
+  const handleDeleteClick = (payment: DroitsGarde) => {
+    setSelectedPayment(payment);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedPayment) return;
+
+    try {
+      await deleteDroitsGarde(selectedPayment.id);
+      setPayments((prev) => prev.filter((p) => p.id !== selectedPayment.id));
+      toast({
+        title: t("success"),
+        description: t("deleteSuccess"),
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+      toast({
+        title: t("error"),
+        description: t("deleteError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setSelectedPayment(null);
+    }
+  };
+
+  if (isLoading) {
+    return <div>{t("loading")}</div>; // Consider adding a proper loading skeleton
+  }
 
   return (
-    <div className="container mx-auto py-10 px-4 max-w-5xl">
-      <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-        <div className="flex justify-between items-center mb-8 pb-4 border-b">
-          <h1 className="text-3xl font-bold text-secondary">{t("title")}</h1>
-        </div>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Row 1 */}
-              <FormField
-                control={form.control}
-                name="titrePrincipal"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="text-gray-700">
-                      {t("selectionTitrePrincipal")}
-                    </FormLabel>
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={open}
-                            className="justify-between"
-                          >
-                            {field.value
-                              ? algerianSecurities.find(
-                                  (security) => security.value === field.value
-                                )?.label
-                              : t("selectTitle")}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="p-0">
-                        <Command>
-                          <CommandInput placeholder={t("searchTitle")} />
-                          <CommandEmpty>{t("noTitleFound")}</CommandEmpty>
-                          <CommandGroup>
-                            {algerianSecurities?.map((security) => (
-                              <CommandItem
-                                key={security.value}
-                                value={security.value}
-                                onSelect={(value) => {
-                                  form.setValue("titrePrincipal", value);
-                                  setOpen(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    field.value === security.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                                {security.label}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="referenceost"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      {t("referenceOST")}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="descriptionOst"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      {t("descriptionOST")}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {/* Row 2 */}
-              <FormField
-                control={form.control}
-                name="actionAnc"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      {t("actionAnc")}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="titreResultant"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      {t("titreResultant")}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="nouvelleAction"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">
-                      {t("nouvelleAction")}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder=""
-                        {...field}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Date Row */}
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-              <FormItem>
-                <FormLabel className="text-gray-700">
-                  {t("dateExecution")}
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                          !dates.dateExecution && "text-muted-foreground"
-                        )}
-                      >
-                        {dates.dateExecution ? (
-                          format(dates.dateExecution, "P", { locale: fr })
-                        ) : (
-                          <span></span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dates.dateExecution}
-                      onSelect={(date) =>
-                        handleDateChange("dateExecution", date)
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-            </div>
-
-            {/* Commentaire */}
-            <FormField
-              control={form.control}
-              name="commentaire"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">
-                    {t("commentaire")}
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder=""
-                      {...field}
-                      className="border-gray-300 focus:border-blue-500 min-h-[100px]"
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-secondary">{t("title")}</h1>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder={t("search")}
+              className="pl-10 w-64 bg-white"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-
-            {/* Buttons */}
-            <div className="flex justify-center gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 border-none px-6"
-              >
-                {t("cancel")}
-              </Button>
-
-              <Button type="submit">{t("validate")}</Button>
-            </div>
-          </form>
-        </Form>
+          </div>
+          <Button className="flex items-center gap-2" onClick={handleAddClick}>
+            <Plus className="h-4 w-4" /> {t("add")}
+          </Button>
+        </div>
       </div>
+
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader className="bg-primary">
+            <TableRow>
+              <TableHead className="text-primary-foreground font-medium">
+                {t("selectionTitrePrincipal")}
+              </TableHead>
+              <TableHead className="text-primary-foreground font-medium">
+                {t("referenceOST")}
+              </TableHead>
+              <TableHead className="text-primary-foreground font-medium">
+                {t("descriptionOST")}
+              </TableHead>
+              <TableHead className="text-primary-foreground font-medium">
+                {t("dateExecution")}
+              </TableHead>
+              <TableHead className="text-primary-foreground font-medium w-[120px]">
+                {t("actions")}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredPayments.map((payment, index) => (
+              <TableRow
+                key={payment.id}
+                className={index % 2 === 1 ? "bg-gray-100" : ""}
+              >
+                <TableCell>{payment.titrePrincipal}</TableCell>
+                <TableCell>{payment.referenceost}</TableCell>
+                <TableCell>{payment.descriptionOst}</TableCell>
+                <TableCell>
+                  {format(payment.dateExecution, "dd/MM/yyyy", { locale: fr })}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-amber-600"
+                      onClick={() => handleEditClick(payment)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">{t("edit")}</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-600"
+                      onClick={() => handleDeleteClick(payment)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">{t("delete")}</span>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteConfirmation")}
+              <span className="font-medium">
+                {" "}
+                {selectedPayment?.titrePrincipal}
+              </span>
+              .
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

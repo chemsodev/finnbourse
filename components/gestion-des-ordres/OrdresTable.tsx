@@ -16,6 +16,7 @@ import {
 import OrdersTableSkeleton from "./OrdersTableSkeleton";
 import OrdreDrawer from "./OrdreDrawer";
 import OrderStateFilter from "./OrderStateFilter";
+import MarketTypeFilter from "./MarketTypeFilter";
 import LogOutAgent from "../LogOutAgent";
 import RateLimitReached from "../RateLimitReached";
 
@@ -23,16 +24,34 @@ interface GetOrdersResponse {
   listOrdersExtended: Order[];
 }
 
+// Helper function to determine if an order is from primary or secondary market
+const isPrimaryMarketOrder = (securitytype: string) => {
+  return [
+    "empruntobligataire",
+    "opv",
+    "sukukmp",
+    "titresparticipatifsmp",
+  ].includes(securitytype);
+};
+
+const isSecondaryMarketOrder = (securitytype: string) => {
+  return ["action", "obligation", "sukukms", "titresparticipatifsms"].includes(
+    securitytype
+  );
+};
+
 const OrdresTable = async ({
   skip,
   searchquery,
   pageType,
   uniqueUserId,
   state,
+  marketType,
 }: {
   skip: number;
   searchquery: string;
   state: string;
+  marketType?: string;
   pageType?: string;
   uniqueUserId?: string;
 }) => {
@@ -106,6 +125,19 @@ const OrdresTable = async ({
     }
   }
 
+  // Filter orders by market type if specified
+  let filteredOrders = orders?.listOrdersExtended || [];
+
+  if (marketType === "primaire") {
+    filteredOrders = filteredOrders.filter((order) =>
+      isPrimaryMarketOrder(order.securitytype)
+    );
+  } else if (marketType === "secondaire") {
+    filteredOrders = filteredOrders.filter((order) =>
+      isSecondaryMarketOrder(order.securitytype)
+    );
+  }
+
   const t = await getTranslations("mesOrdres");
   const tStatus = await getTranslations("status");
   const getStatusBgColor = (statut: number) => {
@@ -158,136 +190,119 @@ const OrdresTable = async ({
               <TableHead>IOB</TableHead>
             )}
             <TableHead>{t("sens")}</TableHead>
-            <TableHead> {t("type")}</TableHead>
+            <TableHead>{t("type")}</TableHead>
             <TableHead>{t("quantity")}</TableHead>
             <TableHead>
               {pageType === "carnetordres" ? <OrderStateFilter /> : t("statut")}
             </TableHead>
+            {pageType === "carnetordres" && (
+              <TableHead>
+                <MarketTypeFilter />
+              </TableHead>
+            )}
             {pageType === "carnetordres" && <TableHead>{t("date")}</TableHead>}
             {pageType !== "dashboard" && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders?.listOrdersExtended &&
-            orders?.listOrdersExtended?.map((order: Order) => (
-              <TableRow key={order.id}>
-                {pageType !== "dashboard" &&
-                  (userRole === 2 || userRole === 3 ? (
-                    <TableCell className="font-bold overflow-x-scroll w-60">
-                      {order?.id
-                        ? order.id.split("-").slice(0, 2).join("-")
-                        : "N/A"}
-                    </TableCell>
-                  ) : null)}
-                <TableCell>
-                  <div className="flex flex-col">
-                    <div className="font-medium capitalize">
-                      {order?.securityid?.issuer || "N/A"}
-                    </div>
-                    <div className="font-medium text-xs uppercase text-gray-400">
-                      {order?.securityid?.code || "N/A"}
-                    </div>
-                  </div>
-                </TableCell>
-                {pageType === "carnetordres" && userRole === 3 && (
-                  <TableCell> {order?.investorid?.fullname}</TableCell>
-                )}
-                {pageType === "carnetordres" && userRole === 3 && (
-                  <TableCell>
-                    {order?.negotiatorid?.fullname || "N/A"}
-                  </TableCell>
-                )}
-                <TableCell
-                  className={`${
-                    order.orderdirection === 1
-                      ? "text-green-500"
-                      : "text-red-600"
-                  }`}
-                >
-                  {order.orderdirection === 1 ? t("achat") : t("vente")}
-                </TableCell>
-                <TableCell>
-                  {order.securitytype === "stock"
-                    ? t("action")
-                    : order.securitytype === "bond"
-                    ? t("obligation")
-                    : order.securitytype === "sukuk" ||
-                      order.securitytype === "sukuk"
-                    ? t("sukuk")
-                    : order.securitytype === "ipo"
-                    ? t("opv")
-                    : order.securitytype === "titresparticipatifs" ||
-                      order.securitytype === "titresparticipatifs"
-                    ? t("titre_participatif")
-                    : order.securitytype === "empruntobligataire"
-                    ? t("emprunt_obligataire")
-                    : order.securitytype}
-                </TableCell>
-                <TableCell>{order.quantity}</TableCell>
-                <TableCell>
-                  <div
-                    className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${getStatusBgColor(
-                      Number(order.orderstatus)
-                    )}`}
-                  >
-                    {order?.orderstatus === 0 && order?.payedWithCard
-                      ? "Brouillon payé"
-                      : order?.orderstatus === 0 && !order?.payedWithCard
-                      ? tStatus("Draft")
-                      : order?.orderstatus === 1
-                      ? tStatus("Pending")
-                      : order?.orderstatus === 2
-                      ? tStatus("In_Progress")
-                      : order?.orderstatus === 3
-                      ? tStatus("Validated")
-                      : order?.orderstatus === 4
-                      ? tStatus("Being_Processed")
-                      : order?.orderstatus === 5
-                      ? tStatus("Completed")
-                      : order?.orderstatus === 6
-                      ? tStatus("Awaiting_Approval")
-                      : order?.orderstatus === 7
-                      ? tStatus("Ongoing")
-                      : order?.orderstatus === 8
-                      ? tStatus("Partially_Validated")
-                      : order?.orderstatus === 9
-                      ? tStatus("Expired")
-                      : order?.orderstatus === 10
-                      ? tStatus("Rejected")
-                      : order?.orderstatus === 11
-                      ? tStatus("Cancelled")
-                      : "Unknown"}
-                  </div>
-                </TableCell>
-                {pageType === "carnetordres" && (
-                  <TableCell>
-                    {order?.createdat
-                      ? new Date(order.createdat).toLocaleString("fr-DZ", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                          hour12: false,
-                        })
+          {filteredOrders.map((order: Order) => (
+            <TableRow key={order.id}>
+              {pageType !== "dashboard" &&
+                (userRole === 2 || userRole === 3 ? (
+                  <TableCell className="font-bold overflow-x-scroll w-60">
+                    {order?.id
+                      ? order.id.split("-").slice(0, 2).join("-")
                       : "N/A"}
                   </TableCell>
-                )}
-                {pageType !== "dashboard" && (
-                  <TableCell className="text-center">
-                    <OrdreDrawer titreId={order.id} />
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          {!orders?.listOrdersExtended && (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center">
-                {t("noOrders")}
+                ) : null)}
+              <TableCell>
+                <div className="flex flex-col">
+                  <div className="font-medium capitalize">
+                    {order?.securityid?.issuer || "N/A"}
+                  </div>
+                  <div className="font-medium text-xs uppercase text-gray-400">
+                    {order?.securityid?.code || "N/A"}
+                  </div>
+                </div>
               </TableCell>
+              {pageType === "carnetordres" && userRole === 3 && (
+                <TableCell> {order?.investorid?.fullname}</TableCell>
+              )}
+              {pageType === "carnetordres" && userRole === 3 && (
+                <TableCell>{order?.negotiatorid?.fullname || "N/A"}</TableCell>
+              )}
+              <TableCell
+                className={`${
+                  order.orderdirection === 1 ? "text-green-500" : "text-red-600"
+                }`}
+              >
+                {order.orderdirection === 1 ? t("achat") : t("vente")}
+              </TableCell>
+              <TableCell>
+                {order.securitytype === "stock"
+                  ? t("action")
+                  : order.securitytype === "bond"
+                  ? t("obligation")
+                  : order.securitytype === "sukuk" ||
+                    order.securitytype === "sukuk"
+                  ? t("sukuk")
+                  : order.securitytype === "ipo"
+                  ? t("opv")
+                  : order.securitytype === "titresparticipatifs" ||
+                    order.securitytype === "titresparticipatifs"
+                  ? t("titre_participatif")
+                  : order.securitytype === "empruntobligataire"
+                  ? t("emprunt_obligataire")
+                  : order.securitytype}
+              </TableCell>
+              <TableCell>{order.quantity}</TableCell>
+              <TableCell>
+                <div
+                  className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${getStatusBgColor(
+                    Number(order.orderstatus)
+                  )}`}
+                >
+                  {order?.orderstatus === 0 && order?.payedWithCard
+                    ? "Brouillon payé"
+                    : order?.orderstatus === 0 && !order?.payedWithCard
+                    ? tStatus("Draft")
+                    : order?.orderstatus === 1
+                    ? tStatus("Pending")
+                    : order?.orderstatus === 2
+                    ? tStatus("In_Progress")
+                    : order?.orderstatus === 3
+                    ? tStatus("Validated")
+                    : order?.orderstatus === 4
+                    ? tStatus("Being_Processed")
+                    : order?.orderstatus === 5
+                    ? tStatus("Completed")
+                    : order?.orderstatus === 6
+                    ? tStatus("Awaiting_Approval")
+                    : order?.orderstatus === 7
+                    ? tStatus("Ongoing")
+                    : order?.orderstatus === 8
+                    ? tStatus("Partially_Validated")
+                    : order?.orderstatus === 9
+                    ? tStatus("Expired")
+                    : order?.orderstatus === 10
+                    ? tStatus("Rejected")
+                    : order?.orderstatus === 11
+                    ? tStatus("Cancelled")
+                    : "Unknown"}
+                </div>
+              </TableCell>
+              {pageType === "carnetordres" && (
+                <TableCell className="text-xs">
+                  {new Date(order.createdat).toLocaleDateString()}
+                </TableCell>
+              )}
+              {pageType !== "dashboard" && (
+                <TableCell>
+                  <OrdreDrawer titreId={order.id} />
+                </TableCell>
+              )}
             </TableRow>
-          )}
+          ))}
         </TableBody>
       </Table>
     </Suspense>

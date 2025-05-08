@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import Link from "next/link";
-import { Printer, CalendarClock } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { getServerSession } from "next-auth";
 import auth from "@/auth";
@@ -11,16 +11,34 @@ import { ExportButton } from "@/components/ExportButton";
 import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { LIST_ORDERS_QUERY_EXCEL } from "@/graphql/queries";
 import type { Order } from "@/lib/interfaces";
+import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 
 interface GetOrdersResponse {
   listOrdersExtended: Order[];
 }
+
+// Helper function to determine if an order is from primary or secondary market
+const isPrimaryMarketOrder = (securitytype: string) => {
+  return [
+    "empruntobligataire",
+    "opv",
+    "sukukmp",
+    "titresparticipatifsmp",
+  ].includes(securitytype);
+};
+
+const isSecondaryMarketOrder = (securitytype: string) => {
+  return ["action", "obligation", "sukukms", "titresparticipatifsms"].includes(
+    securitytype
+  );
+};
 
 const page = async (props: {
   searchParams?: Promise<{
     searchquery?: string;
     page?: string;
     state?: string;
+    marketType?: string;
   }>;
 }) => {
   const session = await getServerSession(auth);
@@ -29,6 +47,7 @@ const page = async (props: {
   const currentPage = Number(searchParams?.page) || 0;
   const searchquery = searchParams?.searchquery || "";
   const state = searchParams?.state || "99";
+  const marketType = searchParams?.marketType || "all";
 
   const t = await getTranslations("mesOrdres");
   const tStatus = await getTranslations("status");
@@ -40,7 +59,20 @@ const page = async (props: {
   }
 
   const data = orders?.listOrdersExtended || [];
-  const filteredData = data?.map((order) => ({
+
+  // Filter data based on market type
+  let filteredData = [...data];
+  if (marketType === "primaire") {
+    filteredData = filteredData.filter((order) =>
+      isPrimaryMarketOrder(order.securitytype)
+    );
+  } else if (marketType === "secondaire") {
+    filteredData = filteredData.filter((order) =>
+      isSecondaryMarketOrder(order.securitytype)
+    );
+  }
+
+  const exportData = filteredData?.map((order) => ({
     id: order.id,
     ordertypes: order.ordertypes.toString(),
     direction: order.orderdirection == 1 ? "Achat" : "Vente",
@@ -105,17 +137,7 @@ const page = async (props: {
         <div className="flex justify-between w-full">
           <TabSearch />
           <div className="flex gap-4">
-            {(userRole === 2 || userRole === 3) && (
-              <Link
-                href="/carnetordres/pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-              >
-                <Printer size={20} />
-                {t("print")}
-              </Link>
-            )}
+            {(userRole === 2 || userRole === 3) && <PDFDropdownMenu />}
             {(userRole === 2 || userRole === 3) && (
               <Link
                 href="/carnetordres/sessions"
@@ -126,7 +148,7 @@ const page = async (props: {
               </Link>
             )}
             {(userRole === 2 || userRole === 3) && (
-              <ExportButton data={filteredData} />
+              <ExportButton data={exportData} />
             )}
           </div>
         </div>
@@ -135,6 +157,7 @@ const page = async (props: {
             searchquery={searchquery}
             skip={currentPage}
             state={state}
+            marketType={marketType}
             pageType="carnetordres"
           />
         </div>

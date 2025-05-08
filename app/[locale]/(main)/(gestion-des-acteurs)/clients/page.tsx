@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -9,6 +9,10 @@ import {
   Check,
   X,
   Shuffle,
+  Pencil,
+  Trash2,
+  Eye,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -38,78 +42,83 @@ import {
 } from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { useRouter } from "next/navigation";
+
+import { getClients, deleteClient } from "@/lib/client-service";
+import type { Client } from "./schema";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ClientDashboard() {
   const t = useTranslations("ClientDashboard");
-  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
-  // Sample client data based on the screenshot
-  const clients = [
-    {
-      id: 1,
-      name: "FURNITURE SARL",
-      type: "Personne Morale",
-      date: "8/20/2024",
-      accountNumber: "0722323798",
-      address: "ALGER",
-      status: "verified",
-    },
-    {
-      id: 2,
-      name: "HAMID INT",
-      type: "personne physique",
-      date: "8/20/2024",
-      accountNumber: "0722323798",
-      address: "ALGER",
-      status: "not verified",
-    },
-    {
-      id: 3,
-      name: "SLMI PIG",
-      type: "Institution financier",
-      date: "8/20/2024",
-      accountNumber: "0722323798",
-      address: "ALGER",
-      status: "verified",
-    },
-    {
-      id: 4,
-      name: "MOCHIRI R",
-      type: "Personne Morale",
-      date: "8/20/2024",
-      accountNumber: "0722323798",
-      address: "ALGER",
-      status: "verified",
-    },
-    {
-      id: 5,
-      name: "CCI ABOU",
-      type: "Personne Morale",
-      date: "8/20/2024",
-      accountNumber: "0722323798",
-      address: "ALGER",
-      status: "verified",
-    },
-    {
-      id: 6,
-      name: "DENTA JA",
-      type: "Personne Morale",
-      date: "8/20/2024",
-      accountNumber: "0722323798",
-      address: "ALGER",
-      status: "not verified",
-    },
-    {
-      id: 7,
-      name: "INVEST M",
-      type: "Institution financier",
-      date: "8/20/2024",
-      accountNumber: "0722323798",
-      address: "ALGER",
-      status: "not verified",
-    },
-  ];
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getClients();
+        setClients(data);
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClients();
+  }, [t]);
+
+  const filteredClients = clients.filter(
+    (client) =>
+      (client.clientType === "personne_physique"
+        ? client.name
+        : client.raisonSociale
+      )
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (client.nin || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (client.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (client.phoneNumber || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+  );
+
+  const handleDelete = async () => {
+    if (!selectedClient) return;
+    try {
+      setIsDeleting(true);
+      await deleteClient(selectedClient.id);
+      setClients((prev) => prev.filter((c) => c.id !== selectedClient.id));
+    } catch (error) {
+      console.error("Error deleting client:", error);
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -122,7 +131,7 @@ export default function ClientDashboard() {
             <div className="bg-primary justify-between gap-20 p-2 text-sm rounded-md shadow-sm flex text-white">
               <div className="flex flex-col gap-1">
                 <div>{t("totalClients")}</div>
-                <div className="font-bold text-2xl">11 000</div>
+                <div className="font-bold text-2xl">{clients.length}</div>
                 <div>{t("total")}</div>
               </div>
               <div className="flex flex-col justify-end">
@@ -132,7 +141,12 @@ export default function ClientDashboard() {
             <div className="bg-primary justify-between gap-8 p-2 text-sm rounded-md shadow-sm flex text-white">
               <div className="flex flex-col gap-1">
                 <div>{t("numberByClientType")}</div>
-                <div className="font-bold text-2xl">1 230</div>
+                <div className="font-bold text-2xl">
+                  {
+                    clients.filter((c) => c.clientType === "personne_physique")
+                      .length
+                  }
+                </div>
                 <div>{t("individuals")}</div>
               </div>
               <div className="flex flex-col justify-end">
@@ -176,11 +190,9 @@ export default function ClientDashboard() {
               </svg>
               {t("exportExcel")}
             </Button>
-            <Link href="/clients/create-client">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> {t("add")}
-              </Button>
-            </Link>
+            <Button onClick={() => router.push("/clients/create-client")}>
+              <Plus className="mr-2 h-4 w-4" /> {t("add")}
+            </Button>
           </div>
         </div>
 
@@ -195,10 +207,10 @@ export default function ClientDashboard() {
                   {t("type")}
                 </TableHead>
                 <TableHead className="text-white font-medium">
-                  {t("date")}
+                  {t("email")}
                 </TableHead>
                 <TableHead className="text-white font-medium">
-                  {t("accountNumber")}
+                  {t("phone")}
                 </TableHead>
                 <TableHead className="text-white font-medium">
                   {t("address")}
@@ -206,39 +218,128 @@ export default function ClientDashboard() {
                 <TableHead className="text-white font-medium">
                   {t("status")}
                 </TableHead>
+                <TableHead className="text-white font-medium w-[120px]">
+                  {t("actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients?.map((client) => (
-                <TableRow key={client.id} className="hover:bg-slate-50">
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.type}</TableCell>
-                  <TableCell>{client.date}</TableCell>
-                  <TableCell>{client.accountNumber}</TableCell>
-                  <TableCell>{client.address}</TableCell>
-                  <TableCell>
-                    {client.status === "verified" ? (
-                      <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">
-                        <Check className="h-3.5 w-3.5" />
-                        <span className="text-xs font-medium">
-                          {t("verified")}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1 rounded-full w-fit">
-                        <X className="h-3.5 w-3.5" />
-                        <span className="text-xs font-medium">
-                          {t("notVerified")}
-                        </span>
-                      </div>
-                    )}
+              {filteredClients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    {t("noClientsFound")}
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredClients.map((client) => (
+                  <TableRow key={client.id} className="hover:bg-slate-50">
+                    <TableCell className="font-medium">
+                      {client.clientType === "personne_physique"
+                        ? client.name
+                        : client.raisonSociale}
+                    </TableCell>
+                    <TableCell>
+                      {client.clientType === "personne_physique"
+                        ? t("individual")
+                        : client.clientType === "personne_morale"
+                        ? t("company")
+                        : t("financialInstitution")}
+                    </TableCell>
+                    <TableCell>{client.email}</TableCell>
+                    <TableCell>
+                      {client.phoneNumber || client.mobilePhone}
+                    </TableCell>
+                    <TableCell>{client.address}</TableCell>
+                    <TableCell>
+                      {client.status === "verified" ? (
+                        <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">
+                          <span className="text-xs font-medium">
+                            {t("verified")}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1 rounded-full w-fit">
+                          <span className="text-xs font-medium">
+                            {t("notVerified")}
+                          </span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            router.push(`/clients/${client.id}/view`)
+                          }
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => router.push(`/clients/${client.id}`)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedClient(client);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
       </div>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteConfirmation")}{" "}
+              <span className="font-medium">
+                {selectedClient?.clientType === "personne_physique"
+                  ? selectedClient.name
+                  : selectedClient?.raisonSociale}
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              {t("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("deleting")}
+                </>
+              ) : (
+                t("delete")
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

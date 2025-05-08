@@ -4,17 +4,57 @@ import { LIST_ORDERS_QUERY_PDF } from "@/graphql/queries";
 import { Order } from "@/lib/interfaces";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
+
 interface GetOrdersResponse {
   listOrdersExtended: Order[];
 }
+
+// Helper function to determine if an order is from primary or secondary market
+const isPrimaryMarketOrder = (securitytype: string) => {
+  return [
+    "empruntobligataire",
+    "opv",
+    "sukukmp",
+    "titresparticipatifsmp",
+  ].includes(securitytype);
+};
+
+const isSecondaryMarketOrder = (securitytype: string) => {
+  return ["action", "obligation", "sukukms", "titresparticipatifsms"].includes(
+    securitytype
+  );
+};
+
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const marketType = searchParams.get("marketType") || "all";
+
   let orders: GetOrdersResponse | null = null;
   try {
     orders = await fetchGraphQL<GetOrdersResponse>(LIST_ORDERS_QUERY_PDF);
-    console.log("👺👺👺", orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
   }
-  const stream = await renderToStream(<AvisOrdre orders={orders} />);
+
+  // Filter orders by market type if specified
+  let filteredOrders = orders?.listOrdersExtended || [];
+
+  if (marketType === "primaire") {
+    filteredOrders = filteredOrders.filter((order) =>
+      isPrimaryMarketOrder(order.securitytype)
+    );
+  } else if (marketType === "secondaire") {
+    filteredOrders = filteredOrders.filter((order) =>
+      isSecondaryMarketOrder(order.securitytype)
+    );
+  }
+
+  const ordersWithFilteredData = {
+    listOrdersExtended: filteredOrders,
+  };
+
+  const stream = await renderToStream(
+    <AvisOrdre orders={ordersWithFilteredData} />
+  );
   return new NextResponse(stream as unknown as ReadableStream);
 }

@@ -1,20 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { format } from "date-fns"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
+import { useTranslations } from "next-intl";
 
 // Mock data for demonstration
 const mockSessions = [
   { id: "1", name: "Session Matinale", date: new Date("2025-05-01") },
   { id: "2", name: "Session Après-midi", date: new Date("2025-05-01") },
   { id: "3", name: "Session Spéciale", date: new Date("2025-05-02") },
-]
+];
 
 const mockOrders = [
   {
@@ -69,52 +89,68 @@ const mockOrders = [
     negotiatorName: "Samira Bouzid",
     sessionId: null,
   },
-]
+];
 
 export default function SessionOrders() {
-  const [orders, setOrders] = useState(mockOrders)
-  const [selectedSession, setSelectedSession] = useState<string | null>(null)
+  const t = useTranslations("bourseSessions.orders");
+  const [orders, setOrders] = useState(mockOrders);
+  const [selectedSession, setSelectedSession] = useState<string | null>(null);
 
-  const unprocessedOrders = orders.filter((order) => order.sessionId === null)
-  const sessionOrders = selectedSession ? orders.filter((order) => order.sessionId === selectedSession) : []
+  const unprocessedOrders = orders.filter((order) => order.sessionId === null);
+  const sessionOrders = selectedSession
+    ? orders.filter((order) => order.sessionId === selectedSession)
+    : [];
 
   const assignOrderToSession = (orderId: string) => {
-    if (!selectedSession) return
+    if (!selectedSession) return;
 
-    setOrders(orders.map((order) => (order.id === orderId ? { ...order, sessionId: selectedSession } : order)))
-  }
+    setOrders(
+      orders.map((order) =>
+        order.id === orderId ? { ...order, sessionId: selectedSession } : order
+      )
+    );
+  };
 
   const removeOrderFromSession = (orderId: string) => {
-    setOrders(orders.map((order) => (order.id === orderId ? { ...order, sessionId: null } : order)))
-  }
+    setOrders(
+      orders.map((order) =>
+        order.id === orderId ? { ...order, sessionId: null } : order
+      )
+    );
+  };
 
   const getStatusBadge = (status: number) => {
     switch (status) {
       case 0:
-        return <Badge className="bg-gray-600">Brouillon</Badge>
+        return <Badge className="bg-gray-600">{t("status.draft")}</Badge>;
       case 1:
-        return <Badge className="bg-yellow-600">En attente</Badge>
+        return <Badge className="bg-yellow-600">{t("status.pending")}</Badge>;
       case 2:
-        return <Badge className="bg-secondary">En cours</Badge>
+        return <Badge className="bg-secondary">{t("status.inProgress")}</Badge>;
       case 3:
-        return <Badge className="bg-green-600">Validé</Badge>
+        return <Badge className="bg-green-600">{t("status.validated")}</Badge>;
       case 4:
-        return <Badge className="bg-purple-600">En traitement</Badge>
+        return (
+          <Badge className="bg-purple-600">{t("status.processing")}</Badge>
+        );
       case 5:
-        return <Badge className="bg-teal-600">Complété</Badge>
+        return <Badge className="bg-teal-600">{t("status.completed")}</Badge>;
       default:
-        return <Badge className="bg-gray-700">Inconnu</Badge>
+        return <Badge className="bg-gray-700">{t("status.unknown")}</Badge>;
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <div className="w-64">
-          <Label htmlFor="session-select">Sélectionner une session</Label>
-          <Select onValueChange={setSelectedSession} value={selectedSession || undefined}>
+          <Label htmlFor="session-select">{t("selectSession")}</Label>
+          <Select
+            onValueChange={setSelectedSession}
+            value={selectedSession || undefined}
+          >
             <SelectTrigger id="session-select">
-              <SelectValue placeholder="Choisir une session" />
+              <SelectValue placeholder={t("chooseSession")} />
             </SelectTrigger>
             <SelectContent>
               {mockSessions.map((session) => (
@@ -131,25 +167,27 @@ export default function SessionOrders() {
         {/* Unprocessed Orders */}
         <Card>
           <CardHeader>
-            <CardTitle>Ordres non assignés</CardTitle>
-            <CardDescription>Ordres en attente d'assignation à une session de bourse</CardDescription>
+            <CardTitle>{t("unassignedTitle")}</CardTitle>
+            <CardDescription>{t("unassignedDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Titre</TableHead>
-                  <TableHead>Sens</TableHead>
-                  <TableHead>Quantité</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>{t("tableHeaders.security")}</TableHead>
+                  <TableHead>{t("tableHeaders.direction")}</TableHead>
+                  <TableHead>{t("tableHeaders.quantity")}</TableHead>
+                  <TableHead>{t("tableHeaders.status")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("tableHeaders.action")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {unprocessedOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-4">
-                      Aucun ordre non assigné
+                      {t("noUnassignedOrders")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -157,18 +195,34 @@ export default function SessionOrders() {
                     <TableRow key={order.id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <div className="font-medium capitalize">{order.securityIssuer}</div>
-                          <div className="font-medium text-xs uppercase text-gray-400">{order.securityCode}</div>
+                          <div className="font-medium capitalize">
+                            {order.securityIssuer}
+                          </div>
+                          <div className="font-medium text-xs uppercase text-gray-400">
+                            {order.securityCode}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className={order.direction === 1 ? "text-green-500" : "text-red-600"}>
-                        {order.direction === 1 ? "Achat" : "Vente"}
+                      <TableCell
+                        className={
+                          order.direction === 1
+                            ? "text-green-500"
+                            : "text-red-600"
+                        }
+                      >
+                        {order.direction === 1
+                          ? t("directions.buy")
+                          : t("directions.sell")}
                       </TableCell>
                       <TableCell>{order.quantity}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="sm" onClick={() => assignOrderToSession(order.id)} disabled={!selectedSession}>
-                          Assigner
+                        <Button
+                          size="sm"
+                          onClick={() => assignOrderToSession(order.id)}
+                          disabled={!selectedSession}
+                        >
+                          {t("actions.assign")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -182,35 +236,41 @@ export default function SessionOrders() {
         {/* Session Orders */}
         <Card>
           <CardHeader>
-            <CardTitle>Ordres de la session</CardTitle>
+            <CardTitle>{t("sessionOrdersTitle")}</CardTitle>
             <CardDescription>
               {selectedSession
-                ? `Ordres assignés à la session: ${mockSessions.find((s) => s.id === selectedSession)?.name}`
-                : "Sélectionnez une session pour voir les ordres assignés"}
+                ? t("sessionOrdersDescription", {
+                    sessionName: mockSessions.find(
+                      (s) => s.id === selectedSession
+                    )?.name,
+                  })
+                : t("selectSessionPrompt")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Titre</TableHead>
-                  <TableHead>Sens</TableHead>
-                  <TableHead>Quantité</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>{t("tableHeaders.security")}</TableHead>
+                  <TableHead>{t("tableHeaders.direction")}</TableHead>
+                  <TableHead>{t("tableHeaders.quantity")}</TableHead>
+                  <TableHead>{t("tableHeaders.status")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("tableHeaders.action")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {!selectedSession ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-4">
-                      Sélectionnez une session pour voir les ordres
+                      {t("selectSessionPrompt")}
                     </TableCell>
                   </TableRow>
                 ) : sessionOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-4">
-                      Aucun ordre dans cette session
+                      {t("noSessionOrders")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -218,12 +278,24 @@ export default function SessionOrders() {
                     <TableRow key={order.id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <div className="font-medium capitalize">{order.securityIssuer}</div>
-                          <div className="font-medium text-xs uppercase text-gray-400">{order.securityCode}</div>
+                          <div className="font-medium capitalize">
+                            {order.securityIssuer}
+                          </div>
+                          <div className="font-medium text-xs uppercase text-gray-400">
+                            {order.securityCode}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className={order.direction === 1 ? "text-green-500" : "text-red-600"}>
-                        {order.direction === 1 ? "Achat" : "Vente"}
+                      <TableCell
+                        className={
+                          order.direction === 1
+                            ? "text-green-500"
+                            : "text-red-600"
+                        }
+                      >
+                        {order.direction === 1
+                          ? t("directions.buy")
+                          : t("directions.sell")}
                       </TableCell>
                       <TableCell>{order.quantity}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
@@ -234,7 +306,7 @@ export default function SessionOrders() {
                           className="text-red-500"
                           onClick={() => removeOrderFromSession(order.id)}
                         >
-                          Retirer
+                          {t("actions.remove")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -246,5 +318,5 @@ export default function SessionOrders() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
