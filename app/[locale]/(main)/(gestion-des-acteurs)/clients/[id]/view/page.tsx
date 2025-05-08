@@ -18,6 +18,7 @@ import { useParams } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { User } from "lucide-react";
+import Loading from "@/components/ui/loading";
 
 export default function ViewClientPage() {
   const router = useRouter();
@@ -97,7 +98,7 @@ export default function ViewClientPage() {
     }
   };
 
-  if (isLoading) return <div>Chargement...</div>;
+  if (isLoading) return <Loading className="min-h-[400px]" />;
   if (!client) return <div>Client non trouvé</div>;
 
   return (

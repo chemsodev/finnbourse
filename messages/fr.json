@@ -231,9 +231,22 @@
     "endPeriod": "Période de fin"
   },
   "TopBarDash": {
-    "title": "Valeur Du Portefeuille",
-    "currency": "DA",
-    "tauxDeRendement": "Taux de rendement"
+    "title": "Valeur du portefeuille",
+    "currency": "Devise",
+    "tauxDeRendement": "Taux de rendement",
+    "tableauDeBord": "Tableau de bord",
+    "passerUnOrdre": "Passer un ordre",
+    "marche": "Marché",
+    "portefeuille": "Portefeuille",
+    "statistiques": "Statistiques",
+    "serviceClients": "Service clients",
+    "deconnexion": "Déconnexion",
+    "parametres": "Paramètres",
+    "profile": "Profil",
+    "carnetOrdres": "Carnet d'ordres",
+    "clients": "Clients",
+    "session": "Session",
+    "utilisateurs": "Utilisateurs"
   },
   "PasserUnOrdre": {
     "marche": "Marché",

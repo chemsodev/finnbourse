@@ -29,6 +29,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { getDroitsGarde, deleteDroitsGarde } from "@/lib/droits-garde-service";
 import type { DroitsGarde } from "./schema";
+import Loading from "@/components/ui/loading";
 
 export default function PaiementDroitsGardePage() {
   const router = useRouter();
@@ -110,7 +111,7 @@ export default function PaiementDroitsGardePage() {
   };
 
   if (isLoading) {
-    return <div>{t("loading")}</div>; // Consider adding a proper loading skeleton
+    return <Loading className="min-h-[400px]" />;
   }
 
   return (

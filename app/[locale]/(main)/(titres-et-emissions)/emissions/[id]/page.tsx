@@ -24,6 +24,7 @@ import {
 import { getEmission, deleteEmission } from "@/app/actions/emissions-actions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import Loading from "@/components/ui/loading";
 
 export default function EmissionDetailPage() {
   const router = useRouter();
@@ -69,13 +70,7 @@ export default function EmissionDetailPage() {
   };
 
   if (loading) {
-    return (
-      <Card className="border-0 shadow-sm bg-white">
-        <CardContent className="flex justify-center items-center h-52">
-          <p>Chargement des données...</p>
-        </CardContent>
-      </Card>
-    );
+    return <Loading className="min-h-[400px]" />;
   }
 
   if (!emission) {

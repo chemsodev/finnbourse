@@ -118,8 +118,21 @@
   },
   "TopBarDash": {
     "title": "قيمة المحفظة",
-    "currency": "د.ج",
-    "tauxDeRendement": "معدل العائد"
+    "currency": "العملة",
+    "tauxDeRendement": "معدل العائد",
+    "tableauDeBord": "لوحة التحكم",
+    "passerUnOrdre": "إصدار أمر",
+    "marche": "السوق",
+    "portefeuille": "المحفظة",
+    "statistiques": "الإحصائيات",
+    "serviceClients": "خدمة العملاء",
+    "deconnexion": "تسجيل الخروج",
+    "parametres": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "carnetOrdres": "سجل الأوامر",
+    "clients": "العملاء",
+    "session": "الجلسة",
+    "utilisateurs": "المستخدمون"
   },
   "PasserUnOrdre": {
     "marche": "السوق",

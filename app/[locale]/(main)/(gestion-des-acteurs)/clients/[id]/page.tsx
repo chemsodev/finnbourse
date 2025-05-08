@@ -73,6 +73,7 @@ import {
 import { formSchema, type FormValues } from "../schema";
 import { useTranslations } from "next-intl";
 import { ClientFormValues } from "../schema";
+import Loading from "@/components/ui/loading";
 
 interface SectionHeaderProps {
   icon: React.ReactNode;
@@ -594,7 +595,9 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     }
   };
 
-  if (isLoading) return <div>Chargement...</div>;
+  if (isLoading) {
+    return <Loading className="min-h-[400px]" />;
+  }
 
   return (
     <FormProvider {...form}>

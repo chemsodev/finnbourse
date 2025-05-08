@@ -43,6 +43,7 @@ import {
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import Loading from "@/components/ui/loading";
 
 import { getClients, deleteClient } from "@/lib/client-service";
 import type { Client } from "./schema";
@@ -113,11 +114,7 @@ export default function ClientDashboard() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <Loading className="min-h-[400px]" />;
   }
 
   return (

@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import Loading from "@/components/ui/loading";
 
 export default function ObligationViewPage({
   params,
@@ -102,33 +103,7 @@ export default function ObligationViewPage({
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" onClick={handleBack} className="mr-2">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {tableT("title")}
-          </Button>
-          <Skeleton className="h-8 w-64" />
-        </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-full max-w-md" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-8 w-full" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <Loading className="min-h-[400px]" />;
   }
 
   if (error || !bond) {

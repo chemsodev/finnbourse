@@ -197,7 +197,23 @@
   "TopBarDash": {
     "title": "Portfolio Value",
     "currency": "DA",
-    "tauxDeRendement": "Yield Rate"
+    "tauxDeRendement": "Yield Rate",
+    "tableauDeBord": "Dashboard",
+    "passerUnOrdre": "Place An Order",
+    "marche": "Market",
+    "portefeuille": "Portfolio",
+    "mesOrdres": "My Orders",
+    "carnetOrdres": "Order Book",
+    "chiffresEtEditions": "Figures and Editions",
+    "serviceClients": "Customer Service",
+    "parametres": "Settings",
+    "statistiques": "Statistics",
+    "operationsSurTitres": "Securities Operations",
+    "annonceOst": "CSO Announcement",
+    "paiementDividendes": "Dividend Payment",
+    "paiementDroitsDeGarde": "Custody Rights Payment",
+    "paiementCoupon": "Coupon Payment",
+    "remboursement": "Reimbursement"
   },
   "PasserUnOrdre": {
     "marche": "Market",

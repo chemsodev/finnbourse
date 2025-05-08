@@ -44,6 +44,7 @@ import {
   dividendPaymentSchema,
   type DividendPaymentFormValues,
 } from "../schema";
+import Loading from "@/components/ui/loading";
 
 export default function DividendPaymentForm({
   params,
@@ -140,7 +141,7 @@ export default function DividendPaymentForm({
   };
 
   if (isLoading) {
-    return <div>{t("loading")}</div>; // Consider adding a proper loading skeleton
+    return <Loading className="min-h-[400px]" />;
   }
 
   return (

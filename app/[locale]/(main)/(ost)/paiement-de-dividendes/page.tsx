@@ -33,6 +33,7 @@ import {
   deleteDividendPayment,
 } from "@/lib/dividend-service";
 import type { DividendPayment } from "./schema";
+import Loading from "@/components/ui/loading";
 
 export default function PaiementDividendePage() {
   const t = useTranslations("PaiementDividende");
@@ -110,7 +111,7 @@ export default function PaiementDividendePage() {
   };
 
   if (isLoading) {
-    return <div>{t("loading")}</div>; // Consider adding a proper loading skeleton
+    return <Loading className="min-h-[400px]" />;
   }
 
   return (

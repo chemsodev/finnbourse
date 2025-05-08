@@ -2,10 +2,19 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import React from "react";
 
-const loading = () => {
+interface LoadingProps {
+  fullScreen?: boolean;
+  className?: string;
+}
+
+const Loading = ({ fullScreen = false, className = "" }: LoadingProps) => {
   const t = useTranslations("Loading");
   return (
-    <div className="flex justify-center items-center h-screen w-screen cursor-wait">
+    <div
+      className={`flex justify-center items-center ${
+        fullScreen ? "h-screen w-screen" : "h-full w-full"
+      } cursor-wait ${className}`}
+    >
       <div className="flex flex-col items-center w-fit h-fit">
         <Image
           src="/favicon.ico"
@@ -14,7 +23,7 @@ const loading = () => {
           alt="logo FinnBourse"
           className="w-32 mb-6"
         />
-        <div className=" capitalize text-xl font-semibold text-primary mb-6">
+        <div className="capitalize text-xl font-semibold text-primary mb-6">
           {t("loading")}
         </div>
         <div role="status">
@@ -41,4 +50,4 @@ const loading = () => {
   );
 };
 
-export default loading;
+export default Loading;

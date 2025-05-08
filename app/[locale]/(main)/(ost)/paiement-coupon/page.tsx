@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import Loading from "@/components/ui/loading";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,7 +93,7 @@ export default function CouponPaymentPage() {
     }
   };
 
-  if (isLoading) return <div>{t("loading")}</div>;
+  if (isLoading) return <Loading className="min-h-[400px]" />;
 
   return (
     <div className="container mx-auto py-10">

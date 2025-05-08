@@ -15,6 +15,7 @@ import {
   updateEmission,
 } from "@/app/actions/emissions-actions";
 import type { Emission } from "@/lib/interfaces";
+import Loading from "@/components/ui/loading";
 
 export default function EmissionForm() {
   const router = useRouter();
@@ -113,13 +114,7 @@ export default function EmissionForm() {
   };
 
   if (loading) {
-    return (
-      <Card className="border-0 shadow-sm bg-white">
-        <CardContent className="flex justify-center items-center h-52">
-          <p>{t("loading")}</p>
-        </CardContent>
-      </Card>
-    );
+    return <Loading className="min-h-[400px]" />;
   }
 
   return (
