@@ -63,23 +63,23 @@ export default function AgenceFormSteps({
       ? [
           {
             id: "1",
-            fullName: "Sagi Salim",
+            fullname: "Sagi Salim",
             position: "DG",
             matricule: "M001",
             role: "Validator 2",
             type: "admin",
-            status: "valid",
-            organization: "SLIK PIS",
+            status: "active",
+            organisation: "SLIK PIS",
           },
           {
             id: "2",
-            fullName: "Gadh Mohamed",
+            fullname: "Gadh Mohamed",
             position: "DFC",
             matricule: "M002",
             role: "Validator 1",
             type: "member",
-            status: "valid",
-            organization: "SLIK PIS",
+            status: "active",
+            organisation: "SLIK PIS",
           },
         ]
       : []
