@@ -40,18 +40,3 @@ export type IobFormValues = z.infer<typeof iobFormSchema>;
 export type RelatedUserFormValues = z.infer<typeof relatedUserSchema>;
 export type RelatedUsersFormValues = z.infer<typeof relatedUsersFormSchema>;
 export type CombinedFormValues = z.infer<typeof combinedFormSchema>;
-
-export interface RelatedUserFormValues {
-  fullName: string;
-  position: string;
-  matricule?: string;
-  role: string;
-  type: string;
-  status: string;
-  organization?: string;
-  password?: string;
-}
-
-export interface RelatedUsersFormValues {
-  users: RelatedUserFormValues[];
-}
