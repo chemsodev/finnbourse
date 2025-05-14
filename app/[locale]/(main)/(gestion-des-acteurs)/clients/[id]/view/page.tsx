@@ -6,7 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Users, Building2, Download, Loader2 } from "lucide-react";
+import {
+  FileText,
+  Users,
+  Building2,
+  Download,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 import {
   getClientById,
   getClientUsers,
@@ -19,6 +26,14 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { User } from "lucide-react";
 import Loading from "@/components/ui/loading";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function ViewClientPage() {
   const router = useRouter();
@@ -103,11 +118,22 @@ export default function ViewClientPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Détails du Client</h1>
-        <Button onClick={() => router.push("/clients")} variant="outline">
+      <div className="flex items-center mb-8 bg-slate-100 p-4 rounded-md">
+        <Button
+          onClick={() => router.push("/clients")}
+          variant="outline"
+          className="mr-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
           Retour
         </Button>
+        <h1 className="text-3xl font-bold">Détails du Client</h1>
+        {client.clientCode && (
+          <p className="text-lg text-primary ml-4">
+            Code client:{" "}
+            <span className="font-semibold">{client.clientCode}</span>
+          </p>
+        )}
       </div>
 
       <Tabs defaultValue="info" className="space-y-4">
@@ -133,6 +159,12 @@ export default function ViewClientPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="font-semibold">Code Client</p>
+                  <p className="font-medium text-primary">
+                    {client.clientCode || "Non défini"}
+                  </p>
+                </div>
                 <div>
                   <p className="font-semibold">Nom</p>
                   <p>
@@ -223,56 +255,72 @@ export default function ViewClientPage() {
               <CardTitle>Utilisateurs Associés</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {users.map((user, index) => (
-                  <div key={index} className="border rounded-lg p-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="font-semibold">Nom/Prénom</p>
-                        <p>{user.firstName}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Nom de jeune fille</p>
-                        <p>{user.lastName}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Rôle</p>
-                        <p>{user.role}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Adresse</p>
-                        <p>{user.address}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Wilaya</p>
-                        <p>{user.wilaya}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Nationalité</p>
-                        <p>{user.nationality}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Date de naissance</p>
-                        <p>{user.birthDate}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">
-                          Numéro de pièce d'identité
-                        </p>
-                        <p>{user.idNumber}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Propriétaire</p>
-                        <p>{user.isOwner ? "Oui" : "Non"}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">Mandataire</p>
-                        <p>{user.isMandatory ? "Oui" : "Non"}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom/Prénom</TableHead>
+                    <TableHead>Nom de jeune fille</TableHead>
+                    <TableHead>Rôle</TableHead>
+                    <TableHead>Adresse</TableHead>
+                    <TableHead>Wilaya</TableHead>
+                    <TableHead>Nationalité</TableHead>
+                    <TableHead>Date de naissance</TableHead>
+                    <TableHead>Numéro de pièce d'identité</TableHead>
+                    <TableHead>Type d'utilisateur</TableHead>
+                    <TableHead>Statut</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={10}
+                        className="text-center py-4 text-muted-foreground"
+                      >
+                        Aucun utilisateur associé
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    users.map((user, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{user.firstName}</TableCell>
+                        <TableCell>{user.lastName}</TableCell>
+                        <TableCell>{user.role}</TableCell>
+                        <TableCell>{user.address}</TableCell>
+                        <TableCell>{user.wilaya}</TableCell>
+                        <TableCell>{user.nationality}</TableCell>
+                        <TableCell>{user.birthDate}</TableCell>
+                        <TableCell>{user.idNumber}</TableCell>
+                        <TableCell>
+                          {user.userType === "proprietaire"
+                            ? "Propriétaire"
+                            : user.userType === "mandataire"
+                            ? "Mandataire"
+                            : user.userType === "tuteur_legal"
+                            ? "Tuteur Légal"
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              user.status === "actif"
+                                ? "outline"
+                                : "destructive"
+                            }
+                            className={
+                              user.status === "actif"
+                                ? "bg-green-100 text-green-800"
+                                : ""
+                            }
+                          >
+                            {user.status === "actif" ? "Actif" : "Inactif"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>

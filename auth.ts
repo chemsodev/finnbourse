@@ -1,7 +1,6 @@
 import { AuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
-import { headers } from "next/headers";
 
 declare module "next-auth" {
   interface User {
@@ -68,12 +67,11 @@ const auth: AuthOptions = {
         password: { label: "password", type: "password" },
         twoFactorCode: { label: "twoFactorCode", type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         try {
-          const headersList = headers();
           const ip =
-            headersList.get("x-forwarded-for") || // For reverse proxies like Vercel
-            headersList.get("x-real-ip") || // Nginx/other proxies
+            (req?.headers?.["x-forwarded-for"] as string) ||
+            (req?.headers?.["x-real-ip"] as string) ||
             "IP not available";
 
           const res = await fetch(

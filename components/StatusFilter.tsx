@@ -32,7 +32,7 @@ const StatusFilter = () => {
         }`}
         onClick={() => handleStatusChange("0")}
       >
-        {t("en_attente")}
+        {t("inactif")}
       </button>
     </div>
   );

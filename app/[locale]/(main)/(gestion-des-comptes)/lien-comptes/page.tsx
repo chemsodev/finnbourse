@@ -3,7 +3,15 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Plus, Search, Filter, MoreHorizontal } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -341,13 +349,35 @@ export default function AccountLinking() {
                     <TableCell>{account.compteBancaire}</TableCell>
                     <TableCell>{account.orderDeTu}</TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 text-blue-600"
+                          onClick={() => {}}
+                        >
+                          <Eye className="h-5 w-5" />
+                          <span className="sr-only">{t("view")}</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 text-amber-600"
+                          onClick={() => {}}
+                        >
+                          <Edit className="h-5 w-5" />
+                          <span className="sr-only">{t("edit")}</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 text-red-600"
+                          onClick={() => {}}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                          <span className="sr-only">{t("delete")}</span>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

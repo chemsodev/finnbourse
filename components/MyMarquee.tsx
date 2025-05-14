@@ -5,7 +5,7 @@ import Marquee from "react-fast-marquee";
 import MarqueeObject from "./MarqueeObject";
 import { LIST_STOCKS_SIMPLE_QUERY } from "@/graphql/queries";
 import { Stock } from "@/lib/interfaces";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { calculateVariation } from "@/lib/utils";
 
 const MyMarquee = () => {
@@ -15,13 +15,10 @@ const MyMarquee = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getStocks = async () => {
-      try {
-        const data = await fetchGraphQL<{ listStocks: Stock[] }>(
-          LIST_STOCKS_SIMPLE_QUERY,
-          { type: "action" }
-        );
-
+    fetchGraphQLClient<{ listStocks: Stock[] }>(LIST_STOCKS_SIMPLE_QUERY, {
+      type: "action",
+    })
+      .then((data) => {
         const stocks = data.listStocks?.map((stock: any) => {
           const marketMetadata = stock.marketmetadata;
           let variation = "0.00%";
@@ -37,14 +34,13 @@ const MyMarquee = () => {
         });
 
         setStocksWithVariation(stocks);
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error("Error fetching stocks:", error);
-      } finally {
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    };
-
-    getStocks();
+      });
   }, []);
 
   if (loading) {

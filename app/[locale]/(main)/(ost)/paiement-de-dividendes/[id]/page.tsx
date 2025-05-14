@@ -146,14 +146,14 @@ export default function DividendPaymentForm({
 
   return (
     <div className="container mx-auto py-10">
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8 bg-slate-100 p-4 rounded-md">
         <Button
           variant="outline"
-          size="icon"
+          size="sm"
           onClick={() => router.push("/paiement-de-dividendes")}
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="sr-only">{t("back")}</span>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          {t("back")}
         </Button>
         <h1 className="text-3xl font-bold text-gray-800">
           {isEditMode ? t("editDividend") : t("addNewDividend")}
@@ -344,7 +344,7 @@ export default function DividendPaymentForm({
               />
             </div>
 
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-4 pt-8 mt-8 border-t">
               <Button
                 type="button"
                 variant="outline"

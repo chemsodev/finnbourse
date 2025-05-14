@@ -36,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import {
   RelatedUserFormValues,
   RelatedUsersFormValues,
@@ -59,6 +59,18 @@ export function RelatedUsersForm({
   const [users, setUsers] = useState<RelatedUserFormValues[]>(
     defaultValues.users || []
   );
+  const [passwordVisibility, setPasswordVisibility] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [showPasswordInForm, setShowPasswordInForm] = useState(false);
+
+  // Toggle password visibility in the table
+  const togglePasswordVisibility = (index: number) => {
+    setPasswordVisibility((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
 
   // Form for adding/editing a user
   const userForm = useForm<RelatedUserFormValues>({
@@ -66,9 +78,12 @@ export function RelatedUsersForm({
     defaultValues: {
       fullName: "",
       position: "",
-      role: "",
-      status: "member",
+      matricule: "",
+      role: "initiator",
+      type: "member",
+      status: "valid",
       organization: "",
+      password: "",
     },
   });
 
@@ -83,12 +98,16 @@ export function RelatedUsersForm({
     userForm.reset({
       fullName: "",
       position: "",
-      role: "",
-      status: "member",
+      matricule: "",
+      role: "initiator",
+      type: "member",
+      status: "valid",
       organization: "",
+      password: "",
     });
     setEditingIndex(null);
     setIsDialogOpen(true);
+    setShowPasswordInForm(false);
   };
 
   // Open dialog to edit an existing user
@@ -97,6 +116,7 @@ export function RelatedUsersForm({
     userForm.reset(user);
     setEditingIndex(index);
     setIsDialogOpen(true);
+    setShowPasswordInForm(false);
   };
 
   // Remove a user from the list
@@ -138,9 +158,12 @@ export function RelatedUsersForm({
             <TableRow>
               <TableHead>{t("fullName")}</TableHead>
               <TableHead>{t("position")}</TableHead>
+              <TableHead>{t("matricule")}</TableHead>
               <TableHead>{t("role")}</TableHead>
+              <TableHead>{t("type")}</TableHead>
               <TableHead>{t("status")}</TableHead>
               <TableHead>{t("organization")}</TableHead>
+              <TableHead>{t("password")}</TableHead>
               <TableHead className="w-[100px]">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -148,7 +171,7 @@ export function RelatedUsersForm({
             {users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={9}
                   className="text-center py-4 text-muted-foreground"
                 >
                   {t("noUsers")}
@@ -159,9 +182,37 @@ export function RelatedUsersForm({
                 <TableRow key={index}>
                   <TableCell>{user.fullName}</TableCell>
                   <TableCell>{user.position}</TableCell>
+                  <TableCell>{user.matricule}</TableCell>
                   <TableCell>{t(user.role)}</TableCell>
+                  <TableCell>{t(user.type)}</TableCell>
                   <TableCell>{t(user.status)}</TableCell>
                   <TableCell>{user.organization || "-"}</TableCell>
+                  <TableCell className="relative">
+                    <div className="flex items-center">
+                      <span>
+                        {passwordVisibility[index]
+                          ? user.password || "Not set"
+                          : "••••••••••"}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 ml-2"
+                        onClick={() => togglePasswordVisibility(index)}
+                      >
+                        {passwordVisibility[index] ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {passwordVisibility[index]
+                            ? t("hidePassword")
+                            : t("showPassword")}
+                        </span>
+                      </Button>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button
@@ -235,6 +286,20 @@ export function RelatedUsersForm({
 
               <FormField
                 control={userForm.control}
+                name="matricule"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("matricule")}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={userForm.control}
                 name="role"
                 render={({ field }) => (
                   <FormItem>
@@ -251,15 +316,37 @@ export function RelatedUsersForm({
                           <SelectItem value="initiator">
                             {t("initiator")}
                           </SelectItem>
-                          <SelectItem value="validator1">
+                          <SelectItem value="validateur 1">
                             {t("validator1")}
                           </SelectItem>
-                          <SelectItem value="validator2">
+                          <SelectItem value="validateur 2">
                             {t("validator2")}
                           </SelectItem>
-                          <SelectItem value="viewOnly">
-                            {t("viewOnly")}
-                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={userForm.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("type")}</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("selectType")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">{t("admin")}</SelectItem>
+                          <SelectItem value="member">{t("member")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -283,8 +370,13 @@ export function RelatedUsersForm({
                           <SelectValue placeholder={t("selectStatus")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="admin">{t("admin")}</SelectItem>
-                          <SelectItem value="member">{t("member")}</SelectItem>
+                          <SelectItem value="valid">{t("valid")}</SelectItem>
+                          <SelectItem value="pending">
+                            {t("pending")}
+                          </SelectItem>
+                          <SelectItem value="inactive">
+                            {t("inactive")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -301,6 +393,41 @@ export function RelatedUsersForm({
                     <FormLabel>{t("organization")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={userForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between items-center">
+                      <FormLabel>{t("password")}</FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() =>
+                          setShowPasswordInForm(!showPasswordInForm)
+                        }
+                      >
+                        {showPasswordInForm ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type={showPasswordInForm ? "text" : "password"}
+                        placeholder={t("enterPassword")}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

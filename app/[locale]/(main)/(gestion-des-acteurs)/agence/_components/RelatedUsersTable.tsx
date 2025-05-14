@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Save, Trash2, X, Eye, EyeOff } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -55,37 +55,67 @@ export default function RelatedUsersTable({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<RelatedUser | null>(null);
+  const [passwordVisibility, setPasswordVisibility] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [showAddPassword, setShowAddPassword] = useState(false);
+  const [showEditPassword, setShowEditPassword] = useState(false);
+
   const [newUser, setNewUser] = useState<Omit<RelatedUser, "id">>({
-    fullName: "",
+    fullname: "",
     position: "",
-    role: "Member",
-    status: "Active",
-    organization: "",
+    matricule: "",
+    role: "initiator",
+    type: "member",
+    status: "active",
+    organisation: "",
+    password: "",
+    email: "",
+    phone: "",
   });
 
   const [editUser, setEditUser] = useState<RelatedUser | null>(null);
 
+  // Toggle password visibility in the table - fixed to handle undefined passwords properly
+  const togglePasswordVisibility = (userId: string) => {
+    setPasswordVisibility((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
+
   // Handler for adding a new user
   const handleAddUser = () => {
     const id = Date.now().toString(); // Generate a unique ID
-    const userToAdd = { id, ...newUser };
+    const userToAdd: RelatedUser = {
+      id,
+      ...newUser,
+      status: newUser.status as "active" | "inactive", // Explicitly cast to the correct type
+    };
     onUsersChange([...users, userToAdd]);
 
     // Reset the form
     setNewUser({
-      fullName: "",
+      fullname: "",
       position: "",
-      role: "Member",
-      status: "Active",
-      organization: "",
+      matricule: "",
+      role: "initiator",
+      type: "member",
+      status: "active", // Using the correct literal value
+      organisation: "",
+      password: "",
+      email: "",
+      phone: "",
     });
     setIsAddDialogOpen(false);
+    setShowAddPassword(false);
   };
 
   // Handler for editing a user
   const handleEditClick = (user: RelatedUser) => {
     setEditUser({ ...user });
     setIsEditDialogOpen(true);
+    setShowEditPassword(false);
   };
 
   // Handler for saving an edited user
@@ -133,14 +163,14 @@ export default function RelatedUsersTable({
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label htmlFor="fullName" className="text-sm font-medium">
+                <label htmlFor="fullname" className="text-sm font-medium">
                   {t("fullName")}
                 </label>
                 <Input
-                  id="fullName"
-                  value={newUser.fullName}
+                  id="fullname"
+                  value={newUser.fullname}
                   onChange={(e) =>
-                    setNewUser({ ...newUser, fullName: e.target.value })
+                    setNewUser({ ...newUser, fullname: e.target.value })
                   }
                 />
               </div>
@@ -153,6 +183,18 @@ export default function RelatedUsersTable({
                   value={newUser.position}
                   onChange={(e) =>
                     setNewUser({ ...newUser, position: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="matricule" className="text-sm font-medium">
+                  {t("matricule")}
+                </label>
+                <Input
+                  id="matricule"
+                  value={newUser.matricule}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, matricule: e.target.value })
                   }
                 />
               </div>
@@ -170,17 +212,36 @@ export default function RelatedUsersTable({
                     <SelectValue placeholder={t("selectRole")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Initiator">{t("initiator")}</SelectItem>
-                    <SelectItem value="Validator 1">
+                    <SelectItem value="initiator">{t("initiator")}</SelectItem>
+                    <SelectItem value="validator 1">
                       {t("validator1")}
                     </SelectItem>
-                    <SelectItem value="Validator 2">
+                    <SelectItem value="validator 2">
                       {t("validator2")}
                     </SelectItem>
-                    <SelectItem value="Consultation">
+                    <SelectItem value="consultation">
                       {t("consultation")}
                     </SelectItem>
-                    <SelectItem value="Member">{t("member")}</SelectItem>
+                    <SelectItem value="member">{t("member")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="type" className="text-sm font-medium">
+                  {t("type")}
+                </label>
+                <Select
+                  value={newUser.type}
+                  onValueChange={(value) =>
+                    setNewUser({ ...newUser, type: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectType")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">{t("admin")}</SelectItem>
+                    <SelectItem value="member">{t("member")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -191,30 +252,60 @@ export default function RelatedUsersTable({
                 <Select
                   value={newUser.status}
                   onValueChange={(value) =>
-                    setNewUser({ ...newUser, status: value })
+                    setNewUser({
+                      ...newUser,
+                      status: value as "active" | "inactive",
+                    })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("selectStatus")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Active">{t("active")}</SelectItem>
-                    <SelectItem value="Inactive">{t("inactive")}</SelectItem>
-                    <SelectItem value="Admin">{t("admin")}</SelectItem>
-                    <SelectItem value="Member">{t("member")}</SelectItem>
+                    <SelectItem value="active">{t("active")}</SelectItem>
+                    <SelectItem value="inactive">{t("inactive")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <label htmlFor="organization" className="text-sm font-medium">
-                  {t("organization")}
+                <label htmlFor="organisation" className="text-sm font-medium">
+                  {t("organisation")}
                 </label>
                 <Input
-                  id="organization"
-                  value={newUser.organization}
+                  id="organisation"
+                  value={newUser.organisation}
                   onChange={(e) =>
-                    setNewUser({ ...newUser, organization: e.target.value })
+                    setNewUser({ ...newUser, organisation: e.target.value })
                   }
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label htmlFor="password" className="text-sm font-medium">
+                    {t("password")}
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setShowAddPassword(!showAddPassword)}
+                  >
+                    {showAddPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <Input
+                  id="password"
+                  type={showAddPassword ? "text" : "password"}
+                  value={newUser.password}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
+                  placeholder={t("enterPassword")}
                 />
               </div>
             </div>
@@ -234,12 +325,15 @@ export default function RelatedUsersTable({
       <div className="border rounded-md">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted">
+            <TableRow>
               <TableHead>{t("fullName")}</TableHead>
               <TableHead>{t("position")}</TableHead>
+              <TableHead>{t("matricule")}</TableHead>
               <TableHead>{t("role")}</TableHead>
+              <TableHead>{t("type")}</TableHead>
               <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("organization")}</TableHead>
+              <TableHead>{t("organisation")}</TableHead>
+              <TableHead>{t("password")}</TableHead>
               <TableHead className="text-right">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -247,24 +341,63 @@ export default function RelatedUsersTable({
             {users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
-                  className="text-center py-6 text-muted-foreground"
+                  colSpan={9}
+                  className="text-center text-muted-foreground"
                 >
-                  {t("noUsersYet")}
+                  {t("noUsers")}
                 </TableCell>
               </TableRow>
             ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.fullName}</TableCell>
+                  <TableCell>{user.fullname}</TableCell>
                   <TableCell>{user.position}</TableCell>
+                  <TableCell>{user.matricule}</TableCell>
                   <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.status}</TableCell>
-                  <TableCell>{user.organization}</TableCell>
-                  <TableCell className="text-right space-x-1">
+                  <TableCell>{user.type}</TableCell>
+                  <TableCell>
+                    <div
+                      className={`px-2 py-1 rounded-full text-center text-xs ${
+                        user.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {user.status === "active" ? t("active") : t("inactive")}
+                    </div>
+                  </TableCell>
+                  <TableCell>{user.organisation}</TableCell>
+                  <TableCell className="relative">
+                    <div className="flex items-center">
+                      <span>
+                        {passwordVisibility[user.id]
+                          ? user.password || "Not set"
+                          : "••••••••••"}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 ml-2"
+                        onClick={() => togglePasswordVisibility(user.id)}
+                      >
+                        {passwordVisibility[user.id] ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {passwordVisibility[user.id]
+                            ? t("hidePassword")
+                            : t("showPassword")}
+                        </span>
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 text-amber-600"
                       onClick={() => handleEditClick(user)}
                     >
                       <Pencil className="h-4 w-4" />
@@ -273,6 +406,7 @@ export default function RelatedUsersTable({
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 text-red-600 ml-2"
                       onClick={() => handleDeleteClick(user)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -286,7 +420,7 @@ export default function RelatedUsersTable({
         </Table>
       </div>
 
-      {/* Edit Dialog */}
+      {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -295,14 +429,14 @@ export default function RelatedUsersTable({
           {editUser && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label htmlFor="edit-fullName" className="text-sm font-medium">
+                <label htmlFor="edit-fullname" className="text-sm font-medium">
                   {t("fullName")}
                 </label>
                 <Input
-                  id="edit-fullName"
-                  value={editUser.fullName}
+                  id="edit-fullname"
+                  value={editUser.fullname}
                   onChange={(e) =>
-                    setEditUser({ ...editUser, fullName: e.target.value })
+                    setEditUser({ ...editUser, fullname: e.target.value })
                   }
                 />
               </div>
@@ -315,6 +449,18 @@ export default function RelatedUsersTable({
                   value={editUser.position}
                   onChange={(e) =>
                     setEditUser({ ...editUser, position: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="edit-matricule" className="text-sm font-medium">
+                  {t("matricule")}
+                </label>
+                <Input
+                  id="edit-matricule"
+                  value={editUser.matricule}
+                  onChange={(e) =>
+                    setEditUser({ ...editUser, matricule: e.target.value })
                   }
                 />
               </div>
@@ -332,17 +478,36 @@ export default function RelatedUsersTable({
                     <SelectValue placeholder={t("selectRole")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Initiator">{t("initiator")}</SelectItem>
-                    <SelectItem value="Validator 1">
+                    <SelectItem value="initiator">{t("initiator")}</SelectItem>
+                    <SelectItem value="validator 1">
                       {t("validator1")}
                     </SelectItem>
-                    <SelectItem value="Validator 2">
+                    <SelectItem value="validator 2">
                       {t("validator2")}
                     </SelectItem>
-                    <SelectItem value="Consultation">
+                    <SelectItem value="consultation">
                       {t("consultation")}
                     </SelectItem>
-                    <SelectItem value="Member">{t("member")}</SelectItem>
+                    <SelectItem value="member">{t("member")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="edit-type" className="text-sm font-medium">
+                  {t("type")}
+                </label>
+                <Select
+                  value={editUser.type}
+                  onValueChange={(value) =>
+                    setEditUser({ ...editUser, type: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectType")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">{t("admin")}</SelectItem>
+                    <SelectItem value="member">{t("member")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -353,33 +518,66 @@ export default function RelatedUsersTable({
                 <Select
                   value={editUser.status}
                   onValueChange={(value) =>
-                    setEditUser({ ...editUser, status: value })
+                    setEditUser({
+                      ...editUser,
+                      status: value as "active" | "inactive",
+                    })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("selectStatus")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Active">{t("active")}</SelectItem>
-                    <SelectItem value="Inactive">{t("inactive")}</SelectItem>
-                    <SelectItem value="Admin">{t("admin")}</SelectItem>
-                    <SelectItem value="Member">{t("member")}</SelectItem>
+                    <SelectItem value="active">{t("active")}</SelectItem>
+                    <SelectItem value="inactive">{t("inactive")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <label
-                  htmlFor="edit-organization"
+                  htmlFor="edit-organisation"
                   className="text-sm font-medium"
                 >
-                  {t("organization")}
+                  {t("organisation")}
                 </label>
                 <Input
-                  id="edit-organization"
-                  value={editUser.organization}
+                  id="edit-organisation"
+                  value={editUser.organisation}
                   onChange={(e) =>
-                    setEditUser({ ...editUser, organization: e.target.value })
+                    setEditUser({ ...editUser, organisation: e.target.value })
                   }
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label
+                    htmlFor="edit-password"
+                    className="text-sm font-medium"
+                  >
+                    {t("password")}
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setShowEditPassword(!showEditPassword)}
+                  >
+                    {showEditPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <Input
+                  id="edit-password"
+                  type={showEditPassword ? "text" : "password"}
+                  value={editUser.password || ""}
+                  onChange={(e) =>
+                    setEditUser({ ...editUser, password: e.target.value })
+                  }
+                  placeholder={t("enterPassword")}
                 />
               </div>
             </div>
@@ -403,10 +601,11 @@ export default function RelatedUsersTable({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmDeletion")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("deleteUserConfirmation")}
-              <span className="font-medium"> {selectedUser?.fullName}</span>.
+              {t("deleteUserConfirmation", {
+                name: selectedUser?.fullname || "",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

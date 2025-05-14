@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -11,7 +11,13 @@ const UserFilter = () => {
 
   const userType = searchParams.get("userType") || "1";
 
+  // Add debugging to understand what's happening
+  useEffect(() => {
+    console.log("UserFilter - Current userType:", userType);
+  }, [userType]);
+
   const handleUserTypeChange = (type: string) => {
+    console.log("Setting userType to:", type);
     const params = new URLSearchParams(searchParams.toString());
     params.set("userType", parseInt(type, 10).toString());
     router.replace(`${pathname}?${params}`);
@@ -40,19 +46,19 @@ const UserFilter = () => {
 
       <button
         className={`p-1 px-2 cursor-pointer ${
-          userType === "4" &&
+          userType === "3" &&
           "flex items-center bg-primary text-white rounded-md shadow"
         }`}
-        onClick={() => handleUserTypeChange("4")}
+        onClick={() => handleUserTypeChange("3")}
       >
         {t("TTC")}
       </button>
       <button
         className={`p-1 px-2 cursor-pointer ${
-          userType === "5" &&
+          userType === "4" &&
           "flex items-center bg-primary text-white rounded-md shadow"
         }`}
-        onClick={() => handleUserTypeChange("5")}
+        onClick={() => handleUserTypeChange("4")}
       >
         {t("Agence")}
       </button>

@@ -48,8 +48,10 @@ export const relatedUserSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   position: z.string().min(1, "Position is required"),
   role: z.string().min(1, "Role is required"),
+  type: z.string().min(1, "Type is required"),
   status: z.string().min(1, "Status is required"),
   organization: z.string().optional(),
+  password: z.string().optional(),
 });
 
 export const relatedUsersFormSchema = z.object({
@@ -66,4 +68,3 @@ export type CustodianFormValues = z.infer<typeof custodianFormSchema>;
 export type RelatedUserFormValues = z.infer<typeof relatedUserSchema>;
 export type RelatedUsersFormValues = z.infer<typeof relatedUsersFormSchema>;
 export type CombinedFormValues = z.infer<typeof combinedFormSchema>;
-

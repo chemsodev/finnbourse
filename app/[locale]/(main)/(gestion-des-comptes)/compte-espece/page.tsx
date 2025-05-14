@@ -241,9 +241,9 @@ export default function CompteEspece() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleViewDetails(compte)}
-                                  className="h-8 w-8"
+                                  className="h-10 w-10"
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-5 w-5" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -259,9 +259,9 @@ export default function CompteEspece() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleEditCompte(compte)}
-                                  className="h-8 w-8"
+                                  className="h-10 w-10"
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Edit className="h-5 w-5" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -277,9 +277,9 @@ export default function CompteEspece() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleDeleteClick(compte)}
-                                  className="h-8 w-8 text-red-500 hover:text-red-600"
+                                  className="h-10 w-10 text-red-500 hover:text-red-600"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-5 w-5" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>

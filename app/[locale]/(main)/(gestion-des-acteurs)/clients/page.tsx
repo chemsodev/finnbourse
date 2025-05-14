@@ -44,6 +44,7 @@ import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/ui/loading";
+import { Switch } from "@/components/ui/switch";
 
 import { getClients, deleteClient } from "@/lib/client-service";
 import type { Client } from "./schema";
@@ -68,6 +69,13 @@ export default function ClientDashboard() {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [clientStatuses, setClientStatuses] = useState<{
+    [key: number]: string;
+  }>({});
+  const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
+  const [clientToToggleStatus, setClientToToggleStatus] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -75,6 +83,13 @@ export default function ClientDashboard() {
         setIsLoading(true);
         const data = await getClients();
         setClients(data);
+
+        // Initialize client statuses
+        const initialStatuses: { [key: number]: string } = {};
+        data.forEach((client) => {
+          initialStatuses[client.id] = client.status;
+        });
+        setClientStatuses(initialStatuses);
       } catch (error) {
         console.error("Error fetching clients:", error);
       } finally {
@@ -83,6 +98,39 @@ export default function ClientDashboard() {
     };
     fetchClients();
   }, [t]);
+
+  const toggleClientStatus = (clientId: number) => {
+    setClientToToggleStatus(clientId);
+    setStatusConfirmDialog(true);
+  };
+
+  const confirmToggleStatus = () => {
+    if (!clientToToggleStatus) return;
+
+    const clientId = clientToToggleStatus;
+
+    // Update the status in state
+    setClientStatuses((prev) => ({
+      ...prev,
+      [clientId]: prev[clientId] === "actif" ? "inactif" : "actif",
+    }));
+
+    // In a real app, you would update the status in your database
+    console.log(
+      `Toggled status for client ID: ${clientId} from ${
+        clientStatuses[clientId]
+      } to ${clientStatuses[clientId] === "actif" ? "inactif" : "actif"}`
+    );
+
+    // Reset the confirmation dialog
+    setStatusConfirmDialog(false);
+    setClientToToggleStatus(null);
+  };
+
+  const cancelToggleStatus = () => {
+    setStatusConfirmDialog(false);
+    setClientToToggleStatus(null);
+  };
 
   const filteredClients = clients.filter(
     (client) =>
@@ -198,6 +246,9 @@ export default function ClientDashboard() {
             <TableHeader className="bg-primary">
               <TableRow>
                 <TableHead className="text-white font-medium">
+                  {t("code")}
+                </TableHead>
+                <TableHead className="text-white font-medium">
                   {t("name")}
                 </TableHead>
                 <TableHead className="text-white font-medium">
@@ -223,13 +274,16 @@ export default function ClientDashboard() {
             <TableBody>
               {filteredClients.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     {t("noClientsFound")}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredClients.map((client) => (
                   <TableRow key={client.id} className="hover:bg-slate-50">
+                    <TableCell className="font-medium text-primary">
+                      {client.clientCode || "-"}
+                    </TableCell>
                     <TableCell className="font-medium">
                       {client.clientType === "personne_physique"
                         ? client.name
@@ -248,17 +302,35 @@ export default function ClientDashboard() {
                     </TableCell>
                     <TableCell>{client.address}</TableCell>
                     <TableCell>
-                      {client.status === "verified" ? (
-                        <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">
-                          <span className="text-xs font-medium">
-                            {t("verified")}
-                          </span>
+                      {clientStatuses[client.id] === "actif" ? (
+                        <div className="flex items-center">
+                          <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-center text-xs mr-2">
+                            <span className="text-xs font-medium">actif</span>
+                          </div>
+                          <Switch
+                            checked={clientStatuses[client.id] === "actif"}
+                            onCheckedChange={() =>
+                              toggleClientStatus(client.id)
+                            }
+                            className="ml-2 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                          >
+                            <div className="bg-white h-4 w-4 rounded-full transform transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0" />
+                          </Switch>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1 rounded-full w-fit">
-                          <span className="text-xs font-medium">
-                            {t("notVerified")}
-                          </span>
+                        <div className="flex items-center">
+                          <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-center text-xs mr-2">
+                            <span className="text-xs font-medium">inactif</span>
+                          </div>
+                          <Switch
+                            checked={clientStatuses[client.id] === "actif"}
+                            onCheckedChange={() =>
+                              toggleClientStatus(client.id)
+                            }
+                            className="ml-2 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                          >
+                            <div className="bg-white h-4 w-4 rounded-full transform transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0" />
+                          </Switch>
                         </div>
                       )}
                     </TableCell>
@@ -337,6 +409,26 @@ export default function ClientDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Status Toggle Confirmation Dialog */}
+      <Dialog open={statusConfirmDialog} onOpenChange={setStatusConfirmDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirmer le changement de statut</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir changer le statut de ce client ?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2 pt-5">
+            <Button variant="outline" onClick={cancelToggleStatus}>
+              Annuler
+            </Button>
+            <Button onClick={confirmToggleStatus} variant="default">
+              Confirmer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

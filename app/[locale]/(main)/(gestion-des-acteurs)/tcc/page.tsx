@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search, Plus, Pencil, Trash2, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Pencil, Plus, Trash2, Search, Eye, EyeOff } from "lucide-react";
+import { accountHolderData } from "@/lib/exportables";
 import {
   Table,
   TableBody,
@@ -13,13 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,641 +26,470 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { accountHolderData, type AccountHolderData } from "@/lib/exportables";
 import MyPagination from "@/components/navigation/MyPagination";
-import { useTranslations } from "next-intl";
+
+// Sample TCC user data
+interface TCCUser {
+  id: number;
+  fullname: string;
+  email: string;
+  position: string;
+  role: string;
+  type: string;
+  status: "active" | "inactive";
+  phone: string;
+  password: string;
+  organisation: string;
+  matricule: string;
+}
+
+const tccUsers: TCCUser[] = [
+  {
+    id: 1,
+    fullname: "John Doe",
+    email: "john.doe@example.com",
+    position: "Manager",
+    role: "initiator",
+    type: "admin",
+    status: "active",
+    phone: "123-456-7890",
+    password: "Password123",
+    organisation: "SLIK PIS",
+    matricule: "M001",
+  },
+  {
+    id: 2,
+    fullname: "Jane Smith",
+    email: "jane.smith@example.com",
+    position: "Analyst",
+    role: "validateur 1",
+    type: "member",
+    status: "active",
+    phone: "123-456-7891",
+    password: "Secure456!",
+    organisation: "SLIK PIS",
+    matricule: "M002",
+  },
+  {
+    id: 3,
+    fullname: "Ahmed Hassan",
+    email: "ahmed.hassan@example.com",
+    position: "Supervisor",
+    role: "initiator",
+    type: "admin",
+    status: "inactive",
+    phone: "123-456-7892",
+    password: "StrongPwd789@",
+    organisation: "SLIK PIS",
+    matricule: "M003",
+  },
+];
 
 export default function TeneurComptesTitresPage() {
   const router = useRouter();
-  const t = useTranslations("TCCPage");
+  const t = useTranslations("TCCDetailsPage");
+  const tPage = useTranslations("TCCPage");
+
+  // Since we'll have only one TCC, we'll use the first one from the data
+  const holder =
+    accountHolderData.find((h) => h.pays === "Algérie") || accountHolderData[0];
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
-  const [selectedHolder, setSelectedHolder] =
-    useState<AccountHolderData | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [passwordVisibility, setPasswordVisibility] = useState<{
+    [key: number]: boolean;
+  }>({});
 
-  // Filter to only show Algerian account holders
-  const filteredHolders = useMemo(() => {
-    return accountHolderData.filter(
-      (holder) =>
-        holder.pays === "Algérie" &&
-        (holder.libelle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          holder.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          holder.ville.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }, [searchQuery]);
-
-  const handleAddClick = () => {
-    router.push("/tcc/form");
+  const togglePasswordVisibility = (userId: number) => {
+    setPasswordVisibility((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
   };
 
-  const handleEditClick = (holder: AccountHolderData) => {
-    router.push(`/tcc/form/${holder.id}`);
+  const filteredUsers = tccUsers.filter(
+    (user) =>
+      user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.position.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAddUser = () => {
+    // Route to user creation form
+    router.push("/tcc/form/users");
   };
 
-  const handleInfoClick = (holder: AccountHolderData) => {
-    router.push(`/tcc/${holder.id}`);
+  const handleEditUser = (user: any) => {
+    // Route to user edit form
+    router.push(`/tcc/form/users/${user.id}`);
   };
 
-  const handleDeleteClick = (holder: AccountHolderData) => {
-    setSelectedHolder(holder);
+  const handleDeleteClick = (user: any) => {
+    setSelectedUser(user);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDelete = () => {
-    // In a real app, you would delete the item from your database
-    console.log(`Deleting account holder with ID: ${selectedHolder?.id}`);
+    // In a real app, you would delete the user from your database
+    console.log(`Deleting user with ID: ${selectedUser?.id}`);
     setIsDeleteDialogOpen(false);
     // Then refresh your data
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would save the form data to your database
-    console.log(
-      `${dialogMode === "add" ? "Adding" : "Updating"} account holder data`
-    );
-    setIsDialogOpen(false);
-    // Then refresh your data
-  };
-
   return (
-    <div className="shadow-inner rounded-md bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold my-4 text-secondary">{t("title")}</h1>
-        <header className="flex items-center justify-end mb-8">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                placeholder={t("search")}
-                className="pl-10 w-64 bg-white"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button
-              className="flex items-center gap-2"
-              onClick={handleAddClick}
-            >
-              <Plus className="h-4 w-4" />
-              {t("add")}
-            </Button>
-          </div>
-        </header>
-
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-          <Table>
-            <TableHeader className="bg-primary">
-              <TableRow>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("code")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("label")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("city")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("type")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("status")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("phone")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium w-[120px]">
-                  {t("actions")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredHolders?.map((holder, index) => (
-                <TableRow
-                  key={holder.id}
-                  className={index % 2 === 1 ? "bg-gray-100" : ""}
-                >
-                  <TableCell>{holder.code}</TableCell>
-                  <TableCell>{holder.libelle}</TableCell>
-                  <TableCell>{holder.ville}</TableCell>
-                  <TableCell>{holder.typeCompte || "-"}</TableCell>
-                  <TableCell>{holder.statut}</TableCell>
-                  <TableCell>{holder.telephone}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-blue-600"
-                        onClick={() => handleInfoClick(holder)}
-                      >
-                        <Info className="h-4 w-4" />
-                        <span className="sr-only">{t("viewDetails")}</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-amber-600"
-                        onClick={() => handleEditClick(holder)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">{t("edit")}</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600"
-                        onClick={() => handleDeleteClick(holder)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">{t("delete")}</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">{holder.libelle}</h1>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => router.push(`/tcc/form/${holder.id}`)}
+          >
+            <Pencil className="h-4 w-4" />
+            {t("edit")}
+          </Button>
         </div>
-        <MyPagination />
-        {/* Add/Edit Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {dialogMode === "add"
-                  ? t("addNewAccountHolder")
-                  : t("editAccountHolder")}
-              </DialogTitle>
-            </DialogHeader>
-            <form className="space-y-6 py-4" onSubmit={handleSave}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Identification */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="code"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("code")}
-                  </label>
-                  <Input
-                    id="code"
-                    className="w-full"
-                    defaultValue={selectedHolder?.code || ""}
-                  />
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                {t("generalInformation")}
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("code")}
+                    </p>
+                    <p className="text-base">{holder.code}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("type")}
+                    </p>
+                    <p className="text-base">{holder.typeCompte || "-"}</p>
+                  </div>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label
-                    htmlFor="libelle"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
                     {t("label")}
-                  </label>
-                  <Input
-                    id="libelle"
-                    className="w-full"
-                    defaultValue={selectedHolder?.libelle || ""}
-                  />
+                  </p>
+                  <p className="text-base">{holder.libelle}</p>
                 </div>
-
-                {/* Type de compte et statut */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="typeCompte"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("type")}
-                  </label>
-                  <Select defaultValue={selectedHolder?.typeCompte || ""}>
-                    <SelectTrigger id="typeCompte" className="w-full">
-                      <SelectValue placeholder={t("select")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Dépositaire">
-                        {t("depositary")}
-                      </SelectItem>
-                      <SelectItem value="Conservateur">
-                        {t("custodian")}
-                      </SelectItem>
-                      <SelectItem value="Banque Locale">
-                        {t("localBank")}
-                      </SelectItem>
-                      <SelectItem value="Banque Internationale">
-                        {t("internationalBank")}
-                      </SelectItem>
-                      <SelectItem value="Autre">{t("other")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="statut"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("status")}
-                  </label>
-                  <Select defaultValue={selectedHolder?.statut || "Actif"}>
-                    <SelectTrigger id="statut" className="w-full">
-                      <SelectValue placeholder={t("select")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Actif">{t("active")}</SelectItem>
-                      <SelectItem value="Inactif">{t("inactive")}</SelectItem>
-                      <SelectItem value="Suspendu">{t("suspended")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="dateCreation"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("creationDate")}
-                  </label>
-                  <Input
-                    id="dateCreation"
-                    type="date"
-                    className="w-full"
-                    defaultValue={selectedHolder?.dateCreation || ""}
-                  />
-                </div>
-
-                {/* Informations bancaires */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="swift"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("swiftCode")}
-                  </label>
-                  <Input
-                    id="swift"
-                    className="w-full"
-                    defaultValue={selectedHolder?.swift || ""}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label
-                    htmlFor="iban"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("iban")}
-                  </label>
-                  <Input
-                    id="iban"
-                    className="w-full"
-                    defaultValue={selectedHolder?.iban || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="numeroCompte"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("accountNumber")}
-                  </label>
-                  <Input
-                    id="numeroCompte"
-                    className="w-full"
-                    defaultValue={selectedHolder?.numeroCompte || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="devise"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("currency")}
-                  </label>
-                  <Select defaultValue={selectedHolder?.devise || "EUR"}>
-                    <SelectTrigger id="devise" className="w-full">
-                      <SelectValue placeholder={t("select")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="DZD">DZD</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
-                      <SelectItem value="CHF">CHF</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Adresse */}
-                <div className="space-y-2 md:col-span-3">
-                  <label
-                    htmlFor="adresse"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("address")}
-                  </label>
-                  <Input
-                    id="adresse"
-                    className="w-full"
-                    defaultValue={selectedHolder?.adresse || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codePostal"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("postalCode")}
-                  </label>
-                  <Input
-                    id="codePostal"
-                    className="w-full"
-                    defaultValue={selectedHolder?.codePostal || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="ville"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("city")}
-                  </label>
-                  <Input
-                    id="ville"
-                    className="w-full"
-                    defaultValue={selectedHolder?.ville || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="pays"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("country")}
-                  </label>
-                  <Input
-                    id="pays"
-                    className="w-full"
-                    defaultValue={selectedHolder?.pays || ""}
-                  />
-                </div>
-
-                {/* Contact principal */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="contactNom"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("contactLastName")}
-                  </label>
-                  <Input
-                    id="contactNom"
-                    className="w-full"
-                    defaultValue={selectedHolder?.contactNom || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="contactPrenom"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("contactFirstName")}
-                  </label>
-                  <Input
-                    id="contactPrenom"
-                    className="w-full"
-                    defaultValue={selectedHolder?.contactPrenom || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="contactTelephone"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("contactPhone")}
-                  </label>
-                  <Input
-                    id="contactTelephone"
-                    className="w-full"
-                    defaultValue={selectedHolder?.contactTelephone || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="contactEmail"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("contactEmail")}
-                  </label>
-                  <Input
-                    id="contactEmail"
-                    type="email"
-                    className="w-full"
-                    defaultValue={selectedHolder?.contactEmail || ""}
-                  />
-                </div>
-
-                {/* Informations générales */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="telephone"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("phone")}
-                  </label>
-                  <Input
-                    id="telephone"
-                    className="w-full"
-                    defaultValue={selectedHolder?.telephone || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("email")}
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    className="w-full"
-                    defaultValue={selectedHolder?.email || ""}
-                  />
-                </div>
-
-                {/* Informations réglementaires */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="numeroAgrement"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("approvalNumber")}
-                  </label>
-                  <Input
-                    id="numeroAgrement"
-                    className="w-full"
-                    defaultValue={selectedHolder?.numeroAgrement || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="dateAgrement"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("approvalDate")}
-                  </label>
-                  <Input
-                    id="dateAgrement"
-                    type="date"
-                    className="w-full"
-                    defaultValue={selectedHolder?.dateAgrement || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="autoriteSurveillance"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("supervisionAuthority")}
-                  </label>
-                  <Input
-                    id="autoriteSurveillance"
-                    className="w-full"
-                    defaultValue={selectedHolder?.autoriteSurveillance || ""}
-                  />
-                </div>
-
-                {/* Correspondant */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="codeCorrespondant"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("correspondentCode")}
-                  </label>
-                  <Input
-                    id="codeCorrespondant"
-                    className="w-full"
-                    defaultValue={selectedHolder?.codeCorrespondant || ""}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label
-                    htmlFor="nomCorrespondant"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("correspondentName")}
-                  </label>
-                  <Input
-                    id="nomCorrespondant"
-                    className="w-full"
-                    defaultValue={selectedHolder?.nomCorrespondant || ""}
-                  />
-                </div>
-
-                {/* Commissions */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="commissionFixe"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("fixedCommission")}
-                  </label>
-                  <Input
-                    id="commissionFixe"
-                    className="w-full"
-                    defaultValue={selectedHolder?.commissionFixe || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="commissionVariable"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("variableCommission")}
-                  </label>
-                  <Input
-                    id="commissionVariable"
-                    className="w-full"
-                    defaultValue={selectedHolder?.commissionVariable || ""}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="tauxTva"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("vatRate")}
-                  </label>
-                  <Input
-                    id="tauxTva"
-                    className="w-full"
-                    defaultValue={selectedHolder?.tauxTva || ""}
-                  />
-                </div>
-
-                {/* Commentaire */}
-                <div className="space-y-2 md:col-span-3">
-                  <label
-                    htmlFor="commentaire"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("comment")}
-                  </label>
-                  <Textarea
-                    id="commentaire"
-                    className="w-full min-h-[100px]"
-                    defaultValue={selectedHolder?.commentaire || ""}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("status")}
+                    </p>
+                    <p className="text-base">{holder.statut}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("creationDate")}
+                    </p>
+                    <p className="text-base">{holder.dateCreation || "-"}</p>
+                  </div>
                 </div>
               </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  {t("cancel")}
-                </Button>
-                <Button type="submit">{t("save")}</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("deleteConfirmation")}
-                <span className="font-medium"> {selectedHolder?.libelle}</span>.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
+              <h2 className="text-xl font-semibold mt-8 mb-4 text-gray-800">
+                {t("contactInformation")}
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    {t("address")}
+                  </p>
+                  <p className="text-base">{holder.adresse}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("postalCode")}
+                    </p>
+                    <p className="text-base">{holder.codePostal}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("city")}
+                    </p>
+                    <p className="text-base">{holder.ville}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("country")}
+                    </p>
+                    <p className="text-base">{holder.pays}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("phone")}
+                    </p>
+                    <p className="text-base">{holder.telephone}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("email")}
+                    </p>
+                    <p className="text-base">{holder.email}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                {t("bankInformation")}
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("swiftCode")}
+                    </p>
+                    <p className="text-base">{holder.swift || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("currency")}
+                    </p>
+                    <p className="text-base">{holder.devise || "-"}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    {t("iban")}
+                  </p>
+                  <p className="text-base">{holder.iban || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    {t("accountNumber")}
+                  </p>
+                  <p className="text-base">{holder.numeroCompte || "-"}</p>
+                </div>
+              </div>
+
+              <h2 className="text-xl font-semibold mt-8 mb-4 text-gray-800">
+                {t("regulatoryInformation")}
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("approvalNumber")}
+                    </p>
+                    <p className="text-base">{holder.numeroAgrement || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      {t("approvalDate")}
+                    </p>
+                    <p className="text-base">{holder.dateAgrement || "-"}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    {t("surveillanceAuthority")}
+                  </p>
+                  <p className="text-base">
+                    {holder.autoriteSurveillance || "-"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Users Table Section */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            {t("affectedUsers")}
+          </h2>
+
+          <header className="flex items-center justify-end mb-8">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder={tPage("search")}
+                  className="pl-10 w-64 bg-white"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <Button
+                className="flex items-center gap-2"
+                onClick={handleAddUser}
               >
-                {t("delete")}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Plus className="h-4 w-4" />
+                {t("addUser")}
+              </Button>
+            </div>
+          </header>
+
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+            <Table>
+              <TableHeader className="bg-primary">
+                <TableRow>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("fullName")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("position")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("matricule")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("role")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("type")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("status")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("organisation")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("email")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("phone")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium">
+                    {t("password")}
+                  </TableHead>
+                  <TableHead className="text-primary-foreground font-medium w-[120px]">
+                    {t("actions")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user, index) => (
+                  <TableRow
+                    key={user.id}
+                    className={index % 2 === 1 ? "bg-gray-100" : ""}
+                  >
+                    <TableCell>{user.fullname}</TableCell>
+                    <TableCell>{user.position}</TableCell>
+                    <TableCell>{user.matricule}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>{user.type}</TableCell>
+                    <TableCell>
+                      {user.status === "active" ? (
+                        <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">
+                          <span className="text-xs font-medium">
+                            {t("active")}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1 rounded-full w-fit">
+                          <span className="text-xs font-medium">
+                            {t("inactive")}
+                          </span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>{user.organisation}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.phone}</TableCell>
+                    <TableCell className="relative">
+                      <div className="flex items-center">
+                        <span className="mr-2">
+                          {passwordVisibility[user.id]
+                            ? user.password
+                            : "••••••••••"}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-10 w-10"
+                          onClick={() => togglePasswordVisibility(user.id)}
+                        >
+                          {passwordVisibility[user.id] ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                          <span className="sr-only">
+                            {passwordVisibility[user.id]
+                              ? t("hidePassword")
+                              : t("showPassword")}
+                          </span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center items-center gap-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-10 w-10 text-amber-600"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Pencil className="h-5 w-5" />
+                          <span className="sr-only">{t("edit")}</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-10 w-10 text-red-600"
+                          onClick={() => handleDeleteClick(user)}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                          <span className="sr-only">{t("delete")}</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredUsers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-4">
+                      {t("noUsers")}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="mt-6">
+            <MyPagination />
+          </div>
+        </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirmDelete")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteUserConfirmation", { user: selectedUser?.fullname })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -18,6 +18,12 @@ import {
   CreditCard,
   Building2,
   FileText,
+  Eye,
+  EyeOff,
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,6 +80,14 @@ import { formSchema, type FormValues } from "../schema";
 import { useTranslations } from "next-intl";
 import { ClientFormValues } from "../schema";
 import Loading from "@/components/ui/loading";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface SectionHeaderProps {
   icon: React.ReactNode;
@@ -124,6 +138,28 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true);
   const [skipUsers, setSkipUsers] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isAddingUser, setIsAddingUser] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [showNewUserPassword, setShowNewUserPassword] = useState(false);
+  const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
+    null
+  );
+  const [newUser, setNewUser] = useState({
+    id: "",
+    firstName: "",
+    lastName: "",
+    role: "",
+    address: "",
+    wilaya: "",
+    nationality: "",
+    birthDate: "",
+    idNumber: "",
+    userType: "proprietaire",
+    status: "actif",
+    showPassword: false,
+    password: "",
+  });
   const [users, setUsers] = useState<
     Array<{
       id: string;
@@ -135,8 +171,10 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
       nationality: string;
       birthDate: string;
       idNumber: string;
-      isOwner: boolean;
-      isMandatory: boolean;
+      userType: "proprietaire" | "mandataire" | "tuteur_legal";
+      status: "actif" | "inactif";
+      showPassword?: boolean;
+      password?: string;
     }>
   >([]);
 
@@ -206,6 +244,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     defaultValues: {
       clientType: "personne_physique" as const,
       clientSource: "CPA" as const,
+      clientCode: "",
       name: "",
       email: "",
       phoneNumber: "",
@@ -235,6 +274,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
       nif: "",
       regNumber: "",
       legalForm: "",
+      lieuNaissance: "",
     },
   });
 
@@ -302,14 +342,16 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
             nationality: user.nationality,
             birthDate: user.birthDate,
             idNumber: user.idNumber,
-            isOwner: user.isOwner,
-            isMandatory: user.isMandatory,
+            userType: user.userType,
+            status: user.status,
+            showPassword: false,
           }))
         );
 
         // Extract only the form fields from the client data
         const formData: FormValues = {
           clientType: client.clientType,
+          clientCode: client.clientCode,
           clientSource: client.clientSource,
           name: client.name || "",
           email: client.email || "",
@@ -340,6 +382,10 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
           nif: client.nif || "",
           regNumber: client.regNumber || "",
           legalForm: client.legalForm || "",
+          lieuNaissance:
+            client.clientType === "personne_physique"
+              ? (client as any).lieuNaissance || ""
+              : "",
         };
 
         form.reset(formData);
@@ -400,34 +446,167 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const fetchUsers = async (clientId: string) => {
+    try {
+      // Parse as a number to match the API expectation
+      const userData = await getClientUsers(parseInt(clientId, 10));
+      // Convert old structure to new structure if needed
+      const formattedUsers = userData.map((user: any) => ({
+        ...user,
+        userType: user.isOwner
+          ? ("proprietaire" as const)
+          : user.isMandatory
+          ? ("mandataire" as const)
+          : ("tuteur_legal" as const),
+        status: "actif" as const, // Default status for existing users
+      }));
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  const resetNewUser = () => {
+    setNewUser({
+      id: "",
+      firstName: "",
+      lastName: "",
+      role: "",
+      address: "",
+      wilaya: "",
+      nationality: "",
+      birthDate: "",
+      idNumber: "",
+      userType: "proprietaire",
+      status: "actif",
+      showPassword: false,
+      password: "",
+    });
+  };
+
   const addUser = () => {
-    setUsers((prev) => [
-      ...prev,
-      {
-        id: Math.random().toString(),
-        firstName: "",
-        lastName: "",
-        role: "",
-        address: "",
-        wilaya: "",
-        nationality: "",
-        birthDate: "",
-        idNumber: "",
-        isOwner: false,
-        isMandatory: false,
-      },
-    ]);
+    resetNewUser();
+    setEditingUserId(null);
+    setIsAddingUser(true);
+  };
+
+  const handleEditUser = (userId: string) => {
+    const user = users.find((u) => u.id === userId);
+    if (user) {
+      setNewUser({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        address: user.address,
+        wilaya: user.wilaya,
+        nationality: user.nationality,
+        birthDate: user.birthDate,
+        idNumber: user.idNumber,
+        userType: user.userType,
+        status: user.status,
+        showPassword: false,
+        password: "",
+      });
+      setEditingUserId(userId);
+      setIsAddingUser(true);
+    }
+  };
+
+  const handleSaveUser = () => {
+    if (!newUser.firstName || !newUser.lastName) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Get the client type from the form to validate user type
+    const clientType = form.getValues("clientType");
+    const isValidUserType = validateUserTypeForClientType(
+      clientType,
+      newUser.userType
+    );
+
+    if (!isValidUserType) {
+      toast({
+        title: "Erreur",
+        description: `Ce type d'utilisateur n'est pas autorisé pour ce type de client.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const userToSave = {
+      ...newUser,
+      userType: newUser.userType as
+        | "proprietaire"
+        | "mandataire"
+        | "tuteur_legal",
+      status: newUser.status as "actif" | "inactif",
+    };
+
+    if (editingUserId) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === editingUserId ? { ...userToSave, id: editingUserId } : u
+        )
+      );
+    } else {
+      const id = Date.now().toString();
+      setUsers((prev) => [...prev, { ...userToSave, id }]);
+    }
+
+    setIsAddingUser(false);
+    resetNewUser();
+  };
+
+  const validateUserTypeForClientType = (
+    clientType: string,
+    userType: string
+  ): boolean => {
+    if (clientType === "personne_physique") {
+      return ["proprietaire", "tuteur_legal"].includes(userType);
+    } else {
+      // For personne_morale and institution_financiere
+      return ["proprietaire", "mandataire"].includes(userType);
+    }
   };
 
   const handleUserChange = (userId: string, field: string, value: any) => {
     setUsers((prev) =>
-      prev.map((user) => {
-        if (user.id === userId) {
-          return { ...user, [field]: value };
-        }
-        return user;
-      })
+      prev.map((user) =>
+        user.id === userId ? { ...user, [field]: value } : user
+      )
     );
+  };
+
+  const handleToggleStatus = (userId: string) => {
+    setUserToToggleStatus(userId);
+    setStatusConfirmDialog(true);
+  };
+
+  const confirmToggleStatus = () => {
+    if (!userToToggleStatus) return;
+
+    const updatedUsers = [...users];
+    const userToUpdate = updatedUsers.find((u) => u.id === userToToggleStatus);
+    if (userToUpdate) {
+      userToUpdate.status =
+        userToUpdate.status === "actif" ? "inactif" : "actif";
+      setUsers(updatedUsers);
+    }
+
+    // Reset dialog state
+    setStatusConfirmDialog(false);
+    setUserToToggleStatus(null);
+  };
+
+  const cancelToggleStatus = () => {
+    setStatusConfirmDialog(false);
+    setUserToToggleStatus(null);
   };
 
   const nextStep = () => {
@@ -452,6 +631,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
         data.clientType === "personne_physique"
           ? {
               clientType: "personne_physique" as const,
+              clientCode: data.clientCode,
               name: data.name,
               idType: data.idType,
               idNumber: data.idNumber,
@@ -482,6 +662,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
           : data.clientType === "personne_morale"
           ? {
               clientType: "personne_morale" as const,
+              clientCode: data.clientCode,
               raisonSociale: data.raisonSociale,
               nif: data.nif,
               regNumber: data.regNumber,
@@ -509,6 +690,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
             }
           : {
               clientType: "institution_financiere" as const,
+              clientCode: data.clientCode,
               raisonSociale: data.raisonSociale,
               nif: data.nif,
               regNumber: data.regNumber,
@@ -548,8 +730,9 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
           status: doc.status || "En attente",
         }));
 
-      // Handle users
+      // Format client users for API
       const clientUsers = users.map((user) => ({
+        id: user.id,
         clientId: Number(params.id),
         firstName: user.firstName,
         lastName: user.lastName,
@@ -559,8 +742,10 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
         nationality: user.nationality,
         birthDate: user.birthDate,
         idNumber: user.idNumber,
-        isOwner: user.isOwner,
-        isMandatory: user.isMandatory,
+        userType: user.userType,
+        status: user.status,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }));
 
       // Upload documents and create users
@@ -602,10 +787,11 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
   return (
     <FormProvider {...form}>
       <div>
-        <div className="flex items-center justify-between my-8 gap-4 bg-slate-100 p-4 rounded-md">
+        <div className="flex items-center my-8 bg-slate-100 p-4 rounded-md">
           <div className="flex items-center gap-4">
             <Button size="sm" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Retour
             </Button>
             <h1 className="text-3xl font-bold tracking-tight text-secondary dark:text-gray-400">
               Modifier Client
@@ -1105,200 +1291,385 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                   badge="Étape 2"
                 />
 
-                <div className="flex items-center gap-4 mb-6">
-                  <Button onClick={addUser} variant="outline">
-                    Ajouter un utilisateur
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={skipUsers}
-                      onCheckedChange={(checked) =>
-                        setSkipUsers(checked as boolean)
-                      }
-                      id="skipUsers"
-                    />
-                    <label htmlFor="skipUsers" className="text-sm">
-                      Passer cette étape
-                    </label>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <Button
+                      onClick={addUser}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Ajouter un utilisateur
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={skipUsers}
+                        onCheckedChange={(checked) =>
+                          setSkipUsers(checked as boolean)
+                        }
+                        id="skipUsers"
+                      />
+                      <label htmlFor="skipUsers" className="text-sm">
+                        Passer cette étape
+                      </label>
+                    </div>
                   </div>
                 </div>
 
                 {!skipUsers && (
-                  <div className="space-y-6">
-                    {users.map((user) => (
-                      <div
-                        key={user.id}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg"
-                      >
-                        <div className="space-y-4">
-                          <div>
-                            <Label>Nom/Prénom</Label>
-                            <Input
-                              value={user.firstName}
-                              onChange={(e) =>
-                                handleUserChange(
-                                  user.id,
-                                  "firstName",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Nom et prénom"
-                            />
-                          </div>
-                          <div>
-                            <Label>Né(e) (Nom de jeune fille)</Label>
-                            <Input
-                              value={user.lastName}
-                              onChange={(e) =>
-                                handleUserChange(
-                                  user.id,
-                                  "lastName",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Nom de jeune fille"
-                            />
-                          </div>
-                          <div>
-                            <Label>Adresse</Label>
-                            <Input
-                              value={user.address}
-                              onChange={(e) =>
-                                handleUserChange(
-                                  user.id,
-                                  "address",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Adresse complète"
-                            />
-                          </div>
-                          <div>
-                            <Label>Wilaya</Label>
-                            <Input
-                              value={user.wilaya}
-                              onChange={(e) =>
-                                handleUserChange(
-                                  user.id,
-                                  "wilaya",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Wilaya"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-4">
-                          <div>
-                            <Label>Nationalité</Label>
-                            <Input
-                              value={user.nationality}
-                              onChange={(e) =>
-                                handleUserChange(
-                                  user.id,
-                                  "nationality",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Nationalité"
-                            />
-                          </div>
-                          <div>
-                            <Label>Date de naissance</Label>
-                            <Input
-                              type="date"
-                              value={user.birthDate}
-                              onChange={(e) =>
-                                handleUserChange(
-                                  user.id,
-                                  "birthDate",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label>Numéro de pièce d'identité</Label>
-                            <Input
-                              value={user.idNumber}
-                              onChange={(e) =>
-                                handleUserChange(
-                                  user.id,
-                                  "idNumber",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Numéro de pièce d'identité"
-                            />
-                          </div>
-                          <div>
-                            <Label>Rôle</Label>
-                            <Select
-                              value={user.role}
-                              onValueChange={(value) =>
-                                handleUserChange(user.id, "role", value)
-                              }
+                  <div className="border rounded-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Nom de jeune fille</TableHead>
+                          <TableHead>Rôle</TableHead>
+                          <TableHead>Adresse</TableHead>
+                          <TableHead>Wilaya</TableHead>
+                          <TableHead>Nationalité</TableHead>
+                          <TableHead>Date de naissance</TableHead>
+                          <TableHead>Numéro d'identité</TableHead>
+                          <TableHead>Type d'utilisateur</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead>Mot de passe</TableHead>
+                          <TableHead className="w-[100px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={11}
+                              className="text-center py-4 text-muted-foreground"
                             >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner un rôle" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="validator1">
-                                  Validateur 1
-                                </SelectItem>
-                                <SelectItem value="validator2">
-                                  Validateur 2
-                                </SelectItem>
-                                <SelectItem value="consultation">
-                                  Consultation
-                                </SelectItem>
-                                <SelectItem value="initiator">
-                                  Initiateur
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          {formData.clientType === "personne_physique" && (
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={user.isOwner}
-                                  onCheckedChange={(checked) =>
-                                    handleUserChange(
-                                      user.id,
-                                      "isOwner",
-                                      checked as boolean
-                                    )
-                                  }
-                                  id={`isOwner-${user.id}`}
-                                />
-                                <Label htmlFor={`isOwner-${user.id}`}>
-                                  Propriétaire
-                                </Label>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={user.isMandatory}
-                                  onCheckedChange={(checked) =>
-                                    handleUserChange(
-                                      user.id,
-                                      "isMandatory",
-                                      checked as boolean
-                                    )
-                                  }
-                                  id={`isMandatory-${user.id}`}
-                                />
-                                <Label htmlFor={`isMandatory-${user.id}`}>
-                                  Mandataire
-                                </Label>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                              Aucun utilisateur ajouté
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          users.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell>{user.firstName}</TableCell>
+                              <TableCell>{user.lastName}</TableCell>
+                              <TableCell>{user.role}</TableCell>
+                              <TableCell>{user.address}</TableCell>
+                              <TableCell>{user.wilaya}</TableCell>
+                              <TableCell>{user.nationality}</TableCell>
+                              <TableCell>{user.birthDate}</TableCell>
+                              <TableCell>{user.idNumber}</TableCell>
+                              <TableCell>
+                                {user.userType === "proprietaire"
+                                  ? "Propriétaire"
+                                  : user.userType === "mandataire"
+                                  ? "Mandataire"
+                                  : "Tuteur Légal"}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center justify-between space-x-2">
+                                  <span
+                                    className={
+                                      user.status === "actif"
+                                        ? "text-green-600 text-sm font-medium"
+                                        : "text-red-500 text-sm"
+                                    }
+                                  >
+                                    {user.status === "actif"
+                                      ? "Actif"
+                                      : "Inactif"}
+                                  </span>
+                                  <Switch
+                                    checked={user.status === "actif"}
+                                    onCheckedChange={() =>
+                                      handleToggleStatus(user.id)
+                                    }
+                                    className={
+                                      user.status === "actif"
+                                        ? "bg-green-500 data-[state=checked]:bg-green-500"
+                                        : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                                    }
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell className="relative">
+                                <div className="flex items-center">
+                                  <span>
+                                    {user.showPassword
+                                      ? user.password || "Non défini"
+                                      : "••••••••••"}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 ml-2"
+                                    onClick={() => {
+                                      const updatedUsers = [...users];
+                                      const userToUpdate = updatedUsers.find(
+                                        (u) => u.id === user.id
+                                      );
+                                      if (userToUpdate) {
+                                        userToUpdate.showPassword =
+                                          !userToUpdate.showPassword;
+                                        setUsers(updatedUsers);
+                                      }
+                                    }}
+                                  >
+                                    {user.showPassword ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
+                                    <span className="sr-only">
+                                      {user.showPassword
+                                        ? "Masquer le mot de passe"
+                                        : "Afficher le mot de passe"}
+                                    </span>
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-amber-600"
+                                    onClick={() => handleEditUser(user.id)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                    <span className="sr-only">Modifier</span>
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-red-600"
+                                    onClick={() =>
+                                      setUsers(
+                                        users.filter((u) => u.id !== user.id)
+                                      )
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Supprimer</span>
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
+
+                {/* User Form Dialog */}
+                <Dialog open={isAddingUser} onOpenChange={setIsAddingUser}>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingUserId
+                          ? "Modifier l'utilisateur"
+                          : "Ajouter un utilisateur"}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Nom/Prénom</Label>
+                        <Input
+                          value={newUser.firstName}
+                          onChange={(e) =>
+                            setNewUser({
+                              ...newUser,
+                              firstName: e.target.value,
+                            })
+                          }
+                          placeholder="Nom et prénom"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Né(e) (Nom de jeune fille)</Label>
+                        <Input
+                          value={newUser.lastName}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, lastName: e.target.value })
+                          }
+                          placeholder="Nom de jeune fille"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Rôle</Label>
+                        <Input
+                          value={newUser.role}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, role: e.target.value })
+                          }
+                          placeholder="Rôle de l'utilisateur"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Adresse</Label>
+                        <Input
+                          value={newUser.address}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, address: e.target.value })
+                          }
+                          placeholder="Adresse complète"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Wilaya</Label>
+                        <Input
+                          value={newUser.wilaya}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, wilaya: e.target.value })
+                          }
+                          placeholder="Wilaya"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Nationalité</Label>
+                        <Input
+                          value={newUser.nationality}
+                          onChange={(e) =>
+                            setNewUser({
+                              ...newUser,
+                              nationality: e.target.value,
+                            })
+                          }
+                          placeholder="Nationalité"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Date de naissance</Label>
+                        <Input
+                          type="date"
+                          value={newUser.birthDate}
+                          onChange={(e) =>
+                            setNewUser({
+                              ...newUser,
+                              birthDate: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Numéro de pièce d'identité</Label>
+                        <Input
+                          value={newUser.idNumber}
+                          onChange={(e) =>
+                            setNewUser({
+                              ...newUser,
+                              idNumber: e.target.value,
+                            })
+                          }
+                          placeholder="Numéro de pièce d'identité"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Type d'utilisateur</Label>
+                        <Select
+                          value={newUser.userType}
+                          onValueChange={(value) =>
+                            setNewUser({
+                              ...newUser,
+                              userType: value as
+                                | "proprietaire"
+                                | "mandataire"
+                                | "tuteur_legal",
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner le type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="proprietaire">
+                              Propriétaire
+                            </SelectItem>
+                            {form.getValues("clientType") !==
+                              "personne_physique" && (
+                              <SelectItem value="mandataire">
+                                Mandataire
+                              </SelectItem>
+                            )}
+                            {form.getValues("clientType") ===
+                              "personne_physique" && (
+                              <SelectItem value="tuteur_legal">
+                                Tuteur Légal
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label>Statut</Label>
+                          <div className="flex items-center space-x-2">
+                            <span
+                              className={
+                                newUser.status === "actif"
+                                  ? "text-green-600 font-medium"
+                                  : "text-red-500"
+                              }
+                            >
+                              {newUser.status === "actif" ? "Actif" : "Inactif"}
+                            </span>
+                            <Switch
+                              checked={newUser.status === "actif"}
+                              onCheckedChange={(checked) =>
+                                setNewUser({
+                                  ...newUser,
+                                  status: checked ? "actif" : "inactif",
+                                })
+                              }
+                              className={
+                                newUser.status === "actif"
+                                  ? "bg-green-500 data-[state=checked]:bg-green-500"
+                                  : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label>Mot de passe</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() =>
+                              setShowNewUserPassword(!showNewUserPassword)
+                            }
+                          >
+                            {showNewUserPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <Input
+                          type={showNewUserPassword ? "text" : "password"}
+                          value={newUser.password || ""}
+                          onChange={(e) =>
+                            setNewUser({ ...newUser, password: e.target.value })
+                          }
+                          placeholder="Mot de passe"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsAddingUser(false)}
+                      >
+                        Annuler
+                      </Button>
+                      <Button onClick={handleSaveUser}>
+                        {editingUserId ? "Enregistrer" : "Ajouter"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
 
@@ -1344,39 +1715,66 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
               </div>
             )}
 
-            <div className="flex justify-between p-6 border-t">
-              <div className="flex gap-4">
+            <div className="flex justify-between pt-8 mt-8 border-t">
+              <div>
                 {currentStep > 1 && (
-                  <Button variant="outline" onClick={prevStep}>
+                  <Button
+                    variant="outline"
+                    onClick={prevStep}
+                    disabled={isLoading}
+                  >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Retour
-                  </Button>
-                )}
-                {currentStep < 3 && (
-                  <Button onClick={nextStep}>
-                    Suivant
-                    <Play className="h-4 w-4 ml-2" />
+                    Précédent
                   </Button>
                 )}
               </div>
-
-              {currentStep === 3 && (
-                <div className="flex gap-4">
+              <div>
+                {currentStep < 3 ? (
+                  <Button onClick={nextStep} disabled={isLoading}>
+                    Suivant
+                    <Play className="h-4 w-4 ml-2" />
+                  </Button>
+                ) : (
                   <Button
-                    variant="outline"
-                    onClick={() => router.push("/clients")}
+                    onClick={form.handleSubmit(onSubmit)}
+                    disabled={isLoading}
                   >
-                    Annuler
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        Enregistrer
+                      </>
+                    )}
                   </Button>
-                  <Button onClick={form.handleSubmit(onSubmit)}>
-                    Enregistrer
-                  </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Status Toggle Confirmation Dialog */}
+      <Dialog open={statusConfirmDialog} onOpenChange={setStatusConfirmDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirmer le changement de statut</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir changer le statut de cet utilisateur ?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2 pt-5">
+            <Button variant="outline" onClick={cancelToggleStatus}>
+              Annuler
+            </Button>
+            <Button onClick={confirmToggleStatus}>Confirmer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </FormProvider>
   );
 }

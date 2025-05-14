@@ -1,15 +1,13 @@
-"use server";
-
 import auth from "@/auth";
 import { redirect } from "@/i18n/routing";
 import { getServerSession } from "next-auth";
-import { headers } from "next/headers";
 
 interface FetchGraphQLResponse<T> {
   data: T;
   errors?: { message: string }[];
 }
 
+// Server-side GraphQL fetcher (for server components)
 export async function fetchGraphQL<T>(
   query: string,
   variables: Record<string, any> = {},
@@ -17,19 +15,13 @@ export async function fetchGraphQL<T>(
   token?: string
 ): Promise<T> {
   const session = await getServerSession(auth);
-  const headersList = headers();
 
-  const ip =
-    headersList.get("x-forwarded-for") || // For reverse proxies like Vercel
-    headersList.get("x-real-ip") || // Nginx/other proxies
-    "IP not available";
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/graphql`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-forwarded-for": ip,
         Authorization: `Bearer ${session?.user.token}`,
         ...options?.headers,
       },
@@ -50,4 +42,39 @@ export async function fetchGraphQL<T>(
   }
 
   return result.data;
+}
+
+// Client-side GraphQL fetcher (for client components)
+export function clientFetchGraphQL<T>(
+  query: string,
+  variables: Record<string, any> = {},
+  options?: { headers?: Record<string, string> },
+  token?: string
+): Promise<T> {
+  // This doesn't use async/await syntax directly, making it safe for client components
+  return fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/graphql`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...options?.headers,
+    },
+    body: JSON.stringify({ query, variables }),
+  })
+    .then((response) => {
+      if (response.status === 429) {
+        window.location.href = "/RateLimiter";
+        throw new Error("Rate limit reached");
+      }
+      return response.json();
+    })
+    .then((result: FetchGraphQLResponse<T>) => {
+      if (result.errors) {
+        if (result.errors[0].message === "Token is revoked") {
+          window.location.href = "/TokenRevoked";
+          throw new Error("Token is revoked");
+        }
+        throw new Error("Failed to fetch data: " + result.errors[0].message);
+      }
+      return result.data;
+    });
 }

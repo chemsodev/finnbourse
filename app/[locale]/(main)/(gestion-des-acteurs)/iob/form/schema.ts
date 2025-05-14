@@ -16,11 +16,14 @@ export const iobFormSchema = z.object({
 // Schema for related users (Step 2)
 export const relatedUserSchema = z.object({
   id: z.string().optional(), // Only present when editing an existing user
-  fullName: z.string().min(1, "Full name is required"),
-  position: z.string().min(1, "Position in the company is required"),
-  role: z.string().min(1, "Role is required"),
-  status: z.string().min(1, "Status is required"),
+  fullName: z.string().min(2, { message: "Name is required" }),
+  position: z.string().min(2, { message: "Position is required" }),
+  matricule: z.string().optional(),
+  role: z.string().min(1, { message: "Role is required" }),
+  type: z.string().min(1, { message: "Type is required" }),
+  status: z.string().min(1, { message: "Status is required" }),
   organization: z.string().optional(),
+  password: z.string().optional(),
 });
 
 export const relatedUsersFormSchema = z.object({
@@ -37,3 +40,18 @@ export type IobFormValues = z.infer<typeof iobFormSchema>;
 export type RelatedUserFormValues = z.infer<typeof relatedUserSchema>;
 export type RelatedUsersFormValues = z.infer<typeof relatedUsersFormSchema>;
 export type CombinedFormValues = z.infer<typeof combinedFormSchema>;
+
+export interface RelatedUserFormValues {
+  fullName: string;
+  position: string;
+  matricule?: string;
+  role: string;
+  type: string;
+  status: string;
+  organization?: string;
+  password?: string;
+}
+
+export interface RelatedUsersFormValues {
+  users: RelatedUserFormValues[];
+}

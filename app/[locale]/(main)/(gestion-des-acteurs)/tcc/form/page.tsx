@@ -103,25 +103,31 @@ export default function FormPage({ params }: FormPageProps) {
               id: "1",
               fullName: "Sagi Salim",
               position: "DG",
-              role: "validator2",
-              status: "admin",
+              role: "validateur 2",
+              type: "admin",
+              status: "active",
               organization: "SLIK PIS",
+              password: "securepass1",
             },
             {
               id: "2",
               fullName: "Gadh Mohamed",
               position: "DFC",
-              role: "validator1",
-              status: "member",
+              role: "validateur 1",
+              type: "member",
+              status: "active",
               organization: "SLIK PIS",
+              password: "securepass2",
             },
             {
               id: "3",
               fullName: "Slmi Kadour",
               position: "Trader",
               role: "initiator",
-              status: "member",
+              type: "member",
+              status: "active",
               organization: "SLIK PIS",
+              password: "securepass3",
             },
           ],
         }));
@@ -229,4 +235,3 @@ export default function FormPage({ params }: FormPageProps) {
     </div>
   );
 }
-

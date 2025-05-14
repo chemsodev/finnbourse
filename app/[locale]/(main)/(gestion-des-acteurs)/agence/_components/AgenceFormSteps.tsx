@@ -65,16 +65,20 @@ export default function AgenceFormSteps({
             id: "1",
             fullName: "Sagi Salim",
             position: "DG",
+            matricule: "M001",
             role: "Validator 2",
-            status: "Admin",
+            type: "admin",
+            status: "valid",
             organization: "SLIK PIS",
           },
           {
             id: "2",
             fullName: "Gadh Mohamed",
             position: "DFC",
+            matricule: "M002",
             role: "Validator 1",
-            status: "Member",
+            type: "member",
+            status: "valid",
             organization: "SLIK PIS",
           },
         ]
@@ -441,7 +445,7 @@ export default function AgenceFormSteps({
             </Card>
           )}
 
-          <div className="flex justify-between">
+          <div className="flex justify-between pt-4">
             {step === 2 && (
               <Button
                 type="button"
@@ -451,9 +455,10 @@ export default function AgenceFormSteps({
                 {t("previous")}
               </Button>
             )}
-            {step === 1 && <Button type="submit">{t("next")}</Button>}
             {step === 1 && (
-              <div></div> // Empty div for flex spacing
+              <div className="ml-auto">
+                <Button type="submit">{t("next")}</Button>
+              </div>
             )}
             {step === 2 && (
               <Button type="submit">
@@ -466,4 +471,3 @@ export default function AgenceFormSteps({
     </div>
   );
 }
-

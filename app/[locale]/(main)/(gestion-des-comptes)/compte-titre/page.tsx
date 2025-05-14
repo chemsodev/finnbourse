@@ -7,6 +7,8 @@ import {
   Edit,
   MoreHorizontal,
   Trash2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,6 +86,7 @@ const mockComptesTitres = [
     codeAgence: "AG007",
     codeBanque: "BNK123",
     adresse: "123 Avenue de la République, Paris",
+    password: "StrongPassword1",
   },
   {
     id: "2",
@@ -98,6 +101,7 @@ const mockComptesTitres = [
     codeAgence: "AG012",
     codeBanque: "BNK456",
     adresse: "45 Rue du Commerce, Lyon",
+    password: "StrongPassword2",
   },
   {
     id: "3",
@@ -112,6 +116,7 @@ const mockComptesTitres = [
     codeAgence: "AG015",
     codeBanque: "BNK789",
     adresse: "78 Boulevard Haussmann, Paris",
+    password: "StrongPassword3",
   },
 ];
 
@@ -126,6 +131,7 @@ export default function CompteTitre() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [compteToDelete, setCompteToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const t = useTranslations("CompteTitre");
 
   // Filter comptes based on search term
@@ -207,7 +213,7 @@ export default function CompteTitre() {
                     <TableHead>{t("prenomAbrev")}</TableHead>
                     <TableHead>{t("dateOuverture")}</TableHead>
                     <TableHead>{t("dateMiseAJour")}</TableHead>
-                    <TableHead className="w-[80px]">{t("actions")}</TableHead>
+                    <TableHead className="text-right">{t("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -234,33 +240,26 @@ export default function CompteTitre() {
                             : "-"}
                         </TableCell>
                         <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">{t("openMenu")}</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>
-                                {t("actions")}
-                              </DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleEdit(compte)}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                {t("edit")}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(compte.id)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {t("delete")}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(compte)}
+                              className="h-10 w-10 text-amber-600"
+                            >
+                              <Edit className="h-5 w-5" />
+                              <span className="sr-only">{t("edit")}</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(compte.id)}
+                              className="h-10 w-10 text-red-600"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                              <span className="sr-only">{t("delete")}</span>
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -448,6 +447,35 @@ export default function CompteTitre() {
                   id="adresse"
                   placeholder={t("enterAdresse")}
                   defaultValue={currentCompte?.adresse}
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label htmlFor="password" className="text-sm font-medium">
+                    {t("password")}
+                  </label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? t("hidePassword") : t("showPassword")}
+                    </span>
+                  </Button>
+                </div>
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder={t("enterPassword")}
+                  defaultValue={currentCompte?.password}
                 />
               </div>
             </div>

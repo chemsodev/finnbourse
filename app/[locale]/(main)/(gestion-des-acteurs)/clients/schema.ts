@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Base schema for common fields
 const baseSchema = z.object({
+  clientCode: z.string().min(1, "Le code client est requis"),
   clientSource: z.enum(["CPA", "extern"]),
   email: z.string().email("Email invalide").optional().or(z.literal("")),
   phoneNumber: z.string().optional().or(z.literal("")),
@@ -95,6 +96,22 @@ const institutionFinanciereSchema = z
   })
   .extend(baseSchema.shape);
 
+// Schema for client user
+export const clientUserSchema = z.object({
+  id: z.string().optional(),
+  firstName: z.string().min(1, "Le prénom est requis"),
+  lastName: z.string().min(1, "Le nom est requis"),
+  role: z.string().optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
+  wilaya: z.string().optional().or(z.literal("")),
+  nationality: z.string().optional().or(z.literal("")),
+  birthDate: z.string().optional().or(z.literal("")),
+  idNumber: z.string().optional().or(z.literal("")),
+  userType: z.enum(["proprietaire", "mandataire", "tuteur_legal"]),
+  status: z.enum(["actif", "inactif"]),
+  password: z.string().optional().or(z.literal("")),
+});
+
 // Combined schema using discriminated union
 export const clientSchema = z.discriminatedUnion("clientType", [
   personnePhysiqueSchema,
@@ -108,7 +125,7 @@ export type ClientFormValues = z.infer<typeof clientSchema>;
 // Base interface for common fields
 export interface BaseClient {
   id: number;
-  status: "verified" | "pending";
+  status: "actif" | "inactif"; // Updated to match the new status requirements
   createdAt: Date;
   updatedAt: Date;
 }
@@ -130,6 +147,27 @@ export type Client =
   | PersonneMoraleClient
   | InstitutionFinanciereClient;
 
+// Interface for client user
+export interface ClientUser extends z.infer<typeof clientUserSchema> {
+  id: string;
+  clientId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Validation function to ensure user types match client types
+export const validateClientUserType = (
+  clientType: string,
+  userType: string
+): boolean => {
+  if (clientType === "personne_physique") {
+    return ["proprietaire", "tuteur_legal"].includes(userType);
+  } else {
+    // personne_morale or institution_financiere
+    return ["proprietaire", "mandataire"].includes(userType);
+  }
+};
+
 export const formSchema = z
   .object({
     clientType: z.enum([
@@ -137,6 +175,7 @@ export const formSchema = z
       "personne_morale",
       "institution_financiere",
     ]),
+    clientCode: z.string().min(1, "Le code client est requis"),
     clientSource: z.enum(["CPA", "extern"]),
     name: z.string().min(1, "Le nom est requis"),
     email: z.string().email("Email invalide").optional().or(z.literal("")),
