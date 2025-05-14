@@ -125,7 +125,9 @@ export const calculateGrossAmount = (price: number, quantity: number) => {
   return price * quantity;
 };
 
-export function calculateVariation(cours: any) {
+export function calculateVariation(
+  cours: Array<{ date: string; price: number | string }>
+) {
   if (!Array.isArray(cours) || cours.length < 2) {
     return "0.00%";
   }
@@ -150,7 +152,7 @@ export function calculateVariation(cours: any) {
 }
 export const handleNumberInput = (
   e: React.ChangeEvent<HTMLInputElement>,
-  field: any
+  field: { onChange: (value: number) => void }
 ) => {
   const value = e.target.value;
   const cleanedValue = value.replace(/^0+/, "") || "0";

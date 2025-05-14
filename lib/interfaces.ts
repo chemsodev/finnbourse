@@ -273,7 +273,7 @@ export interface Order {
   id: string;
   ordertypes: number[];
   orderdirection: number;
-  securityid: any;
+  securityid: string;
   securitytype: string;
   quantity: number;
   pricelimitmin: number;
@@ -281,8 +281,8 @@ export interface Order {
   duration: number;
   orderdate: string;
   orderstatus: number;
-  investorid: any;
-  negotiatorid: any;
+  investorid: string;
+  negotiatorid: string;
   securityissuer: string;
   payedWithCard?: boolean;
   signeddocumnet?: string;

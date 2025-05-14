@@ -62,13 +62,13 @@ export default function RelatedUsersTable({
   const [showEditPassword, setShowEditPassword] = useState(false);
 
   const [newUser, setNewUser] = useState<Omit<RelatedUser, "id">>({
-    fullname: "",
+    fullName: "",
     position: "",
     matricule: "",
     role: "initiator",
     type: "member",
     status: "active",
-    organisation: "",
+    organization: "",
     password: "",
     email: "",
     phone: "",
@@ -96,13 +96,13 @@ export default function RelatedUsersTable({
 
     // Reset the form
     setNewUser({
-      fullname: "",
+      fullName: "",
       position: "",
       matricule: "",
       role: "initiator",
       type: "member",
       status: "active", // Using the correct literal value
-      organisation: "",
+      organization: "",
       password: "",
       email: "",
       phone: "",
@@ -163,14 +163,14 @@ export default function RelatedUsersTable({
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label htmlFor="fullname" className="text-sm font-medium">
+                <label htmlFor="fullName" className="text-sm font-medium">
                   {t("fullName")}
                 </label>
                 <Input
-                  id="fullname"
-                  value={newUser.fullname}
+                  id="fullName"
+                  value={newUser.fullName}
                   onChange={(e) =>
-                    setNewUser({ ...newUser, fullname: e.target.value })
+                    setNewUser({ ...newUser, fullName: e.target.value })
                   }
                 />
               </div>
@@ -268,14 +268,14 @@ export default function RelatedUsersTable({
                 </Select>
               </div>
               <div className="space-y-2">
-                <label htmlFor="organisation" className="text-sm font-medium">
-                  {t("organisation")}
+                <label htmlFor="organization" className="text-sm font-medium">
+                  {t("organization")}
                 </label>
                 <Input
-                  id="organisation"
-                  value={newUser.organisation}
+                  id="organization"
+                  value={newUser.organization}
                   onChange={(e) =>
-                    setNewUser({ ...newUser, organisation: e.target.value })
+                    setNewUser({ ...newUser, organization: e.target.value })
                   }
                 />
               </div>
@@ -332,7 +332,7 @@ export default function RelatedUsersTable({
               <TableHead>{t("role")}</TableHead>
               <TableHead>{t("type")}</TableHead>
               <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("organisation")}</TableHead>
+              <TableHead>{t("organization")}</TableHead>
               <TableHead>{t("password")}</TableHead>
               <TableHead className="text-right">{t("actions")}</TableHead>
             </TableRow>
@@ -350,7 +350,7 @@ export default function RelatedUsersTable({
             ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.fullname}</TableCell>
+                  <TableCell>{user.fullName}</TableCell>
                   <TableCell>{user.position}</TableCell>
                   <TableCell>{user.matricule}</TableCell>
                   <TableCell>{user.role}</TableCell>
@@ -366,7 +366,7 @@ export default function RelatedUsersTable({
                       {user.status === "active" ? t("active") : t("inactive")}
                     </div>
                   </TableCell>
-                  <TableCell>{user.organisation}</TableCell>
+                  <TableCell>{user.organization}</TableCell>
                   <TableCell className="relative">
                     <div className="flex items-center">
                       <span>
@@ -429,14 +429,14 @@ export default function RelatedUsersTable({
           {editUser && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label htmlFor="edit-fullname" className="text-sm font-medium">
+                <label htmlFor="edit-fullName" className="text-sm font-medium">
                   {t("fullName")}
                 </label>
                 <Input
-                  id="edit-fullname"
-                  value={editUser.fullname}
+                  id="edit-fullName"
+                  value={editUser.fullName}
                   onChange={(e) =>
-                    setEditUser({ ...editUser, fullname: e.target.value })
+                    setEditUser({ ...editUser, fullName: e.target.value })
                   }
                 />
               </div>
@@ -535,16 +535,16 @@ export default function RelatedUsersTable({
               </div>
               <div className="space-y-2">
                 <label
-                  htmlFor="edit-organisation"
+                  htmlFor="edit-organization"
                   className="text-sm font-medium"
                 >
-                  {t("organisation")}
+                  {t("organization")}
                 </label>
                 <Input
-                  id="edit-organisation"
-                  value={editUser.organisation}
+                  id="edit-organization"
+                  value={editUser.organization}
                   onChange={(e) =>
-                    setEditUser({ ...editUser, organisation: e.target.value })
+                    setEditUser({ ...editUser, organization: e.target.value })
                   }
                 />
               </div>
@@ -604,7 +604,7 @@ export default function RelatedUsersTable({
             <AlertDialogTitle>{t("confirmDeletion")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t("deleteUserConfirmation", {
-                name: selectedUser?.fullname || "",
+                name: selectedUser?.fullName || "",
               })}
             </AlertDialogDescription>
           </AlertDialogHeader>

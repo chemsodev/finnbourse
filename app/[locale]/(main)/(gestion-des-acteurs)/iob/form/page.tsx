@@ -71,7 +71,7 @@ export default function FormPage({ params }: FormPageProps) {
             matricule: "M001",
             role: "validator2",
             type: "admin",
-            status: "valid",
+            status: "active",
             organization: "SGA",
           },
           {
@@ -81,7 +81,7 @@ export default function FormPage({ params }: FormPageProps) {
             matricule: "M002",
             role: "validator1",
             type: "member",
-            status: "valid",
+            status: "active",
             organization: "SGA",
           },
         ],

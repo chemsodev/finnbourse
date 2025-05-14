@@ -97,10 +97,7 @@ export const FileUploader = forwardRef<
 
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!value) return;
+        if (value === null) return;
 
         const moveNext = () => {
           const nextIndex = activeIndex + 1;
@@ -112,30 +109,14 @@ export const FileUploader = forwardRef<
           setActiveIndex(nextIndex < 0 ? value.length - 1 : nextIndex);
         };
 
-        const prevKey =
-          orientation === "horizontal"
-            ? direction === "ltr"
-              ? "ArrowLeft"
-              : "ArrowRight"
-            : "ArrowUp";
-
-        const nextKey =
-          orientation === "horizontal"
-            ? direction === "ltr"
-              ? "ArrowRight"
-              : "ArrowLeft"
-            : "ArrowDown";
-
-        if (e.key === nextKey) {
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+          e.preventDefault();
           moveNext();
-        } else if (e.key === prevKey) {
+        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+          e.preventDefault();
           movePrev();
-        } else if (e.key === "Enter" || e.key === "Space") {
-          if (activeIndex === -1) {
-            dropzoneState.inputRef.current?.click();
-          }
         } else if (e.key === "Delete" || e.key === "Backspace") {
-          if (activeIndex !== -1) {
+          if (activeIndex >= 0) {
             removeFileFromSet(activeIndex);
             if (value.length - 1 === 0) {
               setActiveIndex(-1);
@@ -147,7 +128,7 @@ export const FileUploader = forwardRef<
           setActiveIndex(-1);
         }
       },
-      [value, activeIndex, removeFileFromSet]
+      [value, activeIndex, removeFileFromSet, setActiveIndex]
     );
 
     const onDrop = useCallback(
@@ -188,7 +169,7 @@ export const FileUploader = forwardRef<
           }
         }
       },
-      [reSelectAll, value]
+      [reSelectAll, value, onValueChange, maxFiles, maxSize]
     );
 
     useEffect(() => {
