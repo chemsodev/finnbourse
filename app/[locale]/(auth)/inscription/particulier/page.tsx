@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import React from "react";
 
-const page = () => {
+const Page = () => {
   const t = useTranslations("Inscription");
   return (
     <>
@@ -30,4 +30,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
