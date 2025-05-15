@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
 import { type RelatedUser } from "./types";
 
 interface RelatedUsersTableProps {
@@ -60,6 +61,10 @@ export default function RelatedUsersTable({
   }>({});
   const [showAddPassword, setShowAddPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
+    null
+  );
+  const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
 
   const [newUser, setNewUser] = useState<Omit<RelatedUser, "id">>({
     fullName: "",
@@ -147,6 +152,39 @@ export default function RelatedUsersTable({
     setSelectedUser(null);
   };
 
+  // Handle status toggle
+  const handleToggleStatus = (userId: string) => {
+    setUserToToggleStatus(userId);
+    setStatusConfirmDialog(true);
+  };
+
+  // Confirm status toggle
+  const confirmToggleStatus = () => {
+    if (!userToToggleStatus) return;
+
+    const updatedUsers = users.map((user) =>
+      user.id === userToToggleStatus
+        ? {
+            ...user,
+            status:
+              user.status === "active"
+                ? "inactive"
+                : ("active" as "active" | "inactive"),
+          }
+        : user
+    );
+
+    onUsersChange(updatedUsers);
+    setStatusConfirmDialog(false);
+    setUserToToggleStatus(null);
+  };
+
+  // Cancel status toggle
+  const cancelToggleStatus = () => {
+    setStatusConfirmDialog(false);
+    setUserToToggleStatus(null);
+  };
+
   return (
     <div>
       <div className="flex justify-end mb-4">
@@ -157,7 +195,7 @@ export default function RelatedUsersTable({
               {t("addUser")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{t("addNewUser")}</DialogTitle>
             </DialogHeader>
@@ -280,6 +318,33 @@ export default function RelatedUsersTable({
                 />
               </div>
               <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  {t("email")}
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newUser.email || ""}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, email: e.target.value })
+                  }
+                  placeholder={t("enterEmail")}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="phone" className="text-sm font-medium">
+                  {t("phone")}
+                </label>
+                <Input
+                  id="phone"
+                  value={newUser.phone || ""}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, phone: e.target.value })
+                  }
+                  placeholder={t("enterPhone")}
+                />
+              </div>
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <label htmlFor="password" className="text-sm font-medium">
                     {t("password")}
@@ -322,96 +387,120 @@ export default function RelatedUsersTable({
         </Dialog>
       </div>
 
-      <div className="border rounded-md">
+      <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("fullName")}</TableHead>
-              <TableHead>{t("position")}</TableHead>
-              <TableHead>{t("matricule")}</TableHead>
-              <TableHead>{t("role")}</TableHead>
-              <TableHead>{t("type")}</TableHead>
-              <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("organization")}</TableHead>
-              <TableHead>{t("password")}</TableHead>
-              <TableHead className="text-right">{t("actions")}</TableHead>
+              <TableHead className="whitespace-nowrap">
+                {t("fullName")}
+              </TableHead>
+              <TableHead className="whitespace-nowrap">
+                {t("position")}
+              </TableHead>
+              <TableHead className="whitespace-nowrap">
+                {t("matricule")}
+              </TableHead>
+              <TableHead className="whitespace-nowrap">{t("role")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("type")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("status")}</TableHead>
+              <TableHead className="whitespace-nowrap">
+                {t("organization")}
+              </TableHead>
+              <TableHead className="whitespace-nowrap">{t("email")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("phone")}</TableHead>
+              <TableHead className="whitespace-nowrap">
+                {t("actions")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
-                  className="text-center text-muted-foreground"
+                  colSpan={10}
+                  className="text-center py-4 text-muted-foreground"
                 >
-                  {t("noUsers")}
+                  {t("noUsersYet")}
                 </TableCell>
               </TableRow>
             ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.fullName}</TableCell>
-                  <TableCell>{user.position}</TableCell>
-                  <TableCell>{user.matricule}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.type}</TableCell>
-                  <TableCell>
-                    <div
-                      className={`px-2 py-1 rounded-full text-center text-xs ${
-                        user.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {user.status === "active" ? t("active") : t("inactive")}
+                  <TableCell className="whitespace-nowrap">
+                    {user.fullName}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {user.position}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {user.matricule}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {user.role === "validator 2"
+                      ? t("validator2")
+                      : user.role === "validator 1"
+                      ? t("validator1")
+                      : user.role === "initiator"
+                      ? t("initiator")
+                      : user.role === "consultation"
+                      ? t("consultation")
+                      : t("member")}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {user.type === "admin" ? t("admin") : t("member")}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={user.status === "active"}
+                        onCheckedChange={() => handleToggleStatus(user.id)}
+                        className={
+                          user.status === "active"
+                            ? "bg-green-500 data-[state=checked]:bg-green-500"
+                            : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                        }
+                      />
+                      <span
+                        className={
+                          user.status === "active"
+                            ? "text-green-600 text-sm font-medium"
+                            : "text-red-600 text-sm"
+                        }
+                      >
+                        {user.status === "active" ? t("active") : t("inactive")}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell>{user.organization}</TableCell>
-                  <TableCell className="relative">
-                    <div className="flex items-center">
-                      <span>
-                        {passwordVisibility[user.id]
-                          ? user.password || "Not set"
-                          : "••••••••••"}
-                      </span>
+                  <TableCell className="whitespace-nowrap">
+                    {user.organization}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {user.email || "-"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {user.phone || "-"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <div className="flex items-center space-x-2 justify-center">
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 ml-2"
-                        onClick={() => togglePasswordVisibility(user.id)}
+                        size="sm"
+                        className="h-8 w-8 text-amber-600"
+                        onClick={() => handleEditClick(user)}
                       >
-                        {passwordVisibility[user.id] ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">
-                          {passwordVisibility[user.id]
-                            ? t("hidePassword")
-                            : t("showPassword")}
-                        </span>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">{t("edit")}</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 text-red-600"
+                        onClick={() => handleDeleteClick(user)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">{t("delete")}</span>
                       </Button>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-amber-600"
-                      onClick={() => handleEditClick(user)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                      <span className="sr-only">{t("edit")}</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-600 ml-2"
-                      onClick={() => handleDeleteClick(user)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">{t("delete")}</span>
-                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -422,7 +511,7 @@ export default function RelatedUsersTable({
 
       {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("editUser")}</DialogTitle>
           </DialogHeader>
@@ -549,6 +638,33 @@ export default function RelatedUsersTable({
                 />
               </div>
               <div className="space-y-2">
+                <label htmlFor="edit-email" className="text-sm font-medium">
+                  {t("email")}
+                </label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editUser.email || ""}
+                  onChange={(e) =>
+                    setEditUser({ ...editUser, email: e.target.value })
+                  }
+                  placeholder={t("enterEmail")}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="edit-phone" className="text-sm font-medium">
+                  {t("phone")}
+                </label>
+                <Input
+                  id="edit-phone"
+                  value={editUser.phone || ""}
+                  onChange={(e) =>
+                    setEditUser({ ...editUser, phone: e.target.value })
+                  }
+                  placeholder={t("enterPhone")}
+                />
+              </div>
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <label
                     htmlFor="edit-password"
@@ -601,11 +717,9 @@ export default function RelatedUsersTable({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("confirmDeletion")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmDelete")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("deleteUserConfirmation", {
-                name: selectedUser?.fullName || "",
-              })}
+              {t("deleteUserConfirmation", { user: selectedUser?.fullName })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -615,6 +729,29 @@ export default function RelatedUsersTable({
               className="bg-red-600 hover:bg-red-700"
             >
               {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Status Change Confirmation Dialog */}
+      <AlertDialog
+        open={statusConfirmDialog}
+        onOpenChange={setStatusConfirmDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Modifier le statut</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir changer le statut de cet utilisateur ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelToggleStatus}>
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmToggleStatus}>
+              Confirmer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

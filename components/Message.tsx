@@ -28,7 +28,7 @@ import { PiChatsCircle } from "react-icons/pi";
 import { Button } from "./ui/button";
 import { CheckIcon, Loader2, SendHorizontal, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { DELETE_QUESTION, UPDATE_SUPPORT_MESSAGE } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
@@ -36,6 +36,15 @@ import { useRouter } from "@/i18n/routing";
 import { FIND_UNIQUE_USER } from "@/graphql/queries";
 import { User } from "@/lib/interfaces";
 import RateLimitReached from "./RateLimitReached";
+import { useSession } from "next-auth/react";
+
+interface CustomUser {
+  id?: string;
+  token?: string;
+  roleid?: number;
+  refreshToken?: string;
+}
+
 interface MessageProps {
   question: string;
   answer: string;
@@ -63,6 +72,9 @@ const Message = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
+  const session = useSession();
+  const currentUser = session?.data?.user as CustomUser;
+  const accessToken = currentUser?.token || "";
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -70,25 +82,36 @@ const Message = ({
   useEffect(() => {
     if (open) {
       const fetchUser = async () => {
-        const response = await fetchGraphQL<{ findUniqueUser: User }>(
-          FIND_UNIQUE_USER,
-          {
-            userid,
-          }
-        );
+        try {
+          const response = await clientFetchGraphQL<{ findUniqueUser: User }>(
+            FIND_UNIQUE_USER,
+            {
+              userid,
+            },
+            {},
+            accessToken
+          );
 
-        setUser(response.findUniqueUser);
+          setUser(response.findUniqueUser);
+        } catch (error) {
+          console.error("Error fetching user:", error);
+        }
       };
       fetchUser();
     }
-  }, [userid, open]);
+  }, [userid, open, accessToken]);
 
   async function onDelete() {
     setIsSubmitting(true);
     try {
-      await fetchGraphQL<String>(DELETE_QUESTION, {
-        id: id,
-      });
+      await clientFetchGraphQL<String>(
+        DELETE_QUESTION,
+        {
+          id: id,
+        },
+        {},
+        accessToken
+      );
 
       toast({
         variant: "success",
@@ -113,11 +136,16 @@ const Message = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await fetchGraphQL<String>(UPDATE_SUPPORT_MESSAGE, {
-        id,
-        answer: values.reponseProbleme,
-        state: 1,
-      });
+      await clientFetchGraphQL<String>(
+        UPDATE_SUPPORT_MESSAGE,
+        {
+          id,
+          answer: values.reponseProbleme,
+          state: 1,
+        },
+        {},
+        accessToken
+      );
       toast({
         variant: "success",
         title: t("success"),
@@ -166,41 +194,45 @@ const Message = ({
             </DialogTitle>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
-                <DialogDescription className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex justify-between">
                     <div className="flex flex-col gap-4">
                       <div className="flex gap-4 items-baseline">
-                        <div className="text-gray-400">{t("telephone")} :</div>
-                        <div className=" text-black font-semibold">
+                        <span className="text-gray-400">
+                          {t("telephone")} :
+                        </span>
+                        <span className="text-black font-semibold">
                           {user?.phonenumber}
-                        </div>
+                        </span>
                       </div>
                     </div>
                     <div className="flex flex-col gap-4">
                       <div className="flex gap-4 items-baseline">
-                        <div className="text-gray-400">{t("email")} :</div>
-                        <div className="text-black font-semibold">
+                        <span className="text-gray-400">{t("email")} :</span>
+                        <span className="text-black font-semibold">
                           {user?.email}
-                        </div>
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-4 ">
+                  <div className="flex flex-col gap-4">
                     <div className="flex gap-4 items-baseline">
-                      <div className="text-gray-400 flex-shrink-0">
+                      <span className="text-gray-400 flex-shrink-0">
                         {t("probleme")} :
-                      </div>
-                      <div className="text-black font-semibold">{question}</div>
+                      </span>
+                      <span className="text-black font-semibold">
+                        {question}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-4 ">
+                  <div className="flex flex-col gap-4">
                     <div className="flex gap-4 items-baseline">
-                      <div className="text-gray-400 flex-shrink-0">
+                      <span className="text-gray-400 flex-shrink-0">
                         {t("description")} :
-                      </div>
-                      <div className="text-black font-semibold">
+                      </span>
+                      <span className="text-black font-semibold">
                         {description}
-                      </div>
+                      </span>
                     </div>
                   </div>
 
@@ -228,13 +260,13 @@ const Message = ({
                   )}
                   {state === true && (
                     <div className="flex flex-col gap-4 mb-4">
-                      <div className="text-gray-400 flex-shrink-0">
+                      <span className="text-gray-400 flex-shrink-0">
                         {t("reponse")} :
-                      </div>
-                      <div className="text-black font-semibold">{answer}</div>
+                      </span>
+                      <span className="text-black font-semibold">{answer}</span>
                     </div>
                   )}
-                </DialogDescription>
+                </div>
                 {!state && (
                   <DialogFooter className="mt-8">
                     <Button

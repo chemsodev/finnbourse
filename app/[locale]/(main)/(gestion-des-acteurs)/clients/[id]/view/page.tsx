@@ -13,6 +13,8 @@ import {
   Download,
   Loader2,
   ArrowLeft,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   getClientById,
@@ -34,6 +36,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+export interface ExtendedClientUser extends ClientUser {
+  email?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export default function ViewClientPage() {
   const router = useRouter();
@@ -41,9 +55,16 @@ export default function ViewClientPage() {
   const params = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [client, setClient] = useState<Client | null>(null);
-  const [users, setUsers] = useState<ClientUser[]>([]);
+  const [users, setUsers] = useState<ExtendedClientUser[]>([]);
   const [documents, setDocuments] = useState<ClientDocument[]>([]);
-  const [downloadingDocId, setDownloadingDocId] = useState<number | null>(null);
+  const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
+  const [passwordVisibility, setPasswordVisibility] = useState<
+    Record<string, boolean>
+  >({});
+  const [viewUserDialog, setViewUserDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<ExtendedClientUser | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -86,7 +107,7 @@ export default function ViewClientPage() {
     if (typeof window === "undefined") return;
 
     try {
-      setDownloadingDocId(document.documentId);
+      setDownloadingDocId(document.documentId.toString());
       if (!document.file) {
         throw new Error("No file data available");
       }
@@ -111,6 +132,20 @@ export default function ViewClientPage() {
     } finally {
       setDownloadingDocId(null);
     }
+  };
+
+  // Toggle password visibility for a user
+  const togglePasswordVisibility = (userId: string) => {
+    setPasswordVisibility((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
+
+  // Handle view user details
+  const handleViewUser = (user: ExtendedClientUser) => {
+    setSelectedUser(user);
+    setViewUserDialog(true);
   };
 
   if (isLoading) return <Loading className="min-h-[400px]" />;
@@ -158,92 +193,283 @@ export default function ViewClientPage() {
               <CardTitle>Informations du Client</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-6">
+                {/* Information principale */}
                 <div>
-                  <p className="font-semibold">Code Client</p>
-                  <p className="font-medium text-primary">
-                    {client.clientCode || "Non défini"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold">Nom</p>
-                  <p>
-                    {client.clientType === "personne_physique"
-                      ? client.name
-                      : client.raisonSociale}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold">Type de Client</p>
-                  <p>
-                    {client.clientType === "personne_physique"
-                      ? "Personne Physique"
-                      : "Personne Morale"}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold">Wilaya</p>
-                  <p>{client.wilaya}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Source du Client</p>
-                  <p>{client.clientSource === "extern" ? "Externe" : "CPA"}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Statut</p>
-                  <p>{client.status}</p>
-                </div>
-                {client.clientType === "personne_physique" ? (
-                  <>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Informations Principales
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-sm font-medium">
-                        Type de pièce d'identité
-                      </p>
-                      <p className="text-sm text-gray-500">{client.idType}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Numéro de pièce d'identité
-                      </p>
-                      <p className="text-sm text-gray-500">{client.idNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">NIN</p>
-                      <p className="text-sm text-gray-500">{client.nin}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Nationalité</p>
-                      <p className="text-sm text-gray-500">
-                        {client.nationalite}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <p className="text-sm font-medium">Raison sociale</p>
-                      <p className="text-sm text-gray-500">
-                        {client.raisonSociale}
+                      <p className="font-semibold">Code Client</p>
+                      <p className="font-medium text-primary">
+                        {client.clientCode || "Non défini"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">NIF</p>
-                      <p className="text-sm text-gray-500">{client.nif}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Numéro RC</p>
-                      <p className="text-sm text-gray-500">
-                        {client.regNumber}
+                      <p className="font-semibold">Nom</p>
+                      <p>
+                        {client.clientType === "personne_physique"
+                          ? client.name
+                          : client.raisonSociale}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Forme juridique</p>
-                      <p className="text-sm text-gray-500">
-                        {client.legalForm}
+                      <p className="font-semibold">Type de Client</p>
+                      <p>
+                        {client.clientType === "personne_physique"
+                          ? "Personne Physique"
+                          : client.clientType === "personne_morale"
+                          ? "Personne Morale"
+                          : "Institution Financière"}
                       </p>
                     </div>
-                  </>
+                    <div>
+                      <p className="font-semibold">Email</p>
+                      <p>{client.email || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Téléphone</p>
+                      <p>{client.phoneNumber || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Mobile</p>
+                      <p>{client.mobilePhone || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Adresse</p>
+                      <p>{client.address || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Wilaya</p>
+                      <p>{client.wilaya || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Source du Client</p>
+                      <p>
+                        {client.clientSource === "extern" ? "Externe" : "CPA"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Statut</p>
+                      <p>
+                        <Badge
+                          variant={
+                            client.status === "actif"
+                              ? "outline"
+                              : "destructive"
+                          }
+                          className={
+                            client.status === "actif"
+                              ? "bg-green-100 text-green-800"
+                              : ""
+                          }
+                        >
+                          {client.status === "actif" ? "Actif" : "Inactif"}
+                        </Badge>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Date de création</p>
+                      <p>
+                        {client.createdAt
+                          ? new Date(client.createdAt).toLocaleDateString()
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Dernière mise à jour</p>
+                      <p>
+                        {client.updatedAt
+                          ? new Date(client.updatedAt).toLocaleDateString()
+                          : "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Spécifique à la personne physique */}
+                {client.clientType === "personne_physique" && (
+                  <div>
+                    <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                      Informations Personne Physique
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="font-semibold">
+                          Type de pièce d'identité
+                        </p>
+                        <p>
+                          {client.idType === "passport"
+                            ? "Passeport"
+                            : client.idType === "permit_conduite"
+                            ? "Permis de conduire"
+                            : "NIN"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">
+                          Numéro de pièce d'identité
+                        </p>
+                        <p>{client.idNumber || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">NIN</p>
+                        <p>{client.nin || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Nationalité</p>
+                        <p>{client.nationalite || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Date de naissance</p>
+                        <p>
+                          {client.dateNaissance
+                            ? new Date(
+                                client.dateNaissance
+                              ).toLocaleDateString()
+                            : "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Lieu de naissance</p>
+                        <p>{client.lieuNaissance || "-"}</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
+
+                {/* Spécifique à la personne morale ou institution financière */}
+                {(client.clientType === "personne_morale" ||
+                  client.clientType === "institution_financiere") && (
+                  <div>
+                    <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                      Informations{" "}
+                      {client.clientType === "personne_morale"
+                        ? "Personne Morale"
+                        : "Institution Financière"}
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="font-semibold">Raison sociale</p>
+                        <p>{client.raisonSociale || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">NIF</p>
+                        <p>{client.nif || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Numéro RC</p>
+                        <p>{client.regNumber || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Forme juridique</p>
+                        <p>{client.legalForm || "-"}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Informations bancaires */}
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Informations Bancaires
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="font-semibold">Compte Titre</p>
+                      <p>{client.hasCompteTitre ? "Oui" : "Non"}</p>
+                    </div>
+                    {client.hasCompteTitre && (
+                      <div>
+                        <p className="font-semibold">Numéro de Compte Titre</p>
+                        <p>{client.numeroCompteTitre || "-"}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold">RIB Complet</p>
+                      <p>
+                        {client.ribBanque &&
+                        client.ribAgence &&
+                        client.ribCompte &&
+                        client.ribCle
+                          ? `${client.ribBanque} ${client.ribAgence} ${client.ribCompte} ${client.ribCle}`
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Code Banque</p>
+                      <p>{client.ribBanque || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Code Agence</p>
+                      <p>{client.ribAgence || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Numéro de Compte</p>
+                      <p>{client.ribCompte || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Clé RIB</p>
+                      <p>{client.ribCle || "-"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Informations CPA */}
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Informations CPA
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="font-semibold">Employé CPA</p>
+                      <p>{client.isEmployeeCPA ? "Oui" : "Non"}</p>
+                    </div>
+                    {client.isEmployeeCPA && (
+                      <>
+                        <div>
+                          <p className="font-semibold">Matricule</p>
+                          <p>{client.matricule || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold">Poste</p>
+                          <p>{client.poste || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold">Agence CPA</p>
+                          <p>{client.agenceCPA || "-"}</p>
+                        </div>
+                      </>
+                    )}
+                    <div>
+                      <p className="font-semibold">Agence Sélectionnée</p>
+                      <p>{client.selectedAgence || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Type IOB</p>
+                      <p>
+                        {client.iobType === "intern" ? "Interne" : "Externe"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Catégorie IOB</p>
+                      <p>{client.iobCategory || "-"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Observations */}
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Observations
+                  </h3>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <p className="whitespace-pre-wrap">
+                      {client.observation || "Aucune observation"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -259,22 +485,19 @@ export default function ViewClientPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nom/Prénom</TableHead>
-                    <TableHead>Nom de jeune fille</TableHead>
-                    <TableHead>Rôle</TableHead>
-                    <TableHead>Adresse</TableHead>
-                    <TableHead>Wilaya</TableHead>
-                    <TableHead>Nationalité</TableHead>
-                    <TableHead>Date de naissance</TableHead>
-                    <TableHead>Numéro de pièce d'identité</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Mot de passe</TableHead>
                     <TableHead>Type d'utilisateur</TableHead>
+                    <TableHead>Rôle</TableHead>
                     <TableHead>Statut</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={10}
+                        colSpan={7}
                         className="text-center py-4 text-muted-foreground"
                       >
                         Aucun utilisateur associé
@@ -283,14 +506,33 @@ export default function ViewClientPage() {
                   ) : (
                     users.map((user, index) => (
                       <TableRow key={index}>
-                        <TableCell>{user.firstName}</TableCell>
-                        <TableCell>{user.lastName}</TableCell>
-                        <TableCell>{user.role}</TableCell>
-                        <TableCell>{user.address}</TableCell>
-                        <TableCell>{user.wilaya}</TableCell>
-                        <TableCell>{user.nationality}</TableCell>
-                        <TableCell>{user.birthDate}</TableCell>
-                        <TableCell>{user.idNumber}</TableCell>
+                        <TableCell>
+                          {user.firstName} {user.lastName}
+                        </TableCell>
+                        <TableCell className="max-w-[150px] truncate">
+                          {user.email || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <span className="truncate max-w-[80px]">
+                              {passwordVisibility[user.id]
+                                ? user.password
+                                : "••••••••••"}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 ml-1 p-0"
+                              onClick={() => togglePasswordVisibility(user.id)}
+                            >
+                              {passwordVisibility[user.id] ? (
+                                <EyeOff className="h-3.5 w-3.5" />
+                              ) : (
+                                <Eye className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          </div>
+                        </TableCell>
                         <TableCell>
                           {user.userType === "proprietaire"
                             ? "Propriétaire"
@@ -300,6 +542,7 @@ export default function ViewClientPage() {
                             ? "Tuteur Légal"
                             : "-"}
                         </TableCell>
+                        <TableCell>{user.role || "-"}</TableCell>
                         <TableCell>
                           <Badge
                             variant={
@@ -315,6 +558,16 @@ export default function ViewClientPage() {
                           >
                             {user.status === "actif" ? "Actif" : "Inactif"}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewUser(user)}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -375,6 +628,184 @@ export default function ViewClientPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* User Details Dialog */}
+      <Dialog open={viewUserDialog} onOpenChange={setViewUserDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Détails de l'utilisateur</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-6">
+              {/* Informations de base */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Informations Principales
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Nom/Prénom
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.firstName} {selectedUser.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-base">{selectedUser.email || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Mot de passe
+                    </p>
+                    <div className="flex items-center">
+                      <p className="text-base">
+                        {passwordVisibility[`details-${selectedUser.id}`]
+                          ? selectedUser.password
+                          : "••••••••••"}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 ml-1 p-0"
+                        onClick={() => {
+                          setPasswordVisibility((prev) => ({
+                            ...prev,
+                            [`details-${selectedUser.id}`]:
+                              !prev[`details-${selectedUser.id}`],
+                          }));
+                        }}
+                      >
+                        {passwordVisibility[`details-${selectedUser.id}`] ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Type d'utilisateur
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.userType === "proprietaire"
+                        ? "Propriétaire"
+                        : selectedUser.userType === "mandataire"
+                        ? "Mandataire"
+                        : selectedUser.userType === "tuteur_legal"
+                        ? "Tuteur Légal"
+                        : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Rôle</p>
+                    <p className="text-base">{selectedUser.role || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Statut</p>
+                    <p className="text-base">
+                      <Badge
+                        variant={
+                          selectedUser.status === "actif"
+                            ? "outline"
+                            : "destructive"
+                        }
+                        className={
+                          selectedUser.status === "actif"
+                            ? "bg-green-100 text-green-800"
+                            : ""
+                        }
+                      >
+                        {selectedUser.status === "actif" ? "Actif" : "Inactif"}
+                      </Badge>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations personnelles */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Informations Personnelles
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Nationalité
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.nationality || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Date de naissance
+                    </p>
+                    <p className="text-base">{selectedUser.birthDate || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Adresse</p>
+                    <p className="text-base">{selectedUser.address || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Wilaya</p>
+                    <p className="text-base">{selectedUser.wilaya || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Numéro de pièce d'identité
+                    </p>
+                    <p className="text-base">{selectedUser.idNumber || "-"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations relatives au client */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Client Associé
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Client ID
+                    </p>
+                    <p className="text-base">{selectedUser.clientId || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Créé le</p>
+                    <p className="text-base">
+                      {selectedUser.createdAt
+                        ? selectedUser.createdAt instanceof Date
+                          ? selectedUser.createdAt.toLocaleDateString()
+                          : new Date(
+                              selectedUser.createdAt as any
+                            ).toLocaleDateString()
+                        : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Mis à jour le
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.updatedAt
+                        ? selectedUser.updatedAt instanceof Date
+                          ? selectedUser.updatedAt.toLocaleDateString()
+                          : new Date(
+                              selectedUser.updatedAt as any
+                            ).toLocaleDateString()
+                        : "-"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

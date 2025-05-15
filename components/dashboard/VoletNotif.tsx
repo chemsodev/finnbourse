@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import useSocket from "../../hooks/useWebSocket";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { GET_NOTIFICATIONS_QUERY } from "@/graphql/queries";
 import { Bell, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
@@ -47,12 +47,16 @@ const VoletNotif = () => {
   const fetchNotifs = async () => {
     setLoading(true);
     try {
-      const notifications = await fetchGraphQL<GetNotifsResponse>(
+      const accessToken = session?.data?.user?.token || "";
+
+      const notifications = await clientFetchGraphQL<GetNotifsResponse>(
         GET_NOTIFICATIONS_QUERY,
         {
           skip,
           take,
-        }
+        },
+        {},
+        accessToken
       );
       setNotifications(notifications.listNotifications);
     } catch (error) {
@@ -151,10 +155,17 @@ const VoletNotif = () => {
   async function editReadStatus(notificationid: string) {
     try {
       setSubmitting(true);
-      await fetchGraphQL<String>(UPDATE_NOTIFICATION_STATUS, {
-        notifid: notificationid,
-        readstatus: true,
-      });
+      const accessToken = session?.data?.user?.token || "";
+
+      await clientFetchGraphQL<String>(
+        UPDATE_NOTIFICATION_STATUS,
+        {
+          notifid: notificationid,
+          readstatus: true,
+        },
+        {},
+        accessToken
+      );
     } catch (error) {
       console.error("Form submission error", error);
     } finally {

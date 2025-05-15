@@ -7,7 +7,7 @@ import { TbMessages } from "react-icons/tb";
 import { useTranslations } from "next-intl";
 import OrderCounter from "./gestion-des-ordres/OrderCounter";
 import { useSession } from "next-auth/react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 import {
   COUNT_UNOPENED_MESSAGES_QUERY,
   COUNT_VALIDATED_ORDERS_QUERY,
@@ -15,12 +15,24 @@ import {
 import { startOfWeek, endOfWeek } from "date-fns";
 import RateLimitReached from "./RateLimitReached";
 
+// Define proper session user type
+interface CustomUser {
+  id?: string;
+  token?: string;
+  roleid?: number;
+  name?: string;
+  email?: string;
+}
+
 const NegotiatiorStats = () => {
   const t = useTranslations("NegotiatiorStats");
   const session = useSession();
-  const userId = session?.data?.user?.id;
+  // Use type assertion to access custom fields
+  const user = session?.data?.user as CustomUser;
+  const userId = user?.id;
+  const accessToken = user?.token || "";
   const [nbMessages, setNbMessages] = useState(0);
-  const userRole = session?.data?.user?.roleid || "";
+  const userRole = user?.roleid || "";
   const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const currentWeekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
   const variables =
@@ -38,9 +50,14 @@ const NegotiatiorStats = () => {
 
   const countValidatedOrders = async () => {
     try {
-      const response = await fetchGraphQL<any>(COUNT_VALIDATED_ORDERS_QUERY, {
-        variables,
-      });
+      const response = await clientFetchGraphQL<any>(
+        COUNT_VALIDATED_ORDERS_QUERY,
+        {
+          variables,
+        },
+        {},
+        accessToken
+      );
 
       setValidatedOrderCounter(response.aggregateOrder._count._all);
     } catch (error) {
@@ -50,9 +67,15 @@ const NegotiatiorStats = () => {
       console.error("Error fetching orders:", error);
     }
   };
+
   const countMessages = async () => {
     try {
-      const response = await fetchGraphQL<any>(COUNT_UNOPENED_MESSAGES_QUERY);
+      const response = await clientFetchGraphQL<any>(
+        COUNT_UNOPENED_MESSAGES_QUERY,
+        {},
+        {},
+        accessToken
+      );
       setNbMessages(response.aggregateSupportqa._count._all);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -60,8 +83,11 @@ const NegotiatiorStats = () => {
   };
 
   useEffect(() => {
-    countMessages();
-  }, [userId]);
+    if (accessToken) {
+      countMessages();
+    }
+  }, [userId, accessToken]);
+
   return (
     <div className="flex flex-col gap-6 h-full justify-between">
       <Link

@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { useRouter } from "@/i18n/routing";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -54,6 +55,18 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [resendTimer, setResendTimer] = useState<number | null>(90);
+  const searchParams = useSearchParams();
+  const tokenExpired = searchParams.get("tokenExpired");
+
+  useEffect(() => {
+    if (tokenExpired) {
+      toast({
+        title: t("sessionExpired"),
+        description: t("pleaseLoginAgain"),
+        variant: "destructive",
+      });
+    }
+  }, [tokenExpired, toast, t]);
 
   const handleResendCode = () => {
     setResendTimer(90); // Set the timer to 10 seconds

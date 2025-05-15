@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { SupportQuestion } from "@/lib/interfaces";
 import Message from "./Message";
-
+import { useSession } from "next-auth/react";
 import { GET_SUPPORT_QUESTIONS_QUERY } from "@/graphql/queries";
 import MessagesPagination from "./MessageesPagination";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import RateLimitReached from "./RateLimitReached";
 
@@ -14,9 +14,21 @@ interface GetSupportQuestionsResponse {
   listSupportqas: SupportQuestion[];
 }
 
+// Define proper session user type
+interface CustomUser {
+  id?: string;
+  token?: string;
+  roleid?: number;
+  name?: string;
+  email?: string;
+}
+
 const Messages = () => {
   const locale = useLocale().toLowerCase();
   const t = useTranslations("Messages");
+  const session = useSession();
+  const user = session?.data?.user as CustomUser;
+  const accessToken = user?.token || "";
   const [skip, setSkip] = useState(0);
 
   const take = 5;
@@ -27,14 +39,20 @@ const Messages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await fetchGraphQL<GetSupportQuestionsResponse>(
+        if (!accessToken) {
+          return; // Don't fetch if no token available
+        }
+
+        const response = await clientFetchGraphQL<GetSupportQuestionsResponse>(
           GET_SUPPORT_QUESTIONS_QUERY,
           {
             skip: 0,
             take,
             state: 0,
             ispublished: false,
-          }
+          },
+          {},
+          accessToken
         );
 
         setMessages(response);
@@ -44,7 +62,7 @@ const Messages = () => {
     };
 
     fetchMessages();
-  }, [take]);
+  }, [take, accessToken]); // Add accessToken to dependencies
 
   return (
     <div className="h-full w-full">

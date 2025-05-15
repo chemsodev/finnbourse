@@ -26,7 +26,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
 import MyPagination from "@/components/navigation/MyPagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Sample TCC user data
 interface TCCUser {
@@ -96,10 +104,18 @@ export default function TeneurComptesTitresPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [selectedUser, setSelectedUser] = useState<TCCUser | null>(null);
   const [passwordVisibility, setPasswordVisibility] = useState<{
     [key: number]: boolean;
   }>({});
+  const [users, setUsers] = useState<TCCUser[]>(tccUsers);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<number | null>(
+    null
+  );
+  const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
+
+  // For user details dialog
+  const [viewUserDialog, setViewUserDialog] = useState(false);
 
   const togglePasswordVisibility = (userId: number) => {
     setPasswordVisibility((prev) => ({
@@ -108,7 +124,36 @@ export default function TeneurComptesTitresPage() {
     }));
   };
 
-  const filteredUsers = tccUsers.filter(
+  const handleToggleStatus = (userId: number) => {
+    setUserToToggleStatus(userId);
+    setStatusConfirmDialog(true);
+  };
+
+  const confirmToggleStatus = () => {
+    if (!userToToggleStatus) return;
+
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userToToggleStatus
+          ? {
+              ...user,
+              status: user.status === "active" ? "inactive" : "active",
+            }
+          : user
+      )
+    );
+
+    // Reset dialog state
+    setStatusConfirmDialog(false);
+    setUserToToggleStatus(null);
+  };
+
+  const cancelToggleStatus = () => {
+    setStatusConfirmDialog(false);
+    setUserToToggleStatus(null);
+  };
+
+  const filteredUsers = users.filter(
     (user) =>
       user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -120,12 +165,12 @@ export default function TeneurComptesTitresPage() {
     router.push("/tcc/form/users");
   };
 
-  const handleEditUser = (user: any) => {
+  const handleEditUser = (user: TCCUser) => {
     // Route to user edit form
     router.push(`/tcc/form/users/${user.id}`);
   };
 
-  const handleDeleteClick = (user: any) => {
+  const handleDeleteClick = (user: TCCUser) => {
     setSelectedUser(user);
     setIsDeleteDialogOpen(true);
   };
@@ -135,6 +180,11 @@ export default function TeneurComptesTitresPage() {
     console.log(`Deleting user with ID: ${selectedUser?.id}`);
     setIsDeleteDialogOpen(false);
     // Then refresh your data
+  };
+
+  const handleViewUser = (user: TCCUser) => {
+    setSelectedUser(user);
+    setViewUserDialog(true);
   };
 
   return (
@@ -333,42 +383,42 @@ export default function TeneurComptesTitresPage() {
             </div>
           </header>
 
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+          <div className="bg-white rounded-lg shadow-sm overflow-x-auto mb-8">
             <Table>
               <TableHeader className="bg-primary">
                 <TableRow>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("fullName")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap">
+                    {tPage("name")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("position")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
+                    {tPage("pos")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("matricule")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
+                    {tPage("mat")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("role")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
+                    {tPage("role")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("type")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
+                    {tPage("type")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("status")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[120px] truncate">
+                    {tPage("email")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("organisation")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[120px] truncate">
+                    {tPage("org")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("email")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
+                    {tPage("phone")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("phone")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap w-[120px]">
+                    {tPage("pwd")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("password")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap">
+                    {tPage("status")}
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-medium w-[120px]">
-                    {t("actions")}
+                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap w-[80px]">
+                    {tPage("acts")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -378,32 +428,33 @@ export default function TeneurComptesTitresPage() {
                     key={user.id}
                     className={index % 2 === 1 ? "bg-gray-100" : ""}
                   >
-                    <TableCell>{user.fullname}</TableCell>
-                    <TableCell>{user.position}</TableCell>
-                    <TableCell>{user.matricule}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>{user.type}</TableCell>
-                    <TableCell>
-                      {user.status === "active" ? (
-                        <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">
-                          <span className="text-xs font-medium">
-                            {t("active")}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1 rounded-full w-fit">
-                          <span className="text-xs font-medium">
-                            {t("inactive")}
-                          </span>
-                        </div>
-                      )}
+                    <TableCell className="whitespace-nowrap">
+                      {user.fullname}
                     </TableCell>
-                    <TableCell>{user.organisation}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.phone}</TableCell>
-                    <TableCell className="relative">
+                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
+                      {user.position}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
+                      {user.matricule}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
+                      {user.role}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
+                      {user.type}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap max-w-[120px] truncate">
+                      {user.email}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap max-w-[120px] truncate">
+                      {user.organisation}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
+                      {user.phone}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <div className="flex items-center">
-                        <span className="mr-2">
+                        <span className="truncate max-w-[80px]">
                           {passwordVisibility[user.id]
                             ? user.password
                             : "••••••••••"}
@@ -411,41 +462,66 @@ export default function TeneurComptesTitresPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-10 w-10"
+                          className="h-7 w-7 ml-1 p-0"
                           onClick={() => togglePasswordVisibility(user.id)}
                         >
                           {passwordVisibility[user.id] ? (
-                            <EyeOff className="h-5 w-5" />
+                            <EyeOff className="h-3.5 w-3.5" />
                           ) : (
-                            <Eye className="h-5 w-5" />
+                            <Eye className="h-3.5 w-3.5" />
                           )}
-                          <span className="sr-only">
-                            {passwordVisibility[user.id]
-                              ? t("hidePassword")
-                              : t("showPassword")}
-                          </span>
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex justify-center items-center gap-3">
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={user.status === "active"}
+                          onCheckedChange={() => handleToggleStatus(user.id)}
+                          className={
+                            user.status === "active"
+                              ? "bg-green-500 data-[state=checked]:bg-green-500"
+                              : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                          }
+                        />
+                        <span
+                          className={
+                            user.status === "active"
+                              ? "text-green-600 text-sm font-medium"
+                              : "text-red-600 text-sm"
+                          }
+                        >
+                          {user.status === "active"
+                            ? t("active")
+                            : t("inactive")}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="w-[90px]">
+                      <div className="flex justify-center items-center space-x-1">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          className="h-10 w-10 text-amber-600"
+                          className="h-7 w-7 p-0 text-amber-600"
                           onClick={() => handleEditUser(user)}
                         >
-                          <Pencil className="h-5 w-5" />
-                          <span className="sr-only">{t("edit")}</span>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          className="h-10 w-10 text-red-600"
+                          className="h-7 w-7 p-0 text-red-600"
                           onClick={() => handleDeleteClick(user)}
                         >
-                          <Trash2 className="h-5 w-5" />
-                          <span className="sr-only">{t("delete")}</span>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-blue-600"
+                          onClick={() => handleViewUser(user)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </TableCell>
@@ -490,6 +566,145 @@ export default function TeneurComptesTitresPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Status Change Confirmation Dialog */}
+      <AlertDialog
+        open={statusConfirmDialog}
+        onOpenChange={setStatusConfirmDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Modifier le statut</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir changer le statut de cet utilisateur ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelToggleStatus}>
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmToggleStatus}>
+              Confirmer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* User Details Dialog */}
+      <Dialog open={viewUserDialog} onOpenChange={setViewUserDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Détails de l'utilisateur TCC</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-6">
+              {/* Informations principales */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Informations Principales
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Nom complet
+                    </p>
+                    <p className="text-base">{selectedUser.fullname}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Position
+                    </p>
+                    <p className="text-base">{selectedUser.position || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Matricule
+                    </p>
+                    <p className="text-base">{selectedUser.matricule || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-base">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Téléphone
+                    </p>
+                    <p className="text-base">{selectedUser.phone}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Mot de passe
+                    </p>
+                    <div className="flex items-center">
+                      <p className="text-base">
+                        {passwordVisibility[selectedUser.id]
+                          ? selectedUser.password
+                          : "••••••••••"}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 ml-1 p-0"
+                        onClick={() =>
+                          togglePasswordVisibility(selectedUser.id)
+                        }
+                      >
+                        {passwordVisibility[selectedUser.id] ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations du rôle */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Informations du Rôle
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Rôle</p>
+                    <p className="text-base">{selectedUser.role || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Type</p>
+                    <p className="text-base">{selectedUser.type || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Organisation
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.organisation || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Statut</p>
+                    <p className="text-base">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          selectedUser.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {selectedUser.status === "active"
+                          ? t("active")
+                          : t("inactive")}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

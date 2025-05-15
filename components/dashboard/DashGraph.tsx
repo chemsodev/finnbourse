@@ -3,14 +3,27 @@ import { ShadLineChart } from "../ShadLineChart";
 import { ShadAreaChart } from "../ShadAreaChart";
 import { ShadBarChart } from "../ShadBarChart";
 import { ShadDoubleLineChart } from "../ShadDoubleLineChart";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import auth from "@/auth";
 import { getTranslations } from "next-intl/server";
+import { Session } from "next-auth";
+import dynamic from "next/dynamic";
+
+// Import the StockComparison component dynamically with client-side rendering only
+const StockComparison = dynamic(
+  () => import("./StockComparison").then((mod) => mod.StockComparison),
+  { ssr: false }
+);
 
 const DashGraph = async () => {
-  const session = await getServerSession(auth);
+  const session = (await getServerSession(auth)) as Session & {
+    user: {
+      roleid?: number;
+    };
+  };
   const userRole = session?.user?.roleid;
   const t = await getTranslations("dashGraph");
+
   if (userRole === 1) {
     return (
       <Tabs defaultValue="Valeur">
@@ -21,6 +34,9 @@ const DashGraph = async () => {
               {t("evolutionRendement")}
             </TabsContent>
             <TabsContent value="Fluctuations">{t("fluctuations")}</TabsContent>
+            <TabsContent value="Comparatif">
+              {t("grapheComparatif")}
+            </TabsContent>
           </div>
           <TabsList>
             <TabsTrigger value="Valeur" className="text-xs">
@@ -31,6 +47,9 @@ const DashGraph = async () => {
             </TabsTrigger>
             <TabsTrigger value="Fluctuations" className="text-xs">
               {t("fluctuationsShort")}
+            </TabsTrigger>
+            <TabsTrigger value="Comparatif" className="text-xs">
+              {t("comparatif")}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -43,6 +62,9 @@ const DashGraph = async () => {
         <TabsContent value="Fluctuations">
           <ShadBarChart />
         </TabsContent>
+        <TabsContent value="Comparatif">
+          <StockComparison />
+        </TabsContent>
       </Tabs>
     );
   } else {
@@ -54,6 +76,9 @@ const DashGraph = async () => {
               {t("evolutionNbClientsVsVisiteurs")}
             </TabsContent>
             <TabsContent value="Actifs">{t("EvolutionActifs")}</TabsContent>
+            <TabsContent value="Comparatif">
+              {t("grapheComparatif")}
+            </TabsContent>
           </div>
           <TabsList>
             <TabsTrigger value="Clients" className="text-xs">
@@ -62,6 +87,9 @@ const DashGraph = async () => {
             <TabsTrigger value="Actifs" className="text-xs">
               {t("EvolutionActifsShort")}
             </TabsTrigger>
+            <TabsTrigger value="Comparatif" className="text-xs">
+              {t("comparatif")}
+            </TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="Clients">
@@ -69,6 +97,9 @@ const DashGraph = async () => {
         </TabsContent>
         <TabsContent value="Actifs">
           <ShadBarChart />
+        </TabsContent>
+        <TabsContent value="Comparatif">
+          <StockComparison />
         </TabsContent>
       </Tabs>
     );

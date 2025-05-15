@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Search, Plus, Pencil, Trash2, Info, Eye, EyeOff } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -52,21 +52,6 @@ interface BankData {
   ordreDeTu?: string;
 }
 
-// Add unified user interface
-interface IOBUser {
-  id: number;
-  fullname: string;
-  position: string;
-  matricule: string;
-  role: string;
-  type: string;
-  status: "active" | "inactive";
-  organisation: string;
-  password: string;
-  email?: string;
-  phone?: string;
-}
-
 export default function BankCodePage() {
   const t = useTranslations("IOBPage");
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,11 +59,6 @@ export default function BankCodePage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedBank, setSelectedBank] = useState<BankData | null>(null);
   const router = useRouter();
-
-  // Add state for password visibility
-  const [passwordVisibility, setPasswordVisibility] = useState<{
-    [key: number]: boolean;
-  }>({});
 
   const bankData: BankData[] = [
     {
@@ -143,49 +123,6 @@ export default function BankCodePage() {
     },
   ];
 
-  // Add sample user data
-  const iobUsers: IOBUser[] = [
-    {
-      id: 1,
-      fullname: "John Doe",
-      position: "DG",
-      matricule: "IOB001",
-      role: "Valideur 2",
-      type: "IOBPage",
-      status: "active",
-      organisation: "SGA",
-      password: "Password123",
-      email: "john.doe@sga.dz",
-      phone: "+213 555-123-456",
-    },
-    {
-      id: 2,
-      fullname: "Maria García",
-      position: "Analyste",
-      matricule: "IOB002",
-      role: "Valideur 1",
-      type: "IOBPage",
-      status: "active",
-      organisation: "BNA",
-      password: "SecurePass456",
-      email: "maria.garcia@bna.dz",
-      phone: "+213 555-789-012",
-    },
-    {
-      id: 3,
-      fullname: "Ahmed Hassan",
-      position: "Directeur",
-      matricule: "IOB003",
-      role: "Administrateur",
-      type: "IOBPage",
-      status: "inactive",
-      organisation: "CPA",
-      password: "StrongPwd789",
-      email: "ahmed.hassan@cpa.dz",
-      phone: "+213 555-345-678",
-    },
-  ];
-
   const handleAddClick = () => {
     router.push("/iob/form");
   };
@@ -195,8 +132,7 @@ export default function BankCodePage() {
   };
 
   const handleInfoClick = (bank: BankData) => {
-    setSelectedBank(bank);
-    setIsInfoDialogOpen(true);
+    router.push(`/iob/${bank.id}/view`);
   };
 
   const handleDeleteClick = (bank: BankData) => {
@@ -211,13 +147,14 @@ export default function BankCodePage() {
     // Then refresh your data
   };
 
-  // Add toggle password visibility function
-  const togglePasswordVisibility = (userId: number) => {
-    setPasswordVisibility((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-  };
+  const filteredBanks = bankData.filter((bank) => {
+    const searchTerm = searchQuery.toLowerCase();
+    return (
+      bank.codeBank.toLowerCase().includes(searchTerm) ||
+      bank.shortName.toLowerCase().includes(searchTerm) ||
+      bank.longName.toLowerCase().includes(searchTerm)
+    );
+  });
 
   return (
     <div className="rounded-md shadow-inner bg-gray-50">
@@ -244,7 +181,7 @@ export default function BankCodePage() {
             </Button>
           </div>
         </header>
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
           <Table>
             <TableHeader className="bg-primary">
               <TableRow>
@@ -272,7 +209,7 @@ export default function BankCodePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bankData?.map((bank, index) => (
+              {filteredBanks.map((bank, index) => (
                 <TableRow
                   key={bank.id}
                   className={index % 2 === 1 ? "bg-gray-100" : ""}
@@ -291,7 +228,7 @@ export default function BankCodePage() {
                         className="h-8 w-8 text-blue-600"
                         onClick={() => handleInfoClick(bank)}
                       >
-                        <Info className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                         <span className="sr-only">{t("viewDetails")}</span>
                       </Button>
                       <Button
@@ -320,139 +257,8 @@ export default function BankCodePage() {
           </Table>
         </div>
 
-        {/* Users Table Section */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-secondary mb-6">
-            {t("users")}
-          </h2>
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-            <Table>
-              <TableHeader className="bg-primary">
-                <TableRow>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("fullName")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("position")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("matricule")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("role")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("type")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("status")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("organisation")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("email")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("phone")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium">
-                    {t("password")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium w-[120px]">
-                    {t("actions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {iobUsers.map((user, index) => (
-                  <TableRow
-                    key={user.id}
-                    className={index % 2 === 1 ? "bg-gray-100" : ""}
-                  >
-                    <TableCell>{user.fullname}</TableCell>
-                    <TableCell>{user.position}</TableCell>
-                    <TableCell>{user.matricule}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>{user.type}</TableCell>
-                    <TableCell>
-                      {user.status === "active" ? (
-                        <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">
-                          <span className="text-xs font-medium">
-                            {t("active")}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1 rounded-full w-fit">
-                          <span className="text-xs font-medium">
-                            {t("inactive")}
-                          </span>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>{user.organisation}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.phone}</TableCell>
-                    <TableCell className="relative">
-                      <div className="flex items-center">
-                        <span className="mr-2">
-                          {passwordVisibility[user.id]
-                            ? user.password
-                            : "••••••••••"}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8"
-                          onClick={() => togglePasswordVisibility(user.id)}
-                        >
-                          {passwordVisibility[user.id] ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">
-                            {passwordVisibility[user.id]
-                              ? t("hidePassword")
-                              : t("showPassword")}
-                          </span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-amber-600"
-                          onClick={() =>
-                            router.push(`/iob/form/user/${user.id}`)
-                          }
-                        >
-                          <Pencil className="h-4 w-4" />
-                          <span className="sr-only">{t("edit")}</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-600"
-                          onClick={() =>
-                            console.log(`Would delete user ${user.id}`)
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">{t("delete")}</span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
         <MyPagination />
+
         {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={isDeleteDialogOpen}
@@ -463,7 +269,7 @@ export default function BankCodePage() {
               <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
               <AlertDialogDescription>
                 {t("deleteConfirmation")}
-                <span className="font-medium"> {selectedBank?.longName}</span>.
+                <span className="font-medium"> {selectedBank?.shortName}</span>.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

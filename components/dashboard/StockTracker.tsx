@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/chart";
 import { useLocale, useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { format } from "date-fns";
 import {
   LIST_STOCKS_NAME_PRICE_QUERY,
@@ -50,6 +50,7 @@ import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useSession } from "next-auth/react";
 
 const formSchema = z.object({
   firstAction: z.string().optional(),
@@ -59,9 +60,21 @@ const formSchema = z.object({
   compareMode: z.boolean().default(true),
 });
 
+// Define proper session user type
+interface CustomUser {
+  id?: string;
+  token?: string;
+  roleid?: number;
+  name?: string;
+  email?: string;
+}
+
 export function StockTracker() {
   const t = useTranslations("DashLineChart");
   const locale = useLocale();
+  const session = useSession();
+  const user = session?.data?.user as CustomUser;
+  const accessToken = user?.token || "";
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("graphe");
   const [fromDate, setFromDate] = useState<Date | undefined>();
@@ -95,11 +108,16 @@ export function StockTracker() {
   const fetchTwoRandomStocks = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchGraphQL<any>(LIST_STOCKS_QUERY, {
-        skip: 0,
-        take: 2,
-        type: "action",
-      });
+      const result = await clientFetchGraphQL<any>(
+        LIST_STOCKS_QUERY,
+        {
+          skip: 0,
+          take: 2,
+          type: "action",
+        },
+        {},
+        accessToken
+      );
 
       setStockOne(result.listStocks[0]);
       setStockTwo(result.listStocks[1]);
@@ -131,40 +149,40 @@ export function StockTracker() {
     } finally {
       setLoading(false);
     }
-  }, [
-    fetchGraphQL,
-    LIST_STOCKS_QUERY,
-    setLoading,
-    setStockOne,
-    setStockOneData,
-    setStockTwo,
-    setStockTwoData,
-    setFromDate,
-    setToDate,
-  ]);
+  }, [accessToken]);
 
   const fetchSnp = useCallback(async () => {
     try {
-      const snp = await fetchGraphQL<any>(LIST_STOCKS_NAME_PRICE_QUERY, {
-        type: "action",
-      });
+      const snp = await clientFetchGraphQL<any>(
+        LIST_STOCKS_NAME_PRICE_QUERY,
+        {
+          type: "action",
+        },
+        {},
+        accessToken
+      );
       setSnpData(snp.listStocks);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
-  }, [fetchGraphQL, LIST_STOCKS_NAME_PRICE_QUERY, setLoading]);
+  }, [accessToken]);
 
   const fetchTwoStocks = useCallback(
     async (idOne: string, idTwo: string) => {
       setLoading(true);
       try {
-        const result = await fetchGraphQL<any>(LIST_TWO_STOCKS_QUERY, {
-          idOne,
-          idTwo,
-          type: "action",
-        });
+        const result = await clientFetchGraphQL<any>(
+          LIST_TWO_STOCKS_QUERY,
+          {
+            idOne,
+            idTwo,
+            type: "action",
+          },
+          {},
+          accessToken
+        );
 
         setStockOne(result.listStocks[0]);
         setStockTwo(result.listStocks[1]);
@@ -176,7 +194,7 @@ export function StockTracker() {
         setLoading(false);
       }
     },
-    [fetchGraphQL, LIST_TWO_STOCKS_QUERY, setLoading]
+    [accessToken]
   );
 
   const form = useForm<z.infer<typeof formSchema>>({

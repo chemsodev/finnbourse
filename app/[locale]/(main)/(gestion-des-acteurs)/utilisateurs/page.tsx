@@ -492,45 +492,46 @@ export default function UtilisateursPage({
     status?: string;
   };
 }) {
-  const t = useTranslations("clients");
   const router = useRouter();
+  const t = useTranslations("UtilisateursPage");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // State variables
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams?.searchquery || ""
-  );
+  // Get values from URL parameters
+  const roleId = Number(searchParams?.userType) || 1;
+  const currentStatusFilter = searchParams?.status || "all";
+
+  const userRole = 3; // Use a fixed role for demo - this would come from auth
   const [passwordVisibility, setPasswordVisibility] = useState<{
     [key: string]: boolean;
   }>({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Track all users in state to make updates easier
-  const [usersData, setUsersData] = useState<ExtendedUser[]>(mockUsers);
-
+  // For status change confirmation
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [userToToggle, setUserToToggle] = useState<string | null>(null);
 
-  // Mock user role and session data
-  const userRole = 3; // Admin role for demonstration
-
-  // Remove all pagination related variables
-  const roleid = Number(searchParams?.userType) || 1;
-  const statusFilter = searchParams?.status || "all";
+  // For user details dialog
+  const [userDetailDialog, setUserDetailDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<ExtendedUser | null>(null);
 
   // Filter users based on search query and other filters
-  const filteredUsers = usersData.filter((user) => {
+  const filteredUsers = mockUsers.filter((user: ExtendedUser) => {
     // Filter by role
-    if (user.roleid !== roleid) {
+    if (user.roleid !== roleId) {
       return false;
     }
 
     // Filter by status
     const userStatus = user.status;
-    if (statusFilter === "1" || statusFilter === "actif") {
+    if (currentStatusFilter === "1" || currentStatusFilter === "actif") {
       // Filter for active users
       if (typeof userStatus === "number" && userStatus !== 1) return false;
       if (typeof userStatus === "string" && userStatus !== "actif")
         return false;
-    } else if (statusFilter === "0" || statusFilter === "inactif") {
+    } else if (
+      currentStatusFilter === "0" ||
+      currentStatusFilter === "inactif"
+    ) {
       // Filter for inactive users
       if (typeof userStatus === "number" && userStatus !== 0) return false;
       if (typeof userStatus === "string" && userStatus !== "inactif")
@@ -551,8 +552,8 @@ export default function UtilisateursPage({
     return true;
   });
 
-  // Use all filtered users directly - no pagination
-  const users = {
+  // Use filtered users for display
+  const usersData = {
     listUsers: filteredUsers,
   };
 
@@ -573,31 +574,33 @@ export default function UtilisateursPage({
 
     const userId = userToToggle;
 
-    // Update the users directly in state
-    setUsersData((prevUsers) => {
-      return prevUsers.map((user) => {
-        if (user.id === userId) {
-          // Determine the new status based on current type
-          let newStatus;
-          if (typeof user.status === "number") {
-            newStatus = user.status === 1 ? 0 : 1;
-          } else {
-            newStatus = user.status === "actif" ? "inactif" : "actif";
-          }
-
-          console.log(
-            `Toggling user ${user.fullname} status from ${user.status} to ${newStatus}`
-          );
-
-          // Return updated user
-          return {
-            ...user,
-            status: newStatus,
-          };
+    // Update the users directly in state by creating a new filtered list
+    const updatedUsers = filteredUsers.map((user: ExtendedUser) => {
+      if (user.id === userId) {
+        // Determine the new status based on current type
+        let newStatus;
+        if (typeof user.status === "number") {
+          newStatus = user.status === 1 ? 0 : 1;
+        } else {
+          newStatus = user.status === "actif" ? "inactif" : "actif";
         }
-        return user;
-      });
+
+        console.log(
+          `Toggling user ${user.fullname} status from ${user.status} to ${newStatus}`
+        );
+
+        // Return updated user
+        return {
+          ...user,
+          status: newStatus,
+        };
+      }
+      return user;
     });
+
+    // Update original array to maintain reference
+    mockUsers.length = 0;
+    mockUsers.push(...updatedUsers);
 
     // Reset the confirmation dialog
     setConfirmDialogOpen(false);
@@ -615,29 +618,24 @@ export default function UtilisateursPage({
       case 1: // Investisseur (Client)
         return [
           "Nom/Prénom",
-          "Nom de jeune fille",
-          "Rôle",
-          "Adresse",
-          "Wilaya",
-          "Nationalité",
-          "Date de naissance",
-          "Numéro de pièce d'identité",
+          "Email",
+          "Mot de passe",
           "Type d'utilisateur",
+          "Rôle",
           "Client",
           "Statut",
+          "Actions",
         ];
       case 2: // IOB
         return [
           "Nom Complet",
           "Position",
-          "Matricule",
-          "Rôle",
-          "Type",
-          "Organisation",
           "Email",
-          "Téléphone",
           "Mot de passe",
+          "Organisation",
+          "Téléphone",
           "Statut",
+          "Actions",
         ];
       case 3: // TCC
         return [
@@ -647,35 +645,30 @@ export default function UtilisateursPage({
           "Rôle",
           "Type",
           "Email",
-          "Téléphone",
           "Mot de passe",
           "Statut",
+          "Actions",
         ];
       case 4: // Agence
         return [
           "Nom Complet",
           "Position",
-          "Matricule",
-          "Rôle",
-          "Type",
-          "Organisation",
           "Email",
-          "Téléphone",
           "Mot de passe",
+          "Organisation",
+          "Téléphone",
           "Statut",
+          "Actions",
         ];
       default:
         return [
           "Nom Complet",
-          "Position",
-          "Matricule",
-          "Rôle",
-          "Type",
-          "Organisation",
           "Email",
-          "Téléphone",
           "Mot de passe",
+          "Organisation",
+          "Téléphone",
           "Statut",
+          "Actions",
         ];
     }
   };
@@ -690,8 +683,6 @@ export default function UtilisateursPage({
 
   // Adjust the StatusFilter component to work with our local state
   const StatusFilterWrapper = () => {
-    const currentStatus = statusFilter;
-
     const handleStatusChange = (value: string) => {
       // Update URL with new status filter
       const params = new URLSearchParams(searchParams);
@@ -707,7 +698,7 @@ export default function UtilisateursPage({
       <div className="relative rounded-md w-48">
         <select
           className="w-full border-gray-300 rounded-md py-2 pl-3 pr-10 text-base focus:outline-none focus:ring-primary focus:border-primary"
-          value={currentStatus}
+          value={currentStatusFilter}
           onChange={(e) => handleStatusChange(e.target.value)}
         >
           <option value="all">Tous les statuts</option>
@@ -716,6 +707,12 @@ export default function UtilisateursPage({
         </select>
       </div>
     );
+  };
+
+  // Handle view user details
+  const handleViewUserDetails = (user: ExtendedUser) => {
+    setSelectedUser(user);
+    setUserDetailDialog(true);
   };
 
   return (
@@ -753,7 +750,7 @@ export default function UtilisateursPage({
             <Table>
               <TableHeader className="bg-primary">
                 <TableRow>
-                  {getTableHeaders(roleid).map((header, index) => (
+                  {getTableHeaders(roleId).map((header, index: number) => (
                     <TableHead
                       key={index}
                       className="text-primary-foreground font-medium"
@@ -764,264 +761,346 @@ export default function UtilisateursPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users && users.listUsers.length > 0 ? (
-                  users.listUsers.map((user: ExtendedUser, index) => {
-                    const isVisible = passwordVisibility[user.id] || false;
-                    const password = user.password || "StrongPassword123";
+                {usersData && usersData.listUsers.length > 0 ? (
+                  usersData.listUsers.map(
+                    (user: ExtendedUser, index: number) => {
+                      const isVisible = passwordVisibility[user.id] || false;
+                      const password = user.password || "StrongPassword123";
 
-                    // Status comes directly from the user object now
-                    const userStatus = user.status;
-                    const isActive =
-                      typeof userStatus === "number"
-                        ? userStatus === 1
-                        : userStatus === "actif";
+                      // Status comes directly from the user object now
+                      const userStatus = user.status;
+                      const isActive =
+                        typeof userStatus === "number"
+                          ? userStatus === 1
+                          : userStatus === "actif";
 
-                    return (
-                      <TableRow
-                        key={user.id}
-                        className={index % 2 === 1 ? "bg-gray-100" : ""}
-                      >
-                        {/* Investisseur (Client) fields */}
-                        {roleid === 1 && (
-                          <>
-                            <TableCell>{user.fullname}</TableCell>
-                            <TableCell>{user.maidenName || "-"}</TableCell>
-                            <TableCell>{user.role || "-"}</TableCell>
-                            <TableCell>{user.address || "-"}</TableCell>
-                            <TableCell>{user.wilaya || "-"}</TableCell>
-                            <TableCell>{user.nationality || "-"}</TableCell>
-                            <TableCell>{user.birthdate || "-"}</TableCell>
-                            <TableCell>{user.idNumber || "-"}</TableCell>
-                            <TableCell>
-                              {user.userType === "proprietaire"
-                                ? "Propriétaire"
-                                : user.userType === "mandataire"
-                                ? "Mandataire"
-                                : user.userType === "tuteur_legal"
-                                ? "Tuteur Légal"
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <span className="font-medium text-primary">
-                                {user.parentEntityName || "-"}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <span
-                                  className={`text-sm mr-2 font-medium ${
-                                    isActive ? "text-green-600" : "text-red-500"
-                                  }`}
-                                >
-                                  {getStatusText(userStatus)}
+                      return (
+                        <TableRow
+                          key={user.id}
+                          className={index % 2 === 1 ? "bg-gray-100" : ""}
+                        >
+                          {/* Investisseur (Client) fields */}
+                          {roleId === 1 && (
+                            <>
+                              <TableCell className="whitespace-nowrap">
+                                {user.fullname}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap max-w-[150px] truncate">
+                                {user.email}
+                              </TableCell>
+                              <TableCell className="relative whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span className="truncate max-w-[80px]">
+                                    {isVisible ? password : "••••••••••"}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 ml-1 p-0"
+                                    onClick={() =>
+                                      togglePasswordVisibility(user.id)
+                                    }
+                                  >
+                                    {isVisible ? (
+                                      <EyeOff className="h-3.5 w-3.5" />
+                                    ) : (
+                                      <Eye className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.userType === "proprietaire"
+                                  ? "Propriétaire"
+                                  : user.userType === "mandataire"
+                                  ? "Mandataire"
+                                  : user.userType === "tuteur_legal"
+                                  ? "Tuteur Légal"
+                                  : "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.role || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <span className="font-medium text-primary">
+                                  {user.parentEntityName || "-"}
                                 </span>
-                                <Switch
-                                  checked={isActive}
-                                  onCheckedChange={() =>
-                                    handleToggleStatus(user.id)
-                                  }
-                                  className={
-                                    isActive
-                                      ? "bg-green-500 data-[state=checked]:bg-green-500"
-                                      : "bg-red-500 data-[state=unchecked]:bg-red-500"
-                                  }
-                                />
-                              </div>
-                            </TableCell>
-                          </>
-                        )}
-
-                        {/* IOB fields */}
-                        {roleid === 2 && (
-                          <>
-                            <TableCell>{user.fullname}</TableCell>
-                            <TableCell>{user.position || "-"}</TableCell>
-                            <TableCell>{user.matricule || "-"}</TableCell>
-                            <TableCell>{user.role || "-"}</TableCell>
-                            <TableCell>{user.type || "-"}</TableCell>
-                            <TableCell>{user.organisation || "-"}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>{user.phonenumber}</TableCell>
-                            <TableCell className="relative">
-                              <div className="flex items-center">
-                                <span>
-                                  {isVisible ? password : "••••••••••"}
-                                </span>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span
+                                    className={`text-sm mr-2 font-medium ${
+                                      isActive
+                                        ? "text-green-600"
+                                        : "text-red-500"
+                                    }`}
+                                  >
+                                    {getStatusText(userStatus)}
+                                  </span>
+                                  <Switch
+                                    checked={isActive}
+                                    onCheckedChange={() =>
+                                      handleToggleStatus(user.id)
+                                    }
+                                    className={
+                                      isActive
+                                        ? "bg-green-500 data-[state=checked]:bg-green-500"
+                                        : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                                    }
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <Button
                                   variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 ml-2"
-                                  onClick={() =>
-                                    togglePasswordVisibility(user.id)
-                                  }
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleViewUserDetails(user)}
                                 >
-                                  {isVisible ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
-                                  <span className="sr-only">
-                                    {isVisible
-                                      ? t("hidePassword")
-                                      : t("showPassword")}
-                                  </span>
+                                  <Eye className="h-3.5 w-3.5" />
                                 </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <span
-                                  className={`text-sm mr-2 font-medium ${
-                                    isActive ? "text-green-600" : "text-red-500"
-                                  }`}
-                                >
-                                  {getStatusText(userStatus)}
-                                </span>
-                                <Switch
-                                  checked={isActive}
-                                  onCheckedChange={() =>
-                                    handleToggleStatus(user.id)
-                                  }
-                                  className={
-                                    isActive
-                                      ? "bg-green-500 data-[state=checked]:bg-green-500"
-                                      : "bg-red-500 data-[state=unchecked]:bg-red-500"
-                                  }
-                                />
-                              </div>
-                            </TableCell>
-                          </>
-                        )}
+                              </TableCell>
+                            </>
+                          )}
 
-                        {/* TCC fields - no organization column */}
-                        {roleid === 3 && (
-                          <>
-                            <TableCell>{user.fullname}</TableCell>
-                            <TableCell>{user.position || "-"}</TableCell>
-                            <TableCell>{user.matricule || "-"}</TableCell>
-                            <TableCell>{user.role || "-"}</TableCell>
-                            <TableCell>{user.type || "-"}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>{user.phonenumber}</TableCell>
-                            <TableCell className="relative">
-                              <div className="flex items-center">
-                                <span>
-                                  {isVisible ? password : "••••••••••"}
-                                </span>
+                          {/* IOB fields */}
+                          {roleId === 2 && (
+                            <>
+                              <TableCell className="whitespace-nowrap">
+                                {user.fullname}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.position || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap max-w-[150px] truncate">
+                                {user.email}
+                              </TableCell>
+                              <TableCell className="relative whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span className="truncate max-w-[80px]">
+                                    {isVisible ? password : "••••••••••"}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 ml-1 p-0"
+                                    onClick={() =>
+                                      togglePasswordVisibility(user.id)
+                                    }
+                                  >
+                                    {isVisible ? (
+                                      <EyeOff className="h-3.5 w-3.5" />
+                                    ) : (
+                                      <Eye className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.organisation || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.phonenumber}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span
+                                    className={`text-sm mr-2 font-medium ${
+                                      isActive
+                                        ? "text-green-600"
+                                        : "text-red-500"
+                                    }`}
+                                  >
+                                    {getStatusText(userStatus)}
+                                  </span>
+                                  <Switch
+                                    checked={isActive}
+                                    onCheckedChange={() =>
+                                      handleToggleStatus(user.id)
+                                    }
+                                    className={
+                                      isActive
+                                        ? "bg-green-500 data-[state=checked]:bg-green-500"
+                                        : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                                    }
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <Button
                                   variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 ml-2"
-                                  onClick={() =>
-                                    togglePasswordVisibility(user.id)
-                                  }
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleViewUserDetails(user)}
                                 >
-                                  {isVisible ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
-                                  <span className="sr-only">
-                                    {isVisible
-                                      ? t("hidePassword")
-                                      : t("showPassword")}
-                                  </span>
+                                  <Eye className="h-3.5 w-3.5" />
                                 </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <span
-                                  className={`text-sm mr-2 font-medium ${
-                                    isActive ? "text-green-600" : "text-red-500"
-                                  }`}
-                                >
-                                  {getStatusText(userStatus)}
-                                </span>
-                                <Switch
-                                  checked={isActive}
-                                  onCheckedChange={() =>
-                                    handleToggleStatus(user.id)
-                                  }
-                                  className={
-                                    isActive
-                                      ? "bg-green-500 data-[state=checked]:bg-green-500"
-                                      : "bg-red-500 data-[state=unchecked]:bg-red-500"
-                                  }
-                                />
-                              </div>
-                            </TableCell>
-                          </>
-                        )}
+                              </TableCell>
+                            </>
+                          )}
 
-                        {/* Agence fields */}
-                        {roleid === 4 && (
-                          <>
-                            <TableCell>{user.fullname}</TableCell>
-                            <TableCell>{user.position || "-"}</TableCell>
-                            <TableCell>{user.matricule || "-"}</TableCell>
-                            <TableCell>{user.role || "-"}</TableCell>
-                            <TableCell>{user.type || "-"}</TableCell>
-                            <TableCell>{user.organisation || "-"}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>{user.phonenumber}</TableCell>
-                            <TableCell className="relative">
-                              <div className="flex items-center">
-                                <span>
-                                  {isVisible ? password : "••••••••••"}
-                                </span>
+                          {/* TCC fields */}
+                          {roleId === 3 && (
+                            <>
+                              <TableCell className="whitespace-nowrap">
+                                {user.fullname}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.position || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.matricule || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.role || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.type || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap max-w-[150px] truncate">
+                                {user.email}
+                              </TableCell>
+                              <TableCell className="relative whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span className="truncate max-w-[80px]">
+                                    {isVisible ? password : "••••••••••"}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 ml-1 p-0"
+                                    onClick={() =>
+                                      togglePasswordVisibility(user.id)
+                                    }
+                                  >
+                                    {isVisible ? (
+                                      <EyeOff className="h-3.5 w-3.5" />
+                                    ) : (
+                                      <Eye className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span
+                                    className={`text-sm mr-2 font-medium ${
+                                      isActive
+                                        ? "text-green-600"
+                                        : "text-red-500"
+                                    }`}
+                                  >
+                                    {getStatusText(userStatus)}
+                                  </span>
+                                  <Switch
+                                    checked={isActive}
+                                    onCheckedChange={() =>
+                                      handleToggleStatus(user.id)
+                                    }
+                                    className={
+                                      isActive
+                                        ? "bg-green-500 data-[state=checked]:bg-green-500"
+                                        : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                                    }
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <Button
                                   variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 ml-2"
-                                  onClick={() =>
-                                    togglePasswordVisibility(user.id)
-                                  }
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleViewUserDetails(user)}
                                 >
-                                  {isVisible ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
-                                  <span className="sr-only">
-                                    {isVisible
-                                      ? t("hidePassword")
-                                      : t("showPassword")}
-                                  </span>
+                                  <Eye className="h-3.5 w-3.5" />
                                 </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <span
-                                  className={`text-sm mr-2 font-medium ${
-                                    isActive ? "text-green-600" : "text-red-500"
-                                  }`}
+                              </TableCell>
+                            </>
+                          )}
+
+                          {/* Agence fields */}
+                          {roleId === 4 && (
+                            <>
+                              <TableCell className="whitespace-nowrap">
+                                {user.fullname}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.position || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap max-w-[150px] truncate">
+                                {user.email}
+                              </TableCell>
+                              <TableCell className="relative whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span className="truncate max-w-[80px]">
+                                    {isVisible ? password : "••••••••••"}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 ml-1 p-0"
+                                    onClick={() =>
+                                      togglePasswordVisibility(user.id)
+                                    }
+                                  >
+                                    {isVisible ? (
+                                      <EyeOff className="h-3.5 w-3.5" />
+                                    ) : (
+                                      <Eye className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.organisation || "-"}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                {user.phonenumber}
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span
+                                    className={`text-sm mr-2 font-medium ${
+                                      isActive
+                                        ? "text-green-600"
+                                        : "text-red-500"
+                                    }`}
+                                  >
+                                    {getStatusText(userStatus)}
+                                  </span>
+                                  <Switch
+                                    checked={isActive}
+                                    onCheckedChange={() =>
+                                      handleToggleStatus(user.id)
+                                    }
+                                    className={
+                                      isActive
+                                        ? "bg-green-500 data-[state=checked]:bg-green-500"
+                                        : "bg-red-500 data-[state=unchecked]:bg-red-500"
+                                    }
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleViewUserDetails(user)}
                                 >
-                                  {getStatusText(userStatus)}
-                                </span>
-                                <Switch
-                                  checked={isActive}
-                                  onCheckedChange={() =>
-                                    handleToggleStatus(user.id)
-                                  }
-                                  className={
-                                    isActive
-                                      ? "bg-green-500 data-[state=checked]:bg-green-500"
-                                      : "bg-red-500 data-[state=unchecked]:bg-red-500"
-                                  }
-                                />
-                              </div>
-                            </TableCell>
-                          </>
-                        )}
-                      </TableRow>
-                    );
-                  })
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                              </TableCell>
+                            </>
+                          )}
+                        </TableRow>
+                      );
+                    }
+                  )
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={getTableHeaders(roleid).length}
+                      colSpan={getTableHeaders(roleId).length}
                       className="text-center"
                     >
                       {t("noUsers")}
@@ -1051,6 +1130,426 @@ export default function UtilisateursPage({
               Confirmer
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* User Details Dialog */}
+      <Dialog open={userDetailDialog} onOpenChange={setUserDetailDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Détails de l'utilisateur</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-6">
+              {/* Informations de base pour tous les types d'utilisateurs */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Informations Principales
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Nom complet
+                    </p>
+                    <p className="text-base">{selectedUser.fullname}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-base">{selectedUser.email || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Téléphone
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.phonenumber || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Mot de passe
+                    </p>
+                    <p className="text-base">{selectedUser.password || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Adresse</p>
+                    <p className="text-base">{selectedUser.address || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Statut</p>
+                    <p className="text-base">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          typeof selectedUser.status === "number"
+                            ? selectedUser.status === 1
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                            : selectedUser.status === "actif"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {getStatusText(selectedUser.status)}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations spécifiques au client (Investisseur) */}
+              {selectedUser.roleid === 1 && (
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Informations Client
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Type d'utilisateur
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.userType === "proprietaire"
+                          ? "Propriétaire"
+                          : selectedUser.userType === "mandataire"
+                          ? "Mandataire"
+                          : selectedUser.userType === "tuteur_legal"
+                          ? "Tuteur Légal"
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Nom de jeune fille
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.maidenName || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Rôle</p>
+                      <p className="text-base">{selectedUser.role || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Client
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.parentEntityName || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Wilaya
+                      </p>
+                      <p className="text-base">{selectedUser.wilaya || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Numéro d'identité
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.idNumber || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Date de naissance
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.birthdate || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Nationalité
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.nationality || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Informations spécifiques à l'IOB */}
+              {selectedUser.roleid === 2 && (
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Informations IOB
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Position
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.position || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Matricule
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.matricule || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Rôle</p>
+                      <p className="text-base">{selectedUser.role || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Type</p>
+                      <p className="text-base">{selectedUser.type || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Organisation
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.organisation || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Date de naissance
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.birthdate || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Nationalité
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.nationality || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Profession
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.profession || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Informations spécifiques au TCC */}
+              {selectedUser.roleid === 3 && (
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Informations TCC
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Position
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.position || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Rôle</p>
+                      <p className="text-base">{selectedUser.role || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Type</p>
+                      <p className="text-base">{selectedUser.type || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Matricule
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.matricule || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Date de naissance
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.birthdate || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Nationalité
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.nationality || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Profession
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.profession || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Trust Number
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.trustnumber || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Informations spécifiques à l'Agence */}
+              {selectedUser.roleid === 4 && (
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Informations Agence
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Position
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.position || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Matricule
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.matricule || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Rôle</p>
+                      <p className="text-base">{selectedUser.role || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Type</p>
+                      <p className="text-base">{selectedUser.type || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Organisation
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.organisation || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Agence Code
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.agenceCode || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Libellé Agence
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.libAgence || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Code Ville
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.codeVille || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Ordre De
+                      </p>
+                      <p className="text-base">{selectedUser.ordreDe || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Par Défaut
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.parDefault || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Compensation
+                      </p>
+                      <p className="text-base">
+                        {selectedUser.compensation || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Informations complémentaires pour tous les utilisateurs */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Informations Complémentaires
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Pays de résidence
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.countryofresidence || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Pays de naissance
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.countryofbirth || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Code postal
+                    </p>
+                    <p className="text-base">{selectedUser.zipcode || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Trust Number
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.trustnumber || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      ID Négociateur
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.negotiatorid || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Suit l'entreprise
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.followsbusiness ? "Oui" : "Non"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

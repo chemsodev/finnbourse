@@ -39,7 +39,7 @@ import { LIST_STOCKS_QUERY, LIST_BOND_QUERY } from "@/graphql/queries";
 import { Suspense, useState } from "react";
 import { Bond, Stock } from "@/lib/interfaces";
 
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 import AddSecurityHistory from "../AddSecurityHistory";
 import { useSession } from "next-auth/react";
 import UpdateFaceValue from "./UpdateFaceValue";
@@ -58,18 +58,19 @@ interface TitresTableProps {
 }
 
 export function TitresTable({ type }: TitresTableProps) {
-  const t = useTranslations("TitresTable");
-  const session = useSession();
-  const roleId = session?.data?.user?.roleid;
-  const [data, setData] = useState<QueryData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({ code: false });
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const t = useTranslations("titresTable");
+  const [data, setData] = React.useState<QueryData | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const { data: session } = useSession();
+  // Extract roleId with type assertion
+  const roleId = (session?.user as any)?.roleid;
   const subscriptionTypes = [
     "action",
     "obligation",
@@ -312,7 +313,7 @@ export function TitresTable({ type }: TitresTableProps) {
 
   const fetchData = async () => {
     try {
-      const result = await fetchGraphQL<QueryData>(query, {
+      const result = await clientFetchGraphQL<QueryData>(query, {
         type,
       });
       setData(result);

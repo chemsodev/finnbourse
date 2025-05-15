@@ -27,6 +27,7 @@ interface DecodedToken {
 }
 async function refreshAccessToken(token: any) {
   try {
+    console.log("Attempting to refresh access token");
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh-token`,
       {
@@ -40,13 +41,18 @@ async function refreshAccessToken(token: any) {
     const newTokens = await response.json();
 
     if (!response.ok) {
+      console.error("Token refresh failed with status:", response.status);
+      console.error("Token refresh error:", newTokens);
       throw new Error("Failed to refresh token");
     }
+
+    console.log("Token refreshed successfully");
     const newDecodedToken = jwt.decode(newTokens.access_token) as DecodedToken;
 
     return {
       ...token,
       accessToken: newTokens.access_token,
+      refreshToken: newTokens.refresh_token || token.refreshToken, // Use new refresh token if provided
       tokenExpires: newDecodedToken.exp,
       error: null,
     };
@@ -149,12 +155,21 @@ const auth: AuthOptions = {
         token.error = user.error as string;
       }
 
-      // Check if token is expired
-      if (Date.now() > (token.tokenExpires as number) * 1000) {
+      // Check if token is expired or about to expire (within 1 minute)
+      const isTokenExpired =
+        token.tokenExpires &&
+        Date.now() > (token.tokenExpires as number) * 1000;
+      const isTokenExpiringSoon =
+        token.tokenExpires &&
+        Date.now() > (token.tokenExpires as number) * 1000 - 60 * 1000; // 1 minute before expiration
+
+      if (isTokenExpired || isTokenExpiringSoon) {
+        console.log("Token expired or expiring soon, attempting refresh");
         const refreshedToken = await refreshAccessToken(token);
 
         // Log the user out if refreshing fails
         if (refreshedToken.error) {
+          console.error("Token refresh failed:", refreshedToken.error);
           return {
             ...token,
             error: "RefreshAccessTokenError",

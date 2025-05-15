@@ -109,7 +109,11 @@ export const clientUserSchema = z.object({
   idNumber: z.string().optional().or(z.literal("")),
   userType: z.enum(["proprietaire", "mandataire", "tuteur_legal"]),
   status: z.enum(["actif", "inactif"]),
-  password: z.string().optional().or(z.literal("")),
+  password: z
+    .string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .max(100),
+  email: z.string().email("Email invalide"),
 });
 
 // Combined schema using discriminated union

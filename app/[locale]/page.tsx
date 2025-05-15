@@ -10,7 +10,8 @@ import SideBar from "@/components/navigation/SideBar";
 import BottomNavMobile from "@/components/navigation/BottomNavMobile";
 import MyPortfolio from "@/components/MyPortfolio";
 import auth from "@/auth";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
+import { Session } from "next-auth";
 
 import LogOutAgent from "@/components/LogOutAgent";
 import { StockTracker } from "@/components/dashboard/StockTracker";
@@ -22,7 +23,12 @@ export default async function Home() {
   const t = await getTranslations("HomePage");
   const ipoT = await getTranslations("IPOAnnouncement");
   const dateTime = new Date();
-  const session = await getServerSession(auth);
+  const session = (await getServerSession(auth)) as Session & {
+    user: {
+      roleid?: number;
+      error?: string;
+    };
+  };
   const userRole = session?.user?.roleid;
   if (session?.user.error === "RefreshAccessTokenError") {
     return <LogOutAgent />;
@@ -83,7 +89,7 @@ export default async function Home() {
           </div>
           <MyMarquee />
         </div>
-        <div className="flex flex-col md:flex-row my-6  justify-between gap-6 md:gap-0">
+        <div className="flex flex-col md:flex-row my-6 justify-between gap-6 md:gap-0">
           <DashItem1 />
           <DashItem2 />
           <DashItem3 />

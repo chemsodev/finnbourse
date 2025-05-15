@@ -20,26 +20,50 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import RelatedUsersTable from "./RelatedUsersTable";
 import { type RelatedUser } from "./types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Define the form schema for the agency details
+// Mock data for banks dropdown
+const bankOptions = [
+  {
+    value: "BANQUE DE DEVELOPPEMENT LOCAL",
+    label: "BANQUE DE DEVELOPPEMENT LOCAL",
+  },
+  {
+    value: "BANQUE EXTERIEURE D'ALGERIE",
+    label: "BANQUE EXTERIEURE D'ALGERIE",
+  },
+  {
+    value: "BANQUE DE L'AGRICULTURE ET DU DÉVELOPPEMENT RURAL",
+    label: "BANQUE DE L'AGRICULTURE ET DU DÉVELOPPEMENT RURAL",
+  },
+  { value: "CREDIT POPULAIRE D'ALGERIE", label: "CREDIT POPULAIRE D'ALGERIE" },
+  { value: "BANQUE NATIONALE D'ALGERIE", label: "BANQUE NATIONALE D'ALGERIE" },
+  {
+    value: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
+    label: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
+  },
+];
+
+// Define the form schema for the agency details with only required fields
 const agenceFormSchema = z.object({
-  codeBanque: z.string().optional(),
+  nomBanque: z.string().min(1, { message: "Nom de la banque is required" }),
+  adresseComplete: z
+    .string()
+    .min(1, { message: "Adresse complète is required" }),
+  codeSwiftBic: z.string().min(1, { message: "Code SWIFT/BIC is required" }),
+  devise: z.string().default("DZD"),
   agenceCode: z.string().min(1, { message: "Code agence is required" }),
-  libAgence: z.string().min(1, { message: "Libellé agence is required" }),
-  codeVille: z.string().optional(),
-  regionAgence: z.string().optional(),
-  codeBC: z.string().optional(),
-  ordreDe: z.string().optional(),
-  parDefault: z.string().optional(),
-  compensation: z.string().optional(),
-  fonction: z.string().optional(),
-  telephone: z.string().optional(),
-  fax: z.string().optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  telex: z.string().optional(),
-  addresse: z.string().optional(),
-  codePostal: z.string().optional(),
-  commentaire: z.string().optional(),
+  directeurNom: z.string().min(1, { message: "Nom du directeur is required" }),
+  directeurEmail: z.string().email({ message: "Email du directeur invalide" }),
+  directeurTelephone: z
+    .string()
+    .min(1, { message: "Téléphone du directeur is required" }),
 });
 
 type AgenceFormValues = z.infer<typeof agenceFormSchema>;
@@ -90,42 +114,24 @@ export default function AgenceFormSteps({
     resolver: zodResolver(agenceFormSchema),
     defaultValues: initialData
       ? {
-          codeBanque: initialData.codeBanque || "",
+          nomBanque: initialData.nomBanque || "",
+          adresseComplete: initialData.adresseComplete || "",
+          codeSwiftBic: initialData.codeSwiftBic || "",
+          devise: initialData.devise || "DZD",
           agenceCode: initialData.agenceCode || "",
-          libAgence: initialData.libAgence || "",
-          codeVille: initialData.codeVille || "",
-          regionAgence: initialData.regionAgence || "",
-          codeBC: initialData.codeBC || "",
-          ordreDe: initialData.ordreDe || "",
-          parDefault: initialData.parDefault || "",
-          compensation: initialData.compensation || "",
-          fonction: initialData.fonction || "",
-          telephone: initialData.telephone || "",
-          fax: initialData.fax || "",
-          email: initialData.email || "",
-          telex: initialData.telex || "",
-          addresse: initialData.addresse || "",
-          codePostal: initialData.codePostal || "",
-          commentaire: initialData.commentaire || "",
+          directeurNom: initialData.directeurNom || "",
+          directeurEmail: initialData.directeurEmail || "",
+          directeurTelephone: initialData.directeurTelephone || "",
         }
       : {
-          codeBanque: "",
+          nomBanque: "",
+          adresseComplete: "",
+          codeSwiftBic: "",
+          devise: "DZD",
           agenceCode: "",
-          libAgence: "",
-          codeVille: "",
-          regionAgence: "",
-          codeBC: "",
-          ordreDe: "",
-          parDefault: "",
-          compensation: "",
-          fonction: "",
-          telephone: "",
-          fax: "",
-          email: "",
-          telex: "",
-          addresse: "",
-          codePostal: "",
-          commentaire: "",
+          directeurNom: "",
+          directeurEmail: "",
+          directeurTelephone: "",
         },
   });
 
@@ -202,13 +208,44 @@ export default function AgenceFormSteps({
           {step === 1 && (
             <Card>
               <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="codeBanque"
+                    name="nomBanque"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("codeBanque")}</FormLabel>
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>{t("nomBanque")}</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner une banque" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {bankOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="adresseComplete"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>{t("adresseComplete")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -216,6 +253,21 @@ export default function AgenceFormSteps({
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="codeSwiftBic"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("codeSwiftBic")}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="agenceCode"
@@ -229,202 +281,69 @@ export default function AgenceFormSteps({
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
-                    name="libAgence"
+                    name="devise"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("libelleAgence")}</FormLabel>
+                        <FormLabel>{t("devise")}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="codeVille"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("codeVille")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="regionAgence"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("regionAgence")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="codeBC"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("codeBC")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="ordreDe"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("orderDe")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="parDefault"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("parDefault")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="compensation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("compensation")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="fonction"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("fonction")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
+                          <Input {...field} defaultValue="DZD" readOnly />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="telephone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("telephone")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="fax"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("fax")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("email")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="email" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="telex"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("telex")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="addresse"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>{t("addresse")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="codePostal"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("codePostal")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="commentaire"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-3">
-                        <FormLabel>{t("commentaire")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="md:col-span-2">
+                    <h3 className="text-lg font-medium mb-4">
+                      {t("directeurAgence")}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="directeurNom"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("directeurNom")}</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="directeurTelephone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("directeurTelephone")}</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="directeurEmail"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>{t("directeurEmail")}</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -432,7 +351,7 @@ export default function AgenceFormSteps({
 
           {step === 2 && (
             <Card>
-              <CardContent className="pt-6">
+              <CardContent className="pt-6 max-h-[70vh] overflow-y-auto">
                 <h2 className="text-xl font-semibold mb-4">
                   {t("relatedUsers")}
                 </h2>
