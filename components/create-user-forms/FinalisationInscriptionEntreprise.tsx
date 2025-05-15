@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/file-upload";
 import { DialogClose } from "../ui/dialog";
 import { useTranslations } from "next-intl";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 
@@ -120,7 +120,7 @@ const FinalisationInscriptionEntreprise = () => {
     File[] | null
   >(null);
 
-  const userid = session.data?.user.id;
+  const userid = (session.data?.user as any)?.id;
   const dropZoneConfig = {
     maxFiles: 1,
     maxSize: 1024 * 1024 * 4,
@@ -163,7 +163,7 @@ const FinalisationInscriptionEntreprise = () => {
                     userid: "${userid}",
                     data: ${JSON.stringify(data)},
                     name: "${name}",
-                    type: "userdata", 
+                    type: "userdata",
                   }
                 },
                 condition: {
@@ -186,7 +186,7 @@ const FinalisationInscriptionEntreprise = () => {
         }
       }
     `;
-      const result = await fetchGraphQL<string>(createUpdateManyMutation);
+      const result = await fetchGraphQLClient<string>(createUpdateManyMutation);
 
       // Show success toast
       toast({
@@ -241,7 +241,7 @@ const FinalisationInscriptionEntreprise = () => {
         const response = await fetch(uploadUrl, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${session.data?.user.token}`,
+            Authorization: `Bearer ${(session.data?.user as any)?.token}`,
           },
           body: formData,
         });
@@ -1103,7 +1103,7 @@ const FinalisationInscriptionEntreprise = () => {
                       <FormControl>
                         <FileUploader
                           value={nisFiles}
-                          onValueChange={setNifFiles}
+                          onValueChange={setNisFiles}
                           dropzoneOptions={dropZoneConfig}
                           className="relative bg-background rounded-lg p-2"
                         >

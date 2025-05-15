@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
 import { HISTORIQUE_EXECUTION_ORDRE_QUERY } from "@/graphql/queries";
 import RateLimitReached from "./RateLimitReached";
@@ -37,7 +37,7 @@ const chartConfig = {
 export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
   const [chartData, setChartData] = useState<ExecutionData[]>([]);
   const session = useSession();
-  const userid = session?.data?.user?.id;
+  const userid = (session?.data?.user as any)?.id;
   const tStatus = useTranslations("status");
 
   const processData = (rawData: any[]): ExecutionData[] => {
@@ -71,9 +71,12 @@ export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
 
   const fetchExecutionHistory = async () => {
     try {
-      const result = await fetchGraphQL<any>(HISTORIQUE_EXECUTION_ORDRE_QUERY, {
-        userid,
-      });
+      const result = await fetchGraphQLClient<any>(
+        HISTORIQUE_EXECUTION_ORDRE_QUERY,
+        {
+          userid,
+        }
+      );
       const processedData = processData(result.groupByOrder);
       setChartData(processedData);
     } catch (error) {

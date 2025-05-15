@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { UPDATE_LISTED_COMPANY } from "@/graphql/mutations";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 
 // Définition du schéma de validation
 const formSchema = z.object({
@@ -150,7 +150,7 @@ const EditCompanyDialog = ({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      await fetchGraphQL<{ id: string }>(UPDATE_LISTED_COMPANY, {
+      await fetchGraphQLClient<{ id: string }>(UPDATE_LISTED_COMPANY, {
         id: values.id,
         nom: values.nom,
         secteuractivite: values.secteurActivite,

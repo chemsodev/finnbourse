@@ -34,7 +34,7 @@ import * as z from "zod";
 import { Input } from "./ui/input";
 import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/routing";
 import ReenitialiserMdpDialog from "./ReenitialiserMdpDialog";
@@ -96,14 +96,14 @@ export default function ProfileForm(props: {
   const p = useTranslations("finalisationInscriptionParticulier");
   const e = useTranslations("FinalisationInscriptionEntreprise");
   const session = useSession();
-  const userId = session.data?.user?.id;
-  const clientType = session.data?.user?.followsbusiness;
+  const userId = (session.data?.user as any)?.id;
+  const clientType = (session.data?.user as any)?.followsbusiness;
   const { toast } = useToast();
   const router = useRouter();
   const userObject = userDetails.findUniqueUser;
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const userid = session.data?.user.id;
+  const userid = (session.data?.user as any)?.id;
   const form = useForm<ContactFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -160,7 +160,7 @@ export default function ProfileForm(props: {
 
       // Update user details (fullname, email, phonenumber) if needed
       if (Object.keys(updatedUserDetails).length > 0) {
-        await fetchGraphQL<String>(
+        await fetchGraphQLClient<String>(
           `
           mutation updateUser {
             updateUser(
@@ -206,7 +206,7 @@ export default function ProfileForm(props: {
                     userid: "${userid}",
                     data: ${JSON.stringify(data)},
                     name: "${name}",
-                    type: "userdata", 
+                    type: "userdata",
                   }
                 },
                 condition: {
@@ -231,7 +231,7 @@ export default function ProfileForm(props: {
     `;
 
       // Call the GraphQL mutation
-      const result = await fetchGraphQL<string>(createUpdateManyMutation);
+      const result = await fetchGraphQLClient<string>(createUpdateManyMutation);
 
       // Show success toast
       toast({

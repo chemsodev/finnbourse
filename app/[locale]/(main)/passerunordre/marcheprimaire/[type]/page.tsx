@@ -5,14 +5,17 @@ import MyMarquee from "@/components/MyMarquee";
 import { TitresTable } from "@/components/gestion-des-titres/TitresTable";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { getTranslations } from "next-intl/server";
+import { Session } from "next-auth";
 
 import React from "react";
 
 const page = async (props: { params: { type: string } }) => {
   const t = await getTranslations("Titres");
-  const session = await getServerSession(auth);
+  console.log("Marche Primaire type:", props.params.type);
+
+  const session = (await getServerSession(auth)) as Session & { user?: any };
   const userRole = session?.user?.roleid;
 
   const { type } = props.params;

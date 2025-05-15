@@ -32,7 +32,7 @@ import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmett
 import EditCompanyDialog from "@/components/listed-company/edit-company-dialog";
 import DeleteCompanyDialog from "@/components/listed-company/delete-company-dialog";
 import SearchFilter from "@/components/listed-company/search-filter";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import {
   Tooltip,
   TooltipContent,
@@ -71,9 +71,9 @@ export default function CompaniesPage() {
       setLoading(true);
       setError(null);
 
-      const result = await fetchGraphQL<{ listListedCompanies: Company[] }>(
-        LIST_LISTED_COMPANIES
-      );
+      const result = await fetchGraphQLClient<{
+        listListedCompanies: Company[];
+      }>(LIST_LISTED_COMPANIES);
 
       if (!result || !result.listListedCompanies) {
         throw new Error(t("fetchError"));

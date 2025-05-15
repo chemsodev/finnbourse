@@ -13,13 +13,15 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Info, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -31,15 +33,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import TitreDrawer from "./TitreDrawer";
+import { TitreDrawer } from "./TitreDrawer";
 import { useTranslations } from "next-intl";
 import { formatDate, formatPrice } from "@/lib/utils";
 import TitresTableSkeleton from "./TitresTableSkeleton";
 import { LIST_STOCKS_QUERY, LIST_BOND_QUERY } from "@/graphql/queries";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Bond, Stock } from "@/lib/interfaces";
 
-import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import AddSecurityHistory from "../AddSecurityHistory";
 import { useSession } from "next-auth/react";
 import UpdateFaceValue from "./UpdateFaceValue";
@@ -303,40 +305,90 @@ export function TitresTable({ type }: TitresTableProps) {
     },
   ];
 
-  let query;
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        let query;
+        let typeToFilter;
 
-  if (type === "action" || type === "opv") {
-    query = LIST_STOCKS_QUERY;
-  } else {
-    query = LIST_BOND_QUERY;
-  }
+        // Choose query based on type
+        if (
+          type === "action" ||
+          type === "opv" ||
+          type === "sukukms" ||
+          type === "titresparticipatifsms"
+        ) {
+          query = LIST_STOCKS_QUERY;
+        } else {
+          query = LIST_BOND_QUERY;
+        }
 
-  const fetchData = async () => {
-    try {
-      const result = await clientFetchGraphQL<QueryData>(query, {
-        type,
-      });
-      setData(result);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      if (error === "Too many requests") {
-        return <RateLimitReached />;
+        // Map the type parameter to the correct backend filter value
+        if (type === "opv") {
+          typeToFilter = "opv";
+        } else if (type === "empruntobligataire") {
+          typeToFilter = "empruntobligataire";
+        } else if (type === "sukukmp") {
+          typeToFilter = "sukuk";
+        } else if (type === "titresparticipatifsmp") {
+          typeToFilter = "titresparticipatifs";
+        } else if (type === "sukukms") {
+          typeToFilter = "sukuk";
+        } else if (type === "titresparticipatifsms") {
+          typeToFilter = "titresparticipatifs";
+        } else {
+          typeToFilter = type;
+        }
+
+        // Get auth token from session if available
+        const token = session?.data?.user
+          ? (session.data.user as any).token
+          : undefined;
+
+        // Use typeToFilter as the parameter name expected by your backend
+        const result = await fetchGraphQLClient<QueryData>(
+          query,
+          {
+            type: typeToFilter,
+          },
+          undefined,
+          token // Pass the token for authorization
+        );
+
+        setData(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
-      if (error === "Token is revoked") {
-        return <LogOutAgent />;
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  // Fetch data using the GraphQL query
-  React.useEffect(() => {
     fetchData();
-  }, []);
+  }, [type, session?.data?.user]);
 
   const table = useReactTable({
-    data: data?.listStocks || data?.listBonds || [],
+    // Ensure we handle all possible data structures from the API
+    data: React.useMemo(() => {
+      if (!data) return [];
+
+      if (data.listStocks && Array.isArray(data.listStocks)) {
+        return data.listStocks;
+      }
+
+      if (data.listBonds && Array.isArray(data.listBonds)) {
+        return data.listBonds;
+      }
+
+      // If data has a different structure, try to find arrays
+      for (const key in data) {
+        if (Array.isArray((data as any)[key])) {
+          return (data as any)[key];
+        }
+      }
+
+      return [];
+    }, [data]),
     columns: columns(t),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

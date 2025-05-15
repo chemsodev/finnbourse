@@ -54,7 +54,7 @@ import {
 import { CirclePlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { GET_LISTED_COMPANIES_QUERY } from "@/graphql/queries";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/routing";
 import { fr, ar, enUS } from "date-fns/locale";
@@ -113,7 +113,7 @@ const ModifierTitre = ({
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await fetchGraphQL<GetListedCompaniesResponse>(
+        const response = await fetchGraphQLClient<GetListedCompaniesResponse>(
           GET_LISTED_COMPANIES_QUERY
         );
         setCompanies(response);
@@ -216,7 +216,7 @@ const ModifierTitre = ({
       // Generate the appropriate mutation based on type
       const mutation = generateMutation(type, changedFields);
 
-      await fetchGraphQL<String>(mutation, changedFields);
+      await fetchGraphQLClient<String>(mutation, changedFields);
 
       toast({
         variant: "success",

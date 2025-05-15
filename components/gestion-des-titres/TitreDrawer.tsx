@@ -18,8 +18,8 @@ import {
   LIST_STOCKS_QUERY,
   LIST_BOND_QUERY,
 } from "@/graphql/queries";
-import { useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { useEffect, useState } from "react";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { formatDate } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import RateLimitReached from "../RateLimitReached";
@@ -31,9 +31,9 @@ interface TitreDrawerProps {
   type: string;
 }
 
-const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
+export const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
   const session = useSession();
-  const userRole = session?.data?.user?.roleid;
+  const userRole = session?.data?.user as any;
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [listedCompanyData, setListedCompanyData] = useState<any | null>(null);
@@ -45,6 +45,7 @@ const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
     "sukukmp",
     "titresparticipatifsmp",
   ].includes(type);
+  const isBond = type === "obligation" || type === "empruntobligataire";
 
   const getHref = () => {
     if (type === "empruntobligataire" || type === "opv") {
@@ -67,48 +68,50 @@ const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
     query = FIND_UNIQUE_BOND_QUERY;
   }
 
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const result = await fetchGraphQLClient<any>(query, {
+        id: titreId,
+        type: type,
+      });
+
+      // Handle the actual data structure based on the query type
+      if (type === "action" || type === "opv") {
+        setData(result.findUniqueStock);
+        const listedCompanyId = result.findUniqueStock.listedcompanyid;
+        await fetchListedCompanyData(listedCompanyId);
+      } else {
+        setData(result.findUniqueBond);
+        const listedCompanyId = result.findUniqueBond.listedcompanyid;
+        await fetchListedCompanyData(listedCompanyId);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchListedCompanyData = async (listedCompanyId: string) => {
     try {
-      const result = await fetchGraphQL<any>(FIND_UNIQUE_LISTED_COMPANY_QUERY, {
-        id: listedCompanyId,
-      });
+      const result = await fetchGraphQLClient<any>(
+        FIND_UNIQUE_LISTED_COMPANY_QUERY,
+        {
+          id: listedCompanyId,
+        }
+      );
       setListedCompanyData(result);
     } catch (error) {
-      if (error === "Too many requests") {
-        return <RateLimitReached />;
-      }
       console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const isBond = type === "obligation" || type === "empruntobligataire";
-
-  const fetchData = async () => {
-    try {
-      const result = await fetchGraphQL<any>(query, {
-        id: titreId,
-        type,
-      });
-
-      setData(
-        type === "action" || type === "opv"
-          ? result.findUniqueStock
-          : result.findUniqueBond
-      );
-
-      fetchListedCompanyData(
-        type === "action" || type === "opv"
-          ? result.findUniqueStock.listedcompanyid
-          : result.findUniqueBond.listedcompanyid
-      );
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (isOpen) {
+      fetchData();
     }
-  };
+  }, [isOpen, titreId]);
 
   // Handle sheet opening
   const handleOpenChange = (open: boolean) => {
@@ -118,14 +121,81 @@ const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
     }
   };
 
+  // Add a helper function to safely access nested properties
+  const safelyAccessNestedProperty = (
+    obj: any,
+    path: string[],
+    defaultValue: any = "N/A"
+  ) => {
+    try {
+      let current = obj;
+      for (const key of path) {
+        if (
+          current === null ||
+          current === undefined ||
+          typeof current !== "object"
+        ) {
+          return defaultValue;
+        }
+        current = current[key];
+      }
+
+      if (current === null || current === undefined) {
+        return defaultValue;
+      }
+
+      // Check if it's a primitive value that can be rendered
+      if (typeof current === "object") {
+        return JSON.stringify(current);
+      }
+
+      return current;
+    } catch (error) {
+      console.error("Error accessing property:", error);
+      return defaultValue;
+    }
+  };
+
+  // Specifically for contact.email
+  const getContactEmail = () => {
+    try {
+      if (!listedCompanyData?.findUniqueListedCompany?.contact) {
+        return "N/A";
+      }
+
+      const contact = listedCompanyData.findUniqueListedCompany.contact;
+      if (
+        typeof contact === "object" &&
+        contact !== null &&
+        typeof contact.email === "string"
+      ) {
+        return contact.email;
+      }
+
+      return "N/A";
+    } catch (error) {
+      console.error("Error getting contact email:", error);
+      return "N/A";
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button size="icon">
-          <Info className="w-4 h-4" />
-        </Button>
+        <div
+          className="flex gap-2 cursor-pointer justify-center items-center
+          text-primary"
+        >
+          <Info className="h-4 w-4" />
+          <div className=" font-semibold text-xs">{t("info")}</div>
+        </div>
       </SheetTrigger>
       <SheetContent className="overflow-y-scroll">
+        <SheetHeader>
+          <SheetTitle className="bg-gray-50/80 text-center text-primary font-bold text-2xl uppercase py-10 flex gap-4 justify-center items-center ">
+            <div>{data?.issuer || "N/A"}</div>
+          </SheetTitle>
+        </SheetHeader>
         {loading ? (
           <div className="flex justify-center items-center h-full w-full">
             <div role="status">
@@ -149,231 +219,236 @@ const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
             </div>
           </div>
         ) : (
-          <>
-            <SheetHeader>
-              <SheetTitle className="bg-gray-50/80 text-center text-primary font-bold text-2xl uppercase py-10 flex gap-4 justify-center items-center ">
-                <div>{data?.issuer}</div>
-              </SheetTitle>
-              <SheetDescription className="flex flex-col overflow-y-scroll h-[84%]">
-                <div className="flex flex-col gap-4 p-8">
-                  <div className="flex justify-between">
-                    <div className="text-gray-400">{t("code")}</div>
-                    <div className="text-black font-semibold">
-                      {data?.code || "N/A"}
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <div className="text-gray-400">ISIN</div>
-                    <div className="text-black font-semibold">
-                      {data?.isincode || "N/A"}
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <div className="text-gray-400">{t("marcheDeCotation")}</div>
-                    <div className="text-black font-semibold">
-                      {data?.marketlisting || "N/A"}
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <div className="text-gray-400">{t("emissionDate")}</div>
-                    <div className="text-black font-semibold">
-                      {formatDate(data?.emissiondate || 0) || "N/A"}
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <div className="text-gray-400">{t("enjoymentDate")}</div>
-                    <div className="text-black font-semibold">
-                      {formatDate(data?.enjoymentdate || 0) || "N/A"}
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <div className="text-gray-400">{t("qte")}</div>
-                    <div className="text-black font-semibold">
-                      {data?.quantity || "N/A"}
-                    </div>
-                  </div>
-                  {isBond && (
-                    <>
-                      {/* Commented out bond-specific fields
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("maturityDate")}</div>
-                        <div className="text-black font-semibold">
-                          {formatDate(data?.maturitydate || 0) || "N/A"}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("yieldRate")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.yieldrate || "N/A"}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("fixedRate")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.fixedrate || "N/A"}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("estimatedRate")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.estimatedrate || "N/A"}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("capitalOperation")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.capitaloperation || "N/A"}
-                        </div>
-                      </div>
-                      */}
-                    </>
-                  )}
-                  {isSubscriptionType && (
-                    <div className="flex justify-between">
-                      <div className="text-gray-400">{t("closingDate")}</div>
-                      <div className="text-black font-semibold">
-                        {formatDate(data?.closingdate || 0) || "N/A"}
-                      </div>
-                    </div>
-                  )}
-                  {!isBond && (
-                    <>
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("dividendRate")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.dividendrate || "N/A"} %
-                        </div>
-                      </div>
-
-                      {/* Commented out original fields
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("shareClass")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.shareclass || "N/A"}
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("votingRights")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.votingrights ? "Disponible" : "Absent"}
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("dividendInfo")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.dividendinfo || "N/A"}
-                        </div>
-                      </div>
-                      */}
-                    </>
-                  )}
-                  {isBond ||
-                  type === "sukukms" ||
-                  type === "sukukmp" ||
-                  type === "titresparticipatifsms" ||
-                  type === "titresparticipatifsmp" ? (
-                    <>
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">{t("yieldRate")}</div>
-                        <div className="text-black font-semibold">
-                          {data?.yieldrate || "N/A"} %
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <div className="text-gray-400">
-                          {t("repayementMethod")}
-                        </div>
-                        <div className="text-black font-semibold">
-                          {data?.repaymentmethod || "N/A"}
-                        </div>
-                      </div>
-                    </>
-                  ) : null}
+          <SheetDescription className="flex flex-col overflow-y-scroll h-[84%]">
+            <div className="flex flex-col gap-4 p-8">
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("code")}</div>
+                <div className="text-black font-semibold">
+                  {safelyAccessNestedProperty(data, ["code"]) || "N/A"}
                 </div>
-                <div className="flex items-baseline mx-4">
-                  <div className="text-xs text-primary font-semibold capitalize w-fit pr-2 flex-shrink-0">
-                    {t("societeEmetrice")}
-                  </div>
-                  <div className="border-b border-gray-100 w-full px-2"></div>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">ISIN</div>
+                <div className="text-black font-semibold">
+                  {safelyAccessNestedProperty(data, ["isincode"]) || "N/A"}
                 </div>
-                <div className="flex flex-col gap-4 p-8">
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("marcheDeCotation")}</div>
+                <div className="text-black font-semibold">
+                  {safelyAccessNestedProperty(data, ["marketlisting"]) || "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("emissionDate")}</div>
+                <div className="text-black font-semibold">
+                  {data?.emissiondate ? formatDate(data.emissiondate) : "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("enjoymentDate")}</div>
+                <div className="text-black font-semibold">
+                  {data?.enjoymentdate ? formatDate(data.enjoymentdate) : "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("qte")}</div>
+                <div className="text-black font-semibold">
+                  {safelyAccessNestedProperty(data, ["quantity"]) || "N/A"}
+                </div>
+              </div>
+              {isBond && (
+                <>
+                  {/* Commented out bond-specific fields
                   <div className="flex justify-between">
-                    <div className="text-gray-400">{t("denomination")}</div>
+                    <div className="text-gray-400">{t("maturityDate")}</div>
                     <div className="text-black font-semibold">
-                      {listedCompanyData?.findUniqueListedCompany.nom || "N/A"}
+                      {data?.maturitydate ? formatDate(data.maturitydate) : "N/A"}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <div className="text-gray-400">{t("yieldRate")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["yieldrate"]) || "N/A"}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <div className="text-gray-400">{t("fixedRate")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["fixedrate"]) || "N/A"}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <div className="text-gray-400">{t("estimatedRate")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["estimatedrate"]) || "N/A"}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <div className="text-gray-400">{t("capitalOperation")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["capitaloperation"]) || "N/A"}
+                    </div>
+                  </div>
+                  */}
+                </>
+              )}
+              {isSubscriptionType && (
+                <div className="flex justify-between">
+                  <div className="text-gray-400">{t("closingDate")}</div>
+                  <div className="text-black font-semibold">
+                    {data?.closingdate ? formatDate(data.closingdate) : "N/A"}
+                  </div>
+                </div>
+              )}
+              {!isBond && (
+                <>
+                  <div className="flex justify-between">
+                    <div className="text-gray-400">{t("dividendRate")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["dividendrate"]) ||
+                        "N/A"}{" "}
+                      %
+                    </div>
+                  </div>
+
+                  {/* Commented out original fields
+                  <div className="flex justify-between">
+                    <div className="text-gray-400">{t("shareClass")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["shareclass"]) || "N/A"}
                     </div>
                   </div>
                   <div className="flex justify-between">
-                    <div className="text-gray-400">{t("secteurActivite")}</div>
+                    <div className="text-gray-400">{t("votingRights")}</div>
                     <div className="text-black font-semibold">
-                      {listedCompanyData?.findUniqueListedCompany
-                        .secteuractivite || "N/A"}
+                      {safelyAccessNestedProperty(data, ["votingrights"]) ? "Disponible" : "Absent"}
                     </div>
                   </div>
                   <div className="flex justify-between">
-                    <div className="text-gray-400">
-                      {t("capitalisationBoursiere")}
-                    </div>
+                    <div className="text-gray-400">{t("dividendInfo")}</div>
                     <div className="text-black font-semibold">
-                      {listedCompanyData?.findUniqueListedCompany
-                        .capitalisationboursiere || "N/A"}
+                      {safelyAccessNestedProperty(data, ["dividendinfo"]) || "N/A"}
+                    </div>
+                  </div>
+                  */}
+                </>
+              )}
+              {isBond ||
+              type === "sukukms" ||
+              type === "sukukmp" ||
+              type === "titresparticipatifsms" ||
+              type === "titresparticipatifsmp" ? (
+                <>
+                  <div className="flex justify-between">
+                    <div className="text-gray-400">{t("yieldRate")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["yieldrate"]) || "N/A"}{" "}
+                      %
                     </div>
                   </div>
                   <div className="flex justify-between">
-                    <div className="text-gray-400">{t("siteOfficiel")}</div>
-                    <Link
-                      href={
+                    <div className="text-gray-400">{t("repayementMethod")}</div>
+                    <div className="text-black font-semibold">
+                      {safelyAccessNestedProperty(data, ["repaymentmethod"]) ||
+                        "N/A"}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </div>
+            <div className="flex items-baseline mx-4">
+              <div className="text-xs text-primary font-semibold capitalize w-fit pr-2 flex-shrink-0">
+                {t("societeEmetrice")}
+              </div>
+              <div className="border-b border-gray-100 w-full px-2"></div>
+            </div>
+            <div className="flex flex-col gap-4 p-8">
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("denomination")}</div>
+                <div className="text-black font-semibold">
+                  {safelyAccessNestedProperty(listedCompanyData, [
+                    "findUniqueListedCompany",
+                    "nom",
+                  ]) || "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("secteurActivite")}</div>
+                <div className="text-black font-semibold">
+                  {safelyAccessNestedProperty(listedCompanyData, [
+                    "findUniqueListedCompany",
+                    "secteuractivite",
+                  ]) || "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">
+                  {t("capitalisationBoursiere")}
+                </div>
+                <div className="text-black font-semibold">
+                  {safelyAccessNestedProperty(listedCompanyData, [
+                    "findUniqueListedCompany",
+                    "capitalisationboursiere",
+                  ]) || "N/A"}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("siteOfficiel")}</div>
+                <Link
+                  href={
+                    safelyAccessNestedProperty(
+                      listedCompanyData,
+                      ["findUniqueListedCompany", "siteofficiel"],
+                      ""
+                    ) || ""
+                  }
+                  className="text-black font-semibold underline"
+                >
+                  {safelyAccessNestedProperty(
+                    listedCompanyData,
+                    ["findUniqueListedCompany", "siteofficiel"],
+                    "N/A"
+                  )}
+                </Link>
+              </div>
+              <div className="flex justify-between">
+                <div className="text-gray-400">{t("email")}</div>
+                <div className="text-black font-semibold">
+                  {getContactEmail()}
+                </div>
+              </div>
+            </div>
+            <div className=" p-4">
+              {(userRole === 3 || userRole === 2) &&
+                listedCompanyData?.findUniqueListedCompany && (
+                  <div className="flex w-full gap-4 ">
+                    <ModifierTitre
+                      type={type}
+                      titreData={data}
+                      listedCompanyData={
                         listedCompanyData?.findUniqueListedCompany
-                          .siteofficiel || ""
                       }
-                      className="text-black font-semibold underline"
-                    >
-                      {listedCompanyData?.findUniqueListedCompany
-                        .siteofficiel || "N/A"}
-                    </Link>
+                    />
+                    <SupprimerTitre securityId={titreId} type={type} />
                   </div>
-                  <div className="flex justify-between">
-                    <div className="text-gray-400">{t("email")}</div>
-                    <div className="text-black font-semibold">
-                      {listedCompanyData?.findUniqueListedCompany.contact
-                        .email || "N/A"}
-                    </div>
-                  </div>
-                </div>
-                <div className=" p-4">
-                  {(userRole === 3 || userRole === 2) &&
-                    listedCompanyData?.findUniqueListedCompany && (
-                      <div className="flex w-full gap-4 ">
-                        <ModifierTitre
-                          type={type}
-                          titreData={data}
-                          listedCompanyData={
-                            listedCompanyData?.findUniqueListedCompany
-                          }
-                        />
-                        <SupprimerTitre securityId={titreId} type={type} />
-                      </div>
-                    )}
-                  {(userRole === 1 || userRole === 2) && (
-                    <Link
-                      href={getHref()}
-                      className="bg-primary text-white px-14 py-2 rounded-md text-center font-semibold flex justify-center my-5 "
-                    >
-                      {isSubscriptionType ? t("souscrire") : t("passerUnOrdre")}
-                    </Link>
-                  )}
-                </div>
-              </SheetDescription>
-            </SheetHeader>
-          </>
+                )}
+              {(userRole === 1 || userRole === 2) && (
+                <Link
+                  href={getHref()}
+                  className="bg-primary text-white px-14 py-2 rounded-md text-center font-semibold flex justify-center my-5 "
+                >
+                  {isSubscriptionType ? t("souscrire") : t("passerUnOrdre")}
+                </Link>
+              )}
+            </div>
+          </SheetDescription>
         )}
       </SheetContent>
     </Sheet>
   );
 };
-
-export default TitreDrawer;

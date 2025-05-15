@@ -35,7 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { UPDATE_USER_ROLE, VALIDATE_USER } from "@/graphql/mutations";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 
 import { useRouter } from "@/i18n/routing";
@@ -48,13 +48,13 @@ const ValidateUser = (userId: { userId: string }) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const session = useSession();
-  const negotiatorid = session.data?.user?.id;
+  const negotiatorid = (session.data?.user as any)?.id;
 
   const t = useTranslations("validateUser");
   const validateUsr = async () => {
     setLoading(true);
     try {
-      await fetchGraphQL<String>(VALIDATE_USER, {
+      await fetchGraphQLClient<String>(VALIDATE_USER, {
         roleid: 1,
         userid: userId.userId,
         negotiatorid,

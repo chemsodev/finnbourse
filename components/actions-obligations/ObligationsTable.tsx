@@ -48,7 +48,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { LIST_BOND_QUERY, FIND_UNIQUE_BOND_QUERY } from "@/graphql/queries";
 import { DELETE_BOND } from "@/graphql/mutations";
 import { format } from "date-fns";
@@ -107,7 +107,7 @@ export default function ObligationsTable({
     const fetchBonds = async () => {
       setLoading(true);
       try {
-        const response = await fetchGraphQL(LIST_BOND_QUERY, {
+        const response = await fetchGraphQLClient(LIST_BOND_QUERY, {
           type: selectedType === "all" ? undefined : selectedType,
         });
         setBonds((response as any).listBonds || []);
@@ -176,7 +176,7 @@ export default function ObligationsTable({
 
     setDeletingBond(true);
     try {
-      await fetchGraphQL(DELETE_BOND, { securityId: bondToDelete });
+      await fetchGraphQLClient(DELETE_BOND, { securityId: bondToDelete });
 
       // Remove the deleted bond from the state
       setBonds(bonds.filter((bond) => bond.id !== bondToDelete));

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
 import { PERF_PLATEFORME_QUERY } from "@/graphql/queries";
 import RateLimitReached from "../RateLimitReached";
@@ -44,7 +44,7 @@ export function GraphPerfPlat(titre: { titre: string }) {
   const ititre = titre.titre;
   const [data, setData] = useState<SecurityTransaction[]>([]);
   const session = useSession();
-  const userId = session?.data?.user?.id;
+  const userId = (session?.data?.user as any)?.id;
   const t = useTranslations("SecurityIssuers");
 
   const processData = (rawData: any[]): SecurityTransaction[] => {
@@ -58,7 +58,7 @@ export function GraphPerfPlat(titre: { titre: string }) {
 
   const fetchTransactions = async () => {
     try {
-      const result = await fetchGraphQL<any>(PERF_PLATEFORME_QUERY);
+      const result = await fetchGraphQLClient<any>(PERF_PLATEFORME_QUERY);
       console.log("API Response:", result); // Debug log
 
       if (result?.data?.groupByOrder) {

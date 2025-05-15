@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { FIND_UNIQUE_STOCKS_QUERY } from "@/graphql/queries";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,7 @@ export default function ActionEditPage({ params }: { params: { id: string } }) {
     const fetchStock = async () => {
       setLoading(true);
       try {
-        const response = await fetchGraphQL(FIND_UNIQUE_STOCKS_QUERY, {
+        const response = await fetchGraphQLClient(FIND_UNIQUE_STOCKS_QUERY, {
           id: params.id,
         });
 
@@ -178,7 +178,7 @@ export default function ActionEditPage({ params }: { params: { id: string } }) {
           : null,
       };
 
-      const response = await fetchGraphQL("UPDATE_STOCK", {
+      const response = await fetchGraphQLClient("UPDATE_STOCK", {
         id: params.id,
         data: formattedData,
       });

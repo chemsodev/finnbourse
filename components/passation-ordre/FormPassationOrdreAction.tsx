@@ -67,7 +67,7 @@ import {
   LIST_STOCKS_NAME_PRICE_QUERY,
   FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
 } from "@/graphql/queries";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
 import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
@@ -87,8 +87,8 @@ const FormPassationOrdreAction = ({
   type: string;
 }) => {
   const session = useSession();
-  const userId = session.data?.user?.id;
-  const negotiatorId = session.data?.user?.negotiatorId;
+  const userId = (session.data?.user as any)?.id;
+  const negotiatorId = (session.data?.user as any)?.negotiatorId;
   const locale = useLocale().toLowerCase();
   const { toast } = useToast();
   const [data, setData] = useState<any>(null);
@@ -113,9 +113,12 @@ const FormPassationOrdreAction = ({
     const ListStockData = async () => {
       setLoading(true);
       try {
-        const result = await fetchGraphQL<any>(LIST_STOCKS_NAME_PRICE_QUERY, {
-          type,
-        });
+        const result = await fetchGraphQLClient<any>(
+          LIST_STOCKS_NAME_PRICE_QUERY,
+          {
+            type,
+          }
+        );
         setStockData(result.listStocks);
         const selectedTitreId = titreId;
         if (selectedTitreId) {
@@ -155,7 +158,7 @@ const FormPassationOrdreAction = ({
   const fetchData = async (id: string) => {
     setLoading(true);
     try {
-      const result = await fetchGraphQL<any>(FIND_UNIQUE_STOCKS_QUERY, {
+      const result = await fetchGraphQLClient<any>(FIND_UNIQUE_STOCKS_QUERY, {
         id,
       });
       setData(result.findUniqueStock);
@@ -170,7 +173,7 @@ const FormPassationOrdreAction = ({
 
   const fetchExtraFieldsData = async (id: string) => {
     try {
-      const result = await fetchGraphQL<any>(
+      const result = await fetchGraphQLClient<any>(
         FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
         {
           id,
@@ -255,7 +258,7 @@ const FormPassationOrdreAction = ({
     setIsSubmitting(true);
 
     try {
-      const retrunedData = await fetchGraphQL<CreateOrderResponse>(
+      const retrunedData = await fetchGraphQLClient<CreateOrderResponse>(
         CREATE_ORDER_MUTATION,
         {
           ordertypeone: data.instructionOrdreTemps,

@@ -1,27 +1,28 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import VoletNotif from "../dashboard/VoletNotif";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/utils";
 import auth from "@/auth";
-import { getServerSession } from "next-auth";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { CALCULATE_TOTAL_WALLET_VALUE } from "@/graphql/queries";
 import { useSession } from "next-auth/react";
 import LogOutAgent from "../LogOutAgent";
 import MobileNav from "../../app/[locale]/(main)/test-pdf/MobileNav";
 
-const TopBarDash = () => {
+export const TopBarDash = () => {
+  const locale = useLocale();
   const t = useTranslations("TopBarDash");
-  const [value, setValue] = useState(0);
+  const [totalValue, setTotalValue] = useState<number>(0);
   const session = useSession();
-  const userid = session?.data?.user?.id;
-  const userRole = session?.data?.user.roleid;
+  const userid = (session?.data?.user as any)?.id;
+  const userRole = (session?.data?.user as any)?.roleid;
+
   useEffect(() => {
     const fetchData = async () => {
       if (userRole === 1) {
         try {
-          const queryReturn = await fetchGraphQL<any>(
+          const queryReturn = await fetchGraphQLClient<any>(
             CALCULATE_TOTAL_WALLET_VALUE,
             {
               userid,
@@ -29,7 +30,7 @@ const TopBarDash = () => {
           );
           const totalValue =
             queryReturn?.aggregatePortfolio?._sum.totalPayed || 0;
-          setValue(Math.abs(totalValue));
+          setTotalValue(Math.abs(totalValue));
         } catch (error) {
           console.error("Error fetching total value:", error);
         }
@@ -74,7 +75,7 @@ const TopBarDash = () => {
             <div className="text-xs capitalize">{t("title")}</div>
             <div className="flex items-baseline ">
               <div className="text-xl font-semibold capitalize">
-                {(value && formatPrice(value)) || 0} {t("currency")}
+                {(totalValue && formatPrice(totalValue)) || 0} {t("currency")}
               </div>
             </div>
           </div>

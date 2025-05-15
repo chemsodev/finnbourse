@@ -60,7 +60,7 @@ import { preventNonNumericInput } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 import { toast } from "@/hooks/use-toast";
 import CouponTable from "../CouponTable";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
@@ -80,8 +80,8 @@ const FormPassationOrdreObligation = ({
   type: string;
 }) => {
   const session = useSession();
-  const userId = session.data?.user?.id;
-  const negotiatorId = session.data?.user?.negotiatorId;
+  const userId = (session.data?.user as any)?.id;
+  const negotiatorId = (session.data?.user as any)?.negotiatorId;
   const [open, setOpen] = useState(false);
   const [titre, setTitre] = useState("");
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
@@ -107,7 +107,7 @@ const FormPassationOrdreObligation = ({
 
   const fetchExtraFieldsData = async (id: string) => {
     try {
-      const result = await fetchGraphQL<any>(
+      const result = await fetchGraphQLClient<any>(
         FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
         {
           id,
@@ -144,7 +144,7 @@ const FormPassationOrdreObligation = ({
     const ListObligationData = async () => {
       setLoading(true);
       try {
-        const result = await fetchGraphQL<any>(LIST_BOND_QUERY, { type });
+        const result = await fetchGraphQLClient<any>(LIST_BOND_QUERY, { type });
         const listData = result.listBonds;
         setObligationData(listData);
         const selectedTitreId = titreId;
@@ -184,7 +184,7 @@ const FormPassationOrdreObligation = ({
   const fetchData = async (id: string) => {
     setLoading(true);
     try {
-      const result = await fetchGraphQL<any>(FIND_UNIQUE_BOND_QUERY, {
+      const result = await fetchGraphQLClient<any>(FIND_UNIQUE_BOND_QUERY, {
         id,
         type,
       });
@@ -214,7 +214,7 @@ const FormPassationOrdreObligation = ({
     setIsSubmitting(true);
 
     try {
-      const retrunedData = await fetchGraphQL<CreateOrderResponse>(
+      const retrunedData = await fetchGraphQLClient<CreateOrderResponse>(
         CREATE_ORDER_MUTATION,
         {
           ordertypeone: "",

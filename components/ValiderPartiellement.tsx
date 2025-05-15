@@ -33,7 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 import { LIST_ORDERS_SIMPLE } from "@/graphql/queries";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
 
 const formSchema = z.object({
@@ -69,7 +69,7 @@ export function ValiderPartiellement({ ordreId }: { ordreId: string }) {
           }),
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session.data?.user.token}`,
+            Authorization: `Bearer ${(session.data?.user as any)?.token}`,
           },
         }
       );
@@ -78,7 +78,7 @@ export function ValiderPartiellement({ ordreId }: { ordreId: string }) {
       }
       let order = null;
       try {
-        const data = await fetchGraphQL<any>(LIST_ORDERS_SIMPLE, {
+        const data = await fetchGraphQLClient<any>(LIST_ORDERS_SIMPLE, {
           orderId: ordreId,
         });
         order = data.findUniqueOrder ?? null;
@@ -86,20 +86,23 @@ export function ValiderPartiellement({ ordreId }: { ordreId: string }) {
         console.error("Error fetching orders:", error);
       }
       try {
-        const retrunedData = await fetchGraphQL<any>(CREATE_ORDER_MUTATION, {
-          ordertypes: order.instructionOrdreTemps,
-          orderdirection: order.typeTransaction ? 1 : 0,
-          securityissuer: order.securityIssuer,
-          securityid: order.selectedTitreId,
-          quantity: order.quantite - values.quantiteValidee,
-          pricelimitmin: order.valeurMin,
-          pricelimitmax: order.valeurMax,
-          validity: order.validity,
-          duration: order.duration,
-          orderdate: order.orderDate,
-          investorid: order.investorid,
-          negotiatorid: order.negotiatorId,
-        });
+        const retrunedData = await fetchGraphQLClient<any>(
+          CREATE_ORDER_MUTATION,
+          {
+            ordertypes: order.instructionOrdreTemps,
+            orderdirection: order.typeTransaction ? 1 : 0,
+            securityissuer: order.securityIssuer,
+            securityid: order.selectedTitreId,
+            quantity: order.quantite - values.quantiteValidee,
+            pricelimitmin: order.valeurMin,
+            pricelimitmax: order.valeurMax,
+            validity: order.validity,
+            duration: order.duration,
+            orderdate: order.orderDate,
+            investorid: order.investorid,
+            negotiatorid: order.negotiatorId,
+          }
+        );
       } catch (error) {
         console.error("Error fetching orders:", error);
       }

@@ -32,7 +32,7 @@ import { useTranslations } from "next-intl";
 import { CheckIcon, CircleAlert, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { CREATE_SUPPORT_MESSAGE } from "@/graphql/mutations";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 const formSchema = z.object({
@@ -42,7 +42,7 @@ const formSchema = z.object({
 
 export function SupportDialog() {
   const session = useSession();
-  const userId = session?.data?.user?.id;
+  const userId = (session?.data?.user as any)?.id;
   const t = useTranslations("SupportDialog");
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
@@ -55,7 +55,7 @@ export function SupportDialog() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await fetchGraphQL<string>(CREATE_SUPPORT_MESSAGE, {
+      await fetchGraphQLClient<string>(CREATE_SUPPORT_MESSAGE, {
         userid: userId,
         question: values.probleme,
         description: values.description,

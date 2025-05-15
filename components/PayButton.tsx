@@ -1,7 +1,7 @@
 import { Button } from "./ui/button";
 import { CheckIcon, CircleAlert } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { UPDATE_ORDER_PAYED_WITH_CARD } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
@@ -41,7 +41,7 @@ const PayButton: React.FC<PayButtonProps> = ({
         className="w-full flex items-center justify-center bg-gradient-to-r from-secondary to-blue-700 hover:from-secondary hover:to-blue-800 text-white font-bold py-2 px-4 rounded shadow-md transition-colors duration-200 z-50"
         onClick={async () => {
           if (payedWithCard || !isTermsAccepted) return;
-          const token = session.data?.user.token;
+          const token = (session.data?.user as any)?.token;
           const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
           const url = `${backendUrl}/satim-payment/register`;
           try {
@@ -89,7 +89,7 @@ const PayButton: React.FC<PayButtonProps> = ({
                   if (EventData.event === "success") {
                     // here add the UPDATE_ORDER_PAYED_WITH_CARD mutation
                     try {
-                      await fetchGraphQL(UPDATE_ORDER_PAYED_WITH_CARD, {
+                      await fetchGraphQLClient(UPDATE_ORDER_PAYED_WITH_CARD, {
                         id: createdOrdreId,
                         payedwithcard: true,
                       });

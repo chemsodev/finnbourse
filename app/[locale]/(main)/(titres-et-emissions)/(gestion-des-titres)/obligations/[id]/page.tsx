@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { FIND_UNIQUE_BOND_QUERY } from "@/graphql/queries";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,13 +39,13 @@ export default function ObligationViewPage({
     const fetchBond = async () => {
       setLoading(true);
       try {
-        const response = await fetchGraphQL(FIND_UNIQUE_BOND_QUERY, {
+        const response = await fetchGraphQLClient(FIND_UNIQUE_BOND_QUERY, {
           id: params.id,
         });
 
         const typedResponse = response as any;
-        if (typedResponse.bond) {
-          setBond(typedResponse.bond);
+        if (typedResponse.findUniqueBond) {
+          setBond(typedResponse.findUniqueBond);
         } else {
           setError("Bond not found");
           toast({

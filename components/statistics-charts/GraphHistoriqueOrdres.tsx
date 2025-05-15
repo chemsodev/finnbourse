@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { ORDER_HISTORY_QUERY } from "@/graphql/queries";
 import { useTranslations } from "next-intl";
 import RateLimitReached from "../RateLimitReached";
@@ -38,7 +38,7 @@ export function GraphHistoriqueOrdres(titre: { titre: string }) {
   const ititre = titre.titre;
   const [chartData, setChartData] = useState<OrderStatusData[]>([]);
   const session = useSession();
-  const userid = session?.data?.user?.id;
+  const userid = (session?.data?.user as any)?.id;
   const tStatus = useTranslations("status");
 
   const processData = (rawData: any[]): OrderStatusData[] => {
@@ -70,7 +70,9 @@ export function GraphHistoriqueOrdres(titre: { titre: string }) {
 
   const fetchOrderHistoryData = async () => {
     try {
-      const result = await fetchGraphQL<any>(ORDER_HISTORY_QUERY, { userid });
+      const result = await fetchGraphQLClient<any>(ORDER_HISTORY_QUERY, {
+        userid,
+      });
       const processedData = processData(result.groupByOrder);
       setChartData(processedData);
     } catch (error) {

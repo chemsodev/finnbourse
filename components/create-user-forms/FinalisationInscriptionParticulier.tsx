@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/file-upload";
 import { DialogClose } from "../ui/dialog";
 import { useLocale, useTranslations } from "next-intl";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { fr, ar, enUS } from "date-fns/locale";
 
@@ -99,7 +99,7 @@ const FinalisationInscriptionParticulier = () => {
     null
   );
   const [spacimenFiles, setSpacimenFiles] = useState<File[] | null>(null);
-  const userid = session.data?.user.id;
+  const userid = (session.data?.user as any)?.id;
   const dropZoneConfig = {
     maxFiles: 1,
     maxSize: 1024 * 1024 * 4,
@@ -136,7 +136,7 @@ const FinalisationInscriptionParticulier = () => {
                     userid: "${userid}",
                     data: ${JSON.stringify(data)},
                     name: "${name}",
-                    type: "userdata", 
+                    type: "userdata",
                   }
                 },
                 condition: {
@@ -160,7 +160,7 @@ const FinalisationInscriptionParticulier = () => {
       }
     `;
 
-      const result = await fetchGraphQL<string>(createUpdateManyMutation);
+      const result = await fetchGraphQLClient<string>(createUpdateManyMutation);
       setStep(2);
 
       // Show success toast
@@ -214,7 +214,7 @@ const FinalisationInscriptionParticulier = () => {
         const response = await fetch(uploadUrl, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${session.data?.user.token}`, // Replace with your token
+            Authorization: `Bearer ${(session.data?.user as any)?.token}`, // Replace with your token
           },
           body: formData,
         });

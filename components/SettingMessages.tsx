@@ -16,7 +16,7 @@ import {
 } from "./ui/dialog";
 import { DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { GET_SUPPORT_QUESTIONS_QUERY } from "@/graphql/queries";
 import { useEffect, useState } from "react";
 import Message from "./Message";
@@ -40,7 +40,7 @@ const SettingMessages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       setLoading(true);
-      const messages = await fetchGraphQL<GetSupportQuestionsResponse>(
+      const messages = await fetchGraphQLClient<GetSupportQuestionsResponse>(
         GET_SUPPORT_QUESTIONS_QUERY,
         {
           skip,

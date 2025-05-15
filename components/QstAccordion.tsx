@@ -5,8 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { questions } from "@/lib/exportables";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { LIST_SUPPORT_QUERY } from "@/graphql/queries";
 import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
@@ -21,32 +20,41 @@ interface ListSupportqas {
     language: string;
   }[];
 }
-export async function QstAccordion() {
+
+export function QstAccordion() {
   const locale = useLocale();
   const [questions, setQuestions] = useState<any>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    setLoading(true);
     const fetchQuestions = async () => {
       try {
-        const data = await fetchGraphQL<ListSupportqas>(LIST_SUPPORT_QUERY, {
-          take: 5,
-          language: locale,
-          state: 1,
-          ispublished: true,
-        });
+        const data = await fetchGraphQLClient<ListSupportqas>(
+          LIST_SUPPORT_QUERY,
+          {
+            take: 5,
+            language: locale,
+            state: 1,
+            ispublished: true,
+          }
+        );
         setQuestions(data?.listSupportqas);
-        setLoading(false);
       } catch (error) {
-        if (error === "Too many requests") {
-          return <RateLimitReached />;
-        }
         console.error("Failed to fetch questions:", error);
+        setError("Failed to load questions");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchQuestions();
   }, [locale]);
+
+  if (error) {
+    return <RateLimitReached />;
+  }
+
   return loading ? (
     <div className="flex justify-center">
       <svg
@@ -85,7 +93,7 @@ export async function QstAccordion() {
   ) : (
     <Accordion type="single" collapsible className="w-full text-lg">
       {questions?.map((question: any) => (
-        <AccordionItem value={question.question}>
+        <AccordionItem key={question.id} value={question.question}>
           <AccordionTrigger>{question.question} </AccordionTrigger>
           <AccordionContent>{question.answer}</AccordionContent>
         </AccordionItem>

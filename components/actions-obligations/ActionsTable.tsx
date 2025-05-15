@@ -47,7 +47,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { LIST_STOCKS_QUERY, FIND_UNIQUE_STOCKS_QUERY } from "@/graphql/queries";
 import { DELETE_STOCK } from "@/graphql/mutations";
 import { format } from "date-fns";
@@ -101,7 +101,7 @@ export default function ActionsTable({ onCreateNew }: ActionsTableProps) {
     const fetchStocks = async () => {
       setLoading(true);
       try {
-        const response = await fetchGraphQL(LIST_STOCKS_QUERY, {
+        const response = await fetchGraphQLClient(LIST_STOCKS_QUERY, {
           type: selectedType === "all" ? "action" : selectedType,
         });
         setStocks((response as any).listStocks || []);
@@ -170,7 +170,7 @@ export default function ActionsTable({ onCreateNew }: ActionsTableProps) {
 
     setDeletingStock(true);
     try {
-      await fetchGraphQL(DELETE_STOCK, { securityId: stockToDelete });
+      await fetchGraphQLClient(DELETE_STOCK, { securityId: stockToDelete });
 
       // Remove the deleted stock from the state
       setStocks(stocks.filter((stock) => stock.id !== stockToDelete));

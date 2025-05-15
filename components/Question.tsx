@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { CREATE_SUPPORT_MESSAGE, DELETE_QUESTION } from "@/graphql/mutations";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
 import { TbSquareRoundedPlus } from "react-icons/tb";
@@ -66,7 +66,7 @@ export default function Question({
   const session = useSession();
   const router = useRouter();
   const locale = useLocale();
-  const userId = session?.data?.user?.id;
+  const userId = (session?.data?.user as any)?.id;
   const t = useTranslations("SupportDialog");
   const [open, setOpen] = useState(false);
 
@@ -83,7 +83,7 @@ export default function Question({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await fetchGraphQL<string>(CREATE_SUPPORT_MESSAGE, {
+      await fetchGraphQLClient<string>(CREATE_SUPPORT_MESSAGE, {
         userid: userId,
         question: values.qst,
         description: "",
@@ -139,7 +139,7 @@ export default function Question({
       }
 
       if (Object.keys(updatedData).length > 0) {
-        await fetchGraphQL<String>(
+        await fetchGraphQLClient<String>(
           `
     mutation updateQas {
     updateQas(
@@ -151,7 +151,7 @@ export default function Question({
             : ""
         }
         ${updatedData.answer ? `answer: { set: "${updatedData.answer}" },` : ""}
-       
+
       }
     ) {
       id
@@ -185,7 +185,7 @@ export default function Question({
     setIsSubmitting(true);
 
     try {
-      await fetchGraphQL<string>(DELETE_QUESTION, {
+      await fetchGraphQLClient<string>(DELETE_QUESTION, {
         id: qstId,
       });
       toast({

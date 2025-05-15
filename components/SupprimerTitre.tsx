@@ -15,7 +15,7 @@ import { Button } from "./ui/button";
 import { useRouter } from "@/i18n/routing";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 
 import { DELETE_STOCK } from "@/graphql/mutations";
 import { DELETE_BOND } from "@/graphql/mutations";
@@ -49,8 +49,8 @@ export function SupprimerTitre({
   const deleteSecurity = async () => {
     setIsLoading(true);
     try {
-      await fetchGraphQL<DeleteSecurityResponse>(mutation, {
-        securityId,
+      await fetchGraphQLClient<DeleteSecurityResponse>(mutation, {
+        id: securityId,
       });
       toast({
         variant: "success",

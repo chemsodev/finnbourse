@@ -59,7 +59,7 @@ import {
   LIST_STOCKS_NAME_PRICE_QUERY,
   LIST_STOCKS_QUERY,
 } from "@/graphql/queries";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
 import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
@@ -109,7 +109,7 @@ const FormPassationOrdreMarchePrimaire = ({
 
   const fetchExtraFieldsData = async (id: string) => {
     try {
-      const result = await fetchGraphQL<any>(
+      const result = await fetchGraphQLClient<any>(
         FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
         {
           id,
@@ -133,7 +133,7 @@ const FormPassationOrdreMarchePrimaire = ({
     const ListSecurityData = async () => {
       setLoading(true);
       try {
-        const result = await fetchGraphQL<any>(query, { type });
+        const result = await fetchGraphQLClient<any>(query, { type });
         let listData;
         if (type === "action" || type === "opv") {
           listData = result.listStocks;
@@ -170,20 +170,40 @@ const FormPassationOrdreMarchePrimaire = ({
   const fetchData = async (id: string) => {
     setLoading(true);
     try {
-      const result = await fetchGraphQL<any>(findUiniqueQuery, {
+      const result = await fetchGraphQLClient<any>(findUiniqueQuery, {
         id,
-        type,
       });
-      let listSecData;
-      if (type === "action" || type === "opv") {
-        listSecData = result.findUniqueStock;
-      } else {
-        listSecData = result.findUniqueBond;
-      }
 
-      setData(listSecData);
-      setSelectedTitreName(listSecData.name);
-      fetchExtraFieldsData(listSecData.listedcompanyid);
+      setData(
+        type === "action" || type === "opv"
+          ? result.findUniqueStock
+          : result.findUniqueBond
+      );
+
+      setSelectedPrice(
+        type === "action" || type === "opv"
+          ? result.findUniqueStock.facevalue
+          : result.findUniqueBond.facevalue
+      );
+      setTitre(
+        type === "action" || type === "opv"
+          ? result.findUniqueStock.issuer
+          : result.findUniqueBond.issuer
+      );
+      setSelectedTitreName(
+        type === "action" || type === "opv"
+          ? result.findUniqueStock.issuer
+          : result.findUniqueBond.issuer
+      );
+
+      const listedCompanyId =
+        type === "action" || type === "opv"
+          ? result.findUniqueStock.listedcompanyid
+          : result.findUniqueBond.listedcompanyid;
+
+      if (listedCompanyId) {
+        await fetchExtraFieldsData(listedCompanyId);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -237,7 +257,7 @@ const FormPassationOrdreMarchePrimaire = ({
     setIsSubmitting(true);
 
     try {
-      const retrunedData = await fetchGraphQL<CreateOrderResponse>(
+      const retrunedData = await fetchGraphQLClient<CreateOrderResponse>(
         CREATE_ORDER_MUTATION,
         {
           orderdirection: 1,

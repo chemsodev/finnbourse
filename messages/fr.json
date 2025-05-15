@@ -213,8 +213,11 @@
     "securities": "Titres"
   },
   "DashNews": {
-    "seeMore": "Voir plus",
-    "noNews": "Aucune actualité trouvée."
+    "titre": "Actualités",
+    "loading": "Chargement des actualités...",
+    "noNews": "Aucune actualité disponible",
+    "seeTopic": "Voir le sujet",
+    "error": "Erreur lors du chargement des actualités"
   },
   "DashLineChart": {
     "compareStocks": "Comparer avec une autre action",
@@ -521,20 +524,41 @@
     "explMP": "Explorez les opportunités sur le marché primaire et ajustez vos stratégies."
   },
   "TitresTable": {
-    "valeurOuverture": "Valeur d'ouverture",
-    "valeurCloture": "Valeur de clôture",
-    "issuer": "Société émettrice",
     "logo": "Logo",
     "titre": "Titre",
-    "code": "Code",
     "ouverture": "Ouverture",
     "cloture": "Clôture",
-    "variation": "Variation %",
+    "variation": "Variation",
+    "plusInfo": "Plus d'info",
+    "valeurOuverture": "Valeur d'ouverture",
+    "valeurCloture": "Valeur de clôture",
+    "valeurNominale": "Valeur nominale",
+    "souscrire": "Souscrire",
+    "passerUnOrdre": "Passer un ordre",
+    "filtrer": "Filtrer",
+    "noResult": "Aucun résultat trouvé",
     "colonnes": "Colonnes",
-    "filtrer": "Filtrer les Titres...",
-    "plusInfo": "plus d'info",
-    "noResult": "Pas de resultats.",
-    "valeurNominale": "Cours"
+    "issuer": "Émetteur",
+    "code": "Code",
+    "info": "Info"
+  },
+  "titresTable": {
+    "logo": "Logo",
+    "titre": "Titre",
+    "ouverture": "Ouverture",
+    "cloture": "Clôture",
+    "variation": "Variation",
+    "plusInfo": "Plus d'info",
+    "valeurOuverture": "Valeur d'ouverture",
+    "valeurCloture": "Valeur de clôture",
+    "valeurNominale": "Valeur nominale",
+    "souscrire": "Souscrire",
+    "passerUnOrdre": "Passer un ordre",
+    "filtrer": "Filtrer",
+    "noResult": "Aucun résultat trouvé",
+    "colonnes": "Colonnes",
+    "issuer": "Émetteur",
+    "code": "Code"
   },
   "TitreDrawer": {
     "repayementMethod": "Mode de remboursement",

@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 import { LIST_NEGOCIATEURS_QUERY } from "@/graphql/queries";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useRouter } from "@/i18n/routing";
 import { UPDATE_USER_NEGOTIATOR } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
@@ -74,7 +74,7 @@ const AtribuerNegociateur = ({
       const fetchNegociateurs = async () => {
         setLoading(true);
         try {
-          const data = await fetchGraphQL<NegociateurGraphQLResponse>(
+          const data = await fetchGraphQLClient<NegociateurGraphQLResponse>(
             LIST_NEGOCIATEURS_QUERY
           );
           setNegociateurs(data);
@@ -99,7 +99,7 @@ const AtribuerNegociateur = ({
     try {
       setSubmitting(true);
 
-      await fetchGraphQL<String>(UPDATE_USER_NEGOTIATOR, {
+      await fetchGraphQLClient<String>(UPDATE_USER_NEGOTIATOR, {
         id: userId,
         negotiatorid: values.NegociatorID,
       });

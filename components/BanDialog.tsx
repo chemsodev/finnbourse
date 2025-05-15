@@ -17,9 +17,10 @@ import { useTranslations } from "next-intl";
 import { BAN_USER } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useRouter } from "@/i18n/routing";
 import { Loader2 } from "lucide-react";
+
 interface BanUserResponse {
   deleteUser: {
     id: string;
@@ -38,7 +39,7 @@ const BanDialog = ({ userId }: { userId: string }) => {
     setIsLoading(true);
 
     try {
-      const orders = await fetchGraphQL<BanUserResponse>(BAN_USER, {
+      const orders = await fetchGraphQLClient<BanUserResponse>(BAN_USER, {
         userid: userId,
       });
       toast({

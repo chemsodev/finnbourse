@@ -2,11 +2,11 @@ import React from "react";
 import StockCard from "./dashboard/StockCard";
 import { Stock } from "@/lib/interfaces";
 import { LIST_STOCKS_SIMPLE_QUERY } from "@/graphql/queries";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { calculateVariation } from "@/lib/utils";
 
 const MyPortfolio = async () => {
-  const data = await fetchGraphQL<{ listStocks: Stock[] }>(
+  const data = await fetchGraphQLClient<{ listStocks: Stock[] }>(
     LIST_STOCKS_SIMPLE_QUERY,
     {
       take: 4,

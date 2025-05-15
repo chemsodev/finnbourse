@@ -5,7 +5,7 @@ import { GET_NEWS_QUERY } from "@/graphql/queries";
 import { NewsArticle } from "@/lib/interfaces";
 import { useLocale, useTranslations } from "next-intl";
 import NewsPagination from "./NewsPagination";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import RateLimitReached from "../RateLimitReached";
 
@@ -28,11 +28,14 @@ const DashNews: React.FC<DashNewsProps> = () => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await fetchGraphQL<GetNewsResponse>(GET_NEWS_QUERY, {
-          skip,
-          take,
-          language: locale,
-        });
+        const response = await fetchGraphQLClient<GetNewsResponse>(
+          GET_NEWS_QUERY,
+          {
+            skip,
+            take,
+            language: locale,
+          }
+        );
         setNews(response);
       } catch (error) {
         if (error === "Too many requests") {

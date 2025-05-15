@@ -43,7 +43,7 @@ import {
   Paperclip,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { UPDATE_ORDER_PAYED_WITH_CARD } from "@/graphql/mutations";
 import PayButton from "./PayButton";
 import { exit } from "process";
@@ -157,7 +157,7 @@ const BulletinSubmitDialog = ({
       const response = await fetch(uploadUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session.data?.user.token}`,
+          Authorization: `Bearer ${(session.data?.user as any)?.token}`,
         },
         body: formData,
       });

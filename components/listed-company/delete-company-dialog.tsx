@@ -14,7 +14,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { DELETE_LISTED_COMPANY } from "@/graphql/mutations";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 
 interface DeleteCompanyDialogProps {
   companyId: string;
@@ -38,7 +38,7 @@ const DeleteCompanyDialog = ({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await fetchGraphQL<boolean>(DELETE_LISTED_COMPANY, {
+      await fetchGraphQLClient<boolean>(DELETE_LISTED_COMPANY, {
         id: companyId,
       });
 

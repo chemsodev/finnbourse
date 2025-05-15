@@ -16,7 +16,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
 import { PERF_NEGOCIATEURS_QUERY } from "@/graphql/queries";
 import RateLimitReached from "../RateLimitReached";
@@ -67,7 +67,7 @@ export function GraphPerfNegociateurs({ titre }: { titre: string }) {
   const fetchNegotiatorData = async () => {
     try {
       // Fetch performance data
-      const performanceResult = await fetchGraphQL<any>(
+      const performanceResult = await fetchGraphQLClient<any>(
         PERF_NEGOCIATEURS_QUERY
       );
       const performanceData = processPerformanceData(
@@ -75,7 +75,7 @@ export function GraphPerfNegociateurs({ titre }: { titre: string }) {
       );
 
       // Fetch users data
-      const usersResult = await fetchGraphQL<any>(LIST_USERS_QUERY);
+      const usersResult = await fetchGraphQLClient<any>(LIST_USERS_QUERY);
       const users = usersResult.listUsers || [];
 
       // Create a lookup map for user full names: { userId: fullname, ... }

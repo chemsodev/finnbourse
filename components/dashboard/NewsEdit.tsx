@@ -48,7 +48,7 @@ import {
   DELETE_NEWS_ARTICLE,
   DELETE_QUESTION,
 } from "@/graphql/mutations";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
 import { TbSquareRoundedPlus } from "react-icons/tb";
@@ -69,7 +69,7 @@ export default function NewsEdit({
   const session = useSession();
   const router = useRouter();
   const locale = useLocale();
-  const userId = session?.data?.user?.id;
+  const userId = (session?.data?.user as any)?.id;
   const t = useTranslations("AddNews");
   const [open, setOpen] = useState(false);
 
@@ -86,7 +86,7 @@ export default function NewsEdit({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await fetchGraphQL<string>(CREATE_NEWS_ARTICLE_MUTATION, {
+      await fetchGraphQLClient<string>(CREATE_NEWS_ARTICLE_MUTATION, {
         writerid: userId,
         ispublished: true,
         title: values.title,
@@ -139,7 +139,7 @@ export default function NewsEdit({
       }
 
       if (Object.keys(updatedData).length > 0) {
-        await fetchGraphQL<String>(
+        await fetchGraphQLClient<String>(
           `
     mutation updateNewsArticle {
     updateNewsArticle(
@@ -151,7 +151,7 @@ export default function NewsEdit({
             ? `content: { set: "${updatedData.content}" },`
             : ""
         }
-       
+
       }
     ) {
       id
@@ -185,7 +185,7 @@ export default function NewsEdit({
     setIsSubmitting(true);
 
     try {
-      await fetchGraphQL<string>(DELETE_NEWS_ARTICLE, {
+      await fetchGraphQLClient<string>(DELETE_NEWS_ARTICLE, {
         id: article?.id,
       });
       toast({

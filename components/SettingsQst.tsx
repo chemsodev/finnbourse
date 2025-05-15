@@ -6,7 +6,7 @@ import Question from "./Question";
 import { Dialog, DialogContent, DialogDescription } from "./ui/dialog";
 import { DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { LIST_SUPPORT_QUERY } from "@/graphql/queries";
 import { useEffect, useState } from "react";
 
@@ -29,12 +29,15 @@ const SettingsQst = () => {
   useEffect(() => {
     if (open) {
       const fetchQuestions = async () => {
-        const data = await fetchGraphQL<ListSupportqas>(LIST_SUPPORT_QUERY, {
-          take: 5,
-          language: locale,
-          state: 1,
-          ispublished: true,
-        });
+        const data = await fetchGraphQLClient<ListSupportqas>(
+          LIST_SUPPORT_QUERY,
+          {
+            take: 5,
+            language: locale,
+            state: 1,
+            ispublished: true,
+          }
+        );
         setQuestions(data);
         setLoading(false);
       };

@@ -14,7 +14,7 @@ import {
   LIST_STOCKS_QUERY,
   PORTFOLIO_PERFORMANCE_QUERY,
 } from "@/graphql/queries";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import RateLimitReached from "../RateLimitReached";
@@ -209,7 +209,7 @@ export function GraphPerfPortefeille(titre: { titre: string }) {
       setError(null);
 
       // Use our custom query to ensure we get all needed fields
-      const result = await fetchGraphQL<any>(CUSTOM_PORTFOLIO_QUERY, {
+      const result = await fetchGraphQLClient<any>(CUSTOM_PORTFOLIO_QUERY, {
         userid,
       });
 

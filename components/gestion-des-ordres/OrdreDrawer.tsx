@@ -14,7 +14,7 @@ import { LIST_ORDERS_QUERY_ONE_ORDER } from "@/graphql/queries";
 import { formatDate } from "@/lib/utils";
 import { ValiderPartiellement } from "../ValiderPartiellement";
 import { useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { Order } from "@/lib/interfaces";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import SupprimerOrdre from "../SupprimerOrdre";
@@ -47,7 +47,7 @@ const OrdreDrawer = ({ titreId }: OrdreDrawer) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await fetchGraphQL<QueryData>(
+      const result = await fetchGraphQLClient<QueryData>(
         LIST_ORDERS_QUERY_ONE_ORDER,
         {
           orderid: titreId,

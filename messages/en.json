@@ -176,9 +176,11 @@
     "securities": "Securities"
   },
   "DashNews": {
-    "noNews": "No news found.",
-    "seeMore": "See more",
-    "loading": "Loading..."
+    "titre": "News",
+    "loading": "Loading news...",
+    "noNews": "No news available",
+    "seeTopic": "View topic",
+    "error": "Error loading news"
   },
   "DashLineChart": {
     "compareStocks": "Compare with another stock",
@@ -313,20 +315,23 @@
     "explMP": "Explore opportunities on the primary market and adjust your strategies."
   },
   "TitresTable": {
-    "valeurOuverture": "Opening Value",
-    "valeurCloture": "Closing Value",
-    "issuer": "Issuing company",
     "logo": "Logo",
     "titre": "Title",
-    "code": "Code",
     "ouverture": "Opening",
     "cloture": "Closing",
-    "variation": "Variation %",
+    "variation": "Variation",
+    "plusInfo": "More Info",
+    "valeurOuverture": "Opening Value",
+    "valeurCloture": "Closing Value",
+    "valeurNominale": "Nominal Value",
+    "souscrire": "Subscribe",
+    "passerUnOrdre": "Place an Order",
+    "filtrer": "Filter",
+    "noResult": "No results found",
     "colonnes": "Columns",
-    "filtrer": "Filter Titles...",
-    "plusInfo": "more info",
-    "noResult": "No results.",
-    "valeurNominale": "Price"
+    "issuer": "Issuer",
+    "code": "Code",
+    "info": "Info"
   },
   "TitreDrawer": {
     "repayementMethod": "Repayment Method",

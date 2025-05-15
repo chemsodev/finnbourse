@@ -33,7 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { UPDATE_USER_ROLE } from "@/graphql/mutations";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
@@ -75,7 +75,7 @@ const ChangerRoleDialog = ({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      await fetchGraphQL<String>(UPDATE_USER_ROLE, {
+      await fetchGraphQLClient<String>(UPDATE_USER_ROLE, {
         roleid:
           values.role === "visiteur"
             ? 0

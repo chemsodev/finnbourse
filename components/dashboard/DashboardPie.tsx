@@ -18,7 +18,7 @@ import {
 import { TbWallet } from "react-icons/tb";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { GROUP_BY_PORTFOLIIOS_QUERY } from "@/graphql/queries";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -65,17 +65,17 @@ const pastelColors = [
 
 export function DashbpardPie() {
   const session = useSession();
-  const userid = session?.data?.user?.id;
+  const userId = (session.data?.user as any)?.id;
 
   const t = useTranslations("DashboardPie");
   const [totalSecurities, setTotalSecurities] = React.useState<any[]>([]);
 
   async function getTotalSecurities() {
     try {
-      const MyPortfolio = await fetchGraphQL<any>(
+      const MyPortfolio = await fetchGraphQLClient<any>(
         GROUP_BY_PORTFOLIIOS_QUERY,
         {
-          userid,
+          userid: userId,
         },
         {
           headers: {

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
 import { it } from "node:test";
 import { VUE_ENSEMBLE_TRANSACTIONS_QUERY } from "@/graphql/queries";
@@ -38,7 +38,7 @@ export function GraphVueEnsembleTransactions(titre: { titre: string }) {
   const ititre = titre.titre;
   const [chartData, setChartData] = useState<TransactionData[]>([]);
   const session = useSession();
-  const userid = session?.data?.user?.id;
+  const userid = (session.data?.user as any)?.id;
   const t = useTranslations("SecurityIssuers");
 
   const processData = (rawData: any[]): TransactionData[] => {
@@ -52,9 +52,12 @@ export function GraphVueEnsembleTransactions(titre: { titre: string }) {
 
   const fetchTransactionData = async () => {
     try {
-      const result = await fetchGraphQL<any>(VUE_ENSEMBLE_TRANSACTIONS_QUERY, {
-        userid,
-      });
+      const result = await fetchGraphQLClient<any>(
+        VUE_ENSEMBLE_TRANSACTIONS_QUERY,
+        {
+          userid,
+        }
+      );
       const processedData = processData(result.groupByOrder);
       setChartData(processedData);
     } catch (error) {
