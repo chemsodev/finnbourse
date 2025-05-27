@@ -80,6 +80,8 @@ import { formSchema, type FormValues } from "../schema";
 import { useTranslations } from "next-intl";
 import { ClientFormValues } from "../schema";
 import Loading from "@/components/ui/loading";
+import { RolesAssignment } from "@/components/RolesAssignment";
+import { getRoleDisplayName } from "@/lib/role-utils";
 import {
   Table,
   TableBody,
@@ -149,14 +151,15 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     id: "",
     firstName: "",
     lastName: "",
-    role: "",
+    roles: [] as string[], // Array of role IDs
+    role: "", // Keep for backward compatibility
     address: "",
     wilaya: "",
     nationality: "",
     birthDate: "",
     idNumber: "",
     userType: "proprietaire",
-    status: "actif",
+    status: "active", // Changed from "actif" to "active"
     showPassword: false,
     password: "",
   });
@@ -165,14 +168,15 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
       id: string;
       firstName: string;
       lastName: string;
-      role: string;
+      roles: string[]; // Array of role IDs
+      role: string; // Keep for backward compatibility
       address: string;
       wilaya: string;
       nationality: string;
       birthDate: string;
       idNumber: string;
       userType: "proprietaire" | "mandataire" | "tuteur_legal";
-      status: "actif" | "inactif";
+      status: "active" | "inactive"; // Changed from "actif"/"inactif" to "active"/"inactive"
       showPassword?: boolean;
       password?: string;
     }>
@@ -327,15 +331,14 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                 }
               : doc;
           })
-        );
-
-        // Load client users
+        ); // Load client users
         const clientUsers = await getClientUsers(Number(params.id));
         setUsers(
           clientUsers.map((user) => ({
             id: Math.random().toString(), // Generate new IDs for the form
             firstName: user.firstName,
             lastName: user.lastName,
+            roles: user.roles || (user.role ? [user.role] : []),
             role: user.role,
             address: user.address,
             wilaya: user.wilaya,
@@ -449,36 +452,41 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
   const fetchUsers = async (clientId: string) => {
     try {
       // Parse as a number to match the API expectation
-      const userData = await getClientUsers(parseInt(clientId, 10));
-      // Convert old structure to new structure if needed
+      const userData = await getClientUsers(parseInt(clientId, 10)); // Convert old structure to new structure if needed
       const formattedUsers = userData.map((user: any) => ({
         ...user,
+        roles: user.roles || [], // Add roles array if not present
         userType: user.isOwner
           ? ("proprietaire" as const)
           : user.isMandatory
           ? ("mandataire" as const)
           : ("tuteur_legal" as const),
-        status: "actif" as const, // Default status for existing users
+        status:
+          user.status === "actif"
+            ? "active"
+            : user.status === "inactif"
+            ? "inactive"
+            : "active", // Convert status
       }));
       setUsers(formattedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
   };
-
   const resetNewUser = () => {
     setNewUser({
       id: "",
       firstName: "",
       lastName: "",
-      role: "",
+      roles: [], // Initialize empty roles array
+      role: "", // Keep for backward compatibility
       address: "",
       wilaya: "",
       nationality: "",
       birthDate: "",
       idNumber: "",
       userType: "proprietaire",
-      status: "actif",
+      status: "active", // Changed from "actif" to "active"
       showPassword: false,
       password: "",
     });
@@ -497,7 +505,8 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role,
+        roles: user.roles || [], // Set roles array, fallback to empty array
+        role: user.role, // Keep for backward compatibility
         address: user.address,
         wilaya: user.wilaya,
         nationality: user.nationality,
@@ -538,14 +547,15 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
       });
       return;
     }
-
     const userToSave = {
       ...newUser,
+      // Sync first role to legacy role field for backward compatibility
+      role: newUser.roles.length > 0 ? newUser.roles[0] : newUser.role,
       userType: newUser.userType as
         | "proprietaire"
         | "mandataire"
         | "tuteur_legal",
-      status: newUser.status as "actif" | "inactif",
+      status: newUser.status as "active" | "inactive", // Updated status type
     };
 
     if (editingUserId) {
@@ -595,7 +605,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     const userToUpdate = updatedUsers.find((u) => u.id === userToToggleStatus);
     if (userToUpdate) {
       userToUpdate.status =
-        userToUpdate.status === "actif" ? "inactif" : "actif";
+        userToUpdate.status === "active" ? "inactive" : "active"; // Updated status values
       setUsers(updatedUsers);
     }
 
@@ -1350,7 +1360,15 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                             <TableRow key={user.id}>
                               <TableCell>{user.firstName}</TableCell>
                               <TableCell>{user.lastName}</TableCell>
-                              <TableCell>{user.role}</TableCell>
+                              <TableCell>
+                                {user.roles && user.roles.length > 0
+                                  ? user.roles
+                                      .map((roleId) =>
+                                        getRoleDisplayName(roleId)
+                                      )
+                                      .join(", ")
+                                  : user.role || "N/A"}
+                              </TableCell>
                               <TableCell>{user.address}</TableCell>
                               <TableCell>{user.wilaya}</TableCell>
                               <TableCell>{user.nationality}</TableCell>
@@ -1367,22 +1385,22 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                                 <div className="flex items-center justify-between space-x-2">
                                   <span
                                     className={
-                                      user.status === "actif"
+                                      user.status === "active"
                                         ? "text-green-600 text-sm font-medium"
                                         : "text-red-500 text-sm"
                                     }
                                   >
-                                    {user.status === "actif"
+                                    {user.status === "active"
                                       ? "Actif"
                                       : "Inactif"}
                                   </span>
                                   <Switch
-                                    checked={user.status === "actif"}
+                                    checked={user.status === "active"}
                                     onCheckedChange={() =>
                                       handleToggleStatus(user.id)
                                     }
                                     className={
-                                      user.status === "actif"
+                                      user.status === "active"
                                         ? "bg-green-500 data-[state=checked]:bg-green-500"
                                         : "bg-red-500 data-[state=unchecked]:bg-red-500"
                                     }
@@ -1492,15 +1510,20 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                           }
                           placeholder="Nom de jeune fille"
                         />
-                      </div>
+                      </div>{" "}
                       <div className="space-y-2">
-                        <Label>Rôle</Label>
-                        <Input
-                          value={newUser.role}
-                          onChange={(e) =>
-                            setNewUser({ ...newUser, role: e.target.value })
-                          }
-                          placeholder="Rôle de l'utilisateur"
+                        <Label>Rôles</Label>
+                        <RolesAssignment
+                          selectedRoles={newUser.roles}
+                          onRolesChange={(roles) => {
+                            setNewUser({
+                              ...newUser,
+                              roles,
+                              // Sync first role to legacy role field for backward compatibility
+                              role: roles.length > 0 ? roles[0] : "",
+                            });
+                          }}
+                          userTypes={["client"]}
                         />
                       </div>
                       <div className="space-y-2">
@@ -1599,28 +1622,31 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
                         </Select>
                       </div>
                       <div className="space-y-2">
+                        {" "}
                         <div className="flex items-center justify-between">
                           <Label>Statut</Label>
                           <div className="flex items-center space-x-2">
                             <span
                               className={
-                                newUser.status === "actif"
+                                newUser.status === "active"
                                   ? "text-green-600 font-medium"
                                   : "text-red-500"
                               }
                             >
-                              {newUser.status === "actif" ? "Actif" : "Inactif"}
+                              {newUser.status === "active"
+                                ? "Actif"
+                                : "Inactif"}
                             </span>
                             <Switch
-                              checked={newUser.status === "actif"}
+                              checked={newUser.status === "active"}
                               onCheckedChange={(checked) =>
                                 setNewUser({
                                   ...newUser,
-                                  status: checked ? "actif" : "inactif",
+                                  status: checked ? "active" : "inactive",
                                 })
                               }
                               className={
-                                newUser.status === "actif"
+                                newUser.status === "active"
                                   ? "bg-green-500 data-[state=checked]:bg-green-500"
                                   : "bg-red-500 data-[state=unchecked]:bg-red-500"
                               }

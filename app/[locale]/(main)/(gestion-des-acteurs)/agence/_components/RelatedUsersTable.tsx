@@ -41,6 +41,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { type RelatedUser } from "./types";
+import { RolesAssignment } from "@/components/RolesAssignment";
+import { getRoleDisplayName } from "@/lib/role-utils";
 
 interface RelatedUsersTableProps {
   users: RelatedUser[];
@@ -70,8 +72,7 @@ export default function RelatedUsersTable({
     fullName: "",
     position: "",
     matricule: "",
-    role: "initiator",
-    type: "member",
+    roles: [],
     status: "active",
     organization: "",
     password: "",
@@ -91,22 +92,20 @@ export default function RelatedUsersTable({
 
   // Handler for adding a new user
   const handleAddUser = () => {
-    const id = Date.now().toString(); // Generate a unique ID
+    const id = Date.now().toString();
     const userToAdd: RelatedUser = {
       id,
       ...newUser,
-      status: newUser.status as "active" | "inactive", // Explicitly cast to the correct type
+      roles: newUser.roles || [],
+      status: newUser.status as "active" | "inactive",
     };
     onUsersChange([...users, userToAdd]);
-
-    // Reset the form
     setNewUser({
       fullName: "",
       position: "",
       matricule: "",
-      role: "initiator",
-      type: "member",
-      status: "active", // Using the correct literal value
+      roles: [],
+      status: "active",
       organization: "",
       password: "",
       email: "",
@@ -126,11 +125,11 @@ export default function RelatedUsersTable({
   // Handler for saving an edited user
   const handleSaveEdit = () => {
     if (!editUser) return;
-
     const updatedUsers = users.map((user) =>
-      user.id === editUser.id ? editUser : user
+      user.id === editUser.id
+        ? { ...editUser, roles: editUser.roles || [] }
+        : user
     );
-
     onUsersChange(updatedUsers);
     setIsEditDialogOpen(false);
     setEditUser(null);
@@ -235,53 +234,18 @@ export default function RelatedUsersTable({
                     setNewUser({ ...newUser, matricule: e.target.value })
                   }
                 />
-              </div>
+              </div>{" "}
+              {/* Roles multi-select */}
               <div className="space-y-2">
-                <label htmlFor="role" className="text-sm font-medium">
-                  {t("role")}
+                <label htmlFor="roles" className="text-sm font-medium">
+                  {t("roles")}
                 </label>
-                <Select
-                  value={newUser.role}
-                  onValueChange={(value) =>
-                    setNewUser({ ...newUser, role: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("selectRole")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="initiator">{t("initiator")}</SelectItem>
-                    <SelectItem value="validator 1">
-                      {t("validator1")}
-                    </SelectItem>
-                    <SelectItem value="validator 2">
-                      {t("validator2")}
-                    </SelectItem>
-                    <SelectItem value="consultation">
-                      {t("consultation")}
-                    </SelectItem>
-                    <SelectItem value="member">{t("member")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="type" className="text-sm font-medium">
-                  {t("type")}
-                </label>
-                <Select
-                  value={newUser.type}
-                  onValueChange={(value) =>
-                    setNewUser({ ...newUser, type: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("selectType")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">{t("admin")}</SelectItem>
-                    <SelectItem value="member">{t("member")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <RolesAssignment
+                  selectedRoles={newUser.roles}
+                  onRolesChange={(roles) => setNewUser({ ...newUser, roles })}
+                  userTypes={["agency"]}
+                  showTabs={false}
+                />
               </div>
               <div className="space-y-2">
                 <label htmlFor="status" className="text-sm font-medium">
@@ -401,7 +365,6 @@ export default function RelatedUsersTable({
                 {t("matricule")}
               </TableHead>
               <TableHead className="whitespace-nowrap">{t("role")}</TableHead>
-              <TableHead className="whitespace-nowrap">{t("type")}</TableHead>
               <TableHead className="whitespace-nowrap">{t("status")}</TableHead>
               <TableHead className="whitespace-nowrap">
                 {t("organization")}
@@ -434,20 +397,11 @@ export default function RelatedUsersTable({
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     {user.matricule}
-                  </TableCell>
+                  </TableCell>{" "}
                   <TableCell className="whitespace-nowrap">
-                    {user.role === "validator 2"
-                      ? t("validator2")
-                      : user.role === "validator 1"
-                      ? t("validator1")
-                      : user.role === "initiator"
-                      ? t("initiator")
-                      : user.role === "consultation"
-                      ? t("consultation")
-                      : t("member")}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {user.type === "admin" ? t("admin") : t("member")}
+                    {(user.roles || [])
+                      .map((roleId) => getRoleDisplayName(roleId))
+                      .join(", ")}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center space-x-2">
@@ -552,53 +506,19 @@ export default function RelatedUsersTable({
                     setEditUser({ ...editUser, matricule: e.target.value })
                   }
                 />
-              </div>
+              </div>{" "}
               <div className="space-y-2">
-                <label htmlFor="edit-role" className="text-sm font-medium">
-                  {t("role")}
+                <label htmlFor="edit-roles" className="text-sm font-medium">
+                  {t("roles")}
                 </label>
-                <Select
-                  value={editUser.role}
-                  onValueChange={(value) =>
-                    setEditUser({ ...editUser, role: value })
+                <RolesAssignment
+                  selectedRoles={editUser?.roles || []}
+                  onRolesChange={(roles) =>
+                    setEditUser((u) => (u ? { ...u, roles } : u))
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("selectRole")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="initiator">{t("initiator")}</SelectItem>
-                    <SelectItem value="validator 1">
-                      {t("validator1")}
-                    </SelectItem>
-                    <SelectItem value="validator 2">
-                      {t("validator2")}
-                    </SelectItem>
-                    <SelectItem value="consultation">
-                      {t("consultation")}
-                    </SelectItem>
-                    <SelectItem value="member">{t("member")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="edit-type" className="text-sm font-medium">
-                  {t("type")}
-                </label>
-                <Select
-                  value={editUser.type}
-                  onValueChange={(value) =>
-                    setEditUser({ ...editUser, type: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("selectType")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">{t("admin")}</SelectItem>
-                    <SelectItem value="member">{t("member")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                  userTypes={["agency"]}
+                  showTabs={false}
+                />
               </div>
               <div className="space-y-2">
                 <label htmlFor="edit-status" className="text-sm font-medium">

@@ -7,12 +7,11 @@ export interface RelatedUser {
   id: string;
   fullName: string;
   position: string;
-  role: string;
+  roles: string[]; // Now supports multiple roles
   matricule: string;
-  type: string; // admin or member
-  status: "active" | "inactive"; // Changed from string to specific values
+  status: "active" | "inactive";
   organization: string;
   password?: string;
-  email?: string; // Optional email field for consistency
-  phone?: string; // Optional phone field for consistency
+  email?: string;
+  phone?: string;
 }

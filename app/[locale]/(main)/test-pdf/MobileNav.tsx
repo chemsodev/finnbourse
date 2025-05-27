@@ -31,7 +31,7 @@ interface MobileNavProps {
     marche: string;
     portefeuille: string;
     mesOrdres: string;
-    carnetOrdres: string;
+    ordres: string;
     chiffresEtEditions: string;
     serviceClients: string;
     parametres: string;
@@ -111,7 +111,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
           {userRole !== 0 && (
             <NavbarLink
               link={{
-                href: "/carnetordres",
+                href: "/ordres",
                 icon:
                   userRole === 1 ? (
                     <ArrowRightLeft size={15} />
@@ -119,9 +119,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
                     <PiBookOpenText size={15} />
                   ),
                 label:
-                  userRole === 1
-                    ? translations.mesOrdres
-                    : translations.carnetOrdres,
+                  userRole === 1 ? translations.mesOrdres : translations.ordres,
               }}
             />
           )}

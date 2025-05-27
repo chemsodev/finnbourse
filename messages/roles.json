@@ -1,0 +1,55 @@
+{
+  "roles": {
+    "client_order_creator": "Initiateur d'ordre",
+    "client_first_approver": "Premier validateur",
+    "client_final_approver": "Validateur final",
+    "client_viewer": "Observateur",
+
+    "agency_order_declarer": "Déclarateur d'ordre",
+    "agency_first_approver": "Premier validateur",
+    "agency_final_approver": "Validateur final",
+    "agency_viewer": "Observateur",
+    "agency_user_admin": "Administrateur utilisateurs",
+    "agency_client_admin": "Administrateur clients",
+
+    "tcc_super_admin": "Super Administrateur",
+    "tcc_first_approver": "Premier validateur",
+    "tcc_final_approver": "Validateur final",
+    "tcc_viewer": "Observateur",
+    "tcc_external_client_creator": "Créateur clients externes",
+    "tcc_external_order_creator": "Créateur ordres externes",
+    "tcc_external_IOB_operator": "Opérateur IOB externe",
+
+    "iob_user_admin": "Administrateur utilisateurs",
+    "iob_order_executor": "Exécuteur d'ordres",
+    "iob_result_submitter": "Soumetteur de résultats",
+    "iob_viewer": "Observateur",
+
+    "roleDescriptions": {
+      "client_order_creator": "Peut initier/créer un ordre",
+      "client_first_approver": "Peut effectuer la première validation d'un ordre",
+      "client_final_approver": "Peut effectuer la validation finale d'un ordre",
+      "client_viewer": "Peut uniquement consulter les ordres (lecture seule)",
+
+      "agency_order_declarer": "Peut déclarer/créer un ordre pour le client",
+      "agency_first_approver": "Premier validateur (vérifie la disponibilité des comptes, etc.)",
+      "agency_final_approver": "Deuxième validateur avant envoi au TCC",
+      "agency_viewer": "Peut uniquement consulter les ordres (lecture seule)",
+      "agency_user_admin": "Peut créer et gérer les utilisateurs de l'agence",
+      "agency_client_admin": "Peut créer et gérer les clients et les rôles des utilisateurs",
+
+      "tcc_super_admin": "Dispose de tous les droits (super administrateur)",
+      "tcc_first_approver": "Peut valider en première instance les ordres reçus de l'agence",
+      "tcc_final_approver": "Peut effectuer la validation finale des ordres de l'agence",
+      "tcc_viewer": "Peut uniquement consulter les ordres (lecture seule)",
+      "tcc_external_client_creator": "Peut créer des clients pour les agences externes",
+      "tcc_external_order_creator": "Peut créer des ordres pour les agences externes",
+      "tcc_external_IOB_operator": "Possède tous les droits IOB, mais pour les agences externes",
+
+      "iob_user_admin": "Peut gérer les utilisateurs IOB et leurs rôles",
+      "iob_order_executor": "Peut imprimer les listes d'ordres et exécuter les ordres à la bourse",
+      "iob_result_submitter": "Peut insérer les résultats d'exécution des ordres pour transmission au TCC",
+      "iob_viewer": "Peut uniquement consulter les ordres et leurs états (lecture seule)"
+    }
+  }
+}

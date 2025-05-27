@@ -2,7 +2,7 @@ import auth from "@/auth";
 import InfoDialog from "@/components/InfoDialog";
 import MyMarquee from "@/components/MyMarquee";
 import { Link } from "@/i18n/routing";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import React from "react";
 import { getTranslations } from "next-intl/server";
 import IPOAnnouncement from "@/components/dashboard/IPOAnnouncement";
@@ -12,7 +12,7 @@ const page = async () => {
   const ipoT = await getTranslations("IPOAnnouncement");
   const dateTime = new Date();
   const session = await getServerSession(auth);
-  const userRole = session?.user?.roleid;
+  const userRole = (session as any)?.user?.roleid;
 
   // Example IPO data - replace with actual data from your API/database
   const ipoEndDate = new Date();

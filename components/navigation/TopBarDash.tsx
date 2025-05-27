@@ -46,7 +46,7 @@ export const TopBarDash = () => {
     marche: t("marche"),
     portefeuille: t("portefeuille"),
     mesOrdres: t("mesOrdres"),
-    carnetOrdres: t("carnetOrdres"),
+    ordres: t("ordres"),
     chiffresEtEditions: t("chiffresEtEditions"),
     serviceClients: t("serviceClients"),
     parametres: t("parametres"),

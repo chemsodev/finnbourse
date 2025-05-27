@@ -66,7 +66,7 @@ const OrderCounter = () => {
         toast({
           title: t("nouvelOrdre"),
           description: t("nouvelOrdreDescription"),
-          action: <Link href="/carnetordres">{t("voir")}</Link>,
+          action: <Link href="/ordres">{t("voir")}</Link>,
         });
       }
     };

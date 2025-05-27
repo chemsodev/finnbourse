@@ -91,7 +91,7 @@ const NegotiatiorStats = () => {
   return (
     <div className="flex flex-col gap-6 h-full justify-between">
       <Link
-        href="/carnetordres"
+        href="/ordres"
         className="bg-primary hover:scale-105 transition-all duration-300 rounded-md h-full w-full text-white flex gap-6 justify-start ltr:pl-6 rtl:pr-6 py-4 items-center"
       >
         <div className="bg-white/20 w-16 h-16 rounded-full flex justify-center items-center">
@@ -105,7 +105,7 @@ const NegotiatiorStats = () => {
         </div>
       </Link>
       <Link
-        href="/carnetordres?state=1"
+        href="/ordres?state=1"
         className="bg-primary hover:scale-105 transition-all duration-300 rounded-md h-full w-full text-white flex gap-6 justify-start ltr:pl-6 rtl:pr-6 py-4 items-center"
       >
         <div className="bg-white/20 w-16 h-16 rounded-full flex justify-center items-center">

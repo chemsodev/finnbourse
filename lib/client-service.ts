@@ -28,8 +28,9 @@ export interface ClientUser {
   birthDate: string;
   idNumber: string;
   userType: "proprietaire" | "mandataire" | "tuteur_legal";
-  status: "actif" | "inactif";
+  status: "active" | "inactive";
   password?: string;
+  roles?: string[]; // Support multiple roles
 }
 
 export interface ClientDocument {
@@ -80,7 +81,7 @@ const mockClients: Client[] = [
     poste: "Conseiller",
     agenceCPA: "Agence Centrale",
     selectedAgence: "Agence Centrale",
-    status: "actif",
+    status: "active",
     createdAt: new Date("2023-01-15"),
     updatedAt: new Date("2023-01-15"),
   } as PersonnePhysiqueClient,
@@ -114,7 +115,7 @@ const mockClients: Client[] = [
     nif: "123456789012345",
     regNumber: "987654321",
     legalForm: "SARL",
-    status: "actif",
+    status: "active",
     createdAt: new Date("2023-02-20"),
     updatedAt: new Date("2023-02-20"),
   } as PersonneMoraleClient,
@@ -148,7 +149,7 @@ const mockClients: Client[] = [
     nif: "987654321098765",
     regNumber: "123456789",
     legalForm: "SA",
-    status: "actif",
+    status: "active",
     createdAt: new Date("2023-03-10"),
     updatedAt: new Date("2023-03-10"),
   } as InstitutionFinanciereClient,
@@ -183,7 +184,7 @@ const mockClients: Client[] = [
     poste: "",
     agenceCPA: "",
     selectedAgence: "Agence Locale",
-    status: "actif",
+    status: "active",
     createdAt: new Date("2023-04-05"),
     updatedAt: new Date("2023-04-05"),
   } as PersonnePhysiqueClient,
@@ -295,7 +296,7 @@ const mockClientUsers: ClientUser[] = [
     birthDate: "1980-01-01",
     idNumber: "123456789",
     userType: "proprietaire",
-    status: "actif",
+    status: "active",
   },
   {
     id: "user2",
@@ -309,7 +310,7 @@ const mockClientUsers: ClientUser[] = [
     birthDate: "1985-05-15",
     idNumber: "987654321",
     userType: "mandataire",
-    status: "actif",
+    status: "active",
   },
   {
     id: "user3",
@@ -323,7 +324,7 @@ const mockClientUsers: ClientUser[] = [
     birthDate: "1985-06-20",
     idNumber: "EF345678",
     userType: "proprietaire",
-    status: "actif",
+    status: "active",
   },
   {
     id: "user4",
@@ -337,7 +338,7 @@ const mockClientUsers: ClientUser[] = [
     birthDate: "1988-09-10",
     idNumber: "GH901234",
     userType: "mandataire",
-    status: "actif",
+    status: "active",
   },
   {
     id: "user5",
@@ -351,7 +352,7 @@ const mockClientUsers: ClientUser[] = [
     birthDate: "1982-12-05",
     idNumber: "IJ567890",
     userType: "proprietaire",
-    status: "actif",
+    status: "active",
   },
   {
     id: "user6",
@@ -365,7 +366,7 @@ const mockClientUsers: ClientUser[] = [
     birthDate: "1985-05-15",
     idNumber: "KL123456",
     userType: "mandataire",
-    status: "actif",
+    status: "active",
   },
   {
     id: "user7",
@@ -379,7 +380,7 @@ const mockClientUsers: ClientUser[] = [
     birthDate: "1987-08-25",
     idNumber: "MN789012",
     userType: "proprietaire",
-    status: "actif",
+    status: "active",
   },
 ];
 
@@ -426,10 +427,9 @@ export async function createClient(data: ClientFormValues): Promise<Client> {
     const validatedData = validateClientData(data);
 
     const newId = Math.max(0, ...mockClients.map((c) => c.id)) + 1;
-
     const baseClient = {
       id: newId,
-      status: "actif" as const,
+      status: "active" as const,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -778,7 +778,7 @@ export async function getClientUsers(clientId: number): Promise<ClientUser[]> {
         birthDate: "1980-01-01",
         idNumber: "123456789",
         userType: "proprietaire",
-        status: "actif",
+        status: "active",
       },
       {
         id: "user2",
@@ -792,7 +792,7 @@ export async function getClientUsers(clientId: number): Promise<ClientUser[]> {
         birthDate: "1985-05-15",
         idNumber: "987654321",
         userType: "mandataire",
-        status: "actif",
+        status: "active",
       },
     ];
   } catch (error) {

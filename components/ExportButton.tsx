@@ -6,9 +6,10 @@ import * as XLSX from "xlsx";
 
 interface ExportButtonProps {
   data: any[];
+  customTitle?: string;
 }
 
-export function ExportButton({ data }: ExportButtonProps) {
+export function ExportButton({ data, customTitle }: ExportButtonProps) {
   const handleExport = () => {
     // Convert data to a worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -16,16 +17,26 @@ export function ExportButton({ data }: ExportButtonProps) {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
     // Generate and download Excel file
-    XLSX.writeFile(workbook, "export.xlsx");
+    const fileName = customTitle
+      ? `export_${customTitle.toLowerCase().replace(/\s+/g, "_")}.xlsx`
+      : "export.xlsx";
+
+    XLSX.writeFile(workbook, fileName);
   };
+
+  // Check if this is for souscriptions to apply different styling
+  const isSouscriptions = customTitle?.toLowerCase() === "souscriptions";
 
   return (
     <Button
       onClick={handleExport}
       rel="noopener noreferrer"
-      className="flex gap-2"
+      className={`flex gap-2 ${
+        isSouscriptions ? "bg-secondary hover:bg-secondary/90" : ""
+      }`}
+      variant="default"
     >
-      XLSX <FileSpreadsheet />
+      {customTitle ? `${customTitle} XLSX` : "XLSX"} <FileSpreadsheet />
     </Button>
   );
 }

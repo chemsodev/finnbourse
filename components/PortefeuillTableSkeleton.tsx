@@ -10,7 +10,7 @@ import {
 import { Skeleton } from "./ui/skeleton";
 
 const PortefeuillTableSkeleton = async () => {
-  const t = await getTranslations("carnetordres");
+  const t = await getTranslations("ordres");
 
   return (
     <Table>

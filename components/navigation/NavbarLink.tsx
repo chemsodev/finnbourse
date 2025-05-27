@@ -27,12 +27,11 @@ const NavbarLink = ({
       {link.icon}
       <div className="capitalize text-xs flex justify-between gap-4 items-center">
         {link.label}
-        {link.href === "/carnetordres" &&
-          (userRole === 2 || userRole === 3) && (
-            <span className="text-xs bg-primary text-white h-4 w-4 rounded-full flex justify-center items-center shadow-inner ">
-              <OrderCounter />
-            </span>
-          )}
+        {link.href === "/ordres" && (userRole === 2 || userRole === 3) && (
+          <span className="text-xs bg-primary text-white h-4 w-4 rounded-full flex justify-center items-center shadow-inner ">
+            <OrderCounter />
+          </span>
+        )}
       </div>
     </Link>
   );

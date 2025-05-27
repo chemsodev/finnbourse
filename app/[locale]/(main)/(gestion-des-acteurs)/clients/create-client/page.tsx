@@ -27,6 +27,8 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { RolesAssignment } from "@/components/RolesAssignment";
+import { getRoleDisplayName } from "@/lib/role-utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -148,14 +150,15 @@ export default function CreateClientWizard() {
     id: "",
     firstName: "",
     lastName: "",
-    role: "",
+    roles: [] as string[], // Array of role IDs
+    role: "", // Keep for backward compatibility
     address: "",
     wilaya: "",
     nationality: "",
     birthDate: "",
     idNumber: "",
     userType: "proprietaire" as "proprietaire" | "mandataire" | "tuteur_legal",
-    status: "actif" as "actif" | "inactif",
+    status: "active" as "active" | "inactive", // Updated to match the new status values
     showPassword: false,
     password: "",
   });
@@ -164,14 +167,15 @@ export default function CreateClientWizard() {
       id: string;
       firstName: string;
       lastName: string;
-      role: string;
+      roles: string[]; // Array of role IDs
+      role: string; // Keep for backward compatibility
       address: string;
       wilaya: string;
       nationality: string;
       birthDate: string;
       idNumber: string;
       userType: "proprietaire" | "mandataire" | "tuteur_legal";
-      status: "actif" | "inactif";
+      status: "active" | "inactive"; // Updated to match new status values
       showPassword?: boolean;
       password?: string;
     }>
@@ -386,7 +390,6 @@ export default function CreateClientWizard() {
         return "bg-gray-100 text-gray-800";
     }
   };
-
   const addUser = () => {
     setIsAddingUser(true);
     setEditingUserId(null);
@@ -394,6 +397,7 @@ export default function CreateClientWizard() {
       id: "",
       firstName: "",
       lastName: "",
+      roles: [],
       role: "",
       address: "",
       wilaya: "",
@@ -401,7 +405,7 @@ export default function CreateClientWizard() {
       birthDate: "",
       idNumber: "",
       userType: "proprietaire",
-      status: "actif",
+      status: "active",
       showPassword: false,
       password: "",
     });
@@ -764,12 +768,11 @@ export default function CreateClientWizard() {
 
   const confirmToggleStatus = () => {
     if (!userToToggleStatus) return;
-
     const updatedUsers = [...users];
     const userToUpdate = updatedUsers.find((u) => u.id === userToToggleStatus);
     if (userToUpdate) {
       userToUpdate.status =
-        userToUpdate.status === "actif" ? "inactif" : "actif";
+        userToUpdate.status === "active" ? "inactive" : "active";
       setUsers(updatedUsers);
     }
 
@@ -1548,7 +1551,15 @@ export default function CreateClientWizard() {
                               <TableRow key={user.id}>
                                 <TableCell>{user.firstName}</TableCell>
                                 <TableCell>{user.lastName}</TableCell>
-                                <TableCell>{user.role}</TableCell>
+                                <TableCell>
+                                  {user.roles && user.roles.length > 0
+                                    ? user.roles
+                                        .map((roleId) =>
+                                          getRoleDisplayName(roleId)
+                                        )
+                                        .join(", ")
+                                    : user.role || "Aucun rôle"}
+                                </TableCell>
                                 <TableCell>{user.address}</TableCell>
                                 <TableCell>{user.wilaya}</TableCell>
                                 <TableCell>{user.nationality}</TableCell>
@@ -1560,27 +1571,27 @@ export default function CreateClientWizard() {
                                     : user.userType === "mandataire"
                                     ? "Mandataire"
                                     : "Tuteur Légal"}
-                                </TableCell>
+                                </TableCell>{" "}
                                 <TableCell>
                                   <div className="flex items-center justify-between space-x-2">
                                     <span
                                       className={
-                                        user.status === "actif"
+                                        user.status === "active"
                                           ? "text-green-600 text-sm font-medium"
                                           : "text-red-500 text-sm"
                                       }
                                     >
-                                      {user.status === "actif"
+                                      {user.status === "active"
                                         ? "Actif"
                                         : "Inactif"}
                                     </span>
                                     <Switch
-                                      checked={user.status === "actif"}
+                                      checked={user.status === "active"}
                                       onCheckedChange={() =>
                                         handleToggleStatus(user.id)
                                       }
                                       className={
-                                        user.status === "actif"
+                                        user.status === "active"
                                           ? "bg-green-500 data-[state=checked]:bg-green-500"
                                           : "bg-red-500 data-[state=unchecked]:bg-red-500"
                                       }
@@ -1693,15 +1704,20 @@ export default function CreateClientWizard() {
                             }
                             placeholder="Nom de jeune fille"
                           />
-                        </div>
+                        </div>{" "}
                         <div className="space-y-2">
-                          <Label>Rôle</Label>
-                          <Input
-                            value={newUser.role}
-                            onChange={(e) =>
-                              setNewUser({ ...newUser, role: e.target.value })
+                          <Label>Rôles</Label>
+                          <RolesAssignment
+                            selectedRoles={newUser.roles}
+                            onRolesChange={(roles) =>
+                              setNewUser({
+                                ...newUser,
+                                roles,
+                                role: roles.length > 0 ? roles[0] : "", // Set first role as primary for backward compatibility
+                              })
                             }
-                            placeholder="Rôle de l'utilisateur"
+                            userTypes={["client"]}
+                            showTabs={false}
                           />
                         </div>
                         <div className="space-y-2">
@@ -1808,25 +1824,25 @@ export default function CreateClientWizard() {
                             <div className="flex items-center space-x-2">
                               <span
                                 className={
-                                  newUser.status === "actif"
+                                  newUser.status === "active"
                                     ? "text-green-600 font-medium"
                                     : "text-red-500"
                                 }
                               >
-                                {newUser.status === "actif"
+                                {newUser.status === "active"
                                   ? "Actif"
                                   : "Inactif"}
                               </span>
                               <Switch
-                                checked={newUser.status === "actif"}
+                                checked={newUser.status === "active"}
                                 onCheckedChange={(checked) =>
                                   setNewUser({
                                     ...newUser,
-                                    status: checked ? "actif" : "inactif",
+                                    status: checked ? "active" : "inactive",
                                   })
                                 }
                                 className={
-                                  newUser.status === "actif"
+                                  newUser.status === "active"
                                     ? "bg-green-500 data-[state=checked]:bg-green-500"
                                     : "bg-red-500 data-[state=unchecked]:bg-red-500"
                                 }

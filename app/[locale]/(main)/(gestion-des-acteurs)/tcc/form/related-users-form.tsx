@@ -43,6 +43,7 @@ import {
   relatedUserSchema,
   relatedUsersFormSchema,
 } from "./schema";
+import { RolesAssignment } from "@/components/RolesAssignment";
 
 interface RelatedUsersFormProps {
   defaultValues: RelatedUsersFormValues;
@@ -71,14 +72,14 @@ export function RelatedUsersForm({
       [index]: !prev[index],
     }));
   };
-
   // Form for adding/editing a user
   const userForm = useForm<RelatedUserFormValues>({
     resolver: zodResolver(relatedUserSchema),
     defaultValues: {
       fullName: "",
       position: "",
-      role: "initiator",
+      roles: [], // Initialize with empty array
+      role: "initiator", // Keep for backward compatibility
       type: "member",
       status: "active",
       organization: "",
@@ -91,13 +92,13 @@ export function RelatedUsersForm({
     setUsers(updatedUsers);
     onFormChange(updatedUsers);
   };
-
   // Open dialog to add a new user
   const handleAddUser = () => {
     userForm.reset({
       fullName: "",
       position: "",
-      role: "initiator",
+      roles: [], // Initialize with empty array
+      role: "initiator", // Keep for backward compatibility
       type: "member",
       status: "active",
       organization: "",
@@ -177,9 +178,16 @@ export function RelatedUsersForm({
             ) : (
               users.map((user, index) => (
                 <TableRow key={index}>
+                  {" "}
                   <TableCell>{user.fullName}</TableCell>
                   <TableCell>{user.position}</TableCell>
-                  <TableCell>{t(user.role)}</TableCell>
+                  <TableCell>
+                    {
+                      user.roles && user.roles.length > 0
+                        ? user.roles.map((role) => t(role)).join(", ")
+                        : t(user.role) // Fallback to legacy role if no roles array
+                    }
+                  </TableCell>
                   <TableCell>{t(user.type)}</TableCell>
                   <TableCell>{t(user.status)}</TableCell>
                   <TableCell>{user.organization || "-"}</TableCell>
@@ -265,7 +273,6 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={userForm.control}
                 name="position"
@@ -278,40 +285,27 @@ export function RelatedUsersForm({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-
-              <FormField
-                control={userForm.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("role")}</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("selectRole")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="initiator">
-                            {t("initiator")}
-                          </SelectItem>
-                          <SelectItem value="validateur 1">
-                            {t("validator1")}
-                          </SelectItem>
-                          <SelectItem value="validateur 2">
-                            {t("validator2")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+              />{" "}
+              <div className="space-y-2">
+                <FormLabel>{t("roles")}</FormLabel>
+                <RolesAssignment
+                  selectedRoles={userForm.watch("roles") || []}
+                  onRolesChange={(roles) => {
+                    userForm.setValue("roles", roles);
+                    // For backward compatibility, set the first role as the primary role
+                    if (roles.length > 0) {
+                      userForm.setValue("role", roles[0]);
+                    } else {
+                      userForm.setValue("role", "");
+                    }
+                  }}
+                  userTypes={["tcc"]}
+                  showTabs={false}
+                />
+                <FormMessage>
+                  {userForm.formState.errors.roles?.message}
+                </FormMessage>
+              </div>
               <FormField
                 control={userForm.control}
                 name="type"
@@ -336,7 +330,6 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={userForm.control}
                 name="status"
@@ -363,7 +356,6 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={userForm.control}
                 name="organization"
@@ -377,7 +369,6 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={userForm.control}
                 name="password"
@@ -412,7 +403,6 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
-
               <DialogFooter>
                 <Button
                   type="button"

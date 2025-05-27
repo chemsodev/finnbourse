@@ -298,8 +298,6 @@ export function CustodianForm({
             />
           </div>
 
-
-
           {/* Informations générales */}
           <div className="space-y-2">
             <FormField
@@ -424,78 +422,6 @@ export function CustodianForm({
                     <Input
                       id="nomCorrespondant"
                       className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Commissions */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="commissionFixe"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("fixedCommission")}</FormLabel>
-                  <FormControl>
-                    <Input id="commissionFixe" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="commissionVariable"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("variableCommission")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="commissionVariable"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="tauxTva"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("vatRate")}</FormLabel>
-                  <FormControl>
-                    <Input id="tauxTva" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Commentaire */}
-          <div className="space-y-2 md:col-span-3">
-            <FormField
-              control={form.control}
-              name="commentaire"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("comment")}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      id="commentaire"
-                      className="w-full min-h-[100px]"
                       {...field}
                     />
                   </FormControl>

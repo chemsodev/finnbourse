@@ -271,22 +271,36 @@ export interface BourseSession {
 // Update your Order interface to include sessionId
 export interface Order {
   id: string;
-  ordertypes: number[];
-  orderdirection: number;
-  securityid: string;
+  securityissuer: string;
   securitytype: string;
+  securityid: string;
+  securityquantity: number;
   quantity: number;
-  pricelimitmin: number;
-  pricelimitmax: number;
-  duration: number;
   orderdate: string;
   orderstatus: number;
   investorid: string;
   negotiatorid: string;
-  securityissuer: string;
-  payedWithCard?: boolean;
-  signeddocumnet?: string;
   validity: string;
+  duration: number;
   createdat: string;
-  sessionId?: string; // New field to link orders to bourse sessions
+  payedWithCard: boolean;
+
+  // Common fields
+  visaCosob: string;
+  isinCode: string;
+  emissionDate: string;
+
+  // Souscription specific fields
+  bdl?: string;
+  totalShares?: number;
+  commission?: string;
+  netAmount?: string;
+
+  // Ordre specific fields
+  mst?: string;
+  orderdirection?: number;
+  priceInstruction?: string;
+  timeInstruction?: string;
+  validityDate?: string;
+  grossAmount?: string;
 }

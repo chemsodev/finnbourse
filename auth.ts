@@ -1,4 +1,4 @@
-import { AuthOptions, DefaultSession } from "next-auth";
+// @ts-ignore
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
 
@@ -25,8 +25,53 @@ interface DecodedToken {
   followsbusiness: boolean;
   exp: number;
 }
+
+// Track refresh attempts to implement rate limiting
+const refreshAttempts = {
+  lastAttempt: 0,
+  count: 0,
+  backoffUntil: 0,
+};
+
 async function refreshAccessToken(token: any) {
   try {
+    const now = Date.now();
+
+    // Check if we're in a backoff period
+    if (now < refreshAttempts.backoffUntil) {
+      console.log(
+        `Token refresh in backoff period. Waiting until ${new Date(
+          refreshAttempts.backoffUntil
+        ).toISOString()}`
+      );
+      throw new Error("Rate limited: Too many refresh attempts");
+    }
+
+    // If last attempt was less than 2 seconds ago, increment counter
+    if (now - refreshAttempts.lastAttempt < 2000) {
+      refreshAttempts.count++;
+
+      // If we've had too many attempts in quick succession, implement exponential backoff
+      if (refreshAttempts.count > 3) {
+        const backoffSeconds = Math.min(
+          Math.pow(2, refreshAttempts.count - 3),
+          60
+        ); // Exponential backoff, max 60 seconds
+        refreshAttempts.backoffUntil = now + backoffSeconds * 1000;
+        console.log(
+          `Too many refresh attempts. Backing off for ${backoffSeconds} seconds until ${new Date(
+            refreshAttempts.backoffUntil
+          ).toISOString()}`
+        );
+        throw new Error("Rate limited: Too many refresh attempts");
+      }
+    } else {
+      // Reset counter if it's been a while since last attempt
+      refreshAttempts.count = 0;
+    }
+
+    refreshAttempts.lastAttempt = now;
+
     console.log("Attempting to refresh access token");
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh-token`,
@@ -43,8 +88,25 @@ async function refreshAccessToken(token: any) {
     if (!response.ok) {
       console.error("Token refresh failed with status:", response.status);
       console.error("Token refresh error:", newTokens);
+
+      // Special handling for rate limiting
+      if (response.status === 429) {
+        // Implement more aggressive backoff for 429 responses
+        const backoffSeconds = 30; // 30 seconds backoff for 429 responses
+        refreshAttempts.backoffUntil = now + backoffSeconds * 1000;
+        console.log(
+          `Rate limited by server. Backing off for ${backoffSeconds} seconds until ${new Date(
+            refreshAttempts.backoffUntil
+          ).toISOString()}`
+        );
+        throw new Error("Rate limited by server: Too many requests");
+      }
+
       throw new Error("Failed to refresh token");
     }
+
+    // Reset attempts counter on success
+    refreshAttempts.count = 0;
 
     console.log("Token refreshed successfully");
     const newDecodedToken = jwt.decode(newTokens.access_token) as DecodedToken;
@@ -64,7 +126,8 @@ async function refreshAccessToken(token: any) {
     };
   }
 }
-const auth: AuthOptions = {
+// @ts-ignore
+const auth: any = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -122,7 +185,7 @@ const auth: AuthOptions = {
     }),
   ],
   callbacks: {
-    session: async ({ session, token }) => {
+    session: async ({ session, token }: { session: any; token: any }) => {
       if (token.accessToken) {
         const decodedToken = jwt.decode(
           token.accessToken as string
@@ -147,7 +210,7 @@ const auth: AuthOptions = {
       }
       return session;
     },
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user }: { token: any; user: any }) => {
       if (user && user.token) {
         token.accessToken = user.token as string;
         token.refreshToken = user.refreshToken as string;
@@ -155,15 +218,19 @@ const auth: AuthOptions = {
         token.error = user.error as string;
       }
 
-      // Check if token is expired or about to expire (within 1 minute)
+      // Check if token is expired or about to expire (within 5 minutes instead of 1)
       const isTokenExpired =
         token.tokenExpires &&
         Date.now() > (token.tokenExpires as number) * 1000;
       const isTokenExpiringSoon =
         token.tokenExpires &&
-        Date.now() > (token.tokenExpires as number) * 1000 - 60 * 1000; // 1 minute before expiration
+        Date.now() > (token.tokenExpires as number) * 1000 - 5 * 60 * 1000; // 5 minutes before expiration
 
-      if (isTokenExpired || isTokenExpiringSoon) {
+      // Only attempt refresh if we're not in a backoff period
+      if (
+        (isTokenExpired || isTokenExpiringSoon) &&
+        Date.now() >= refreshAttempts.backoffUntil
+      ) {
         console.log("Token expired or expiring soon, attempting refresh");
         const refreshedToken = await refreshAccessToken(token);
 

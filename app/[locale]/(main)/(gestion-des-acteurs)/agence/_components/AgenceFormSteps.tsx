@@ -90,8 +90,7 @@ export default function AgenceFormSteps({
             fullName: "Sagi Salim",
             position: "DG",
             matricule: "M001",
-            role: "Validator 2",
-            type: "admin",
+            roles: ["Validator 2"], // Updated to array format
             status: "active",
             organization: "SLIK PIS",
           },
@@ -100,8 +99,7 @@ export default function AgenceFormSteps({
             fullName: "Gadh Mohamed",
             position: "DFC",
             matricule: "M002",
-            role: "Validator 1",
-            type: "member",
+            roles: ["Validator 1"], // Updated to array format
             status: "active",
             organization: "SLIK PIS",
           },

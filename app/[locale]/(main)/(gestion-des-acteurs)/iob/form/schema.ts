@@ -19,7 +19,8 @@ export const relatedUserSchema = z.object({
   fullName: z.string().min(2, { message: "Name is required" }),
   position: z.string().min(2, { message: "Position is required" }),
   matricule: z.string().optional(),
-  role: z.string().min(1, { message: "Role is required" }),
+  roles: z.array(z.string()).default([]), // Array of role IDs
+  role: z.string().optional(), // Keep for backward compatibility
   type: z.string().min(1, { message: "Type is required" }),
   status: z.string().min(1, { message: "Status is required" }),
   organization: z.string().optional(),

@@ -101,14 +101,15 @@ export const clientUserSchema = z.object({
   id: z.string().optional(),
   firstName: z.string().min(1, "Le prénom est requis"),
   lastName: z.string().min(1, "Le nom est requis"),
-  role: z.string().optional().or(z.literal("")),
+  roles: z.array(z.string()).default([]), // Array of role IDs
+  role: z.string().optional().or(z.literal("")), // Keep for backward compatibility
   address: z.string().optional().or(z.literal("")),
   wilaya: z.string().optional().or(z.literal("")),
   nationality: z.string().optional().or(z.literal("")),
   birthDate: z.string().optional().or(z.literal("")),
   idNumber: z.string().optional().or(z.literal("")),
   userType: z.enum(["proprietaire", "mandataire", "tuteur_legal"]),
-  status: z.enum(["actif", "inactif"]),
+  status: z.enum(["active", "inactive"]),
   password: z
     .string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")

@@ -3,7 +3,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 
-const MyPagination = () => {
+interface MyPaginationProps {
+  preserveParams?: string[]; // Parameters to preserve when changing pages
+}
+
+const MyPagination = ({ preserveParams = [] }: MyPaginationProps = {}) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -13,8 +17,28 @@ const MyPagination = () => {
   const handlePageChange = (increment: number) => {
     const newPage = Math.max(0, currentPage + increment); // Ensure page doesn't go below 0
     const params = new URLSearchParams(searchParams);
-    params.set("page", newPage.toString());
-    router.replace(`${pathname}?${params.toString()}`);
+
+    // Only keep parameters we want to preserve, plus set the new page
+    const newParams = new URLSearchParams();
+
+    // Add the parameters we want to preserve
+    preserveParams.forEach((param) => {
+      const value = params.get(param);
+      if (value) {
+        newParams.set(param, value);
+      }
+    });
+
+    // Always set the page parameter
+    newParams.set("page", newPage.toString());
+
+    // Add the search query if it exists
+    const searchQuery = params.get("searchquery");
+    if (searchQuery) {
+      newParams.set("searchquery", searchQuery);
+    }
+
+    router.replace(`${pathname}?${newParams.toString()}`);
   };
 
   return (

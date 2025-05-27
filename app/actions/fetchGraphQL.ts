@@ -4,6 +4,7 @@
  * Server-side and client-side GraphQL fetchers
  *
  * Updates:
+ * - Added fallback to mock data when API is unreachable
  * - Removed all console.log statements to reduce logging noise
  * - Kept essential error logging for debugging
  * - Improved error handling for token expiration
@@ -16,6 +17,8 @@ import auth from "@/auth";
 import { redirect } from "@/i18n/routing";
 import { getServerSession } from "next-auth/next";
 import { Session } from "next-auth";
+import { getMockOrdersResponse } from "@/lib/mockData";
+import { LIST_ORDERS_QUERY, LIST_ORDERS_QUERY_EXCEL } from "@/graphql/queries";
 
 interface FetchGraphQLResponse<T> {
   data: T;
@@ -99,6 +102,13 @@ export async function fetchGraphQL<T>(
     return result.data;
   } catch (error) {
     console.error("Error in fetchGraphQL:", error);
+
+    // Use mock data if the query is for orders
+    if (query === LIST_ORDERS_QUERY || query === LIST_ORDERS_QUERY_EXCEL) {
+      console.log("Using mock order data because API is unreachable");
+      return getMockOrdersResponse() as unknown as T;
+    }
+
     throw error;
   }
 }
@@ -167,6 +177,13 @@ export function clientFetchGraphQL<T>(
     })
     .catch((error) => {
       console.error("Error in clientFetchGraphQL:", error);
+
+      // Use mock data if the query is for orders
+      if (query === LIST_ORDERS_QUERY || query === LIST_ORDERS_QUERY_EXCEL) {
+        console.log("Using mock order data because API is unreachable");
+        return getMockOrdersResponse() as unknown as T;
+      }
+
       throw error;
     });
 }

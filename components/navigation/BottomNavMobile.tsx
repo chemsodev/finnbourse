@@ -42,17 +42,14 @@ const BottomNav = async () => {
           {userRole === 1 ? t("PasserUnOrdre") : t("marche")}
         </div>
       </Link>
-      <Link
-        href="/carnetordres"
-        className="flex flex-col items-center gap-1 w-14"
-      >
+      <Link href="/ordres" className="flex flex-col items-center gap-1 w-14">
         {userRole === 1 ? (
           <ArrowRightLeft size={20} />
         ) : (
           <PiBookOpenText size={20} />
         )}
         <div className="text-[40%] font-extralight text-center">
-          {userRole === 1 ? t("mesOrdres") : t("carnetOrdres")}
+          {userRole === 1 ? t("mesOrdres") : t("ordres")}
         </div>
       </Link>
       <Link

@@ -25,6 +25,7 @@ import OperationsSurTitresDropDown from "./OperationsSurTitresDropDown";
 import TitresEtEmissionDropDown from "./TitresEtEmissionDropDown";
 import GestionDeCompteDropDown from "./GestionDeCompteDropDown";
 import GestionDesActeurs from "../GestionDesActeurs";
+import OrdersDropDown from "./OrdersDropDown";
 
 const SideBar = async () => {
   const session = await getServerSession(auth);
@@ -38,7 +39,7 @@ const SideBar = async () => {
     marche: t("marche"),
     portefeuille: t("portefeuille"),
     mesOrdres: t("mesOrdres"),
-    carnetOrdres: t("carnetOrdres"),
+    ordres: t("ordres"),
     chiffresEtEditions: t("chiffresEtEditions"),
     serviceClients: t("ServiceClients"),
     parametres: t("parametres"),
@@ -100,23 +101,7 @@ const SideBar = async () => {
                 }}
               />
             )}
-            {userRole !== 0 && (
-              <NavbarLink
-                link={{
-                  href: "/carnetordres",
-                  icon:
-                    userRole === 1 ? (
-                      <ArrowRightLeft size={15} />
-                    ) : (
-                      <PiBookOpenText size={15} />
-                    ),
-                  label:
-                    userRole === 1
-                      ? translations.mesOrdres
-                      : translations.carnetOrdres,
-                }}
-              />
-            )}
+            {userRole !== 0 && <OrdersDropDown />}
             {userRole !== 0 && userRole !== 1 && (
               <>
                 <TitresEtEmissionDropDown />

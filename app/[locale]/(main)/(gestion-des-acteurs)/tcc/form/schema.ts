@@ -47,7 +47,8 @@ export const relatedUserSchema = z.object({
   id: z.string().optional(), // Only present when editing an existing user
   fullName: z.string().min(1, "Full name is required"),
   position: z.string().min(1, "Position is required"),
-  role: z.string().min(1, "Role is required"),
+  roles: z.array(z.string()).default([]), // Array of role IDs
+  role: z.string().optional(), // Keep for backward compatibility
   type: z.string().min(1, "Type is required"),
   status: z.string().min(1, "Status is required"),
   organization: z.string().optional(),
