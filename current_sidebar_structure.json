@@ -10,7 +10,7 @@
       "id": "place-order",
       "href": "/passerunordre",
       "icon": "DollarSign",
-      "translationKey": "marche"
+      "translationKey": "passerunordre"
     },
     {
       "id": "portfolio",

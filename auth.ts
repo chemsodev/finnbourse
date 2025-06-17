@@ -1,6 +1,12 @@
 // @ts-ignore
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
+import { REFRESH_TOKEN_MUTATION } from "@/graphql/mutations";
+import {
+  graphqlClient,
+  TokenRefreshError,
+  AuthenticationError,
+} from "@/lib/graphql-client";
 
 declare module "next-auth" {
   interface User {
@@ -15,6 +21,7 @@ declare module "next-auth" {
     error?: string;
     loginSource?: "REST" | "GraphQL";
     restToken?: string;
+    refreshAttempts?: number;
   }
 }
 
@@ -29,41 +36,12 @@ interface DecodedToken {
 }
 
 async function refreshAccessToken(token: any) {
-  try {
-    console.log("Attempting to refresh access token");
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh-token`,
-      {
-        method: "GET",
-        headers: {
-          refresh_token: token.refreshToken,
-        },
-      }
-    );
-
-    const newTokens = await response.json();
-    if (!response.ok) {
-      console.error("Token refresh failed with status:", response.status);
-      console.error("Token refresh error:", newTokens);
-      throw new Error("Failed to refresh token");
-    }
-    console.log("Token refreshed successfully");
-    const newDecodedToken = jwt.decode(newTokens.access_token) as DecodedToken;
-
-    return {
-      ...token,
-      accessToken: newTokens.access_token,
-      refreshToken: newTokens.refresh_token || token.refreshToken, // Use new refresh token if provided
-      tokenExpires: newDecodedToken.exp,
-      error: null,
-    };
-  } catch (error) {
-    console.error("Error refreshing token:", error);
-    return {
-      ...token,
-      error: "RefreshAccessTokenError",
-    };
-  }
+  // No automatic refresh - just mark as expired
+  console.log("Token expired, marking for logout");
+  return {
+    ...token,
+    error: "TokenExpired",
+  };
 }
 // @ts-ignore
 const auth: any = {
@@ -197,29 +175,21 @@ const auth: any = {
         token.restToken = user.restToken as string;
       }
 
-      // Check if token is expired or about to expire (within 5 minutes instead of 1)
-      const isTokenExpired =
-        token.tokenExpires &&
-        Date.now() > (token.tokenExpires as number) * 1000;
-      const isTokenExpiringSoon =
-        token.tokenExpires &&
-        Date.now() > (token.tokenExpires as number) * 1000 - 5 * 60 * 1000; // 5 minutes before expiration      // Refresh token if expired or expiring soon
-      if (isTokenExpired || isTokenExpiringSoon) {
-        console.log("Token expired or expiring soon, attempting refresh");
-        const refreshedToken = await refreshAccessToken(token);
+      // Check if token is expired - if so, mark for logout
+      if (token.tokenExpires) {
+        const expiryTime = token.tokenExpires * 1000;
+        const now = Date.now();
 
-        // Log the user out if refreshing fails
-        if (refreshedToken.error) {
-          console.error("Token refresh failed:", refreshedToken.error);
+        if (now > expiryTime) {
+          console.log("Token has expired, marking for logout");
           return {
             ...token,
-            error: "RefreshAccessTokenError",
+            error: "TokenExpired",
           };
         }
-
-        return refreshedToken;
       }
 
+      // Token is still valid
       return token;
     },
   },

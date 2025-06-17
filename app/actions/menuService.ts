@@ -343,7 +343,7 @@ export const menuItemMap: Record<
     label: "Place Order",
     href: "/passerunordre",
     icon: "DollarSign",
-    translationKey: "marche",
+    translationKey: "passerUnOrdre",
   },
   portfolio: {
     label: "Portfolio",

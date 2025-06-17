@@ -112,7 +112,6 @@ export function clientFetchREST<T = any>(
   const url = endpoint.startsWith("/")
     ? `${baseUrl}${endpoint}`
     : `${baseUrl}/${endpoint}`;
-
   const fetchOptions: RequestInit = {
     method: options.method || "GET",
     headers: {
@@ -121,6 +120,16 @@ export function clientFetchREST<T = any>(
       ...options.headers,
     },
   };
+
+  // Debug log for token usage
+  if (options.token) {
+    console.log(`TCC API Request: ${options.method || "GET"} ${url}`);
+    console.log(`Using REST token: ${options.token.substring(0, 20)}...`);
+  } else {
+    console.log(
+      `TCC API Request: ${options.method || "GET"} ${url} (No token)`
+    );
+  }
 
   if (
     options.body &&

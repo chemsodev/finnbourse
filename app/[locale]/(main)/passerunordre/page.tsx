@@ -28,9 +28,9 @@ const page = async () => {
           description={ipoT("sonatrach_description")}
           actionUrl="/passerunordre/marcheprimaire/opv"
         />
-      </div>
+      </div>{" "}
       <div className="flex justify-center text-3xl font-bold text-primary m-12 text-center md:ltr:text-left md:rtl:text-right">
-        {userRole === 1 ? t("passerunordre") : t("marche")}
+        {t("passerunordre")}
       </div>
       <div className="flex justify-center">
         <div className="flex flex-col md:flex-row justify-center gap-12">

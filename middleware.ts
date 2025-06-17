@@ -18,11 +18,20 @@ const intlMiddleware = createMiddleware(routing);
 const authMiddleware = withAuth((req) => intlMiddleware(req), {
   callbacks: {
     authorized: ({ token }) => {
-      return token != null;
+      // Check if token exists and is not expired
+      if (!token) return false;
+
+      // Check for token expiry error
+      if ((token as any).error === "TokenExpired") {
+        console.log("Token expired, redirecting to login");
+        return false;
+      }
+
+      return true;
     },
   },
   pages: {
-    signIn: "/login",
+    signIn: "/login?tokenExpired=true",
   },
 });
 

@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Trash2, Search, Eye, EyeOff } from "lucide-react";
-import { accountHolderData } from "@/lib/exportables";
+import {
+  Pencil,
+  Plus,
+  Trash2,
+  Search,
+  Eye,
+  EyeOff,
+  RefreshCw,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -35,10 +42,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useTCC, useTCCUsers } from "@/hooks/useTCC";
+import { TCCService } from "@/lib/services/tccService";
+import { TCC, TCCUser } from "@/lib/types/tcc";
+import { Badge } from "@/components/ui/badge";
 
-// Sample TCC user data
-interface TCCUser {
-  id: number;
+// Transform TCCUser to match the existing interface for backward compatibility
+interface DisplayTCCUser {
+  id: string;
   fullname: string;
   email: string;
   position: string;
@@ -51,103 +63,106 @@ interface TCCUser {
   matricule: string;
 }
 
-const tccUsers: TCCUser[] = [
-  {
-    id: 1,
-    fullname: "John Doe",
-    email: "john.doe@example.com",
-    position: "Manager",
-    role: "initiator",
-    type: "admin",
-    status: "active",
-    phone: "123-456-7890",
-    password: "Password123",
-    organisation: "SLIK PIS",
-    matricule: "M001",
-  },
-  {
-    id: 2,
-    fullname: "Jane Smith",
-    email: "jane.smith@example.com",
-    position: "Analyst",
-    role: "validateur 1",
-    type: "member",
-    status: "active",
-    phone: "123-456-7891",
-    password: "Secure456!",
-    organisation: "SLIK PIS",
-    matricule: "M002",
-  },
-  {
-    id: 3,
-    fullname: "Ahmed Hassan",
-    email: "ahmed.hassan@example.com",
-    position: "Supervisor",
-    role: "initiator",
-    type: "admin",
-    status: "inactive",
-    phone: "123-456-7892",
-    password: "StrongPwd789@",
-    organisation: "SLIK PIS",
-    matricule: "M003",
-  },
-];
-
 export default function TeneurComptesTitresPage() {
   const router = useRouter();
   const t = useTranslations("TCCDetailsPage");
   const tPage = useTranslations("TCCPage");
+  const { toast } = useToast();
 
-  // Since we'll have only one TCC, we'll use the first one from the data
-  const holder =
-    accountHolderData.find((h) => h.pays === "Algérie") || accountHolderData[0];
+  // API hooks
+  const { tccs, isLoading: isLoadingTCC, fetchTCCs } = useTCC();
+  const { updateUser, updateUserRole } = useTCCUsers();
 
+  // State management
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<TCCUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<DisplayTCCUser | null>(null);
   const [passwordVisibility, setPasswordVisibility] = useState<{
-    [key: number]: boolean;
+    [key: string]: boolean;
   }>({});
-  const [users, setUsers] = useState<TCCUser[]>(tccUsers);
-  const [userToToggleStatus, setUserToToggleStatus] = useState<number | null>(
+  const [users, setUsers] = useState<DisplayTCCUser[]>([]);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
     null
   );
   const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
-
-  // For user details dialog
   const [viewUserDialog, setViewUserDialog] = useState(false);
+  const [currentTCC, setCurrentTCC] = useState<TCC | null>(null);
 
-  const togglePasswordVisibility = (userId: number) => {
+  // Load TCC data on mount
+  useEffect(() => {
+    loadTCCData();
+  }, []);
+
+  const loadTCCData = async () => {
+    try {
+      await fetchTCCs();
+    } catch (error) {
+      console.error("Failed to load TCC data:", error);
+    }
+  };
+
+  // Transform TCC users for display
+  useEffect(() => {
+    if (tccs.length > 0) {
+      setCurrentTCC(tccs[0]); // Use the first TCC for now
+      // In a real app, you'd fetch users for the specific TCC
+      // For now, we'll create some sample data structure
+      setUsers([]);
+    }
+  }, [tccs]);
+
+  const togglePasswordVisibility = (userId: string) => {
     setPasswordVisibility((prev) => ({
       ...prev,
       [userId]: !prev[userId],
     }));
   };
 
-  const handleToggleStatus = (userId: number) => {
+  const handleToggleStatus = (userId: string) => {
     setUserToToggleStatus(userId);
     setStatusConfirmDialog(true);
   };
 
-  const confirmToggleStatus = () => {
+  const confirmToggleStatus = async () => {
     if (!userToToggleStatus) return;
 
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userToToggleStatus
-          ? {
-              ...user,
-              status: user.status === "active" ? "inactive" : "active",
-            }
-          : user
-      )
-    );
+    try {
+      const user = users.find((u) => u.id === userToToggleStatus);
+      if (!user) return;
 
-    // Reset dialog state
-    setStatusConfirmDialog(false);
-    setUserToToggleStatus(null);
+      const newStatus = user.status === "active" ? "inactif" : "actif";
+
+      await updateUser(userToToggleStatus, {
+        status: newStatus,
+      });
+
+      // Update local state
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userToToggleStatus
+            ? {
+                ...user,
+                status: user.status === "active" ? "inactive" : "active",
+              }
+            : user
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "User status updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
+        variant: "destructive",
+      });
+    } finally {
+      setStatusConfirmDialog(false);
+      setUserToToggleStatus(null);
+    }
   };
-
   const cancelToggleStatus = () => {
     setStatusConfirmDialog(false);
     setUserToToggleStatus(null);
@@ -161,40 +176,75 @@ export default function TeneurComptesTitresPage() {
   );
 
   const handleAddUser = () => {
-    // Route to user creation form
     router.push("/tcc/form/users");
   };
 
-  const handleEditUser = (user: TCCUser) => {
-    // Route to user edit form
+  const handleEditUser = (user: DisplayTCCUser) => {
     router.push(`/tcc/form/users/${user.id}`);
   };
 
-  const handleDeleteClick = (user: TCCUser) => {
+  const handleDeleteClick = (user: DisplayTCCUser) => {
     setSelectedUser(user);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDelete = () => {
-    // In a real app, you would delete the user from your database
+    // TODO: Implement user deletion via API
     console.log(`Deleting user with ID: ${selectedUser?.id}`);
     setIsDeleteDialogOpen(false);
-    // Then refresh your data
   };
 
-  const handleViewUser = (user: TCCUser) => {
+  const handleViewUser = (user: DisplayTCCUser) => {
     setSelectedUser(user);
     setViewUserDialog(true);
   };
 
+  // Show loading state
+  if (isLoadingTCC) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="h-6 w-6 animate-spin" />
+          <span>Loading TCC data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show create button if no TCC exists
+  if (!currentTCC) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center py-12">
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">
+              Teneur de Comptes Conservateur
+            </h1>
+            <p className="text-gray-600 mb-8">
+              No TCC configured. Create one to get started.
+            </p>
+            <Button
+              className="flex items-center gap-2 mx-auto"
+              onClick={() => router.push("/tcc/form")}
+            >
+              <Plus className="h-4 w-4" />
+              Create TCC
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">{holder.libelle}</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {currentTCC.libelle}
+          </h1>
           <Button
             className="flex items-center gap-2"
-            onClick={() => router.push(`/tcc/form/${holder.id}`)}
+            onClick={() => router.push(`/tcc/form/${currentTCC.id || "new"}`)}
           >
             <Pencil className="h-4 w-4" />
             {t("edit")}
@@ -213,33 +263,45 @@ export default function TeneurComptesTitresPage() {
                     <p className="text-sm font-medium text-gray-500">
                       {t("code")}
                     </p>
-                    <p className="text-base">{holder.code}</p>
+                    <p className="text-base">{currentTCC.code}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("type")}
                     </p>
-                    <p className="text-base">{holder.typeCompte || "-"}</p>
+                    <p className="text-base">
+                      {currentTCC.account_type || "-"}
+                    </p>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">
                     {t("label")}
                   </p>
-                  <p className="text-base">{holder.libelle}</p>
+                  <p className="text-base">{currentTCC.libelle}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("status")}
                     </p>
-                    <p className="text-base">{holder.statut}</p>
+                    <Badge
+                      variant={
+                        currentTCC.status === "ACTIVE" ? "default" : "secondary"
+                      }
+                    >
+                      {currentTCC.status}
+                    </Badge>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("creationDate")}
                     </p>
-                    <p className="text-base">{holder.dateCreation || "-"}</p>
+                    <p className="text-base">
+                      {currentTCC.createdAt
+                        ? new Date(currentTCC.createdAt).toLocaleDateString()
+                        : "-"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -252,26 +314,26 @@ export default function TeneurComptesTitresPage() {
                   <p className="text-sm font-medium text-gray-500">
                     {t("address")}
                   </p>
-                  <p className="text-base">{holder.adresse}</p>
+                  <p className="text-base">{currentTCC.address}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("postalCode")}
                     </p>
-                    <p className="text-base">{holder.codePostal}</p>
+                    <p className="text-base">{currentTCC.postal_code}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("city")}
                     </p>
-                    <p className="text-base">{holder.ville}</p>
+                    <p className="text-base">{currentTCC.city}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("country")}
                     </p>
-                    <p className="text-base">{holder.pays}</p>
+                    <p className="text-base">{currentTCC.country}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -279,13 +341,13 @@ export default function TeneurComptesTitresPage() {
                     <p className="text-sm font-medium text-gray-500">
                       {t("phone")}
                     </p>
-                    <p className="text-base">{holder.telephone}</p>
+                    <p className="text-base">{currentTCC.phone}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("email")}
                     </p>
-                    <p className="text-base">{holder.email}</p>
+                    <p className="text-base">{currentTCC.email}</p>
                   </div>
                 </div>
               </div>
@@ -293,38 +355,6 @@ export default function TeneurComptesTitresPage() {
 
             <div>
               <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                {t("bankInformation")}
-              </h2>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("swiftCode")}
-                    </p>
-                    <p className="text-base">{holder.swift || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("currency")}
-                    </p>
-                    <p className="text-base">{holder.devise || "-"}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {t("iban")}
-                  </p>
-                  <p className="text-base">{holder.iban || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {t("accountNumber")}
-                  </p>
-                  <p className="text-base">{holder.numeroCompte || "-"}</p>
-                </div>
-              </div>
-
-              <h2 className="text-xl font-semibold mt-8 mb-4 text-gray-800">
                 {t("regulatoryInformation")}
               </h2>
               <div className="grid grid-cols-1 gap-4">
@@ -333,13 +363,17 @@ export default function TeneurComptesTitresPage() {
                     <p className="text-sm font-medium text-gray-500">
                       {t("approvalNumber")}
                     </p>
-                    <p className="text-base">{holder.numeroAgrement || "-"}</p>
+                    <p className="text-base">
+                      {currentTCC.agreement_number || "-"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {t("approvalDate")}
                     </p>
-                    <p className="text-base">{holder.dateAgrement || "-"}</p>
+                    <p className="text-base">
+                      {currentTCC.agreement_date || "-"}
+                    </p>
                   </div>
                 </div>
                 <div>
@@ -347,9 +381,29 @@ export default function TeneurComptesTitresPage() {
                     {t("surveillanceAuthority")}
                   </p>
                   <p className="text-base">
-                    {holder.autoriteSurveillance || "-"}
+                    {currentTCC.surveillance_authority || "-"}
                   </p>
                 </div>
+                {currentTCC.name_correspondent && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Correspondent Name
+                      </p>
+                      <p className="text-base">
+                        {currentTCC.name_correspondent}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Correspondent Code
+                      </p>
+                      <p className="text-base">
+                        {currentTCC.code_correspondent || "-"}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

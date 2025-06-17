@@ -44,6 +44,7 @@ import {
   relatedUsersFormSchema,
 } from "./schema";
 import { RolesAssignment } from "@/components/RolesAssignment";
+import { TCC_USER_ROLES, TCC_USER_STATUS_OPTIONS } from "@/lib/types/tcc";
 
 interface RelatedUsersFormProps {
   defaultValues: RelatedUsersFormValues;
@@ -71,19 +72,24 @@ export function RelatedUsersForm({
       ...prev,
       [index]: !prev[index],
     }));
-  };
-  // Form for adding/editing a user
+  }; // Form for adding/editing a user
   const userForm = useForm<RelatedUserFormValues>({
     resolver: zodResolver(relatedUserSchema),
     defaultValues: {
+      firstname: "",
+      lastname: "",
+      email: "",
+      telephone: "",
+      positionTcc: "",
+      role: [], // Array of roles for backend
+      status: "actif",
+      password: "",
+      // Legacy fields for backward compatibility
       fullName: "",
       position: "",
-      roles: [], // Initialize with empty array
-      role: "initiator", // Keep for backward compatibility
+      roles: [],
       type: "member",
-      status: "active",
       organization: "",
-      password: "",
     },
   });
 
@@ -91,18 +97,23 @@ export function RelatedUsersForm({
   const updateParentForm = (updatedUsers: RelatedUserFormValues[]) => {
     setUsers(updatedUsers);
     onFormChange(updatedUsers);
-  };
-  // Open dialog to add a new user
+  }; // Open dialog to add a new user
   const handleAddUser = () => {
     userForm.reset({
+      firstname: "",
+      lastname: "",
+      email: "",
+      telephone: "",
+      positionTcc: "",
+      role: [], // Array of roles for backend
+      status: "actif",
+      password: "",
+      // Legacy fields for backward compatibility
       fullName: "",
       position: "",
-      roles: [], // Initialize with empty array
-      role: "initiator", // Keep for backward compatibility
+      roles: [],
       type: "member",
-      status: "active",
       organization: "",
-      password: "",
     });
     setEditingIndex(null);
     setIsDialogOpen(true);
@@ -124,17 +135,28 @@ export function RelatedUsersForm({
     updatedUsers.splice(index, 1);
     updateParentForm(updatedUsers);
   };
-
   // Save the user (add new or update existing)
   const handleSaveUser = (values: RelatedUserFormValues) => {
     const updatedUsers = [...users];
 
+    // Transform the data to include both new and legacy formats
+    const transformedUser = {
+      ...values,
+      // Ensure fullName is set for display compatibility
+      fullName:
+        values.firstname && values.lastname
+          ? `${values.firstname} ${values.lastname}`
+          : values.fullName || "",
+      // Ensure position is set for display compatibility
+      position: values.positionTcc || values.position || "",
+    };
+
     if (editingIndex !== null) {
       // Update existing user
-      updatedUsers[editingIndex] = values;
+      updatedUsers[editingIndex] = transformedUser;
     } else {
       // Add new user
-      updatedUsers.push(values);
+      updatedUsers.push(transformedUser);
     }
 
     updateParentForm(updatedUsers);
@@ -154,13 +176,14 @@ export function RelatedUsersForm({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
+            {" "}
             <TableRow>
               <TableHead>{t("fullName")}</TableHead>
+              <TableHead>{t("email")}</TableHead>
+              <TableHead>{t("telephone")}</TableHead>
               <TableHead>{t("position")}</TableHead>
               <TableHead>{t("role")}</TableHead>
-              <TableHead>{t("type")}</TableHead>
               <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("organization")}</TableHead>
               <TableHead>{t("password")}</TableHead>
               <TableHead className="w-[100px]">{t("actions")}</TableHead>
             </TableRow>
@@ -178,19 +201,36 @@ export function RelatedUsersForm({
             ) : (
               users.map((user, index) => (
                 <TableRow key={index}>
-                  {" "}
-                  <TableCell>{user.fullName}</TableCell>
-                  <TableCell>{user.position}</TableCell>
                   <TableCell>
-                    {
-                      user.roles && user.roles.length > 0
-                        ? user.roles.map((role) => t(role)).join(", ")
-                        : t(user.role) // Fallback to legacy role if no roles array
-                    }
+                    {user.firstname && user.lastname
+                      ? `${user.firstname} ${user.lastname}`
+                      : user.fullName || "-"}
                   </TableCell>
-                  <TableCell>{t(user.type)}</TableCell>
-                  <TableCell>{t(user.status)}</TableCell>
-                  <TableCell>{user.organization || "-"}</TableCell>
+                  <TableCell>{user.email || "-"}</TableCell>
+                  <TableCell>{user.telephone || "-"}</TableCell>
+                  <TableCell>
+                    {user.positionTcc || user.position || "-"}
+                  </TableCell>
+                  <TableCell>
+                    {user.role &&
+                    Array.isArray(user.role) &&
+                    user.role.length > 0
+                      ? user.role.join(", ")
+                      : user.roles && user.roles.length > 0
+                      ? user.roles.join(", ")
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        user.status === "actif"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {user.status === "actif" ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
                   <TableCell className="relative">
                     <div className="flex items-center">
                       <span>
@@ -256,16 +296,60 @@ export function RelatedUsersForm({
           </DialogHeader>
 
           <Form {...userForm}>
+            {" "}
             <form
               onSubmit={userForm.handleSubmit(handleSaveUser)}
               className="space-y-4"
             >
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={userForm.control}
+                  name="firstname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name *</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userForm.control}
+                  name="lastname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name *</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={userForm.control}
-                name="fullName"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("fullName")}</FormLabel>
+                    <FormLabel>Email *</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={userForm.control}
+                name="telephone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telephone *</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -273,97 +357,71 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={userForm.control}
-                name="position"
+                name="positionTcc"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("position")}</FormLabel>
+                    <FormLabel>Position *</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
-              />{" "}
+              />
+
               <div className="space-y-2">
-                <FormLabel>{t("roles")}</FormLabel>
-                <RolesAssignment
-                  selectedRoles={userForm.watch("roles") || []}
-                  onRolesChange={(roles) => {
-                    userForm.setValue("roles", roles);
-                    // For backward compatibility, set the first role as the primary role
-                    if (roles.length > 0) {
-                      userForm.setValue("role", roles[0]);
-                    } else {
-                      userForm.setValue("role", "");
-                    }
+                <FormLabel>Roles *</FormLabel>
+                <Select
+                  value={userForm.watch("role")?.[0] || ""}
+                  onValueChange={(value) => {
+                    userForm.setValue("role", [value]);
+                    // Update legacy fields for compatibility
+                    userForm.setValue("roles", [value]);
                   }}
-                  userTypes={["tcc"]}
-                  showTabs={false}
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TCC_USER_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage>
-                  {userForm.formState.errors.roles?.message}
+                  {userForm.formState.errors.role?.message}
                 </FormMessage>
               </div>
-              <FormField
-                control={userForm.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("type")}</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("selectType")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">{t("admin")}</SelectItem>
-                          <SelectItem value="member">{t("member")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               <FormField
                 control={userForm.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("status")}</FormLabel>
+                    <FormLabel>Status *</FormLabel>
                     <FormControl>
                       <Select
                         value={field.value}
                         onValueChange={field.onChange}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder={t("selectStatus")} />
+                          <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="active">{t("active")}</SelectItem>
-                          <SelectItem value="inactive">
-                            {t("inactive")}
-                          </SelectItem>
+                          {TCC_USER_STATUS_OPTIONS.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
-                name="organization"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("organization")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

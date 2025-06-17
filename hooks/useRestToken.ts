@@ -34,6 +34,18 @@ export function useRestToken() {
   const isLoading = status === "loading";
   const isAuthenticated = status === "authenticated";
 
+  // Debug log for token availability
+  if (isAuthenticated && restToken) {
+    console.log(`🔑 REST Token available: ${restToken.substring(0, 20)}...`);
+    console.log(`📡 Login source: ${loginSource}`);
+  } else if (isAuthenticated && !restToken) {
+    console.log("⚠️ No REST token available in session");
+    console.log(`📡 Login source: ${loginSource}`);
+    console.log(
+      `🔑 GraphQL token: ${graphqlToken ? "Available" : "Not available"}`
+    );
+  }
+
   return {
     restToken,
     graphqlToken,

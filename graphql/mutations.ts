@@ -138,7 +138,7 @@ export const CREATE_STOCK = `
       dividendrate: $dividendrate
     }) {
       id
-     
+
     }
   }
 `;
@@ -265,7 +265,7 @@ export const UPDATE_NOTIFICATION_STATUS = `
   }
 }
 `;
-export const CREATE_NEWS_ARTICLE_MUTATION = `  
+export const CREATE_NEWS_ARTICLE_MUTATION = `
 mutation CreateNewsArticle(
   $writerid: String!,
   $ispublished: Boolean,
@@ -283,7 +283,7 @@ mutation CreateNewsArticle(
     }
   ) {
     id
-  
+
   }
 }`;
 export const DELETE_NEWS_ARTICLE = `
@@ -344,7 +344,7 @@ export const UPDATE_SUPPORT_MESSAGE = `
     updateSupportqa(where: { id: $id }, data: { answer: { set: $answer }, state: { set: $state }}) {
       id
     }
-  } 
+  }
 `;
 
 export const UPDATE_USER_NEGOTIATOR = `
@@ -384,7 +384,7 @@ export const CREATE_SUPPORT_MESSAGE = `
     }
   ) {
     id
-  
+
   }
 }
 `;
@@ -430,4 +430,12 @@ export const DELETE_LISTED_COMPANY = `
   }
 }
 
+`;
+export const REFRESH_TOKEN_MUTATION = `
+  mutation RefreshToken {
+    refreshToken {
+      access_token
+      refresh_token
+    }
+  }
 `;

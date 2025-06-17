@@ -44,10 +44,6 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { UPDATE_ORDER_PAYED_WITH_CARD } from "@/graphql/mutations";
-import PayButton from "./PayButton";
-import { exit } from "process";
-import { setDate } from "date-fns";
 
 const formSchema = z.object({
   bulletinDeSouscriptionSigneFiles: z.string(),
@@ -55,22 +51,16 @@ const formSchema = z.object({
 
 const BulletinSubmitDialog = ({
   createdOrdreId,
-  ispayedWithCard = false,
   isDialogOpen,
   setIsDialogOpen,
   page,
 }: {
   createdOrdreId: string;
-  ispayedWithCard?: boolean;
   isDialogOpen?: boolean;
   setIsDialogOpen?: (open: boolean) => void;
   page?: string;
 }) => {
   const [submitting, setSubmitting] = useState(false);
-  const [payedWithCard, setpayedWithCard] = useState(
-    !ispayedWithCard ? false : true
-  );
-  const [PaymentData, setPaymentData] = useState<React.ReactNode>(<></>);
   const session = useSession();
   const { toast } = useToast();
 
@@ -220,24 +210,10 @@ const BulletinSubmitDialog = ({
                 {t("ordrePasse")}
               </div>
             </DialogTitle>
-          )}
+          )}{" "}
           <DialogDescription>
             {dialogPage === 1 ? (
               <>
-                <div className="my-6">
-                  {" "}
-                  {t("beforeContinuingPleaseProcessedePaymentWithCib")}
-                </div>
-                <div className="mt-4">
-                  <PayButton
-                    createdOrdreId={createdOrdreId}
-                    payedWithCard={payedWithCard}
-                    setpayedWithCard={setpayedWithCard}
-                    setPaymentData={setPaymentData}
-                  />
-                </div>
-                <div className="my-6"> {PaymentData}</div>
-
                 <div className="my-6"> {t("telechargerBulletinDC")}</div>
                 <Link
                   href={`/passerunordre/${createdOrdreId}/pdf`}
@@ -245,8 +221,6 @@ const BulletinSubmitDialog = ({
                   rel="noopener noreferrer"
                 >
                   <button
-                    // disabled={!payedWithCard}
-                    //${!payedWithCard ? "opacity-50 cursor-not-allowed" : ""}
                     className={`bg-primary text-white w-full py-2 rounded-md text-center flex gap-4 justify-center items-center `}
                     onClick={() => setDialogPage(2)}
                   >

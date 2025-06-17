@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustodianFormValues, custodianFormSchema } from "./schema";
+import { TCC_ACCOUNT_TYPES, TCC_STATUS_OPTIONS } from "@/lib/types/tcc";
+import { useFinancialInstitutions } from "@/hooks/useFinancialInstitutions";
 
 interface CustodianFormProps {
   defaultValues: CustodianFormValues;
@@ -32,6 +34,8 @@ export function CustodianForm({
   onFormChange,
 }: CustodianFormProps) {
   const t = useTranslations("TCCPage");
+  const { institutions, isLoading: isLoadingInstitutions } =
+    useFinancialInstitutions();
 
   const form = useForm<CustodianFormValues>({
     resolver: zodResolver(custodianFormSchema),
@@ -95,19 +99,11 @@ export function CustodianForm({
                         <SelectValue placeholder={t("select")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Dépositaire">
-                          {t("depositary")}
-                        </SelectItem>
-                        <SelectItem value="Conservateur">
-                          {t("custodian")}
-                        </SelectItem>
-                        <SelectItem value="Banque Locale">
-                          {t("localBank")}
-                        </SelectItem>
-                        <SelectItem value="Banque Internationale">
-                          {t("internationalBank")}
-                        </SelectItem>
-                        <SelectItem value="Autre">{t("other")}</SelectItem>
+                        {TCC_ACCOUNT_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -129,11 +125,11 @@ export function CustodianForm({
                         <SelectValue placeholder={t("select")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Actif">{t("active")}</SelectItem>
-                        <SelectItem value="Inactif">{t("inactive")}</SelectItem>
-                        <SelectItem value="Suspendu">
-                          {t("suspended")}
-                        </SelectItem>
+                        {TCC_STATUS_OPTIONS.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -162,71 +158,43 @@ export function CustodianForm({
               )}
             />
           </div>
+        </div>
 
-          {/* Informations bancaires */}
+        {/* Financial Institution Selection */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">Financial Institution</h3>
           <div className="space-y-2">
             <FormField
               control={form.control}
-              name="swift"
+              name="financialInstitutionId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("swiftCode")}</FormLabel>
+                  <FormLabel>Financial Institution *</FormLabel>
                   <FormControl>
-                    <Input id="swift" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <FormField
-              control={form.control}
-              name="iban"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("iban")}</FormLabel>
-                  <FormControl>
-                    <Input id="iban" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="numeroCompte"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("accountNumber")}</FormLabel>
-                  <FormControl>
-                    <Input id="numeroCompte" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="devise"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("currency")}</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id="devise" className="w-full">
-                        <SelectValue placeholder={t("select")} />
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isLoadingInstitutions}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          placeholder={
+                            isLoadingInstitutions
+                              ? "Loading..."
+                              : "Select financial institution"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="EUR">EUR</SelectItem>
-                        <SelectItem value="USD">USD</SelectItem>
-                        <SelectItem value="DZD">DZD</SelectItem>
-                        <SelectItem value="GBP">GBP</SelectItem>
-                        <SelectItem value="CHF">CHF</SelectItem>
+                        {institutions.map((institution) => (
+                          <SelectItem
+                            key={institution.id}
+                            value={institution.id}
+                          >
+                            {institution.institutionName} -{" "}
+                            {institution.agreementNumber}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -235,201 +203,241 @@ export function CustodianForm({
               )}
             />
           </div>
+        </div>
 
-          {/* Adresse */}
-          <div className="space-y-2 md:col-span-3">
-            <FormField
-              control={form.control}
-              name="adresse"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("address")}</FormLabel>
-                  <FormControl>
-                    <Input id="adresse" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {/* Contact Information */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">
+            {t("contactInformation")}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2 md:col-span-3">
+              <FormField
+                control={form.control}
+                name="adresse"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("address")}</FormLabel>
+                    <FormControl>
+                      <Textarea id="adresse" className="w-full" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="codePostal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("postalCode")}</FormLabel>
+                    <FormControl>
+                      <Input id="codePostal" className="w-full" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="ville"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("city")}</FormLabel>
+                    <FormControl>
+                      <Input id="ville" className="w-full" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="pays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("country")}</FormLabel>
+                    <FormControl>
+                      <Input id="pays" className="w-full" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="telephone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("phone")}</FormLabel>
+                    <FormControl>
+                      <Input id="telephone" className="w-full" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("email")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="email"
+                        type="email"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="codePostal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("postalCode")}</FormLabel>
-                  <FormControl>
-                    <Input id="codePostal" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="ville"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("city")}</FormLabel>
-                  <FormControl>
-                    <Input id="ville" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="pays"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("country")}</FormLabel>
-                  <FormControl>
-                    <Input id="pays" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+        </div>
 
-          {/* Informations générales */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="telephone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("phone")}</FormLabel>
-                  <FormControl>
-                    <Input id="telephone" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {/* Regulatory Information */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">
+            {t("regulatoryInformation")}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="numeroAgrement"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("approvalNumber")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="numeroAgrement"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="dateAgrement"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("approvalDate")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="dateAgrement"
+                        type="date"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="autoriteSurveillance"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("surveillanceAuthority")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="autoriteSurveillance"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("email")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="email"
-                      type="email"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+        </div>
 
-          {/* Informations réglementaires */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="numeroAgrement"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("approvalNumber")}</FormLabel>
-                  <FormControl>
-                    <Input id="numeroAgrement" className="w-full" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {/* Correspondent Information */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">
+            Correspondent Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="codeCorrespondant"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Correspondent Code</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="codeCorrespondant"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormField
+                control={form.control}
+                name="nomCorrespondant"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Correspondent Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="nomCorrespondant"
+                        className="w-full"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="dateAgrement"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("approvalDate")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="dateAgrement"
-                      type="date"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="autoriteSurveillance"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("supervisionAuthority")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="autoriteSurveillance"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+        </div>
 
-          {/* Correspondant */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="codeCorrespondant"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("correspondentCode")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="codeCorrespondant"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <FormField
-              control={form.control}
-              name="nomCorrespondant"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("correspondentName")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="nomCorrespondant"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+        {/* Comments */}
+        <div>
+          <FormField
+            control={form.control}
+            name="commentaire"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("comments")}</FormLabel>
+                <FormControl>
+                  <Textarea id="commentaire" className="w-full" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </form>
     </Form>

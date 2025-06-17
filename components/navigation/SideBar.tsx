@@ -34,8 +34,8 @@ const SideBar = async () => {
   // Resolve translations and pass them as props
   const translations = {
     tableauDeBord: t("TableauDeBord"),
-    passerUnOrdre: t("PasserUnOrdre"),
-    marche: t("marche"),
+    passerUnOrdre: t("passerUnOrdre"),
+    marche: t("passerUnOrdre"),
     portefeuille: t("portefeuille"),
     mesOrdres: t("mesOrdres"),
     ordres: t("ordres"),

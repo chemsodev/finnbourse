@@ -106,7 +106,11 @@ const FormPassationOrdreAction = ({
     null
   );
 
-  const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
+  const [extraFieldsData, setExtraFieldsData] = useState<any>(null); // New state variables for form conditions
+  const [conditionDuree, setConditionDuree] = useState("deJour");
+  const [conditionPrix, setConditionPrix] = useState("prixMarche");
+  const [conditionQuantite, setConditionQuantite] = useState("toutOuRien");
+
   const t = useTranslations("FormPassationOrdre");
 
   useEffect(() => {
@@ -129,7 +133,7 @@ const FormPassationOrdreAction = ({
             setTitre(selectedTitre.name);
             setSelectedPrice(Number(selectedTitre.facevalue));
             form.setValue("selectedTitreId", selectedTitre.id);
-            form.setValue("valeurMin", Number(selectedTitre.facevalue));
+            form.setValue("coursLimite", Number(selectedTitre.facevalue));
 
             setTotalAmount(
               calculateTotalValue(
@@ -194,44 +198,83 @@ const FormPassationOrdreAction = ({
   const handleGoBack = () => {
     router.back();
   };
-  const formSchema = z.object({
-    typeTransaction: z.boolean(),
-    issuer: z.string().optional(),
-    quantite: z
-      .number()
-      .int()
-      .min(1)
-      .max(data?.quantity || 1, {
-        message: `La quantité ne peut pas dépasser ${data?.quantity || 1}.`,
-      }),
-    instructionOrdreTemps: z.enum([
-      "à durée limitée",
-      "de jour",
-      "à revocation",
-      "à exécution",
-    ]),
-    instructionOrdrePrix: z.enum([
-      "à cours limité",
-      "au mieux",
-      "tout ou rien",
-      "sans stipulation",
-    ]),
-    validite: z.date(),
-    valeurMin: z.number().int().min(0),
-    valeurMax: z.number().int().min(0),
-    selectedTitreId: z.string(),
-  });
+  const formSchema = z
+    .object({
+      buyTransaction: z.boolean(),
+      issuer: z.string().optional(),
+      quantite: z
+        .number()
+        .int()
+        .min(1)
+        .max(data?.quantity || 1, {
+          message: `La quantité ne peut pas dépasser ${data?.quantity || 1}.`,
+        }), // Conditions de Durée
+      conditionDuree: z.enum(["deJour", "dateDefinie", "sansStipulation"]),
+      validite: z.date().optional(),
+      // Conditions de Prix
+      conditionPrix: z.enum(["prixLimite", "prixMarche"]),
+      coursLimite: z.number().optional(),
+      // Conditions Quantitatives
+      conditionQuantite: z.enum(["toutOuRien", "quantiteMinimale"]),
+      quantiteMinimale: z.number().int().min(1).optional(),
+      selectedTitreId: z.string(),
+    })
+    .refine(
+      (data) => {
+        // Validation conditionnelle pour date de validité
+        if (data.conditionDuree === "dateDefinie") {
+          return data.validite !== undefined;
+        }
+        return true;
+      },
+      {
+        message: "La date de validité est requise pour une durée définie",
+        path: ["validite"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validation conditionnelle pour cours limite
+        if (data.conditionPrix === "prixLimite") {
+          return data.coursLimite !== undefined && data.coursLimite > 0;
+        }
+        return true;
+      },
+      {
+        message: "Le cours limite est requis pour un ordre à prix limite",
+        path: ["coursLimite"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validation conditionnelle pour quantité minimale
+        if (data.conditionQuantite === "quantiteMinimale") {
+          return (
+            data.quantiteMinimale !== undefined &&
+            data.quantiteMinimale > 0 &&
+            data.quantiteMinimale <= data.quantite
+          );
+        }
+        return true;
+      },
+      {
+        message:
+          "La quantité minimale est requise et doit être inférieure ou égale à la quantité totale",
+        path: ["quantiteMinimale"],
+      }
+    );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       selectedTitreId: "",
-      typeTransaction: true,
+      buyTransaction: true,
       quantite: 1,
-      instructionOrdreTemps: "à durée limitée",
-      instructionOrdrePrix: "au mieux",
+      conditionDuree: "deJour",
+      conditionPrix: "prixMarche",
+      conditionQuantite: "toutOuRien",
       validite: getNextMonthDate(),
-      valeurMin: 0,
-      valeurMax: 0,
+      coursLimite: 0,
+      quantiteMinimale: 1,
     },
   });
 
@@ -256,24 +299,30 @@ const FormPassationOrdreAction = ({
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
-
     try {
       const retrunedData = await fetchGraphQLClient<CreateOrderResponse>(
         CREATE_ORDER_MUTATION,
         {
-          ordertypeone: data.instructionOrdreTemps,
-          ordertypetwo: data.instructionOrdrePrix,
-          orderdirection: Number(data.typeTransaction) ? 1 : 0,
+          ordertypeone: data.conditionDuree,
+          ordertypetwo: data.conditionPrix,
+          orderdirection: Number(data.buyTransaction) ? 1 : 0,
           securityid: data.selectedTitreId,
           investorid: userId,
           negotiatorid: negotiatorId || "",
           securitytype: "stock",
           quantity: data.quantite,
-          pricelimitmin: data.valeurMin,
-          pricelimitmax: data.valeurMax,
+          pricelimitmin:
+            data.conditionPrix === "prixLimite" ? data.coursLimite : 0,
+          pricelimitmax:
+            data.conditionPrix === "prixLimite" ? data.coursLimite : 0,
           orderstatus: 0,
           securityissuer: selectedTitreName,
-          validity: data.validite,
+          validity: data.validite || new Date(),
+          quantityCondition: data.conditionQuantite,
+          minQuantity:
+            data.conditionQuantite === "quantiteMinimale"
+              ? data.quantiteMinimale
+              : undefined,
         }
       );
       setCreatedOrdreId(retrunedData.createOrder.id);
@@ -308,14 +357,14 @@ const FormPassationOrdreAction = ({
       setIsSubmitting(false);
     }
   };
-
   const setTransactionType = (type: boolean) => {
-    form.setValue("typeTransaction", type);
+    form.setValue("buyTransaction", type);
   };
 
-  const isAchatSelected = form.watch("typeTransaction");
-  const instructionOrdreTemps = form.watch("instructionOrdreTemps");
-  const instructionOrdrePrix = form.watch("instructionOrdrePrix");
+  const isAchatSelected = form.watch("buyTransaction");
+  const watchedConditionDuree = form.watch("conditionDuree");
+  const watchedConditionPrix = form.watch("conditionPrix");
+  const watchedConditionQuantite = form.watch("conditionQuantite");
 
   if (loading || !stockData || !data) {
     return <PasserUnOrdreSkeleton />;
@@ -381,9 +430,8 @@ const FormPassationOrdreAction = ({
                                     onSelect={() => {
                                       setTitre(t.name);
                                       setSelectedPrice(Number(t.facevalue));
-
                                       form.setValue(
-                                        "valeurMin",
+                                        "coursLimite",
                                         Number(t.facevalue)
                                       );
                                       field.onChange(t.id);
@@ -439,10 +487,10 @@ const FormPassationOrdreAction = ({
                 <div className="text-lg font-semibold">
                   {data?.isincode || "N/A"}
                 </div>
-              </div>
+              </div>{" "}
               <FormField
                 control={form.control}
-                name="typeTransaction"
+                name="buyTransaction"
                 render={({ field }) => {
                   return (
                     <FormItem className="gap-32 text-lg">
@@ -517,35 +565,34 @@ const FormPassationOrdreAction = ({
                   );
                 }}
               />
-
+              {/* Conditions de Prix */}
               <FormField
                 control={form.control}
-                name="instructionOrdrePrix"
+                name="conditionPrix"
                 render={({ field }) => {
                   return (
                     <FormItem className="flex justify-between text-xl items-baseline">
                       <FormLabel className="text-gray-400 capitalize text-lg">
-                        {t("iopp")}
+                        Conditions de Prix
                       </FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setConditionPrix(value);
+                        }}
                         value={field.value}
                       >
                         <FormControl className="w-60">
                           <SelectTrigger>
-                            <SelectValue placeholder="Selectionnez une instruction"></SelectValue>
+                            <SelectValue placeholder="Sélectionnez une condition"></SelectValue>
                           </SelectTrigger>
-                        </FormControl>
+                        </FormControl>{" "}
                         <SelectContent>
-                          <SelectItem value="à cours limité">
-                            {t("cl")}
+                          <SelectItem value="prixMarche">
+                            Au prix du marché
                           </SelectItem>
-                          <SelectItem value="au mieux">{t("m")}</SelectItem>
-                          <SelectItem value="tout ou rien">
-                            {t("tr")}
-                          </SelectItem>
-                          <SelectItem value="sans stipulation">
-                            {t("ss")}
+                          <SelectItem value="prixLimite">
+                            À prix limite
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -554,180 +601,226 @@ const FormPassationOrdreAction = ({
                   );
                 }}
               />
-              {instructionOrdrePrix !== "sans stipulation" && (
+              {/* Cours limite field - only show when prix limite is selected */}
+              {watchedConditionPrix === "prixLimite" && (
                 <FormField
                   control={form.control}
-                  name="instructionOrdreTemps"
-                  render={({ field }) => {
-                    return (
-                      <FormItem className="flex justify-between text-xl items-baseline w-full">
+                  name="coursLimite"
+                  render={({ field }) => (
+                    <FormItem className="text-xl items-baseline">
+                      {" "}
+                      <div className="flex justify-between ">
                         <FormLabel className="text-gray-400 capitalize text-lg">
-                          {t("iopt")}
+                          {isAchatSelected ? (
+                            <>
+                              Cours{" "}
+                              <span className="text-green-500">maximal</span>
+                            </>
+                          ) : (
+                            <>
+                              Cours{" "}
+                              <span className="text-red-500">minimal</span>
+                            </>
+                          )}
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl className="w-60">
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selectionnez une instruction"></SelectValue>
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="à durée limitée">
-                              {t("dl")}
-                            </SelectItem>
-                            <SelectItem value="de jour">{t("dj")}</SelectItem>
-                            <SelectItem value="à revocation">
-                              {t("r")}
-                            </SelectItem>
-                            <SelectItem value="à exécution">
-                              {t("e")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                        <FormControl className="w-40">
+                          <Input
+                            placeholder="Cours limite"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={field.value || ""}
+                            onChange={(e) =>
+                              field.onChange(
+                                Math.max(0, parseFloat(e.target.value) || 0)
+                              )
+                            }
+                            onKeyDown={preventNonNumericInput}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               )}
-
-              {(instructionOrdrePrix === "à cours limité" ||
-                instructionOrdrePrix === "tout ou rien") && (
-                <>
-                  {(isAchatSelected &&
-                    instructionOrdrePrix === "à cours limité") ||
-                  instructionOrdrePrix === "tout ou rien" ? (
-                    <FormField
-                      control={form.control}
-                      name="valeurMax"
-                      render={({ field }) => (
-                        <FormItem className="text-xl items-baseline">
-                          <div className="flex justify-between ">
-                            <FormLabel className="text-gray-400 capitalize text-lg">
-                              {t("vn")}
-                              <span className="text-green-400 mx-1">
-                                {t("max")}
-                              </span>
-                            </FormLabel>
-                            <FormControl className="w-40">
-                              <Input
-                                placeholder="valeurMax"
-                                type="number"
-                                min="0"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(0, parseInt(e.target.value) || 0)
-                                  )
-                                }
-                                onKeyDown={preventNonNumericInput}
-                              />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ) : null}
-                  {(!isAchatSelected &&
-                    instructionOrdrePrix === "à cours limité") ||
-                  instructionOrdrePrix === "tout ou rien" ? (
-                    <FormField
-                      control={form.control}
-                      name="valeurMin"
-                      render={({ field }) => (
-                        <FormItem className="text-xl items-baseline">
-                          <div className="flex justify-between ">
-                            <FormLabel className="text-gray-400 capitalize text-lg">
-                              {t("vn")}
-                              <span className="text-red-400 mx-1">
-                                {t("min")}
-                              </span>
-                            </FormLabel>
-                            <FormControl className="w-40">
-                              <Input
-                                placeholder="valeurMin"
-                                type="number"
-                                min="0"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    Math.max(0, parseInt(e.target.value) || 0)
-                                  )
-                                }
-                                onKeyDown={preventNonNumericInput}
-                              />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ) : null}
-                </>
-              )}
-
-              {instructionOrdreTemps === "à durée limitée" &&
-                instructionOrdrePrix !== "sans stipulation" && (
-                  <FormField
-                    control={form.control}
-                    name="validite"
-                    render={({ field }) => (
-                      <FormItem className="text-xl items-baseline">
-                        <div className="flex justify-between w-full">
-                          <FormLabel className="text-gray-400 capitalize text-lg w-full">
-                            {t("dv")}
-                          </FormLabel>
-                          <FormControl>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "min-w-60 justify-start text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? (
-                                    format(field.value, "dd MMMM yyyy", {
-                                      locale: fr,
-                                    })
-                                  ) : (
-                                    <span>{t("pickDate")}</span>
-                                  )}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={(date) => {
+              {/* Conditions de Durée */}
+              <FormField
+                control={form.control}
+                name="conditionDuree"
+                render={({ field }) => {
+                  return (
+                    <FormItem className="flex justify-between text-xl items-baseline w-full">
+                      <FormLabel className="text-gray-400 capitalize text-lg">
+                        Conditions de Durée
+                      </FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setConditionDuree(value);
+                        }}
+                        value={field.value}
+                      >
+                        <FormControl className="w-60">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez une durée"></SelectValue>
+                          </SelectTrigger>
+                        </FormControl>{" "}
+                        <SelectContent>
+                          <SelectItem value="deJour">De jour</SelectItem>
+                          <SelectItem value="dateDefinie">
+                            Jusqu'à une date définie (max 30 jours)
+                          </SelectItem>
+                          <SelectItem value="sansStipulation">
+                            Sans stipulation (jusqu'à exécution)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              {/* Date de validité - only show when date definie is selected */}
+              {watchedConditionDuree === "dateDefinie" && (
+                <FormField
+                  control={form.control}
+                  name="validite"
+                  render={({ field }) => (
+                    <FormItem className="text-xl items-baseline">
+                      <div className="flex justify-between w-full">
+                        <FormLabel className="text-gray-400 capitalize text-lg w-full">
+                          Date de validité
+                        </FormLabel>
+                        <FormControl>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "min-w-60 justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? (
+                                  format(field.value, "dd MMMM yyyy", {
+                                    locale: fr,
+                                  })
+                                ) : (
+                                  <span>Choisir une date</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) => {
+                                  // Limit to max 30 days from today
+                                  const maxDate = new Date();
+                                  maxDate.setDate(maxDate.getDate() + 30);
+                                  if (date && date <= maxDate) {
                                     field.onChange(date);
-                                  }}
-                                  captionLayout="dropdown-buttons"
-                                  fromYear={1950}
-                                  toYear={2050}
-                                  locale={
-                                    locale === "fr"
-                                      ? fr
-                                      : locale === "en"
-                                      ? enUS
-                                      : ar
                                   }
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </FormControl>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
+                                }}
+                                captionLayout="dropdown-buttons"
+                                fromDate={new Date()}
+                                toDate={(() => {
+                                  const maxDate = new Date();
+                                  maxDate.setDate(maxDate.getDate() + 30);
+                                  return maxDate;
+                                })()}
+                                locale={
+                                  locale === "fr"
+                                    ? fr
+                                    : locale === "en"
+                                    ? enUS
+                                    : ar
+                                }
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              {/* Conditions Quantitatives */}
+              <FormField
+                control={form.control}
+                name="conditionQuantite"
+                render={({ field }) => {
+                  return (
+                    <FormItem className="flex justify-between text-xl items-baseline w-full">
+                      <FormLabel className="text-gray-400 capitalize text-lg">
+                        Conditions Quantitatives
+                      </FormLabel>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setConditionQuantite(value);
+                        }}
+                        value={field.value}
+                      >
+                        <FormControl className="w-60">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez une condition"></SelectValue>
+                          </SelectTrigger>
+                        </FormControl>{" "}
+                        <SelectContent>
+                          <SelectItem value="toutOuRien">
+                            Tout ou rien
+                          </SelectItem>
+                          <SelectItem value="quantiteMinimale">
+                            Quantité minimale d'exécution
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              {/* Quantité minimale - only show when quantite minimale is selected */}
+              {watchedConditionQuantite === "quantiteMinimale" && (
+                <FormField
+                  control={form.control}
+                  name="quantiteMinimale"
+                  render={({ field }) => (
+                    <FormItem className="text-xl items-baseline">
+                      <div className="flex justify-between ">
+                        <FormLabel className="text-gray-400 capitalize text-lg">
+                          Quantité minimale
+                        </FormLabel>
+                        <FormControl className="w-40">
+                          <Input
+                            placeholder="Quantité min"
+                            type="number"
+                            min="1"
+                            value={field.value || ""}
+                            onChange={(e) => {
+                              const maxQuantity = form.getValues("quantite");
+                              const value = Math.max(
+                                1,
+                                Math.min(
+                                  maxQuantity,
+                                  parseInt(e.target.value) || 1
+                                )
+                              );
+                              field.onChange(value);
+                            }}
+                            onKeyDown={preventNonNumericInput}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("dateEmission")}
@@ -758,7 +851,6 @@ const FormPassationOrdreAction = ({
                   {process.env.NEXT_PUBLIC_COMMISSION_ACTION} %
                 </div>
               </div>
-
               <Separator />
               <div className="flex justify-between items-baseline">
                 <div className="text-gray-400 capitalize text-lg ">

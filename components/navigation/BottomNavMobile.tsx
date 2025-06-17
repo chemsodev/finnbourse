@@ -28,7 +28,7 @@ const BottomNav = async () => {
       >
         <RiMoneyDollarCircleLine size={20} />
         <div className="text-[40%] font-extralight text-center">
-          {t("marche")}
+          {t("passerunordre")}
         </div>
       </Link>
       <Link href="/ordres" className="flex flex-col items-center gap-1 w-14">

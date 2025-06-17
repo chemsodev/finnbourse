@@ -44,14 +44,12 @@ const page = async (props: { params: { type: string } }) => {
               : ""}
           </span>
         </div>
-        <div className="text-xs text-gray-500">{t("expl")}</div>
+        <div className="text-xs text-gray-500">{t("expl")}</div>{" "}
       </div>
-      {(userRole === 3 || userRole === 2) && (
-        <div className="flex items-baseline gap-4 justify-end w-full">
-          <AjoutSocieteEmettrice />
-          <AjoutTitre type={type} />
-        </div>
-      )}
+      <div className="flex items-baseline gap-4 justify-end w-full">
+        <AjoutSocieteEmettrice />
+        <AjoutTitre type={type} />
+      </div>
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
         <TitresTable type={type} />
       </div>

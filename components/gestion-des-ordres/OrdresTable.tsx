@@ -383,12 +383,10 @@ export default function OrdresTable({
               isSouscription={
                 pageType === "souscriptions" || activeTab === "souscriptions"
               }
-            />
-
+            />{" "}
             {userRole === "1" && order.orderstatus === 0 && (
               <BulletinSubmitDialog
                 createdOrdreId={order.id}
-                ispayedWithCard={order.payedWithCard}
                 page="TablePage"
               />
             )}
@@ -396,7 +394,6 @@ export default function OrdresTable({
               (order.orderstatus === 0 || order.orderstatus === 1) && (
                 <SupprimerOrdre titreId={order.id} />
               )}
-
             {userType === "agence" &&
               userRole === "agency_first_approver" &&
               order.orderstatus === 1 && (
@@ -405,7 +402,6 @@ export default function OrdresTable({
                   quantity={order.quantity}
                 />
               )}
-
             {userType === "agence" &&
               userRole === "agency_final_approver" &&
               order.orderstatus === 2 && (
@@ -414,7 +410,6 @@ export default function OrdresTable({
                   quantity={order.quantity}
                 />
               )}
-
             {userType === "tcc" &&
               userRole === "tcc_first_approver" &&
               order.orderstatus === 3 && (
@@ -423,7 +418,6 @@ export default function OrdresTable({
                   quantity={order.quantity}
                 />
               )}
-
             {userType === "tcc" &&
               userRole === "tcc_final_approver" &&
               order.orderstatus === 4 && (
@@ -431,24 +425,20 @@ export default function OrdresTable({
                   ordreId={order.id}
                   quantity={order.quantity}
                 />
-              )}
-
+              )}{" "}
             {userType === "iob" &&
               userRole === "iob_order_executor" &&
               Number(order.orderstatus) === 5 && (
                 <BulletinSubmitDialog
                   createdOrdreId={order.id}
-                  ispayedWithCard={order.payedWithCard}
                   page="TablePage"
                 />
-              )}
-
+              )}{" "}
             {userType === "iob" &&
               userRole === "iob_result_submitter" &&
               Number(order.orderstatus) === 6 && (
                 <BulletinSubmitDialog
                   createdOrdreId={order.id}
-                  ispayedWithCard={order.payedWithCard}
                   page="TablePage"
                 />
               )}

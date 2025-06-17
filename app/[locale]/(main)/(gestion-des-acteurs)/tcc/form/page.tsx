@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { accountHolderData } from "@/lib/exportables";
 import { MultiStepForm } from "./multi-step-form";
 import { CustodianForm } from "./custodian-form";
 import { RelatedUsersForm } from "./related-users-form";
@@ -13,8 +12,11 @@ import {
   CustodianFormValues,
   RelatedUserFormValues,
   CombinedFormValues,
+  custodianFormSchema,
 } from "./schema";
 import { useToast } from "@/hooks/use-toast";
+import { useTCCForm, useTCC } from "@/hooks/useTCC";
+import { TCCService } from "@/lib/services/tccService";
 
 interface FormPageProps {
   params: {
@@ -25,26 +27,27 @@ interface FormPageProps {
 export default function FormPage({ params }: FormPageProps) {
   const router = useRouter();
   const t = useTranslations("TCCPage");
-  const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();  const [currentStep, setCurrentStep] = useState(0);
+  const [isCreatingTCC, setIsCreatingTCC] = useState(false);
+  const { isSubmitting, submitForm } = useTCCForm();
+  const { tccs, fetchTCCs, createOrUpdateTCC } = useTCC();
   const [formValues, setFormValues] = useState<CombinedFormValues>({
     custodian: {
       code: "",
       libelle: "",
-      typeCompte: "",
-      statut: "Actif",
+      typeCompte: "DEPOSIT",
+      statut: "ACTIVE",
       adresse: "",
       codePostal: "",
       ville: "",
-      pays: "Algérie",
+      pays: "Algeria",
       telephone: "",
       email: "",
       dateCreation: new Date().toISOString().split("T")[0],
       swift: "",
       iban: "",
       numeroCompte: "",
-      devise: "EUR",
+      devise: "DZD",
       numeroAgrement: "",
       dateAgrement: "",
       autoriteSurveillance: "",
@@ -54,86 +57,43 @@ export default function FormPage({ params }: FormPageProps) {
       commissionVariable: "",
       tauxTva: "",
       commentaire: "",
+      financialInstitutionId: "", // Will be selected by user
     },
     relatedUsers: [],
+    tccId: undefined, // Will be set after TCC creation
   });
 
-  const isEditMode = !!params.id;
+  const isEditMode = !!params.id && params.id !== "new";
 
-  // Fetch existing data if in edit mode
+  // Load existing TCC data if in edit mode
   useEffect(() => {
     if (isEditMode && params.id) {
-      const id = parseInt(params.id);
-      const holder = accountHolderData.find((h) => h.id === id);
+      loadExistingTCC();
+    }
+  }, [isEditMode, params.id]);
+  const loadExistingTCC = async () => {
+    try {
+      await fetchTCCs();
+      const tcc = tccs.find((t) => t.id === params.id);
 
-      if (holder) {
-        // Update custodian form data
+      if (tcc) {
+        const formData = TCCService.transformAPIDataToForm(tcc);
         setFormValues((prev) => ({
           ...prev,
           custodian: {
-            code: holder.code || "",
-            libelle: holder.libelle || "",
-            typeCompte: holder.typeCompte || "",
-            statut: holder.statut || "Actif",
-            adresse: holder.adresse || "",
-            codePostal: holder.codePostal || "",
-            ville: holder.ville || "",
-            pays: holder.pays || "Algérie",
-            telephone: holder.telephone || "",
-            email: holder.email || "",
-            dateCreation: holder.dateCreation || "",
-            swift: holder.swift || "",
-            iban: holder.iban || "",
-            numeroCompte: holder.numeroCompte || "",
-            devise: holder.devise || "EUR",
-            numeroAgrement: holder.numeroAgrement || "",
-            dateAgrement: holder.dateAgrement || "",
-            autoriteSurveillance: holder.autoriteSurveillance || "",
-            codeCorrespondant: holder.codeCorrespondant || "",
-            nomCorrespondant: holder.nomCorrespondant || "",
-            commissionFixe: holder.commissionFixe || "",
-            commissionVariable: holder.commissionVariable || "",
-            tauxTva: holder.tauxTva || "",
-            commentaire: holder.commentaire || "",
+            ...prev.custodian,
+            ...formData,
           },
-          // In a real application, you would fetch related users from API
-          relatedUsers: [
-            // These are mock related users for demonstration
-            {
-              id: "1",
-              fullName: "Sagi Salim",
-              position: "DG",
-              role: "validateur 2",
-              type: "admin",
-              status: "active",
-              organization: "SLIK PIS",
-              password: "securepass1",
-            },
-            {
-              id: "2",
-              fullName: "Gadh Mohamed",
-              position: "DFC",
-              role: "validateur 1",
-              type: "member",
-              status: "active",
-              organization: "SLIK PIS",
-              password: "securepass2",
-            },
-            {
-              id: "3",
-              fullName: "Slmi Kadour",
-              position: "Trader",
-              role: "initiator",
-              type: "member",
-              status: "active",
-              organization: "SLIK PIS",
-              password: "securepass3",
-            },
-          ],
         }));
       }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load TCC data",
+        variant: "destructive",
+      });
     }
-  }, [isEditMode, params.id]);
+  };
 
   const handleUpdateCustodian = (custodianValues: CustodianFormValues) => {
     setFormValues((prev) => ({
@@ -147,47 +107,96 @@ export default function FormPage({ params }: FormPageProps) {
       ...prev,
       relatedUsers,
     }));
-  };
+  };  const handleNextStep = async () => {
+    // If moving from step 0 (TCC info) to step 1 (users), create the TCC first
+    if (currentStep === 0) {
+      try {
+        setIsCreatingTCC(true);
+        
+        // Validate custodian form data
+        const validationResult = custodianFormSchema.safeParse(formValues.custodian);
+        if (!validationResult.success) {
+          toast({
+            title: "Validation Error",
+            description: "Please fill in all required fields correctly",
+            variant: "destructive",
+          });
+          return;
+        }        console.log("Creating TCC with data:", formValues.custodian);
+        
+        // Transform form data to API format and create TCC
+        const apiData = TCCService.transformFormDataToAPI(formValues.custodian);
+        const createdTCC = await createOrUpdateTCC(apiData);
+        
+        // Store the created TCC ID for user creation
+        setFormValues(prev => ({
+          ...prev,
+          tccId: createdTCC.id, // Store TCC ID for user creation
+        }));
 
-  const handleNextStep = () => {
-    setCurrentStep((prev) => prev + 1);
+        toast({
+          title: "TCC Created",
+          description: "TCC created successfully. You can now add users.",
+        });
+
+        // Move to next step
+        setCurrentStep((prev) => prev + 1);
+        
+      } catch (error) {
+        console.error("Error creating TCC:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create TCC. Please check the form data.",
+          variant: "destructive",
+        });
+        return; // Don't proceed to next step if creation failed
+      } finally {
+        setIsCreatingTCC(false);
+      }
+    } else {
+      // For other steps, just move forward
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const handlePrevStep = () => {
     setCurrentStep((prev) => prev - 1);
   };
-
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-
     try {
-      // In a real application, you would submit to an API
-      console.log("Form Values:", formValues);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // At this point, TCC should already be created (in step 1)
+      // We only need to create users if there are any
+      if (formValues.relatedUsers.length > 0 && formValues.tccId) {
+        console.log("Creating users for TCC ID:", formValues.tccId);
+        
+        // Create users one by one
+        for (const userData of formValues.relatedUsers) {
+          const apiUserData = TCCService.transformUserFormDataToAPI(userData);
+          await TCCService.createUser(apiUserData, formValues.tccId);
+        }
+        
+        toast({
+          title: "Users Created",
+          description: `Successfully created ${formValues.relatedUsers.length} users for the TCC`,
+        });
+      }
 
       toast({
-        title: isEditMode
-          ? t("accountHolderUpdated")
-          : t("accountHolderCreated"),
+        title: isEditMode ? "TCC Updated" : "TCC Process Complete",
         description: isEditMode
-          ? t("accountHolderUpdateSuccess")
-          : t("accountHolderCreateSuccess"),
-        variant: "success",
+          ? "TCC updated successfully"
+          : "TCC and users created successfully",
       });
 
       // Navigate back to the list page
       router.push("/tcc");
     } catch (error) {
-      console.error(error);
+      console.error("User creation error:", error);
       toast({
-        title: t("error"),
-        description: t("somethingWentWrong"),
+        title: "Error",
+        description: "Failed to create users. TCC was created successfully.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -218,16 +227,14 @@ export default function FormPage({ params }: FormPageProps) {
         <h1 className="text-3xl font-bold text-gray-800">
           {isEditMode ? t("editAccountHolder") : t("addNewAccountHolder")}
         </h1>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      </div>      <div className="bg-white rounded-lg shadow-sm p-6">
         <MultiStepForm
           steps={steps}
           currentStep={currentStep}
           onNextStep={handleNextStep}
           onPrevStep={handlePrevStep}
           onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting || isCreatingTCC}
           isLastStep={currentStep === steps.length - 1}
           isFirstStep={currentStep === 0}
         />

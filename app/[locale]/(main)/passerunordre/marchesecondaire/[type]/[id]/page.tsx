@@ -1,19 +1,9 @@
 import FormPassationOrdreAction from "@/components/passation-ordre/FormPassationOrdreAction";
 import FormPassationOrdreObligation from "../../../../../../../components/passation-ordre/FormPassationOrdreObligation";
-import { getServerSession } from "next-auth";
-import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import auth from "@/auth";
-import AccessDenied from "@/components/AccessDenied";
 
 const page = async ({ params }: { params: { type: string; id: string } }) => {
   const t = await getTranslations("FormPassationOrdreS");
-  const session = await getServerSession(auth);
-  const userRole = session?.user?.roleid;
-
-  if (userRole !== 1) {
-    return <AccessDenied />;
-  }
 
   const { type, id } = params;
 
