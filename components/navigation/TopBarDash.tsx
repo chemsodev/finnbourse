@@ -8,7 +8,7 @@ import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { CALCULATE_TOTAL_WALLET_VALUE } from "@/graphql/queries";
 import { useSession } from "next-auth/react";
 import LogOutAgent from "../LogOutAgent";
-import MobileNav from "../../app/[locale]/(main)/test-pdf/MobileNav";
+import DynamicMobileNav from "./DynamicMobileNav";
 
 export const TopBarDash = () => {
   const locale = useLocale();
@@ -36,37 +36,15 @@ export const TopBarDash = () => {
         }
       }
     };
-
     fetchData();
   }, []);
-
-  const translations = {
-    tableauDeBord: t("tableauDeBord"),
-    passerUnOrdre: t("passerUnOrdre"),
-    marche: t("marche"),
-    portefeuille: t("portefeuille"),
-    mesOrdres: t("mesOrdres"),
-    ordres: t("ordres"),
-    chiffresEtEditions: t("chiffresEtEditions"),
-    serviceClients: t("serviceClients"),
-    parametres: t("parametres"),
-    statistiques: t("statistiques"),
-    operationsSurTitres: t("operationsSurTitres"),
-    annonceOst: t("annonceOst"),
-    paiementDividendes: t("paiementDividendes"),
-    paiementDroitsDeGarde: t("paiementDroitsDeGarde"),
-    paiementCoupon: t("paiementCoupon"),
-    remboursement: t("remboursement"),
-  };
 
   return (
     <div className="bg-primary rounded-md flex justify-between text-white py-3 px-6 relative">
       <div className="md:hidden absolute top-0 left-0 w-full bg-primary z-50 shadow-sm py-2 px-4 flex justify-between items-center">
-        <MobileNav
-          translations={translations}
-          userRole={userRole}
-          userName={session?.data?.user?.name}
-          userEmail={session?.data?.user?.email}
+        <DynamicMobileNav
+          userName={session?.data?.user?.name || undefined}
+          userEmail={session?.data?.user?.email || undefined}
         />
       </div>
       {userRole === 1 ? (

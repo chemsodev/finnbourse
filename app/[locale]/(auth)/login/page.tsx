@@ -105,7 +105,6 @@ export default function Login() {
       password: "",
     },
   });
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
@@ -142,7 +141,6 @@ export default function Login() {
       });
     }
   }
-
   async function onSubmitWith2FA(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
@@ -153,16 +151,25 @@ export default function Login() {
         redirect: false,
       });
 
-      setLoading(false);
-      router.push("/");
       if (result?.error) {
         setError(result.error);
         console.error("Login error:", result.error);
+        setLoading(false);
       } else {
+        // Login successful, add a brief delay to allow session/token initialization
+        console.log(
+          "Login successful, allowing time for menu initialization..."
+        );
+
+        // Small delay to ensure session is established before redirect
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        setLoading(false);
         router.push("/");
       }
     } catch (error) {
       console.error("Form submission error", error);
+      setLoading(false);
       toast({
         variant: "destructive",
         title: t("failedToSubmitTheForm"),

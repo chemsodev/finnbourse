@@ -1,0 +1,206 @@
+{
+  "elements": [
+    {
+      "id": "dashboard",
+      "href": "/",
+      "icon": "LayoutDashboard",
+      "translationKey": "TableauDeBord"
+    },
+    {
+      "id": "place-order",
+      "href": "/passerunordre",
+      "icon": "DollarSign",
+      "translationKey": "marche"
+    },
+    {
+      "id": "portfolio",
+      "href": "/portefeuille",
+      "icon": "Briefcase",
+      "translationKey": "portefeuille"
+    },
+    {
+      "id": "orders-dropdown",
+      "icon": "FileText",
+      "translationKey": "gestionDesOrdres",
+      "children": [
+        {
+          "id": "premiere-validation",
+          "href": "/ordres/premiere-validation",
+          "translationKey": "premiereValidation"
+        },
+        {
+          "id": "validation-finale",
+          "href": "/ordres/validation-finale",
+          "translationKey": "validationFinale"
+        },
+        {
+          "id": "validation-tcc-premiere",
+          "href": "/ordres/validation-tcc-premiere",
+          "translationKey": "validationTccPremiere"
+        },
+        {
+          "id": "validation-tcc-finale",
+          "href": "/ordres/validation-tcc-finale",
+          "translationKey": "validationTccFinale"
+        },
+        {
+          "id": "execution",
+          "href": "/ordres/execution",
+          "translationKey": "execution"
+        },
+        {
+          "id": "resultats",
+          "href": "/ordres/resultats",
+          "translationKey": "resultats"
+        }
+      ]
+    },
+    {
+      "id": "titles-emissions-dropdown",
+      "icon": "Award",
+      "translationKey": "titresEtEmissions",
+      "children": [
+        {
+          "id": "emetteurs",
+          "href": "/emetteurs",
+          "icon": "CheckCircle",
+          "translationKey": "emetteurs"
+        },
+        {
+          "id": "emissions",
+          "href": "/emissions",
+          "icon": "BarChart3",
+          "translationKey": "emissions"
+        },
+        {
+          "id": "commissions",
+          "href": "/commissions",
+          "icon": "HandCoins",
+          "translationKey": "commissions"
+        },
+        {
+          "id": "gestion-titres",
+          "href": "/gestion-des-titres",
+          "translationKey": "gestionTitres"
+        }
+      ]
+    },
+    {
+      "id": "account-management-dropdown",
+      "icon": "Users",
+      "translationKey": "gestionDeCompte",
+      "children": [
+        {
+          "id": "compte-titre",
+          "href": "/compte-titre",
+          "icon": "Receipt",
+          "translationKey": "compteDeTitre"
+        },
+        {
+          "id": "lien-comptes",
+          "href": "/lien-comptes",
+          "icon": "Link",
+          "translationKey": "lienComptes"
+        }
+      ]
+    },
+    {
+      "id": "actors-management-dropdown",
+      "icon": "Landmark",
+      "translationKey": "gestionDesActeurs",
+      "children": [
+        {
+          "id": "iob",
+          "href": "/iob",
+          "icon": "BarChart3",
+          "translationKey": "iob"
+        },
+        {
+          "id": "tcc",
+          "href": "/tcc",
+          "icon": "Building",
+          "translationKey": "teneurDeCompte"
+        },
+        {
+          "id": "agence",
+          "href": "/agence",
+          "icon": "Landmark",
+          "translationKey": "agence"
+        },
+        {
+          "id": "clients",
+          "href": "/clients",
+          "icon": "Briefcase",
+          "translationKey": "client"
+        },
+        {
+          "id": "utilisateurs",
+          "href": "/utilisateurs",
+          "icon": "UserCog",
+          "translationKey": "user"
+        }
+      ]
+    },
+    {
+      "id": "operations-dropdown",
+      "icon": "ArrowRightLeft",
+      "translationKey": "operationsSurTitres",
+      "children": [
+        {
+          "id": "annonce-ost",
+          "href": "/annonce-ost",
+          "icon": "Sparkle",
+          "translationKey": "annonceOst"
+        },
+        {
+          "id": "paiement-dividendes",
+          "href": "/paiement-de-dividendes",
+          "icon": "Sparkle",
+          "translationKey": "paiementDividendes"
+        },
+        {
+          "id": "paiement-droits-garde",
+          "href": "/paiement-droits-de-garde",
+          "icon": "Sparkle",
+          "translationKey": "paiementDroitsDeGarde"
+        },
+        {
+          "id": "paiement-coupon",
+          "href": "/paiement-coupon",
+          "icon": "Sparkle",
+          "translationKey": "paiementCoupon"
+        },
+        {
+          "id": "remboursement",
+          "href": "/remboursement",
+          "icon": "Sparkle",
+          "translationKey": "remboursement"
+        }
+      ]
+    },
+    {
+      "id": "charts-editions",
+      "href": "/chiffres-et-editions",
+      "icon": "FileBarChart",
+      "translationKey": "chiffresEtEditions"
+    },
+    {
+      "id": "client-service",
+      "href": "/serviceclients",
+      "icon": "Headphones",
+      "translationKey": "ServiceClients"
+    },
+    {
+      "id": "settings",
+      "href": "/parametres",
+      "icon": "Settings",
+      "translationKey": "parametres"
+    },
+    {
+      "id": "statistics",
+      "href": "/statistiques",
+      "icon": "BarChart3",
+      "translationKey": "Statistiques"
+    }
+  ]
+}

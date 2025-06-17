@@ -13,6 +13,8 @@ declare module "next-auth" {
     refreshToken?: string;
     tokenExpires?: number;
     error?: string;
+    loginSource?: "REST" | "GraphQL";
+    restToken?: string;
   }
 }
 
@@ -26,52 +28,8 @@ interface DecodedToken {
   exp: number;
 }
 
-// Track refresh attempts to implement rate limiting
-const refreshAttempts = {
-  lastAttempt: 0,
-  count: 0,
-  backoffUntil: 0,
-};
-
 async function refreshAccessToken(token: any) {
   try {
-    const now = Date.now();
-
-    // Check if we're in a backoff period
-    if (now < refreshAttempts.backoffUntil) {
-      console.log(
-        `Token refresh in backoff period. Waiting until ${new Date(
-          refreshAttempts.backoffUntil
-        ).toISOString()}`
-      );
-      throw new Error("Rate limited: Too many refresh attempts");
-    }
-
-    // If last attempt was less than 2 seconds ago, increment counter
-    if (now - refreshAttempts.lastAttempt < 2000) {
-      refreshAttempts.count++;
-
-      // If we've had too many attempts in quick succession, implement exponential backoff
-      if (refreshAttempts.count > 3) {
-        const backoffSeconds = Math.min(
-          Math.pow(2, refreshAttempts.count - 3),
-          60
-        ); // Exponential backoff, max 60 seconds
-        refreshAttempts.backoffUntil = now + backoffSeconds * 1000;
-        console.log(
-          `Too many refresh attempts. Backing off for ${backoffSeconds} seconds until ${new Date(
-            refreshAttempts.backoffUntil
-          ).toISOString()}`
-        );
-        throw new Error("Rate limited: Too many refresh attempts");
-      }
-    } else {
-      // Reset counter if it's been a while since last attempt
-      refreshAttempts.count = 0;
-    }
-
-    refreshAttempts.lastAttempt = now;
-
     console.log("Attempting to refresh access token");
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh-token`,
@@ -84,30 +42,11 @@ async function refreshAccessToken(token: any) {
     );
 
     const newTokens = await response.json();
-
     if (!response.ok) {
       console.error("Token refresh failed with status:", response.status);
       console.error("Token refresh error:", newTokens);
-
-      // Special handling for rate limiting
-      if (response.status === 429) {
-        // Implement more aggressive backoff for 429 responses
-        const backoffSeconds = 30; // 30 seconds backoff for 429 responses
-        refreshAttempts.backoffUntil = now + backoffSeconds * 1000;
-        console.log(
-          `Rate limited by server. Backing off for ${backoffSeconds} seconds until ${new Date(
-            refreshAttempts.backoffUntil
-          ).toISOString()}`
-        );
-        throw new Error("Rate limited by server: Too many requests");
-      }
-
       throw new Error("Failed to refresh token");
     }
-
-    // Reset attempts counter on success
-    refreshAttempts.count = 0;
-
     console.log("Token refreshed successfully");
     const newDecodedToken = jwt.decode(newTokens.access_token) as DecodedToken;
 
@@ -143,6 +82,7 @@ const auth: any = {
             (req?.headers?.["x-real-ip"] as string) ||
             "IP not available";
 
+          // Use GraphQL backend for primary authentication
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
             {
@@ -160,8 +100,43 @@ const auth: any = {
           );
           const user = await res.json();
 
-          if (res.ok && user) {
+          if (res.ok && user?.access_token) {
+            console.log("Login successful with GraphQL backend");
             const decodedToken = jwt.decode(user.access_token) as DecodedToken;
+
+            // Generate REST API token in background for actor management
+            let restToken = null;
+            try {
+              console.log(
+                "Attempting to get REST API token for actor management..."
+              );
+              const restRes = await fetch(
+                `${process.env.NEXT_PUBLIC_REST_API_URL}/auth/login`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-forwarded-for": ip,
+                  },
+                  body: JSON.stringify({
+                    username: credentials?.email,
+                    password: credentials?.password,
+                    otp: credentials?.twoFactorCode,
+                  }),
+                }
+              );
+
+              if (restRes.ok) {
+                const restUser = await restRes.json();
+                if (restUser?.access_token) {
+                  restToken = restUser.access_token;
+                  console.log("REST API token obtained for actor management");
+                }
+              }
+            } catch (restError) {
+              console.log("Could not obtain REST API token:", restError);
+            }
+
             return {
               id: decodedToken.sub,
               email: decodedToken.email,
@@ -172,6 +147,8 @@ const auth: any = {
               token: user.access_token,
               refreshToken: user.refresh_token,
               tokenExpires: decodedToken.exp,
+              loginSource: "GraphQL",
+              restToken: restToken, // Store REST token for actor management
             };
           } else {
             console.error("Login failed:", user);
@@ -189,9 +166,7 @@ const auth: any = {
       if (token.accessToken) {
         const decodedToken = jwt.decode(
           token.accessToken as string
-        ) as DecodedToken;
-
-        // Create a user object directly from the decoded token
+        ) as DecodedToken; // Create a user object directly from the decoded token
         const user = {
           id: decodedToken.sub,
           email: decodedToken.email,
@@ -203,6 +178,8 @@ const auth: any = {
           refreshToken: token.refreshToken as string,
           tokenExpires: decodedToken.exp,
           error: token?.error,
+          loginSource: token?.loginSource,
+          restToken: token?.restToken,
         };
 
         // Assign the user object to session.user
@@ -216,6 +193,8 @@ const auth: any = {
         token.refreshToken = user.refreshToken as string;
         token.tokenExpires = user.tokenExpires as number;
         token.error = user.error as string;
+        token.loginSource = user.loginSource as string;
+        token.restToken = user.restToken as string;
       }
 
       // Check if token is expired or about to expire (within 5 minutes instead of 1)
@@ -224,13 +203,8 @@ const auth: any = {
         Date.now() > (token.tokenExpires as number) * 1000;
       const isTokenExpiringSoon =
         token.tokenExpires &&
-        Date.now() > (token.tokenExpires as number) * 1000 - 5 * 60 * 1000; // 5 minutes before expiration
-
-      // Only attempt refresh if we're not in a backoff period
-      if (
-        (isTokenExpired || isTokenExpiringSoon) &&
-        Date.now() >= refreshAttempts.backoffUntil
-      ) {
+        Date.now() > (token.tokenExpires as number) * 1000 - 5 * 60 * 1000; // 5 minutes before expiration      // Refresh token if expired or expiring soon
+      if (isTokenExpired || isTokenExpiringSoon) {
         console.log("Token expired or expiring soon, attempting refresh");
         const refreshedToken = await refreshAccessToken(token);
 

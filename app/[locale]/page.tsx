@@ -6,13 +6,12 @@ import DashItem3 from "@/components/dashboard/DashItem3";
 import DashItem2 from "@/components/dashboard/DashItem2";
 import DashItem1 from "@/components/dashboard/DashItem1";
 import DashGraph from "@/components/dashboard/DashGraph";
-import SideBar from "@/components/navigation/SideBar";
-import BottomNavMobile from "@/components/navigation/BottomNavMobile";
+import DynamicSidebar from "@/components/navigation/DynamicSidebar";
+import DynamicBottomNav from "@/components/navigation/DynamicBottomNav";
 import MyPortfolio from "@/components/MyPortfolio";
 import auth from "@/auth";
 import { getServerSession } from "next-auth/next";
 import { Session } from "next-auth";
-
 import LogOutAgent from "@/components/LogOutAgent";
 import { StockTracker } from "@/components/dashboard/StockTracker";
 import DashWidgetTcc from "@/components/dashboard/dash-widget-tcc";
@@ -37,10 +36,9 @@ export default async function Home() {
   // Example IPO data - replace with actual data from your API/database
   const ipoEndDate = new Date();
   ipoEndDate.setDate(ipoEndDate.getDate() + 7); // Set end date to 7 days from now
-
   return (
     <div className="flex">
-      <SideBar />
+      <DynamicSidebar />
       <div className="p-4 overflow-scroll h-screen md:w-5/6 mb-12 md:mb-0 motion-preset-focus motion-duration-2000">
         <TopBarDash />
 
@@ -86,7 +84,7 @@ export default async function Home() {
         <div>
           <div className="flex items-baseline gap-1 mx-2 mt-8 md:mt-0">
             <FormattedDate date={dateTime} />
-          </div>
+          </div>{" "}
           <MyMarquee />
         </div>
         <div className="flex flex-col md:flex-row my-6 justify-between gap-6 md:gap-0">
@@ -95,7 +93,7 @@ export default async function Home() {
           <DashItem3 />
         </div>
       </div>
-      <BottomNavMobile />
+      <DynamicBottomNav />
     </div>
   );
 }

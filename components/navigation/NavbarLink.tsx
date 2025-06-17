@@ -2,7 +2,6 @@
 import { Link } from "@/i18n/routing";
 import { usePathname } from "next/navigation";
 import OrderCounter from "../gestion-des-ordres/OrderCounter";
-import { useSession } from "next-auth/react";
 
 const NavbarLink = ({
   link,
@@ -10,8 +9,6 @@ const NavbarLink = ({
   link: { href: string; icon: React.ReactNode; label: string };
 }) => {
   const pathname = usePathname();
-  const session = useSession();
-  const userRole = session?.data?.user?.roleid;
   const normalizedPathname = pathname.replace(/^\/(en|ar)\//, "/");
   const isActive = normalizedPathname === link.href;
 
@@ -24,10 +21,10 @@ const NavbarLink = ({
           : "hover:bg-secondary/20 hover:text-primary hover:shadow-sm"
       }`}
     >
-      {link.icon}
+      {link.icon}{" "}
       <div className="capitalize text-xs flex justify-between gap-4 items-center">
         {link.label}
-        {link.href === "/ordres" && (userRole === 2 || userRole === 3) && (
+        {link.href === "/ordres" && (
           <span className="text-xs bg-primary text-white h-4 w-4 rounded-full flex justify-center items-center shadow-inner ">
             <OrderCounter />
           </span>

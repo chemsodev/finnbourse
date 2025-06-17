@@ -17,7 +17,7 @@ import auth from "@/auth";
 import { redirect } from "@/i18n/routing";
 import { getServerSession } from "next-auth/next";
 import { Session } from "next-auth";
-import { getMockOrdersResponse } from "@/lib/mockData";
+import { mockOrders } from "@/lib/mockData";
 import { LIST_ORDERS_QUERY, LIST_ORDERS_QUERY_EXCEL } from "@/graphql/queries";
 
 interface FetchGraphQLResponse<T> {
@@ -35,6 +35,8 @@ export async function fetchGraphQL<T>(
   const session = (await getServerSession(auth)) as Session & {
     user?: {
       token?: string;
+      restToken?: string;
+      loginSource?: string;
     };
   };
 
@@ -50,7 +52,7 @@ export async function fetchGraphQL<T>(
   const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/graphql`;
 
   try {
-    // Add a token check and use a default if not available
+    // Use primary GraphQL token for dashboard operations
     const authToken =
       session?.user?.token ||
       token ||
@@ -106,7 +108,7 @@ export async function fetchGraphQL<T>(
     // Use mock data if the query is for orders
     if (query === LIST_ORDERS_QUERY || query === LIST_ORDERS_QUERY_EXCEL) {
       console.log("Using mock order data because API is unreachable");
-      return getMockOrdersResponse() as unknown as T;
+      return { listOrders: mockOrders } as unknown as T;
     }
 
     throw error;
@@ -181,7 +183,7 @@ export function clientFetchGraphQL<T>(
       // Use mock data if the query is for orders
       if (query === LIST_ORDERS_QUERY || query === LIST_ORDERS_QUERY_EXCEL) {
         console.log("Using mock order data because API is unreachable");
-        return getMockOrdersResponse() as unknown as T;
+        return { listOrders: mockOrders } as unknown as T;
       }
 
       throw error;

@@ -1,0 +1,1313 @@
+{
+	"info": {
+		"_postman_id": "0d0b199b-f205-459b-8ddc-7bc8297f1a72",
+		"name": "finn",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "26947552"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "register",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\":\"manager\",\n  \"email\":\"manager@gmail.com\",\n  \"password\":\"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "https://finnbourse.khalil.ink/api/v1/auth/register"
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\":\"John.Doe\",\n  \"password\":\"securePass123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "otp",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\":\"Ahmed.Benziane\",\n  \"password\":\"securePass123\",\n  \"otp\":\"MU8N2U\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/api/v1/auth/twofactorauth"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "tcc",
+			"item": [
+				{
+					"name": "create/update tcc",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"TCC00222\",\n  \"libelle\": \"Main Transit Center2\",\n  \"account_type\": \"DEPOSIT\",  \n  \"status\": \"ACTIVE\",       \n  \"address\": \"123 Transit Road\",\n  \"postal_code\": \"10001\",\n  \"city\": \"New York\",\n  \"country\": \"USA\",\n  \"phone\": \"+1-555-123456\",\n  \"email\": \"contact@transitcenter.com\",\n  \"agreement_number\": \"AG-987654\",\n  \"agreement_date\": \"2025-05-24\", \n  \"surveillance_authority\": \"National Customs Authority\",\n  \"name_correspondent\": \"Jane Doe\",\n  \"code_correspondent\": \"JD2025\",\n  \"financialInstitutionId\":\"d1ffccee-1d80-49f3-a4c0-24d36038a840\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/tcc"
+					},
+					"response": []
+				},
+				{
+					"name": "get tcc",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base}}/tcc"
+					},
+					"response": []
+				},
+				{
+					"name": "Create tcc user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"John22\",\n  \"lastname\": \"Doe22\",\n  \"email\": \"john.doe22@example.com\",\n  \"password\": \"securePass123\",\n  \"telephone\": \"+1234567890\",\n  \"status\": \"actif\",\n  \"positionTcc\": \"Engineer\",\n  \"role\": [\"client_account_manager_1\", \"client_account_manager_2\"]\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/tcc/users"
+					},
+					"response": []
+				},
+				{
+					"name": "update tcc user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": [\"client_account_manager_1\", \"client_account_extern_manager\"]\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/tcc/users/5ccce404-8391-4228-b5ac-77287af6f032/role"
+					},
+					"response": []
+				},
+				{
+					"name": "update tcc user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Smith\",\n  \"telephone\": \"+19876543210\",\n  \"status\": \"inactif\",\n  \"positionTcc\": \"Coordinator\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/tcc/users/5ccce404-8391-4228-b5ac-77287af6f032"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "iob",
+			"item": [
+				{
+					"name": "create iob",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"financialInstitutionId\": \"d1ffccee-1d80-49f3-a4c0-24d36038a840\",\n  \"code\": \"GFC123\",\n  \"short_libel\": \"GFC\",\n  \"long_libel\": \"Global Finance Corporation\",\n  \"correspondent\": \"International Bank Ltd\",\n  \"email\": \"contact@globalfinance.com\",\n  \"fax\": \"+1-555-987654\",\n  \"phone\": \"+1-555-123456\",\n  \"address\": \"456 Market Street, Suite 800\",\n  \"order\": \"1\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/iob"
+					},
+					"response": []
+				},
+				{
+					"name": "update iob",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"financialInstitutionId\": \"1cba79ed-c59a-4a1e-9e42-82aeeeddd9a3\",\n  \"code\": \"GFC1233\",\n  \"short_libel\": \"GFC\",\n  \"long_libel\": \"Global Finance Corporation\",\n  \"correspondent\": \"International Bank Ltd\",\n  \"email\": \"contact@globalfinance.com\",\n  \"fax\": \"+1-555-987654\",\n  \"phone\": \"+1-555-123456\",\n  \"address\": \"456 Market Street, Suite 800\",\n  \"order\": \"1\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/iob/08394001-cd38-4b59-a092-d90ce0f9e815"
+					},
+					"response": []
+				},
+				{
+					"name": "find one  iob",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name_financial_institute\": \"22Global Finance Corp\",\n  \"code\": \"GFC123\",\n  \"short_libel\": \"GFC\",\n  \"long_libel\": \"Global Finance Corporation\",\n  \"correspondent\": \"International Bank Ltd\",\n  \"email\": \"contact@globalfinance.com\",\n  \"fax\": \"+1-555-987654\",\n  \"phone\": \"+1-555-123456\",\n  \"address\": \"456 Market Street, Suite 800\",\n  \"order\": \"1\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/iob/1ce6cea2-4f7a-4098-a3a3-93e0907983aa"
+					},
+					"response": []
+				},
+				{
+					"name": "find all iob",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base}}/iob/",
+							"host": [
+								"{{base}}"
+							],
+							"path": [
+								"iob",
+								""
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "2",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create user iob",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Emma2222\",\n  \"lastname\": \"Johnson22\",\n  \"email\": \"emma.johnson222@example.com\",\n  \"password\": \"strongPass456\",\n  \"telephone\": \"+1234567890\",\n  \"status\": \"actif\",\n  \"posteIob\": \"Agent\",\n  \"matriculeIob\": \"IOB12345\",\n  \"role\": [\"order_submiter\", \"order_validator_iob_2\"]\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/iob/08394001-cd38-4b59-a092-d90ce0f9e815/users"
+					},
+					"response": []
+				},
+				{
+					"name": "update user iob",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\":[\"order_submiter\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/iob/1ce6cea2-4f7a-4098-a3a3-93e0907983aa/users/8563dea7-a4c8-44d5-915f-e5500f363cbc/role"
+					},
+					"response": []
+				},
+				{
+					"name": "update user iob role",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Emma222\",\n  \"lastname\": \"Johnson2\",\n  \"telephone\": \"+1234567890\",\n  \"status\": \"actif\",\n  \"posteIob\": \"Agent\",\n  \"matriculeIob\": \"IOB12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/iob/6a376952-ec94-480a-86a0-7cf192f05013/users"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "agence",
+			"item": [
+				{
+					"name": "create agence",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"financialInstitutionId\": \"1cba79ed-c59a-4a1e-9e42-82aeeeddd9a3\",\n  \"address\": \"123 Finance Avenue, Tech City\",\n  \"code_swift\": \"BOITUS33XXX\",\n  \"currency\": \"USD\",\n  \"code\": \"AG1234\",\n  \"director_name\": \"Jane Doe\",\n  \"director_email\": \"jane.doe@example.com\",\n  \"director_phone\": \"+1-202-555-0143\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/agence"
+					},
+					"response": []
+				},
+				{
+					"name": "update agence",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"financialInstitutionId\": \"1cba79ed-c59a-4a1e-9e42-82aeeeddd9a3\",\n  \"address\": \"123 Finance Avenue, Tech City\",\n  \"code_swift\": \"BOITUS33XXX\",\n  \"currency\": \"DZD\",\n  \"code\": \"AG1234\",\n  \"director_name\": \"Jane Doe\",\n  \"director_email\": \"jane.doe@example.com\",\n  \"director_phone\": \"+1-202-555-0143\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/agence/d44dc11a-78bc-4d6c-9193-823d1dfc10cd"
+					},
+					"response": []
+				},
+				{
+					"name": "get all agence",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base}}/agence",
+							"host": [
+								"{{base}}"
+							],
+							"path": [
+								"agence"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get one agence",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base}}/agence/c4527c05-f5a0-47a0-9c34-6e97da947aaf"
+					},
+					"response": []
+				},
+				{
+					"name": "create agence user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Lea\",\n  \"lastname\": \"Martin\",\n  \"email\": \"lea.martin@agency.com\",\n  \"password\": \"securePass789\",\n  \"telephone\": \"+33123456789\",\n  \"status\": \"actif\",\n  \"positionAgence\": \"Director\",\n  \"matriculeAgence\": \"AGC56789\",\n  \"organisationIndividu\": \"Agence Paris Centre\",\n  \"role\": [\"agence_client_manager_1\", \"observateur_agence\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/agence/d44dc11a-78bc-4d6c-9193-823d1dfc10cd/users"
+					},
+					"response": []
+				},
+				{
+					"name": "update agence user role",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\": [\"agence_client_manager_1\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/agence/d44dc11a-78bc-4d6c-9193-823d1dfc10cd/users/900fdb6c-87cf-4168-9b5d-c032f84098f1/role"
+					},
+					"response": []
+				},
+				{
+					"name": "create agence user - Duplicate",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Lea2\",\n  \"lastname\": \"Martin\",\n  \"telephone\": \"+33123456789\",\n  \"status\": \"actif\",\n  \"positionAgence\": \"Director\",\n  \"matriculeAgence\": \"AGC56789\",\n  \"organisationIndividu\": \"Agence Paris Centre\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/agence/d44dc11a-78bc-4d6c-9193-823d1dfc10cd/users/900fdb6c-87cf-4168-9b5d-c032f84098f1"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "client",
+			"item": [
+				{
+					"name": "create Individual Client",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"financialInstitutionId\": \"1cba79ed-c59a-4a1e-9e42-82aeeeddd9a3\",\n  \"agenceId\": \"d44dc11a-78bc-4d6c-9193-823d1dfc10cd\",\n  \"iobId\": \"08394001-cd38-4b59-a092-d90ce0f9e815\",\n  \"type\": \"individual\",\n  \"client_code\": \"CL123456\",\n  \"client_source\": \"Online Form\",\n  \"email\": \"individual.client@example.com\",\n  \"phone_number\": \"+213456789012\",\n  \"mobile_phone\": \"+213698745612\",\n  \"id_type\": \"passport\",\n  \"cash_account_bank_code\": \"001\",\n  \"cash_account_agency_code\": \"002\",\n  \"cash_account_number\": \"1234567890\",\n  \"cash_account_rip_key\": \"97\",\n  \"cash_account_rip_full\": \"001002123456789097\",\n  \"securities_account_number\": \"SC12345678\",\n  \"client_details\": {\n    \"type\": \"individual\",\n    \"name\": \"Amine Boudjemaa\",\n    \"id_number\": \"ID987654\",\n    \"nin\": \"NIN456789\",\n    \"nationalite\": \"Algerienne\",\n    \"wilaya\": \"Algiers\",\n    \"lieu_naissance\": \"Bab El Oued\",\n    \"employe_a_la_institution_financiere\": null\n  }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/client"
+					},
+					"response": []
+				},
+				{
+					"name": "create company client",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"financialInstitutionId\": \"1cba79ed-c59a-4a1e-9e42-82aeeeddd9a3\",\n  \"agenceId\": \"d44dc11a-78bc-4d6c-9193-823d1dfc10cd\",\n  \"iobId\": \"08394001-cd38-4b59-a092-d90ce0f9e815\",\n  \"type\": \"company\",\n  \"client_code\": \"CL987654\",\n  \"client_source\": \"Referral\",\n  \"email\": \"company@example.com\",\n  \"phone_number\": \"+213456789012\",\n  \"mobile_phone\": \"+213698745612\",\n  \"id_type\": \"RC\",\n  \"cash_account_bank_code\": \"002\",\n  \"cash_account_agency_code\": \"003\",\n  \"cash_account_number\": \"0987654321\",\n  \"cash_account_rip_key\": \"45\",\n  \"cash_account_rip_full\": \"002003098765432145\",\n  \"securities_account_number\": \"SC98765432\",\n  \"client_details\": {\n    \"type\": \"company\",\n    \"raison_sociale\": \"Tech Innov SARL\",\n    \"nif\": \"NIF998877\",\n    \"reg_number\": \"RC554433\",\n    \"legal_form\": \"SARL\",\n    \"lieu_naissance\": \"Algiers\"\n  }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/client"
+					},
+					"response": []
+				},
+				{
+					"name": "create financial institution client ",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"financialInstitutionId\": \"1cba79ed-c59a-4a1e-9e42-82aeeeddd9a3\",\n  \"agenceId\": \"d44dc11a-78bc-4d6c-9193-823d1dfc10cd\",\n  \"iobId\": \"08394001-cd38-4b59-a092-d90ce0f9e815\",\n  \"type\": \"financial_institution\",\n  \"client_code\": \"CL654321\",\n  \"client_source\": \"Partnership\",\n  \"email\": \"fi@example.com\",\n  \"phone_number\": \"+213567890123\",\n  \"mobile_phone\": \"+213699876543\",\n  \"id_type\": \"CN\",\n  \"cash_account_bank_code\": \"003\",\n  \"cash_account_agency_code\": \"004\",\n  \"cash_account_number\": \"5678901234\",\n  \"cash_account_rip_key\": \"33\",\n  \"cash_account_rip_full\": \"003004567890123433\",\n  \"securities_account_number\": \"SC54321678\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/client"
+					},
+					"response": []
+				},
+				{
+					"name": "create Client user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Yasmine\",\n  \"lastname\": \"Benkacem\",\n  \"email\": \"yasmine.benkacem@example.com\",\n  \"password\": \"securePass123\",\n  \"telephone\": \"+213771234567\",\n  \"status\": \"actif\",\n  \"clientUserType\": \"proprietaire\",\n  \"nationalite\": \"Algerienne\",\n  \"dateNaissance\": \"1990-06-15T00:00:00.000Z\",\n  \"adresse\": \"123 Rue Didouche Mourad, Algiers\",\n  \"wilaya\": \"Algiers\",\n  \"typePieceIdentite\": \"cn\",\n  \"numeroPieceIdentite\": \"CN123456789\",\n  \"role\": [\"initializer_client\", \"order_validator_client_2\"]\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/client/68ed48f4-619f-4157-b976-096da8895bd7/users"
+					},
+					"response": []
+				},
+				{
+					"name": "update Client user ",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstname\": \"Yasmine2\",\n  \"lastname\": \"Benkacem\",\n  \"telephone\": \"+213771234567\",\n  \"status\": \"actif\",\n  \"clientUserType\": \"proprietaire\",\n  \"nationalite\": \"Algerienne\",\n  \"dateNaissance\": \"1990-06-15T00:00:00.000Z\",\n  \"adresse\": \"123 Rue Didouche Mourad, Algiers\",\n  \"wilaya\": \"Algiers\",\n  \"typePieceIdentite\": \"cn\",\n  \"numeroPieceIdentite\": \"CN123456789\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/client/68ed48f4-619f-4157-b976-096da8895bd7/users/bb02e0ea-6d8e-458a-a871-2c5bdb8b61a8"
+					},
+					"response": []
+				},
+				{
+					"name": "update Client user  - Duplicate",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\":[\"order_validator_client_1\"]\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/client/68ed48f4-619f-4157-b976-096da8895bd7/users/bb02e0ea-6d8e-458a-a871-2c5bdb8b61a8/role"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "upload file",
+			"item": []
+		},
+		{
+			"name": "financial institution",
+			"item": [
+				{
+					"name": "create financial institution",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"institutionName\": \"cpa\",\n  \"taxIdentificationNumber\": \"123456789\",\n  \"agreementNumber\": \"AGT-2025-001\",\n  \"legalForm\": \"Corporation\",\n  \"establishmentDate\": \"2020-05-15T00:00:00.000Z\",\n  \"fullAddress\": \"123 Main Street, Capital City, Country\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/financial-institution"
+					},
+					"response": []
+				},
+				{
+					"name": "Get all financial institution ",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"institutionName\": \"cpa\",\n  \"taxIdentificationNumber\": \"123456789\",\n  \"agreementNumber\": \"AGT-2025-001\",\n  \"legalForm\": \"Corporation\",\n  \"establishmentDate\": \"2020-05-15T00:00:00.000Z\",\n  \"fullAddress\": \"123 Main Street, Capital City, Country\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/financial-institution"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "issuer",
+			"item": [
+				{
+					"name": "create",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"mustachir\",\n  \"website\": \"http://mustachir.com\",\n  \"activitySector\": \"tech\",\n  \"capital\": \"10000\",\n  \"email\": \"admin@mustachir.com\",\n  \"address\": \"alger\",\n  \"tel\": \"0697454291\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/issuer"
+					},
+					"response": []
+				},
+				{
+					"name": "get all",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"mustachir\",\n  \"website\": \"http://mustachir.com\",\n  \"activitySector\": \"tech\",\n  \"capital\": \"10000\",\n  \"email\": \"admin@mustachir.com\",\n  \"address\": \"alger\",\n  \"tel\": \"0697454291\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/issuer"
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"mustachir22\",\n  \"website\": \"http://mustachir.com\",\n  \"activitySector\": \"tech\",\n  \"capital\": \"10000\",\n  \"email\": \"admin@mustachir.com\",\n  \"address\": \"alger\",\n  \"tel\": \"0697454291\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{base}}/issuer/5d7fb3fe-d49e-4e7e-b39a-a30d0aaabedf"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

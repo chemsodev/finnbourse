@@ -7,7 +7,7 @@ import { TbWallet } from "react-icons/tb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ImStatsBars } from "react-icons/im";
 import { DeconnexionDialog } from "../DeconnexionDialog";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import auth from "@/auth";
 import { getTranslations } from "next-intl/server";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
@@ -28,8 +28,7 @@ import GestionDesActeurs from "../GestionDesActeurs";
 import OrdersDropDown from "./OrdersDropDown";
 
 const SideBar = async () => {
-  const session = await getServerSession(auth);
-  const userRole = session?.user?.roleid;
+  const session = (await getServerSession(auth)) as any;
   const t = await getTranslations("SideBar");
 
   // Resolve translations and pass them as props
@@ -79,89 +78,65 @@ const SideBar = async () => {
             <NavbarLink
               link={{
                 href: "/passerunordre",
-                icon:
-                  userRole === 1 ? (
-                    <PiBookOpenText size={15} />
-                  ) : (
-                    <RiMoneyDollarCircleLine size={15} />
-                  ),
-                label:
-                  userRole === 1
-                    ? translations.passerUnOrdre
-                    : translations.marche,
+                icon: <RiMoneyDollarCircleLine size={15} />,
+                label: translations.marche,
               }}
             />
 
-            {userRole === 1 && (
-              <NavbarLink
-                link={{
-                  href: "/portefeuille",
-                  icon: <TbWallet size={20} />,
-                  label: translations.portefeuille,
-                }}
-              />
-            )}
-            {userRole !== 0 && <OrdersDropDown />}
-            {userRole !== 0 && userRole !== 1 && (
-              <>
-                <TitresEtEmissionDropDown />
-                <GestionDeCompteDropDown />
-                <GestionDesActeurs />
-                <OperationsSurTitresDropDown
-                  titre={translations.operationsSurTitres}
-                  annonceOst={translations.annonceOst}
-                  paiementDividendes={translations.paiementDividendes}
-                  paiementDroitsDeGarde={translations.paiementDroitsDeGarde}
-                  paiementCoupon={translations.paiementCoupon}
-                  remboursement={translations.remboursement}
-                />
-              </>
-            )}
+            <NavbarLink
+              link={{
+                href: "/portefeuille",
+                icon: <TbWallet size={20} />,
+                label: translations.portefeuille,
+              }}
+            />
+            <OrdersDropDown />
+            <TitresEtEmissionDropDown />
+            <GestionDeCompteDropDown />
+            <GestionDesActeurs />
+            <OperationsSurTitresDropDown
+              titre={translations.operationsSurTitres}
+              annonceOst={translations.annonceOst}
+              paiementDividendes={translations.paiementDividendes}
+              paiementDroitsDeGarde={translations.paiementDroitsDeGarde}
+              paiementCoupon={translations.paiementCoupon}
+              remboursement={translations.remboursement}
+            />
 
-            {userRole !== 0 && userRole !== 1 && (
-              <NavbarLink
-                link={{
-                  href: "/chiffres-et-editions",
-                  icon: <FileBarChart size={15} />,
-                  label: translations.chiffresEtEditions,
-                }}
-              />
-            )}
+            <NavbarLink
+              link={{
+                href: "/chiffres-et-editions",
+                icon: <FileBarChart size={15} />,
+                label: translations.chiffresEtEditions,
+              }}
+            />
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          {(userRole === 1 || userRole === 0) && (
-            <Link
-              href="/serviceclients"
-              className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-            >
-              <HiOutlineSupport size={15} />
-              <div className="capitalize text-sm">
-                {translations.serviceClients}
-              </div>
-            </Link>
-          )}
+          <Link
+            href="/serviceclients"
+            className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
+          >
+            <HiOutlineSupport size={15} />
+            <div className="capitalize text-sm">
+              {translations.serviceClients}
+            </div>
+          </Link>
 
-          {(userRole === 3 || userRole === 2) && (
-            <Link
-              href="/parametres"
-              className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-            >
-              <Settings size={15} />
-              <div className="capitalize text-xs">
-                {translations.parametres}
-              </div>
-            </Link>
-          )}
-          {userRole === 1 && (
-            <NavbarLink
-              link={{
-                href: "/statistiques",
-                icon: <ImStatsBars size={15} />,
-                label: translations.statistiques,
-              }}
-            />
-          )}
+          <Link
+            href="/parametres"
+            className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
+          >
+            <Settings size={15} />
+            <div className="capitalize text-xs">{translations.parametres}</div>
+          </Link>
+          <NavbarLink
+            link={{
+              href: "/statistiques",
+              icon: <ImStatsBars size={15} />,
+              label: translations.statistiques,
+            }}
+          />
           <DeconnexionDialog />
           <div className="flex">
             <Link

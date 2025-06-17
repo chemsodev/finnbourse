@@ -13,43 +13,28 @@ import { PiBookOpenText } from "react-icons/pi";
 import { TbWallet } from "react-icons/tb";
 import { ImStatsBars } from "react-icons/im";
 import { IoSettingsOutline } from "react-icons/io5";
-import { getSession } from "next-auth/react";
 import { getTranslations } from "next-intl/server";
-import { getServerSession } from "next-auth";
-import auth from "@/auth";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
-import { ArrowRightLeft, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { HiOutlineSupport } from "react-icons/hi";
 
 const BottomNav = async () => {
-  const session = await getServerSession(auth);
-  const userRole = session?.user?.roleid;
-
   const t = await getTranslations("SideBar");
-
   return (
     <div className="md:hidden fixed bg-primary border-t-2 border-secondary w-screen bottom-0 text-white flex justify-around items-center py-2 px-6 z-50">
       <Link
         href="/passerunordre"
         className="flex flex-col items-center gap-1 w-14"
       >
-        {userRole === 1 ? (
-          <PiBookOpenText size={20} />
-        ) : (
-          <RiMoneyDollarCircleLine size={20} />
-        )}
+        <RiMoneyDollarCircleLine size={20} />
         <div className="text-[40%] font-extralight text-center">
-          {userRole === 1 ? t("PasserUnOrdre") : t("marche")}
+          {t("marche")}
         </div>
       </Link>
       <Link href="/ordres" className="flex flex-col items-center gap-1 w-14">
-        {userRole === 1 ? (
-          <ArrowRightLeft size={20} />
-        ) : (
-          <PiBookOpenText size={20} />
-        )}
+        <PiBookOpenText size={20} />
         <div className="text-[40%] font-extralight text-center">
-          {userRole === 1 ? t("mesOrdres") : t("ordres")}
+          {t("ordres")}
         </div>
       </Link>
       <Link
@@ -67,37 +52,33 @@ const BottomNav = async () => {
           <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5" />
         </svg>
       </Link>
-      {userRole === 1 && (
-        <Link
-          href="/portefeuille"
-          className="flex flex-col items-center gap-1 w-14"
-        >
-          <TbWallet size={20} />
-          <div className="text-[40%] font-extralight text-center">
-            {t("portefeuille")}
-          </div>
-        </Link>
-      )}
-      {(userRole === 3 || userRole === 2) && (
-        <Link
-          href="/utilisateurs"
-          className="flex flex-col items-center gap-1 w-14"
-        >
-          <UserRound size={20} />
-          <div className="text-[40%] font-extralight text-center">
-            {t("utilisateurs")}
-          </div>
-        </Link>
-      )}
+      <Link
+        href="/portefeuille"
+        className="flex flex-col items-center gap-1 w-14"
+      >
+        <TbWallet size={20} />{" "}
+        <div className="text-[40%] font-extralight text-center">
+          {t("portefeuille")}
+        </div>
+      </Link>
+      <Link
+        href="/utilisateurs"
+        className="flex flex-col items-center gap-1 w-14"
+      >
+        <UserRound size={20} />{" "}
+        <div className="text-[40%] font-extralight text-center">
+          {t("utilisateurs")}
+        </div>
+      </Link>
       <DropdownMenu>
         <DropdownMenuTrigger className="flex flex-col items-center gap-1 w-14 z-20">
           <IoSettingsOutline size={20} />
           <div className="text-[40%] font-extralight text-center">
             {t("Parametres")}
           </div>
-        </DropdownMenuTrigger>
+        </DropdownMenuTrigger>{" "}
         <DropdownMenuContent>
-          <DropdownMenuLabel> {session?.user?.name}</DropdownMenuLabel>
+          <DropdownMenuLabel>User Menu</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <Link href="/profile" className="flex items-center gap-2">
@@ -110,20 +91,18 @@ const BottomNav = async () => {
               <ImStatsBars size={16} />
               {t("Statistiques")}
             </Link>
+          </DropdownMenuItem>{" "}
+          <DropdownMenuItem>
+            <Link href="/parametres" className="flex items-center gap-2">
+              <IoSettingsOutline size={16} />
+              {t("Parametres")}
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            {(userRole === 3 || userRole === 2) && (
-              <Link href="/parametres" className="flex items-center gap-2">
-                <IoSettingsOutline size={16} />
-                {t("Parametres")}
-              </Link>
-            )}
-            {userRole === 1 && (
-              <Link href="/serviceclients" className="flex items-center gap-2">
-                <HiOutlineSupport size={16} />
-                {t("ServiceClients")}
-              </Link>
-            )}
+            <Link href="/serviceclients" className="flex items-center gap-2">
+              <HiOutlineSupport size={16} />
+              {t("ServiceClients")}
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

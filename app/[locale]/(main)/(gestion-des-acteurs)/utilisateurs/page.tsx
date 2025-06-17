@@ -513,13 +513,9 @@ export default function UtilisateursPage({
   // For user details dialog
   const [userDetailDialog, setUserDetailDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<ExtendedUser | null>(null);
-
   // Filter users based on search query and other filters
   const filteredUsers = mockUsers.filter((user: ExtendedUser) => {
-    // Filter by role
-    if (user.roleid !== roleId) {
-      return false;
-    }
+    // Show all users regardless of role
 
     // Filter by status
     const userStatus = user.status;
@@ -610,9 +606,7 @@ export default function UtilisateursPage({
   const cancelToggleStatus = () => {
     setConfirmDialogOpen(false);
     setUserToToggle(null);
-  };
-
-  // Get table headers based on role ID
+  }; // Get table headers based on role ID (page/tab being displayed)
   const getTableHeaders = (roleId: number) => {
     switch (roleId) {
       case 1: // Investisseur (Client)
@@ -723,11 +717,10 @@ export default function UtilisateursPage({
             {t("utilisateurs")}
           </h1>
           <div className="text-xs text-gray-500">{t("expl")}</div>
-        </div>
-
+        </div>{" "}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
-            {userRole === 3 && <UserFilter />}
+            <UserFilter />
             <StatusFilterWrapper />
           </div>
 
@@ -744,7 +737,6 @@ export default function UtilisateursPage({
             </div>
           </div>
         </div>
-
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
           <Suspense key={`users-table`} fallback={<UsersTableSkeleton />}>
             <Table>

@@ -261,45 +261,42 @@ export function TitresTable({ type }: TitresTableProps) {
       header: t("plusInfo"),
       cell: ({ row }) => (
         <div className="flex gap-4">
-          {(roleId === 1 || roleId === 2) && (
-            <Link
-              href={(() => {
-                const titreId = String(row.getValue("id"));
-                if (type === "empruntobligataire" || type === "opv") {
-                  return `/passerunordre/marcheprimaire/${type}/${titreId}`;
-                } else if (type === "action" || type === "obligation") {
-                  return `/passerunordre/marchesecondaire/${type}/${titreId}`;
-                } else if (
-                  type === "sukukmp" ||
-                  type === "titresparticipatifsmp"
-                ) {
-                  return `/passerunordre/marcheprimaire/${type}/${titreId}`;
-                } else if (
-                  type === "sukukms" ||
-                  type === "titresparticipatifsms"
-                ) {
-                  return `/passerunordre/marchesecondaire/${type}/${titreId}`;
-                }
-                return "/";
-              })()}
-            >
-              <Button>
-                {subscriptionTypes ? t("souscrire") : t("passerUnOrdre")}
-              </Button>
-            </Link>
-          )}
+          <Link
+            href={(() => {
+              const titreId = String(row.getValue("id"));
+              if (type === "empruntobligataire" || type === "opv") {
+                return `/passerunordre/marcheprimaire/${type}/${titreId}`;
+              } else if (type === "action" || type === "obligation") {
+                return `/passerunordre/marchesecondaire/${type}/${titreId}`;
+              } else if (
+                type === "sukukmp" ||
+                type === "titresparticipatifsmp"
+              ) {
+                return `/passerunordre/marcheprimaire/${type}/${titreId}`;
+              } else if (
+                type === "sukukms" ||
+                type === "titresparticipatifsms"
+              ) {
+                return `/passerunordre/marchesecondaire/${type}/${titreId}`;
+              }
+              return "/";
+            })()}
+          >
+            <Button>
+              {subscriptionTypes ? t("souscrire") : t("passerUnOrdre")}
+            </Button>
+          </Link>
           <TitreDrawer titreId={String(row.getValue("id"))} type={type} />
 
           {(type === "action" ||
             type === "obligation" ||
             type === "sukukms" ||
-            type === "titresparticipatifsms") &&
-            (roleId === 2 || roleId === 3) && (
-              <>
-                <AddSecurityHistory securityId={String(row.getValue("id"))} />
-                <UpdateFaceValue securityId={String(row.getValue("id"))} />
-              </>
-            )}
+            type === "titresparticipatifsms") && (
+            <>
+              <AddSecurityHistory securityId={String(row.getValue("id"))} />
+              <UpdateFaceValue securityId={String(row.getValue("id"))} />
+            </>
+          )}
         </div>
       ),
     },

@@ -99,27 +99,8 @@ const OrderManagementNav = ({
   const t = useTranslations("orderManagement");
   const pathname = usePathname();
 
-  // For development - show a message about role-based access
-  return (
-    <div className="p-4 bg-white rounded-lg shadow-sm">
-      <div className="text-sm text-gray-700 mb-4 border-b pb-3">
-        <p className="font-medium mb-2">Role-Based Navigation</p>
-        <p className="text-xs text-gray-500 mb-2">
-          Currently showing all pages for development. Later, access will be
-          restricted based on specific user roles:
-        </p>
-        <ul className="text-xs list-disc pl-4 mb-3 text-gray-600">
-          <li>Users will only see pages they have permission to access</li>
-          <li>Each actor type (Agency, TCC, IOB) has role-specific pages</li>
-          <li>Consultation roles can view but not modify content</li>
-          <li>Action roles can both view and modify their specific page</li>
-        </ul>
-        <code className="text-xs bg-gray-100 p-2 rounded block whitespace-pre-wrap overflow-auto max-h-64">
-          {JSON.stringify(ROLES_CONFIG, null, 2)}
-        </code>
-      </div>
-    </div>
-  );
+  // Show all navigation items without role restrictions
+  return <div className="p-4 bg-white rounded-lg shadow-sm"></div>;
 
   /* Commented out original implementation - will be restored with backend role data */
 };
