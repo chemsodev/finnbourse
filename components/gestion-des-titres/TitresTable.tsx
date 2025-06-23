@@ -33,27 +33,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TitreDrawer } from "./TitreDrawer";
 import { useTranslations } from "next-intl";
 import { formatDate, formatPrice } from "@/lib/utils";
-import TitresTableSkeleton from "./TitresTableSkeleton";
-import { LIST_STOCKS_QUERY, LIST_BOND_QUERY } from "@/graphql/queries";
 import { Suspense, useState, useEffect } from "react";
-import { Bond, Stock } from "@/lib/interfaces";
-
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import AddSecurityHistory from "../AddSecurityHistory";
+import { Stock } from "@/lib/services/stockService";
+import { useStocks } from "@/hooks/useStocks";
 import { useSession } from "next-auth/react";
-import UpdateFaceValue from "./UpdateFaceValue";
-import LogOutAgent from "../LogOutAgent";
-import RateLimitReached from "../RateLimitReached";
 import { Link } from "@/i18n/routing";
-
-// Define the expected data structure for each query
-interface QueryData {
-  listStocks?: Stock[];
-  listBonds?: Bond[];
-}
 
 interface TitresTableProps {
   type: string;
@@ -68,20 +54,26 @@ export function TitresTable({ type }: TitresTableProps) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useTranslations("titresTable");
-  const [data, setData] = React.useState<QueryData | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = React.useState<Stock[]>([]);
+  const [error, setError] = React.useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = React.useState(false);
   const { data: session } = useSession();
-  // Extract roleId with type assertion
-  const roleId = (session?.user as any)?.roleid;
-  const subscriptionTypes = [
-    "action",
-    "obligation",
-    "sukukms",
-    "titresparticipatifsms",
-  ];
+
+  // Use the stocks hook
+  const { fetchStocks, isLoading: loading, hasToken } = useStocks();
+
+  // Extract roleId with type assertion and safety check
+  const roleId = React.useMemo(() => {
+    try {
+      return (session?.user as any)?.roleid;
+    } catch (error) {
+      console.error("Error accessing session:", error);
+      return null;
+    }
+  }, [session]);
 
   // Define your columns for the table
-  const columns = (t: (key: string) => string): ColumnDef<any>[] => [
+  const columns = (t: (key: string) => string): ColumnDef<Stock>[] => [
     {
       accessorKey: "issuer",
       header: ({ column }) => (
@@ -93,23 +85,40 @@ export function TitresTable({ type }: TitresTableProps) {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="capitalize flex flex-col gap-1">
-          <div className="font-semibold">{row.getValue("issuer")}</div>
-          <div className="uppercase text-gray-500 font-semibold text-xs">
-            {row.getValue("code") || "N/A"}
+      cell: ({ row }) => {
+        // Only show the code, not the issuer object
+        return (
+          <div className="capitalize flex flex-col gap-1">
+            <div className="font-semibold">
+              {typeof row.original.code === "string"
+                ? row.original.code
+                : "N/A"}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       accessorKey: "code",
       header: t("code"),
-      cell: ({ row }) => (
-        <div className="uppercase text-gray-500 font-semibold text-xs">
-          {row.getValue("code") || "N/A"}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const codeValue = row.getValue("code");
+        let displayCode = "N/A";
+
+        if (codeValue) {
+          if (typeof codeValue === "object" && codeValue !== null) {
+            displayCode = JSON.stringify(codeValue);
+          } else {
+            displayCode = String(codeValue);
+          }
+        }
+
+        return (
+          <div className="uppercase text-gray-500 font-semibold text-xs">
+            {displayCode}
+          </div>
+        );
+      },
     },
     ...(type !== "action" &&
     type !== "obligation" &&
@@ -117,23 +126,23 @@ export function TitresTable({ type }: TitresTableProps) {
     type !== "titresparticipatifsms"
       ? [
           {
-            accessorKey: "emissiondate",
+            accessorKey: "emissionDate",
             header: t("ouverture"),
             cell: ({ row }: { row: any }) => (
               <div className="capitalize">
-                {row.getValue("emissiondate")
-                  ? formatDate(row.getValue("emissiondate"))
+                {row.getValue("emissionDate")
+                  ? formatDate(row.getValue("emissionDate"))
                   : "NC"}
               </div>
             ),
           },
           {
-            accessorKey: "closingdate",
+            accessorKey: "closingDate",
             header: t("cloture"),
             cell: ({ row }: { row: any }) => (
               <div className="capitalize">
-                {row.getValue("closingdate")
-                  ? formatDate(row.getValue("closingdate"))
+                {row.getValue("closingDate")
+                  ? formatDate(row.getValue("closingDate"))
                   : "NC"}
               </div>
             ),
@@ -141,251 +150,225 @@ export function TitresTable({ type }: TitresTableProps) {
         ]
       : [
           {
-            accessorKey: "enjoymentdate",
+            accessorKey: "enjoymentDate",
             header: t("valeurOuverture"),
             cell: ({ row }: { row: any }) => {
-              const marketMetadata = row.getValue("marketmetadata");
+              const marketMetadata = row.getValue("marketMetadata");
               const cours = marketMetadata?.cours || [];
 
-              // Check if there are at least two cours entries
-              if (cours.length < 2) {
-                return <div>NC</div>;
+              if (cours.length >= 2) {
+                return (
+                  <div className="capitalize">
+                    {formatPrice(cours[0]?.value || 0)}
+                  </div>
+                );
               }
 
-              // Sort the cours by date
-              const sortedCours = [...cours].sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                return dateA.getTime() - dateB.getTime();
-              });
-
-              // Get the second-to-last cours entry
-              const secondToLast = sortedCours[sortedCours.length - 2];
-
-              return (
-                <div className="capitalize">
-                  {secondToLast?.price !== null ? secondToLast.price : "NC"}
-                </div>
-              );
+              return <div className="capitalize">NC</div>;
             },
           },
           {
-            accessorKey: "facevalue",
-            header: t("valeurCloture"),
-            cell: ({ row }: { row: any }) => (
-              <div className="capitalize">
-                {row.getValue("facevalue") ? row.getValue("facevalue") : "NC"}
-              </div>
-            ),
+            accessorKey: "currentPrice",
+            header: t("valeurActuelle"),
+            cell: ({ row }: { row: any }) => {
+              const marketMetadata = row.getValue("marketMetadata");
+              const cours = marketMetadata?.cours || [];
+
+              if (cours.length >= 2) {
+                const currentValue = cours[cours.length - 1]?.value || 0;
+                return (
+                  <div className="capitalize">{formatPrice(currentValue)}</div>
+                );
+              }
+
+              return <div className="capitalize">NC</div>;
+            },
           },
         ]),
-    ...(subscriptionTypes.includes(type)
-      ? [
-          {
-            accessorKey: "marketmetadata",
-            header: t("variation"),
-            cell: ({ row }: { row: any }) => {
-              const marketMetadata = row.getValue("marketmetadata");
-
-              if (
-                typeof marketMetadata !== "object" ||
-                marketMetadata === null
-              ) {
-                return <div>0.00%</div>;
-              }
-
-              const cours = marketMetadata.cours || [];
-
-              if (!Array.isArray(cours) || cours.length < 2) {
-                return <div>0.00%</div>;
-              }
-
-              // Sort the cours by date
-              const sortedCours = [...cours].sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                return dateA.getTime() - dateB.getTime();
-              });
-
-              // Get the last two cours entries
-              const [previous, latest] = sortedCours.slice(-2);
-
-              // Calculate variation
-              if (
-                latest === undefined ||
-                previous === undefined ||
-                latest.price === null ||
-                previous.price === null
-              ) {
-                return <div>0.00%</div>;
-              }
-
-              const previousPrice = parseFloat(previous.price.toString());
-
-              const latestPrice = parseFloat(latest.price.toString());
-
-              if (
-                isNaN(previousPrice) ||
-                isNaN(latestPrice) ||
-                previousPrice === 0
-              ) {
-                return <div>0.00%</div>;
-              }
-
-              const variation =
-                ((latestPrice - previousPrice) / previousPrice) * 100;
-
-              return <div className="capitalize">{variation.toFixed(2)}%</div>;
-            },
-          },
-        ]
-      : []),
-    ...(type !== "action" &&
-    type !== "obligation" &&
-    type !== "sukukms" &&
-    type !== "titresparticipatifsms"
-      ? [
-          {
-            accessorKey: "facevalue",
-            header: t("valeurNominale"),
-            cell: ({ row }: { row: any }) => (
-              <div className="capitalize">
-                {formatPrice(row.getValue("facevalue") || 0)}
-              </div>
-            ),
-          },
-        ]
-      : []),
     {
-      accessorKey: "id",
-      header: t("plusInfo"),
-      cell: ({ row }) => (
-        <div className="flex gap-4">
-          <Link
-            href={(() => {
-              const titreId = String(row.getValue("id"));
-              if (type === "empruntobligataire" || type === "opv") {
-                return `/passerunordre/marcheprimaire/${type}/${titreId}`;
-              } else if (type === "action" || type === "obligation") {
-                return `/passerunordre/marchesecondaire/${type}/${titreId}`;
-              } else if (
-                type === "sukukmp" ||
-                type === "titresparticipatifsmp"
-              ) {
-                return `/passerunordre/marcheprimaire/${type}/${titreId}`;
-              } else if (
-                type === "sukukms" ||
-                type === "titresparticipatifsms"
-              ) {
-                return `/passerunordre/marchesecondaire/${type}/${titreId}`;
-              }
-              return "/";
-            })()}
-          >
-            <Button>
-              {subscriptionTypes ? t("souscrire") : t("passerUnOrdre")}
-            </Button>
-          </Link>
-          <TitreDrawer titreId={String(row.getValue("id"))} type={type} />
+      accessorKey: "status",
+      header: t("statut"),
+      cell: ({ row }) => {
+        const statusValue = row.getValue("status");
+        let statusDisplay = "NC";
 
-          {(type === "action" ||
-            type === "obligation" ||
-            type === "sukukms" ||
-            type === "titresparticipatifsms") && (
-            <>
-              <AddSecurityHistory securityId={String(row.getValue("id"))} />
-              <UpdateFaceValue securityId={String(row.getValue("id"))} />
-            </>
-          )}
-        </div>
-      ),
+        if (statusValue) {
+          // Check if status is an object
+          if (typeof statusValue === "object" && statusValue !== null) {
+            // Try to extract a usable string representation
+            // Use a type assertion to handle the object properties
+            const objValue = statusValue as Record<string, any>;
+            statusDisplay =
+              objValue.value || objValue.label || JSON.stringify(statusValue);
+          } else {
+            // Handle string status values
+            statusDisplay = String(statusValue);
+          }
+        }
+
+        // Now apply the translations to the string representation
+        return (
+          <div className="capitalize">
+            {statusDisplay === "active"
+              ? t("actif")
+              : statusDisplay === "suspended"
+              ? t("suspendu")
+              : statusDisplay === "moved_to_secondary"
+              ? t("marche_secondaire")
+              : statusDisplay}
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const stock = row.original;
+        // Handle any type of ID safely
+        let stockId = "";
+        if (stock.id !== undefined && stock.id !== null) {
+          if (typeof stock.id === "string") {
+            stockId = stock.id;
+          } else if (typeof stock.id === "number") {
+            stockId = String(stock.id);
+          } else if (typeof stock.id === "object") {
+            stockId = JSON.stringify(stock.id);
+          }
+        }
+
+        if (!stockId) {
+          return null; // No actions if no valid ID
+        }
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(stockId)}
+              >
+                {t("copierID")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  href={
+                    type === "action" ||
+                    type === "obligation" ||
+                    type === "sukuk" ||
+                    type === "titresparticipatifs"
+                      ? `/passerunordre/marchesecondaire/${type}/${stockId}`
+                      : `/passerunordre/marcheprimaire/${type}/${stockId}`
+                  }
+                >
+                  {t("voirDetails")}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={
+                    type === "action" ||
+                    type === "obligation" ||
+                    type === "sukuk" ||
+                    type === "titresparticipatifs"
+                      ? `/passerunordre/marchesecondaire/${type}/${stockId}`
+                      : `/passerunordre/marcheprimaire/${type}/${stockId}`
+                  }
+                >
+                  {t("passerOrdre")}
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    let isMounted = true;
+
+    const loadData = async () => {
+      // Prevent loading if already loaded for this type or no token
+      if (hasLoaded || !hasToken) {
+        console.log("⏳ Waiting for token or already loaded");
+        return;
+      }
+
       try {
-        let query;
-        let typeToFilter;
+        console.log("🔄 Loading stocks for type:", type);
 
-        // Choose query based on type
-        if (
-          type === "action" ||
-          type === "opv" ||
+        // Map the type parameter to the correct API endpoint
+        let typeToFilter = type;
+
+        // Always map to the base type regardless of primary/secondary market
+        if (type === "opv" || type === "action") {
+          typeToFilter = "action";
+        } else if (type === "empruntobligataire" || type === "obligation") {
+          typeToFilter = "obligation";
+        } else if (
+          type === "sukukmp" ||
           type === "sukukms" ||
-          type === "titresparticipatifsms"
+          type === "sukuk"
         ) {
-          query = LIST_STOCKS_QUERY;
-        } else {
-          query = LIST_BOND_QUERY;
+          typeToFilter = "sukuk";
+        } else if (
+          type === "titresparticipatifsmp" ||
+          type === "titresparticipatifsms" ||
+          type === "titresparticipatifs" ||
+          type === "participatif"
+        ) {
+          typeToFilter = "participatif";
         }
 
-        // Map the type parameter to the correct backend filter value
-        if (type === "opv") {
-          typeToFilter = "opv";
-        } else if (type === "empruntobligataire") {
-          typeToFilter = "empruntobligataire";
-        } else if (type === "sukukmp") {
-          typeToFilter = "sukuk";
-        } else if (type === "titresparticipatifsmp") {
-          typeToFilter = "titresparticipatifs";
-        } else if (type === "sukukms") {
-          typeToFilter = "sukuk";
-        } else if (type === "titresparticipatifsms") {
-          typeToFilter = "titresparticipatifs";
-        } else {
-          typeToFilter = type;
+        console.log(`Using API endpoint /api/v1/stock/${typeToFilter}`);
+
+        // Always use the same API endpoint for both primary and secondary markets
+        const result = await fetchStocks(typeToFilter);
+
+        if (isMounted) {
+          setData(result || []);
+          setError(null);
+          setHasLoaded(true);
+          console.log("✅ Stocks loaded successfully:", result);
         }
-
-        // Get auth token from session if available
-        const token = session?.data?.user
-          ? (session.data.user as any).token
-          : undefined;
-
-        // Use typeToFilter as the parameter name expected by your backend
-        const result = await fetchGraphQLClient<QueryData>(
-          query,
-          {
-            type: typeToFilter,
-          },
-          undefined,
-          token // Pass the token for authorization
-        );
-
-        setData(result);
       } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error loading stocks:", error);
+        if (isMounted) {
+          setError("Failed to load stocks");
+          setData([]);
+        }
       }
     };
 
-    fetchData();
-  }, [type, session?.data?.user]);
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [type, hasToken, fetchStocks, hasLoaded]);
+
+  // Reset loaded state when type changes
+  useEffect(() => {
+    setHasLoaded(false);
+    setError(null);
+  }, [type]);
+
+  const getTableData = () => {
+    if (data && Array.isArray(data)) {
+      return data;
+    }
+    return [];
+  };
 
   const table = useReactTable({
-    // Ensure we handle all possible data structures from the API
-    data: React.useMemo(() => {
-      if (!data) return [];
-
-      if (data.listStocks && Array.isArray(data.listStocks)) {
-        return data.listStocks;
-      }
-
-      if (data.listBonds && Array.isArray(data.listBonds)) {
-        return data.listBonds;
-      }
-
-      // If data has a different structure, try to find arrays
-      for (const key in data) {
-        if (Array.isArray((data as any)[key])) {
-          return (data as any)[key];
-        }
-      }
-
-      return [];
-    }, [data]),
+    data: getTableData(),
     columns: columns(t),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -402,23 +385,59 @@ export function TitresTable({ type }: TitresTableProps) {
       rowSelection,
     },
   });
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
-  return loading ? (
-    <TitresTableSkeleton />
-  ) : (
+  if (error) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              setHasLoaded(false);
+            }}
+            className="mt-2 px-4 py-2 bg-primary text-white rounded"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasToken) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="text-center">
+          <p className="text-gray-500">
+            Token required or authentication loading...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div className="w-full">
-      <div className="flex items-end py-4">
+      <div className="flex items-center py-4">
         <Input
-          placeholder={t("filtrer")}
+          placeholder={t("filterTitres")}
           value={(table.getColumn("issuer")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("issuer")?.setFilterValue(event.target.value)
           }
-          className="max-w-xs"
+          className="max-w-sm"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="ml-auto">
+            <Button variant="outline" className="ml-auto">
               {t("colonnes")} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -426,7 +445,7 @@ export function TitresTable({ type }: TitresTableProps) {
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              ?.map((column) => {
+              .map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -436,84 +455,84 @@ export function TitresTable({ type }: TitresTableProps) {
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id === "issuer" ? t("issuer") : column.id}
+                    {column.id}
                   </DropdownMenuCheckboxItem>
                 );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border my-4">
-        <Suspense fallback={<TitresTableSkeleton />}>
-          <Table className="bg-white rounded-md">
-            <TableHeader>
-              {table.getHeaderGroups()?.map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers?.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows?.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells()?.map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns(t).length}
-                    className="h-24 text-center"
-                  >
-                    {t("noResult")}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Suspense>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns(t).length}
+                  className="h-24 text-center"
+                >
+                  {t("aucunResultat")}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} {t("de")}{" "}
+          {table.getFilteredRowModel().rows.length} {t("lignesSelectionnees")}.
+        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="bg-white"
           >
-            &lt;
+            {t("precedent")}
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="bg-white"
           >
-            &gt;
+            {t("suivant")}
           </Button>
         </div>
       </div>

@@ -329,7 +329,6 @@ export function RelatedUsersForm({
                   )}
                 />
               </div>
-
               <FormField
                 control={userForm.control}
                 name="email"
@@ -343,7 +342,6 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={userForm.control}
                 name="telephone"
@@ -357,7 +355,6 @@ export function RelatedUsersForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={userForm.control}
                 name="positionTcc"
@@ -370,36 +367,53 @@ export function RelatedUsersForm({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-
+              />{" "}
               <div className="space-y-2">
-                <FormLabel>Roles *</FormLabel>
-                <Select
-                  value={userForm.watch("role")?.[0] || ""}
-                  onValueChange={(value) => {
-                    userForm.setValue("role", [value]);
-                    // Update legacy fields for compatibility
-                    userForm.setValue("roles", [value]);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TCC_USER_ROLES.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (l) => l.toUpperCase())}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormLabel>Roles * (Select one or more)</FormLabel>
+                <div className="grid grid-cols-2 gap-2">
+                  {TCC_USER_ROLES.map((role) => {
+                    const isSelected =
+                      userForm.watch("role")?.includes(role) || false;
+                    return (
+                      <div key={role} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={role}
+                          checked={isSelected}
+                          onChange={(e) => {
+                            const currentRoles = userForm.watch("role") || [];
+                            if (e.target.checked) {
+                              // Add role
+                              const newRoles = [...currentRoles, role];
+                              userForm.setValue("role", newRoles);
+                              userForm.setValue("roles", newRoles);
+                            } else {
+                              // Remove role
+                              const newRoles = currentRoles.filter(
+                                (r) => r !== role
+                              );
+                              userForm.setValue("role", newRoles);
+                              userForm.setValue("roles", newRoles);
+                            }
+                          }}
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <label
+                          htmlFor={role}
+                          className="text-sm font-medium text-gray-700 cursor-pointer"
+                        >
+                          {role
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
                 <FormMessage>
                   {userForm.formState.errors.role?.message}
                 </FormMessage>
               </div>
-
               <FormField
                 control={userForm.control}
                 name="status"

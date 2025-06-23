@@ -46,8 +46,19 @@ import { useRouter } from "next/navigation";
 import Loading from "@/components/ui/loading";
 import { Switch } from "@/components/ui/switch";
 
-import { getClients, deleteClient } from "@/lib/client-service";
-import type { Client } from "./schema";
+import { useClients } from "@/hooks/useClients";
+// Define a simple Client type for the component
+interface Client {
+  id: string;
+  clientCode?: string;
+  clientType?: string;
+  name?: string;
+  raisonSociale?: string;
+  email?: string;
+  phoneNumber?: string;
+  status?: string;
+  [key: string]: any;
+}
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,40 +77,55 @@ export default function ClientDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [clientStatuses, setClientStatuses] = useState<{
-    [key: number]: string;
+    [key: string]: string;
   }>({});
   const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
   const [clientToToggleStatus, setClientToToggleStatus] = useState<
-    number | null
+    string | null
   >(null);
+  // Use the new clients hook
+  const {
+    clients,
+    isLoading,
+    fetchClients,
+    deleteClient: deleteClientAPI,
+    hasToken,
+  } = useClients();
 
   useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getClients();
-        setClients(data);
+    loadClients();
+  }, [hasToken]);
 
-        // Initialize client statuses
-        const initialStatuses: { [key: number]: string } = {};
-        data.forEach((client) => {
-          initialStatuses[client.id] = client.status;
-        });
-        setClientStatuses(initialStatuses);
-      } catch (error) {
-        console.error("Error fetching clients:", error);
-      } finally {
-        setIsLoading(false);
+  useEffect(() => {
+    // Also try to load clients when the component mounts
+    if (hasToken && clients.length === 0) {
+      loadClients();
+    }
+  }, []);
+  const loadClients = async () => {
+    try {
+      console.log("🔄 Loading clients, hasToken:", hasToken);
+      if (!hasToken) {
+        console.log("⚠️ No token available, skipping client fetch");
+        return;
       }
-    };
-    fetchClients();
-  }, [t]);
 
-  const toggleClientStatus = (clientId: number) => {
+      const data = await fetchClients();
+      console.log("✅ Clients loaded:", data);
+
+      // Initialize client statuses
+      const initialStatuses: { [key: string]: string } = {};
+      data.forEach((client: Client) => {
+        initialStatuses[client.id] = client.status || "actif";
+      });
+      setClientStatuses(initialStatuses);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+    }
+  };
+  const toggleClientStatus = (clientId: string) => {
     setClientToToggleStatus(clientId);
     setStatusConfirmDialog(true);
   };
@@ -135,8 +161,8 @@ export default function ClientDashboard() {
   const filteredClients = clients.filter(
     (client) =>
       (client.clientType === "personne_physique"
-        ? client.name
-        : client.raisonSociale
+        ? client.name || ""
+        : client.raisonSociale || ""
       )
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
@@ -151,8 +177,9 @@ export default function ClientDashboard() {
     if (!selectedClient) return;
     try {
       setIsDeleting(true);
-      await deleteClient(selectedClient.id);
-      setClients((prev) => prev.filter((c) => c.id !== selectedClient.id));
+      await deleteClientAPI(selectedClient.id);
+      // The hook will update the clients state automatically
+      setSelectedClient(null);
     } catch (error) {
       console.error("Error deleting client:", error);
     } finally {

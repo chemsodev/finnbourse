@@ -47,12 +47,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  FIND_UNIQUE_BOND_QUERY,
-  FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
-  LIST_BOND_QUERY,
-  LIST_BONDS_NAME_PRICE_QUERY,
-} from "@/graphql/queries";
 import { Separator } from "../ui/separator";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -60,17 +54,11 @@ import { preventNonNumericInput } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 import { toast } from "@/hooks/use-toast";
 import CouponTable from "../CouponTable";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
-import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
+import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import { useSession } from "next-auth/react";
-
-interface CreateOrderResponse {
-  createOrder: {
-    id: string;
-  };
-}
+import { useStockREST, useStocksREST } from "@/hooks/useStockREST";
+import { stockService } from "@/lib/services/stockService";
 
 const FormPassationOrdreObligation = ({
   titreId,
@@ -87,37 +75,32 @@ const FormPassationOrdreObligation = ({
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [grossAmount, setGrossAmount] = useState<number>(0);
-  const [obligationData, setObligationData] = useState<any>(null);
   const [createdOrdreId, setCreatedOrdreId] = useState<string | null>(null);
   const [selectedTitreName, setSelectedTitreName] = useState<string | null>(
     null
   );
   const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
+
+  // Use the REST hooks to fetch data
+  const stockType =
+    type === "obligation"
+      ? "obligation"
+      : type === "sukukms"
+      ? "sukuk"
+      : ("participatif" as const);
+
+  const { stocks: obligationData, loading: stocksLoading } =
+    useStocksREST(stockType);
+  const { stock: data, loading } = useStockREST(titreId, stockType);
+
   const t = useTranslations("FormPassationOrdreObligation");
 
   const router = useRouter();
 
   const handleGoBack = () => {
     router.back();
-  };
-
-  const fetchExtraFieldsData = async (id: string) => {
-    try {
-      const result = await fetchGraphQLClient<any>(
-        FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
-        {
-          id,
-        }
-      );
-
-      setExtraFieldsData(result.findUniqueListedCompany.extrafields);
-    } catch (error) {
-      console.error("Error fetching extra fields data:", error);
-    }
   };
 
   const formSchema = z.object({
@@ -131,6 +114,7 @@ const FormPassationOrdreObligation = ({
         message: `La quantité ne peut pas dépasser ${data?.quantity || 1}.`,
       }),
   });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -140,102 +124,84 @@ const FormPassationOrdreObligation = ({
     },
   });
 
+  // Initialize form with titreId when data is loaded
   useEffect(() => {
-    const ListObligationData = async () => {
-      setLoading(true);
-      try {
-        const result = await fetchGraphQLClient<any>(LIST_BOND_QUERY, { type });
-        const listData = result.listBonds;
-        setObligationData(listData);
-        const selectedTitreId = titreId;
-        if (selectedTitreId) {
-          const selectedTitre = listData.find(
-            (t: any) => t.id === selectedTitreId
-          );
-          if (selectedTitre) {
-            setTitre(selectedTitre.issuer);
-            setSelectedPrice(selectedTitre.facevalue);
-            form.setValue("selectedTitreId", selectedTitre.id);
+    if (data && obligationData?.length > 0) {
+      const selectedTitre = obligationData.find((t: any) => t.id === titreId);
 
-            setTotalAmount(
-              calculateTotalValue(
-                selectedTitre.facevalue,
-                form.getValues("quantite"),
-                "obligation"
-              )
-            );
-            setGrossAmount(
-              calculateGrossAmount(
-                selectedTitre.facevalue,
-                form.getValues("quantite")
-              )
-            );
-          }
+      if (selectedTitre) {
+        setTitre(selectedTitre.name || selectedTitre.issuer?.name || "");
+        setSelectedPrice(selectedTitre.faceValue || selectedTitre.facevalue);
+        setSelectedTitreName(selectedTitre.name || "");
+        form.setValue("selectedTitreId", selectedTitre.id);
+
+        // Extract issuer data if available
+        if (selectedTitre.issuer) {
+          setExtraFieldsData({
+            notice: selectedTitre.issuer.website || "",
+          });
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+
+        setTotalAmount(
+          calculateTotalValue(
+            selectedTitre.faceValue || selectedTitre.facevalue,
+            form.getValues("quantite"),
+            "obligation"
+          )
+        );
+        setGrossAmount(
+          calculateGrossAmount(
+            selectedTitre.faceValue || selectedTitre.facevalue,
+            form.getValues("quantite")
+          )
+        );
       }
-    };
-    ListObligationData();
-  }, []);
-
-  const fetchData = async (id: string) => {
-    setLoading(true);
-    try {
-      const result = await fetchGraphQLClient<any>(FIND_UNIQUE_BOND_QUERY, {
-        id,
-        type,
-      });
-      const FindUniqueData = result.findUniqueBond;
-      setData(FindUniqueData);
-      setSelectedTitreName(result.findUniqueBond.name);
-      fetchExtraFieldsData(result.findUniqueBond.listedcompanyid);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [data, obligationData, titreId]);
 
+  // Update total amount when quantity changes
   useEffect(() => {
-    fetchData(titreId);
-  }, [titreId]);
+    const subscription = form.watch((value, { name }) => {
+      if (name === "quantite" && selectedPrice) {
+        const quantity = value.quantite as number;
+        setTotalAmount(
+          calculateTotalValue(Number(selectedPrice), quantity, "obligation")
+        );
+        setGrossAmount(calculateGrossAmount(Number(selectedPrice), quantity));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, selectedPrice]);
 
-  useEffect(() => {
-    const selectedTitreId = form.getValues("selectedTitreId");
-    if (selectedTitreId) {
-      fetchData(selectedTitreId.toString());
-    }
-  }, [form.watch("selectedTitreId")]);
-
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  // Handle form submission
+  const handleSubmit = async (formData: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
 
     try {
-      const retrunedData = await fetchGraphQLClient<CreateOrderResponse>(
-        CREATE_ORDER_MUTATION,
-        {
-          ordertypeone: "",
-          ordertypetwo: "",
-          orderdirection: data.typeTransaction ? 1 : 0,
-          securityid: data.selectedTitreId,
+      // Create order using REST API
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderdirection: formData.typeTransaction ? 1 : 0,
+          securityid: formData.selectedTitreId,
           investorid: userId,
           negotiatorid: negotiatorId || "",
-          securitytype:
-            type === "obligation"
-              ? "bond"
-              : type === "sukukms"
-              ? "sukukms"
-              : "titresParticipatifs",
-          quantity: data.quantite,
+          securitytype: stockType,
+          quantity: formData.quantite,
           orderstatus: 0,
           securityissuer: selectedTitreName,
-        }
-      );
-      setCreatedOrdreId(retrunedData.createOrder.id);
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error("Failed to create order");
+      }
+
+      const result = await response.json();
+      setCreatedOrdreId(result.id);
       setIsDialogOpen(true);
 
       toast({
@@ -267,32 +233,20 @@ const FormPassationOrdreObligation = ({
     }
   };
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "quantite" && Number(selectedPrice)) {
-        const quantity = value.quantite as number;
-        setTotalAmount(
-          calculateTotalValue(Number(selectedPrice), quantity, "obligation")
-        );
-        setGrossAmount(calculateGrossAmount(Number(selectedPrice), quantity));
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form, selectedPrice]);
-
   const setTransactionType = (type: boolean) => {
     form.setValue("typeTransaction", type);
   };
 
   const isAchatSelected = form.watch("typeTransaction");
 
-  if (loading) {
+  if (loading || stocksLoading || !data) {
     return <PasserUnOrdreSkeleton />;
   }
+
   return (
     <>
       <BulletinSubmitDialog
-        createdOrdreId={createdOrdreId?.toString() || ""}
+        createdOrdreId={createdOrdreId || ""}
         isDialogOpen={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
       />
@@ -326,8 +280,8 @@ const FormPassationOrdreObligation = ({
                           </div>
                           <div className="flex items-center">
                             {titre && (
-                              <div className="flex gap-1">
-                                {formatPrice(selectedPrice || 0)}
+                              <div>
+                                {formatPrice(Number(selectedPrice) || 0)}
                                 {t("currency")}
                               </div>
                             )}
@@ -335,47 +289,58 @@ const FormPassationOrdreObligation = ({
                           </div>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[45vw] p-0">
+                      <PopoverContent className="w-96 p-0">
                         <Command>
-                          <CommandInput placeholder={t("rechercherUnTitre")} />
+                          <CommandInput placeholder="Rechercher un titre..." />
                           <CommandList>
                             <CommandEmpty>{t("noTitle")}</CommandEmpty>
                             <CommandGroup>
-                              {obligationData?.map((t: any) => (
-                                <CommandItem
-                                  key={t.id}
-                                  value={t.issuer}
-                                  onSelect={() => {
-                                    setTitre(t.issuer);
-                                    setSelectedPrice(t.facevalue);
-                                    field.onChange(t.id);
-                                    setTotalAmount(
-                                      calculateTotalValue(
-                                        t.facevalue,
-                                        form.getValues("quantite"),
-                                        "obligation"
-                                      )
-                                    );
-                                    setGrossAmount(
-                                      calculateGrossAmount(
-                                        t.facevalue,
-                                        form.getValues("quantite")
-                                      )
-                                    );
-                                    setOpen(false);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value === t.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {t.issuer}
-                                </CommandItem>
-                              ))}
+                              {obligationData &&
+                                obligationData?.map((t: any) => (
+                                  <CommandItem
+                                    key={t.id}
+                                    value={t.name || t.issuer?.name}
+                                    onSelect={() => {
+                                      setTitre(t.name || t.issuer?.name || "");
+                                      setSelectedTitreName(t.name || "");
+                                      setSelectedPrice(
+                                        t.faceValue || t.facevalue
+                                      );
+                                      field.onChange(t.id);
+                                      setTotalAmount(
+                                        calculateTotalValue(
+                                          t.faceValue || t.facevalue,
+                                          form.getValues("quantite"),
+                                          "obligation"
+                                        )
+                                      );
+                                      setGrossAmount(
+                                        calculateGrossAmount(
+                                          Number(t.faceValue || t.facevalue),
+                                          form.getValues("quantite")
+                                        )
+                                      );
+                                      setOpen(false);
+
+                                      // Set extra fields data
+                                      if (t.issuer) {
+                                        setExtraFieldsData({
+                                          notice: t.issuer.website || "",
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === t.id
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {t.name || t.issuer?.name || t.id}
+                                  </CommandItem>
+                                ))}
                             </CommandGroup>
                           </CommandList>
                         </Command>
@@ -388,12 +353,26 @@ const FormPassationOrdreObligation = ({
             />
 
             <div className="p-10 border rounded-md shadow flex flex-col gap-10">
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-400 capitalize">
+                  {t("visaCOSOB")}
+                </div>
+                <div className="text-lg font-semibold">
+                  {process.env.NEXT_PUBLIC_VISA_COSOB}
+                </div>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
+                <div className="text-lg font-semibold">
+                  {data?.isinCode || data?.isincode || "N/A"}
+                </div>
+              </div>
               <FormField
                 control={form.control}
                 name="typeTransaction"
                 render={({ field }) => {
                   return (
-                    <FormItem className="gap-32">
+                    <FormItem className="gap-32 text-lg">
                       <div className="flex items-baseline justify-between ">
                         <FormLabel className="text-gray-400 capitalize text-lg">
                           {t("TypeTransaction")}
@@ -465,67 +444,52 @@ const FormPassationOrdreObligation = ({
                   );
                 }}
               />
-            </div>
-            <div className="p-10 border rounded-md shadow flex flex-col gap-10 mt-6">
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">
-                  {t("visaCOSOB")}
-                </div>
-                <div className="text-lg font-semibold">
-                  {process.env.NEXT_PUBLIC_VISA_COSOB}
-                </div>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
-                <div className="text-lg font-semibold">
-                  {data?.isincode || "N/A"}
-                </div>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">
-                  {t("valeurNominale")}
-                </div>
-                <div className="text-lg font-semibold flex gap-1">
-                  <div>{formatPrice(selectedPrice || 0)}</div>
-                  <div>{t("currency")}</div>
-                </div>
-              </div>
 
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("dateEmission")}
                 </div>
-
                 <div className="text-lg font-semibold">
-                  {data?.emissiondate ? formatDate(data.emissiondate) : "N/A"}
+                  {((data?.emissionDate || data?.emissiondate) &&
+                    formatDate(data.emissionDate || data.emissiondate)) ||
+                    "N/A"}
                 </div>
               </div>
+
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
-                  {t("dateJouissance")}
+                  {t("NombreObligations")}
                 </div>
-
                 <div className="text-lg font-semibold">
-                  {data?.enjoymentdate ? formatDate(data.enjoymentdate) : "N/A"}
+                  {(data?.quantity && formatNumber(data?.quantity)) || "N/A"}
                 </div>
               </div>
+
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
-                  {t("dateEcheance")}
+                  {t("tauxInteret")}
                 </div>
+                <div className="text-lg font-semibold">
+                  {data?.dividendRate ||
+                    data?.fixedRate ||
+                    data?.variableRate ||
+                    data?.yieldRate ||
+                    0}
+                  %
+                </div>
+              </div>
 
-                <div className="text-lg font-semibold">
-                  {data?.maturitydate ? formatDate(data.maturitydate) : "N/A"}
+              {data?.maturityDate && (
+                <div className="flex justify-between items-baseline">
+                  <div className=" text-gray-400 capitalize">
+                    {t("dateEcheance")}
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {formatDate(data.maturityDate)}
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">
-                  {t("nombreObligations")}
-                </div>
-                <div className="text-lg font-semibold">
-                  {formatNumber(data?.quantity || 0)}
-                </div>
-              </div>
+              )}
+
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-500">{t("montantBrut")}:</div>
                 <div className="font-semibold text-lg flex gap-1">
@@ -534,37 +498,32 @@ const FormPassationOrdreObligation = ({
                 </div>
               </div>
               <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">
-                  {t("commission")}
-                </div>
-                <div className="text-lg font-semibold">
-                  {type === "obligation"
-                    ? `${process.env.NEXT_PUBLIC_COMMISSION_ACTION}%`
-                    : t("pasDeCommission")}
+                <div className=" text-gray-500">{t("commission")}:</div>
+                <div className="font-semibold text-lg">
+                  {data?.commission ||
+                    process.env.NEXT_PUBLIC_COMMISSION_OBLIGATION ||
+                    0}{" "}
+                  %
                 </div>
               </div>
               <Separator />
               <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">{t("mtt")}</div>
+                <div className="text-gray-400 capitalize text-lg ">
+                  {t("mtt")}
+                </div>
                 <div className="text-xl font-bold flex gap-1">
-                  <div>{formatPrice(totalAmount)}</div>
-                  <div>{t("currency")}</div>
+                  <span>{formatPrice(totalAmount || 0)}</span>
+                  <span> {t("currency")}</span>
                 </div>
               </div>
             </div>
-            {data?.couponschedule && (
-              <div className="px-10 py-4 border rounded-md shadow flex flex-col gap-10 mt-6">
-                <CouponTable
-                  couponschedule={data.couponschedule}
-                  facevalue={data.facevalue}
-                />
-              </div>
-            )}
+
             <div className="flex justify-between gap-6 mt-4">
               {extraFieldsData?.notice && (
                 <Link
                   href={extraFieldsData?.notice || ""}
                   className="w-full flex gap-2 justify-center items-center text-gray-600 border rounded-md p-2 text-center"
+                  target="_blank"
                 >
                   <div>{t("tn")}</div>
                   <svg
@@ -584,7 +543,12 @@ const FormPassationOrdreObligation = ({
               <Button onClick={handleGoBack} type="reset" variant="outline">
                 {t("annuler")}
               </Button>
-              <Button className="w-full group gap-2" disabled={isSubmitting}>
+
+              <Button
+                type="submit"
+                className="w-full group gap-2"
+                disabled={isSubmitting}
+              >
                 {t("suivant")}
                 {isSubmitting ? (
                   <svg
@@ -604,7 +568,7 @@ const FormPassationOrdreObligation = ({
                     />
                   </svg>
                 ) : (
-                  <ArrowRight className="hidden group-hover:block text-white " />
+                  <ArrowRight className="hidden group-hover:block text-white" />
                 )}
               </Button>
             </div>

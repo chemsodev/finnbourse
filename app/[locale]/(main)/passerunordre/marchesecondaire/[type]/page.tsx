@@ -1,22 +1,50 @@
-import auth from "@/auth";
+"use client";
+
 import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmettrice";
 import AjoutTitre from "@/components/AjoutTitre";
 import MyMarquee from "@/components/MyMarquee";
-import { TitresTable } from "@/components/gestion-des-titres/TitresTable";
+import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
-import { getServerSession } from "next-auth/next";
-import { getTranslations } from "next-intl/server";
-import { Session } from "next-auth";
-import React from "react";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import React, { useEffect } from "react";
+import TokenExpiredHandler from "@/components/TokenExpiredHandler";
+import { useRestToken } from "@/hooks/useRestToken";
 
-const page = async (props: { params: { type: string } }) => {
-  const t = await getTranslations("Titres");
-  const { type } = props.params;
-  console.log("Marche Secondaire type:", type);
+const SecondaryMarketPage = ({ params }: { params: { type: string } }) => {
+  const { type } = params;
+  const t = useTranslations("Titres");
+  const { data: session, status } = useSession();
+  const { restToken, isLoading } = useRestToken();
 
-  const session = (await getServerSession(auth)) as Session & { user?: any };
-  const userRole = session?.user?.roleid;
+  // Log the type for debugging
+  useEffect(() => {
+    console.log("Marche Secondaire type:", type);
+  }, [type]);
+
+  const userRole = (session?.user as any)?.roleid;
+
+  // Show loading or authentication required state
+  if (status === "loading" || isLoading || !restToken) {
+    return (
+      <>
+        <TokenExpiredHandler />
+        <div className="fixed top-4 right-4">
+          <button
+            onClick={() => {
+              // Enable debug mode
+              localStorage.setItem("finnbourse_debug", "true");
+              window.location.reload();
+            }}
+            className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs"
+          >
+            Debug Mode
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -37,9 +65,10 @@ const page = async (props: { params: { type: string } }) => {
               ? t("actions")
               : type === "obligation"
               ? t("obligations")
-              : type === "sukuk"
+              : type === "sukuk" || type === "sukukms"
               ? t("sukuk")
-              : type === "titresparticipatifs"
+              : type === "titresparticipatifs" ||
+                type === "titresparticipatifsms"
               ? t("titresParticipatifs")
               : ""}
           </span>
@@ -51,10 +80,10 @@ const page = async (props: { params: { type: string } }) => {
         <AjoutTitre type={type} />
       </div>
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <TitresTable type={type} />
+        <TitresTableREST type={type} />
       </div>
     </>
   );
 };
 
-export default page;
+export default SecondaryMarketPage;

@@ -86,11 +86,11 @@ export async function fetchGraphQL<T>(
         redirect("/TokenRevoked");
       }
 
-      // Handle token expired case
-      if (result.errors[0].message === "Token Expired!") {
-        console.error("Token has expired, redirecting to login");
-        redirect("/login?tokenExpired=true");
-      }
+      // Token expiry check disabled
+      // if (result.errors[0].message === "Token Expired!") {
+      //   console.error("Token has expired, redirecting to login");
+      //   redirect("/login?tokenExpired=true");
+      // }
 
       console.error("GraphQL error:", result.errors[0].message);
       throw new Error("Failed to fetch data: " + result.errors[0].message);
@@ -160,12 +160,12 @@ export function clientFetchGraphQL<T>(
           throw new Error("Token is revoked");
         }
 
-        // Handle token expired case
-        if (result.errors[0].message === "Token Expired!") {
-          console.error("Token has expired, redirecting to login");
-          window.location.href = "/login?tokenExpired=true";
-          throw new Error("Token expired");
-        }
+        // Token expiry check disabled
+        // if (result.errors[0].message === "Token Expired!") {
+        //   console.error("Token has expired, redirecting to login");
+        //   window.location.href = "/login?tokenExpired=true";
+        //   throw new Error("Token expired");
+        // }
 
         throw new Error("Failed to fetch data: " + result.errors[0].message);
       }

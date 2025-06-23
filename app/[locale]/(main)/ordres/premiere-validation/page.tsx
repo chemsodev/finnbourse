@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import auth from "@/auth";
 import MyMarquee from "@/components/MyMarquee";
 import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
-import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
+import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
 import Link from "next/link";
 import { ArrowLeft, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import MyPagination from "@/components/navigation/MyPagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExportButton } from "@/components/ExportButton";
 import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
-import { mockOrders, filterOrdersByMarketType } from "@/lib/mockData";
 
 export default async function PremiereValidationPage({
   searchParams,
@@ -32,35 +31,11 @@ export default async function PremiereValidationPage({
   const currentPage = Number(searchParams?.page) || 0;
   const searchquery = searchParams?.searchquery || "";
   const state = searchParams?.state || "99";
-  const marketType = searchParams?.marketType || "all";
+  const marketType = searchParams?.marketType || "S";
   const activeTab = searchParams?.tab || "all";
 
   const t = await getTranslations("orderManagement");
   const tOrders = await getTranslations("mesOrdres");
-
-  // Get mock data for export
-  const mockData =
-    activeTab === "souscriptions"
-      ? filterOrdersByMarketType(
-          mockOrders.filter((order) => order.orderstatus === 1),
-          "primaire"
-        )
-      : filterOrdersByMarketType(
-          mockOrders.filter((order) => order.orderstatus === 1),
-          marketType
-        );
-
-  // Format data for export
-  const exportData = mockData.map((order) => ({
-    id: order.id,
-    societe: order.securityissuer,
-    type: order.securitytype,
-    quantite: order.quantity,
-    valeur: order.pricelimitmin + " DA",
-    date: new Date(order.orderdate).toLocaleDateString(),
-    status: order.orderstatus === 1 ? "En attente" : "Autre",
-    direction: order.orderdirection === 1 ? "Achat" : "Vente",
-  }));
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
@@ -89,7 +64,7 @@ export default async function PremiereValidationPage({
                       page: "0",
                       tab: "all",
                       state: state || "99",
-                      marketType: "all",
+                      marketType: "S",
                     }).toString()}`}
                     className="w-full h-full flex items-center justify-center"
                   >
@@ -110,7 +85,7 @@ export default async function PremiereValidationPage({
                       page: "0",
                       tab: "souscriptions",
                       state: state || "99",
-                      marketType: "primaire",
+                      marketType: "P",
                     }).toString()}`}
                     className="w-full h-full flex items-center justify-center"
                   >
@@ -163,7 +138,7 @@ export default async function PremiereValidationPage({
                 />
 
                 <ExportButton
-                  data={exportData}
+                  data={[]}
                   customTitle={
                     activeTab === "souscriptions"
                       ? tOrders("souscriptions")
@@ -174,17 +149,12 @@ export default async function PremiereValidationPage({
             </div>
 
             <div className="my-8">
-              <OrdresTable
+              <OrdresTableREST
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
-                skip={currentPage}
-                state={state}
-                marketType={
-                  activeTab === "souscriptions" ? "primaire" : marketType
-                }
+                taskID="premiere-validation"
+                marketType={activeTab === "souscriptions" ? "P" : marketType}
                 pageType="firstValidation"
-                userRole={userRole}
-                userType={userType}
               />
             </div>
 

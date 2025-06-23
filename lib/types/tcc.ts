@@ -1,3 +1,4 @@
+import { use } from "react";
 /**
  * TCC (Teneur de Comptes Conservateur) Types
  * Based on the backend API structure from Postman collection
@@ -23,6 +24,7 @@ export interface TCC {
   financialInstitutionId: string;
   createdAt?: string;
   updatedAt?: string;
+  users?: TCCUser[];
 }
 
 export interface TCCUser {
@@ -85,9 +87,13 @@ export interface TCCUserRoleUpdateRequest {
 export const TCC_USER_ROLES = [
   "client_account_manager_1",
   "client_account_manager_2",
-  "client_account_extern_manager",
-  "tcc_admin",
-  "tcc_user",
+  "order_validator_tcc_1",
+  "order_validator_tcc_2",
+  "order_validator_tcc_3",
+  "order_validator_tcc_4",
+  "order_extern_initializer",
+  "observateur_tcc",
+  "order_iob_extern",
 ] as const;
 
 export type TCCUserRole = (typeof TCC_USER_ROLES)[number];

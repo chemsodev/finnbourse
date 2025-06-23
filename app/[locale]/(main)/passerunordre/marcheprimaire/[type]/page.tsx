@@ -1,27 +1,53 @@
-import auth from "@/auth";
+"use client";
+
 import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmettrice";
 import AjoutTitre from "@/components/AjoutTitre";
 import MyMarquee from "@/components/MyMarquee";
-import { TitresTable } from "@/components/gestion-des-titres/TitresTable";
+import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
-import { getServerSession } from "next-auth/next";
-import { getTranslations } from "next-intl/server";
-import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import React, { useEffect } from "react";
+import TokenExpiredHandler from "@/components/TokenExpiredHandler";
+import { useRestToken } from "@/hooks/useRestToken";
 
-import React from "react";
+const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
+  const { type } = params;
+  const t = useTranslations("Titres");
+  const { data: session, status } = useSession();
+  const { restToken, isLoading } = useRestToken();
 
-const page = async (props: { params: { type: string } }) => {
-  const t = await getTranslations("Titres");
-  console.log("Marche Primaire type:", props.params.type);
+  // Log the type for debugging
+  useEffect(() => {
+    console.log("Marche Primaire type:", type);
+  }, [type]);
 
-  const session = (await getServerSession(auth)) as Session & { user?: any };
-  const userRole = session?.user?.roleid;
+  const userRole = (session?.user as any)?.roleid;
 
-  const { type } = props.params;
+  // Show loading or authentication required state
+  if (status === "loading" || isLoading || !restToken) {
+    return (
+      <>
+        <TokenExpiredHandler />
+        <div className="fixed top-4 right-4">
+          <button
+            onClick={() => {
+              // Enable debug mode
+              localStorage.setItem("finnbourse_debug", "true");
+              window.location.reload();
+            }}
+            className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs"
+          >
+            Debug Mode
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
-    <div className=" motion-preset-focus motion-duration-2000">
+    <div className="motion-preset-focus motion-duration-2000">
       <div className="mt-3">
         <MyMarquee />
       </div>
@@ -39,9 +65,10 @@ const page = async (props: { params: { type: string } }) => {
               ? t("opv")
               : type === "empruntobligataire"
               ? t("empruntObligataire")
-              : type === "sukuk"
+              : type === "sukuk" || type === "sukukmp"
               ? t("sukuk")
-              : type === "titresparticipatifs"
+              : type === "titresparticipatifs" ||
+                type === "titresparticipatifsmp"
               ? t("titresParticipatifs")
               : ""}
           </span>
@@ -53,13 +80,12 @@ const page = async (props: { params: { type: string } }) => {
           <AjoutSocieteEmettrice />
           <AjoutTitre type={type} />
         </div>
-      )}
-
+      )}{" "}
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <TitresTable type={type} />
+        <TitresTableREST type={type} />
       </div>
     </div>
   );
 };
 
-export default page;
+export default PrimaryMarketPage;

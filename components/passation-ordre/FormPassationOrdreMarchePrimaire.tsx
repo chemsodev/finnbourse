@@ -50,28 +50,12 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatNumber } from "@/lib/utils";
-
-import {
-  FIND_UNIQUE_BOND_QUERY,
-  FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
-  FIND_UNIQUE_STOCKS_QUERY,
-  LIST_BOND_QUERY,
-  LIST_STOCKS_NAME_PRICE_QUERY,
-  LIST_STOCKS_QUERY,
-} from "@/graphql/queries";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
-import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
-import auth from "@/auth";
 import { useSession } from "next-auth/react";
 import CouponTable from "../CouponTable";
-
-interface CreateOrderResponse {
-  createOrder: {
-    id: string;
-  };
-}
+import { useStockREST, useStocksREST } from "@/hooks/useStockREST";
+import { Stock } from "@/lib/services/stockService";
 
 const FormPassationOrdreMarchePrimaire = ({
   titreId,
@@ -81,143 +65,46 @@ const FormPassationOrdreMarchePrimaire = ({
   type: string;
 }) => {
   const session = useSession();
-  const userId = session.data?.user?.id;
-  const negotiatorId = session.data?.user?.negotiatorId;
+  const userId = (session.data?.user as any)?.id;
+  const negotiatorId = (session.data?.user as any)?.negotiatorId;
   const { toast } = useToast();
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [titre, setTitre] = useState("");
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [securityData, setSecurityData] = useState<any>(null);
   const [createdOrdreId, setCreatedOrdreId] = useState<string | null>(null);
   const [selectedTitreName, setSelectedTitreName] = useState<string | null>(
     null
   );
   const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
   const t = useTranslations("FormPassationOrdre");
-  let query;
 
-  if (type === "action" || type === "opv") {
-    query = LIST_STOCKS_QUERY;
+  // Map the type parameter to the correct backend filter value
+  let stockType: "action" | "obligation" | "sukuk" | "participatif" = "action";
+  if (type === "opv") {
+    stockType = "action";
+  } else if (type === "empruntobligataire") {
+    stockType = "obligation";
+  } else if (type === "sukukmp") {
+    stockType = "sukuk";
+  } else if (type === "titresparticipatifsmp") {
+    stockType = "participatif";
   } else {
-    query = LIST_BOND_QUERY;
+    stockType = type as any;
   }
 
-  const fetchExtraFieldsData = async (id: string) => {
-    try {
-      const result = await fetchGraphQLClient<any>(
-        FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
-        {
-          id,
-        }
-      );
-
-      setExtraFieldsData(result.findUniqueListedCompany.extrafields);
-    } catch (error) {
-      console.error("Error fetching extra fields data:", error);
-    }
-  };
-  let findUiniqueQuery;
-
-  if (type === "action" || type === "opv") {
-    findUiniqueQuery = FIND_UNIQUE_STOCKS_QUERY;
-  } else {
-    findUiniqueQuery = FIND_UNIQUE_BOND_QUERY;
-  }
-
-  useEffect(() => {
-    const ListSecurityData = async () => {
-      setLoading(true);
-      try {
-        const result = await fetchGraphQLClient<any>(query, { type });
-        let listData;
-        if (type === "action" || type === "opv") {
-          listData = result.listStocks;
-        } else {
-          listData = result.listBonds;
-        }
-        setSecurityData(listData);
-        const selectedTitreId = titreId;
-        if (selectedTitreId) {
-          const selectedTitre = listData.find(
-            (t: any) => t.id === selectedTitreId
-          );
-          if (selectedTitre) {
-            setTitre(selectedTitre.name);
-            setSelectedPrice(selectedTitre.facevalue);
-            form.setValue("selectedTitreId", selectedTitre.id);
-            setTotalAmount(
-              updateTotalAmount(
-                selectedTitre.facevalue,
-                form.getValues("quantite")
-              )
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    ListSecurityData();
-  }, []);
-
-  const fetchData = async (id: string) => {
-    setLoading(true);
-    try {
-      const result = await fetchGraphQLClient<any>(findUiniqueQuery, {
-        id,
-      });
-
-      setData(
-        type === "action" || type === "opv"
-          ? result.findUniqueStock
-          : result.findUniqueBond
-      );
-
-      setSelectedPrice(
-        type === "action" || type === "opv"
-          ? result.findUniqueStock.facevalue
-          : result.findUniqueBond.facevalue
-      );
-      setTitre(
-        type === "action" || type === "opv"
-          ? result.findUniqueStock.issuer
-          : result.findUniqueBond.issuer
-      );
-      setSelectedTitreName(
-        type === "action" || type === "opv"
-          ? result.findUniqueStock.issuer
-          : result.findUniqueBond.issuer
-      );
-
-      const listedCompanyId =
-        type === "action" || type === "opv"
-          ? result.findUniqueStock.listedcompanyid
-          : result.findUniqueBond.listedcompanyid;
-
-      if (listedCompanyId) {
-        await fetchExtraFieldsData(listedCompanyId);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchData(titreId);
-  }, [titreId]);
+  // Use REST hooks for fetching data
+  const { stocks: securityData, loading: stocksLoading } =
+    useStocksREST(stockType);
+  const { stock: data, loading } = useStockREST(titreId, stockType);
 
   const router = useRouter();
   const handleGoBack = () => {
     router.back();
   };
+
   const formSchema = z.object({
     issuer: z.string().optional(),
     quantite: z
@@ -229,6 +116,7 @@ const FormPassationOrdreMarchePrimaire = ({
       }),
     selectedTitreId: z.string(),
   });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -236,6 +124,34 @@ const FormPassationOrdreMarchePrimaire = ({
       quantite: 1,
     },
   });
+
+  // Initialize form with data when available
+  useEffect(() => {
+    if (data && securityData?.length > 0) {
+      const selectedTitre = securityData.find((t: any) => t.id === titreId);
+
+      if (selectedTitre) {
+        setTitre(selectedTitre.name || selectedTitre.issuer?.name || "");
+        setSelectedPrice(selectedTitre.faceValue || selectedTitre.facevalue);
+        setSelectedTitreName(selectedTitre.name || "");
+        form.setValue("selectedTitreId", selectedTitre.id);
+
+        // Extract issuer data if available
+        if (selectedTitre.issuer) {
+          setExtraFieldsData({
+            notice: selectedTitre.issuer.website || "",
+          });
+        }
+
+        setTotalAmount(
+          updateTotalAmount(
+            selectedTitre.faceValue || selectedTitre.facevalue,
+            form.getValues("quantite")
+          )
+        );
+      }
+    }
+  }, [data, securityData, titreId]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -246,77 +162,53 @@ const FormPassationOrdreMarchePrimaire = ({
     });
     return () => subscription.unsubscribe();
   }, [form, selectedPrice]);
-  useEffect(() => {
-    const selectedTitreId = form.getValues("selectedTitreId");
-    if (selectedTitreId) {
-      fetchData(selectedTitreId.toString());
-    }
-  }, [form.watch("selectedTitreId")]);
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
 
     try {
-      const retrunedData = await fetchGraphQLClient<CreateOrderResponse>(
-        CREATE_ORDER_MUTATION,
-        {
-          orderdirection: 1,
+      // Create order using REST API
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           securityid: data.selectedTitreId,
-          investorid: userId || "",
+          investorid: userId,
           negotiatorid: negotiatorId || "",
-          securitytype:
-            type === "empruntobligataire"
-              ? "empruntobligataire"
-              : type === "opv"
-              ? "stock"
-              : type === "sukukmp"
-              ? "sukuk"
-              : type === "titresparticipatifsmp"
-              ? "titresparticipatifs"
-              : "opv",
+          securitytype: stockType,
           quantity: data.quantite,
           orderstatus: 0,
-          pricelimitmin: selectedPrice,
-          pricelimitmax: selectedPrice,
-          ordertypeone: "",
-          ordertypetwo: "",
           securityissuer: selectedTitreName,
-        }
-      );
-      setCreatedOrdreId(retrunedData.createOrder.id);
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error("Failed to create order");
+      }
+
+      const result = await response.json();
+      setCreatedOrdreId(result.id);
       setIsDialogOpen(true);
 
       toast({
-        variant: "success",
-        action: (
-          <div className="w-full flex gap-6 items-center">
-            <CheckIcon size={40} />
-            <span className="first-letter:capitalize text-xs">
-              {t("ordrePasse")}
-            </span>
-          </div>
-        ),
+        title: "Success",
+        description: "Order submitted successfully",
       });
     } catch (error) {
-      console.error("Form submission error", error);
+      console.error("Error submitting order:", error);
       toast({
+        title: "Error",
+        description: "Failed to submit order",
         variant: "destructive",
-        action: (
-          <div className="w-full flex gap-6 items-center">
-            <CircleAlert size={40} />
-            <span className="first-letter:capitalize text-xs">
-              {t("erreur")}
-            </span>
-          </div>
-        ),
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (loading || stocksLoading) {
     return <PasserUnOrdreSkeleton />;
   }
 
@@ -358,14 +250,15 @@ const FormPassationOrdreMarchePrimaire = ({
                           <div className="flex items-center">
                             {titre && (
                               <div>
-                                {selectedPrice} {t("currency")}
+                                {formatPrice(Number(selectedPrice) || 0)}{" "}
+                                {t("currency")}
                               </div>
                             )}
                             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </div>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[52vw] p-0">
+                      <PopoverContent className="w-96 p-0">
                         <Command>
                           <CommandInput placeholder="Rechercher un titre..." />
                           <CommandList>
@@ -375,13 +268,26 @@ const FormPassationOrdreMarchePrimaire = ({
                                 securityData?.map((t: any) => (
                                   <CommandItem
                                     key={t.id}
-                                    value={t.name}
+                                    value={t.name || t.issuer?.name}
                                     onSelect={() => {
-                                      setTitre(t.name);
-                                      setSelectedPrice(t.facevalue);
+                                      setTitre(t.name || t.issuer?.name || "");
+                                      setSelectedTitreName(t.name || "");
+                                      setSelectedPrice(
+                                        t.faceValue || t.facevalue
+                                      );
                                       field.onChange(t.id);
-                                      setTotalAmount(t.facevalue);
+                                      setTotalAmount(
+                                        (t.faceValue || t.facevalue) *
+                                          form.getValues("quantite")
+                                      );
                                       setOpen(false);
+
+                                      // Set extra fields data
+                                      if (t.issuer) {
+                                        setExtraFieldsData({
+                                          notice: t.issuer.website || "",
+                                        });
+                                      }
                                     }}
                                   >
                                     <Check
@@ -392,7 +298,7 @@ const FormPassationOrdreMarchePrimaire = ({
                                           : "opacity-0"
                                       )}
                                     />
-                                    {t.name}
+                                    {t.name || t.issuer?.name || t.id}
                                   </CommandItem>
                                 ))}
                             </CommandGroup>
@@ -453,7 +359,9 @@ const FormPassationOrdreMarchePrimaire = ({
               </div>
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
-                <div className="text-lg font-semibold">{data?.isincode}</div>
+                <div className="text-lg font-semibold">
+                  {data?.isinCode || data?.isincode}
+                </div>
               </div>
 
               <div className="flex justify-between items-baseline">
@@ -461,7 +369,8 @@ const FormPassationOrdreMarchePrimaire = ({
                   {t("dateEmission")}
                 </div>
                 <div className="text-lg font-semibold">
-                  {data?.emissiondate && formatDate(data.emissiondate)}
+                  {(data?.emissionDate || data?.emissiondate) &&
+                    formatDate(data.emissionDate || data.emissiondate)}
                 </div>
               </div>
 
@@ -496,7 +405,7 @@ const FormPassationOrdreMarchePrimaire = ({
               <div className="px-10 py-4 border rounded-md shadow flex flex-col gap-10 mt-6">
                 <CouponTable
                   couponschedule={data.couponschedule}
-                  facevalue={data.facevalue}
+                  facevalue={data.facevalue || data.faceValue}
                 />
               </div>
             )}
@@ -505,6 +414,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 <Link
                   href={extraFieldsData?.notice || ""}
                   className="w-full flex gap-2 justify-center items-center text-gray-600 border rounded-md p-2 text-center"
+                  target="_blank"
                 >
                   <div>{t("tn")}</div>
                   <svg

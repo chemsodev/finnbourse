@@ -78,7 +78,6 @@ export const actorAPI = {
         token: restToken || undefined,
       });
     },
-
     createUser: async (userData: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST("/tcc/users", {
@@ -88,11 +87,28 @@ export const actorAPI = {
       });
     },
 
+    getUsers: async (tccId?: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      const endpoint = tccId ? `/tcc/${tccId}/users` : "/tcc/users";
+      return clientFetchREST(endpoint, {
+        method: "GET",
+        token: restToken || undefined,
+      });
+    },
+
     updateUser: async (userId: string, userData: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST(`/tcc/users/${userId}`, {
         method: "PUT",
         body: userData,
+        token: restToken || undefined,
+      });
+    },
+
+    deleteUser: async (userId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/tcc/users/${userId}`, {
+        method: "DELETE",
         token: restToken || undefined,
       });
     },
@@ -133,12 +149,19 @@ export const actorAPI = {
         token: restToken || undefined,
       });
     },
-
     update: async (iobId: string, data: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST(`/iob/${iobId}`, {
         method: "PUT",
         body: data,
+        token: restToken || undefined,
+      });
+    },
+
+    delete: async (iobId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/iob/${iobId}`, {
+        method: "DELETE",
         token: restToken || undefined,
       });
     },
@@ -207,12 +230,19 @@ export const actorAPI = {
         token: restToken || undefined,
       });
     },
-
     update: async (agenceId: string, data: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST(`/agence/${agenceId}`, {
         method: "PUT",
         body: data,
+        token: restToken || undefined,
+      });
+    },
+
+    delete: async (agenceId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/agence/${agenceId}`, {
+        method: "DELETE",
         token: restToken || undefined,
       });
     },
@@ -254,14 +284,46 @@ export const actorAPI = {
       });
     },
   },
-
   // Client operations
   client: {
+    getAll: async (token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST("/client", {
+        method: "GET",
+        token: restToken || undefined,
+      });
+    },
+
+    getOne: async (clientId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/client/${clientId}`, {
+        method: "GET",
+        token: restToken || undefined,
+      });
+    },
+
     create: async (data: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST("/client", {
         method: "POST",
         body: data,
+        token: restToken || undefined,
+      });
+    },
+
+    update: async (clientId: string, data: any, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/client/${clientId}`, {
+        method: "PUT",
+        body: data,
+        token: restToken || undefined,
+      });
+    },
+
+    delete: async (clientId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/client/${clientId}`, {
+        method: "DELETE",
         token: restToken || undefined,
       });
     },

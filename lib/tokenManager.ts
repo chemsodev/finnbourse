@@ -22,6 +22,10 @@ class TokenManager {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
   private shouldRefresh(token: any): boolean {
+    // Token expiry check disabled
+    return false;
+
+    /*
     const now = Date.now();
 
     // Don't refresh if we just did recently
@@ -54,6 +58,7 @@ class TokenManager {
     );
 
     return shouldRefresh;
+    */
   }
   async refreshToken(token: any): Promise<any> {
     // If refresh is already in progress, wait for it with timeout

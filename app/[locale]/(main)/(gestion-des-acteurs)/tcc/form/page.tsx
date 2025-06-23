@@ -27,10 +27,55 @@ interface FormPageProps {
 export default function FormPage({ params }: FormPageProps) {
   const router = useRouter();
   const t = useTranslations("TCCPage");
-  const { toast } = useToast();  const [currentStep, setCurrentStep] = useState(0);
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(0);
   const [isCreatingTCC, setIsCreatingTCC] = useState(false);
   const { isSubmitting, submitForm } = useTCCForm();
-  const { tccs, fetchTCCs, createOrUpdateTCC } = useTCC();
+  const { tcc, fetchTCC, createOrUpdateTCC, hasTCC } = useTCC();
+  const [isLoadingData, setIsLoadingData] = useState(false);
+
+  // Load existing TCC data on mount for editing
+  useEffect(() => {
+    loadExistingTCCData();
+  }, []);
+
+  const loadExistingTCCData = async () => {
+    if (isLoadingData) return;
+
+    try {
+      setIsLoadingData(true);
+      const currentTCC = await fetchTCC();
+
+      if (currentTCC) {
+        console.log("🔍 Loading existing TCC data into form:", currentTCC);
+
+        // Transform TCC data to form format
+        const transformedData = TCCService.transformAPIDataToForm(currentTCC);
+
+        setFormValues((prev) => ({
+          ...prev,
+          custodian: {
+            ...prev.custodian,
+            ...transformedData,
+          },
+          tccId: currentTCC.id,
+        }));
+
+        toast({
+          title: "Data Loaded",
+          description: "Existing TCC data loaded for editing",
+        });
+      } else {
+        console.log("🔍 No existing TCC found, form will be for creation");
+      }
+    } catch (error) {
+      console.error("Failed to load TCC data:", error);
+      // Don't show error toast for this as it's not critical
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
   const [formValues, setFormValues] = useState<CombinedFormValues>({
     custodian: {
       code: "",
@@ -73,11 +118,11 @@ export default function FormPage({ params }: FormPageProps) {
   }, [isEditMode, params.id]);
   const loadExistingTCC = async () => {
     try {
-      await fetchTCCs();
-      const tcc = tccs.find((t) => t.id === params.id);
+      const currentTCC = await fetchTCC();
 
-      if (tcc) {
-        const formData = TCCService.transformAPIDataToForm(tcc);
+      if (currentTCC) {
+        console.log("🔍 Loading TCC data into form:", currentTCC);
+        const formData = TCCService.transformAPIDataToForm(currentTCC);
         setFormValues((prev) => ({
           ...prev,
           custodian: {
@@ -85,6 +130,8 @@ export default function FormPage({ params }: FormPageProps) {
             ...formData,
           },
         }));
+      } else {
+        console.log("🔍 No existing TCC found, form will be for creation");
       }
     } catch (error) {
       toast({
@@ -92,6 +139,7 @@ export default function FormPage({ params }: FormPageProps) {
         description: "Failed to load TCC data",
         variant: "destructive",
       });
+      console.error("Failed to load TCC data:", error);
     }
   };
 
@@ -107,14 +155,17 @@ export default function FormPage({ params }: FormPageProps) {
       ...prev,
       relatedUsers,
     }));
-  };  const handleNextStep = async () => {
+  };
+  const handleNextStep = async () => {
     // If moving from step 0 (TCC info) to step 1 (users), create the TCC first
     if (currentStep === 0) {
       try {
         setIsCreatingTCC(true);
-        
+
         // Validate custodian form data
-        const validationResult = custodianFormSchema.safeParse(formValues.custodian);
+        const validationResult = custodianFormSchema.safeParse(
+          formValues.custodian
+        );
         if (!validationResult.success) {
           toast({
             title: "Validation Error",
@@ -122,26 +173,26 @@ export default function FormPage({ params }: FormPageProps) {
             variant: "destructive",
           });
           return;
-        }        console.log("Creating TCC with data:", formValues.custodian);
-        
-        // Transform form data to API format and create TCC
+        }
+        console.log("Creating TCC with data:", formValues.custodian); // Transform form data to API format and create/update TCC
         const apiData = TCCService.transformFormDataToAPI(formValues.custodian);
-        const createdTCC = await createOrUpdateTCC(apiData);
-        
-        // Store the created TCC ID for user creation
-        setFormValues(prev => ({
+        const resultTCC = await createOrUpdateTCC(apiData, isEditMode);
+
+        // Store the TCC ID for user creation
+        setFormValues((prev) => ({
           ...prev,
-          tccId: createdTCC.id, // Store TCC ID for user creation
+          tccId: resultTCC.id, // Store TCC ID for user creation
         }));
 
         toast({
-          title: "TCC Created",
-          description: "TCC created successfully. You can now add users.",
+          title: isEditMode ? "TCC Updated" : "TCC Created",
+          description: isEditMode
+            ? "TCC updated successfully. You can now manage users."
+            : "TCC created successfully. You can now add users.",
         });
 
         // Move to next step
         setCurrentStep((prev) => prev + 1);
-        
       } catch (error) {
         console.error("Error creating TCC:", error);
         toast({
@@ -168,13 +219,13 @@ export default function FormPage({ params }: FormPageProps) {
       // We only need to create users if there are any
       if (formValues.relatedUsers.length > 0 && formValues.tccId) {
         console.log("Creating users for TCC ID:", formValues.tccId);
-        
+
         // Create users one by one
         for (const userData of formValues.relatedUsers) {
           const apiUserData = TCCService.transformUserFormDataToAPI(userData);
           await TCCService.createUser(apiUserData, formValues.tccId);
         }
-        
+
         toast({
           title: "Users Created",
           description: `Successfully created ${formValues.relatedUsers.length} users for the TCC`,
@@ -227,7 +278,8 @@ export default function FormPage({ params }: FormPageProps) {
         <h1 className="text-3xl font-bold text-gray-800">
           {isEditMode ? t("editAccountHolder") : t("addNewAccountHolder")}
         </h1>
-      </div>      <div className="bg-white rounded-lg shadow-sm p-6">
+      </div>{" "}
+      <div className="bg-white rounded-lg shadow-sm p-6">
         <MultiStepForm
           steps={steps}
           currentStep={currentStep}

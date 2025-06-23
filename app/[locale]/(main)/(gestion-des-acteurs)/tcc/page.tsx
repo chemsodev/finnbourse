@@ -4,761 +4,307 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
-  Pencil,
   Plus,
-  Trash2,
-  Search,
-  Eye,
-  EyeOff,
+  Users,
+  Edit,
   RefreshCw,
+  Building2,
+  Settings,
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Switch } from "@/components/ui/switch";
-import MyPagination from "@/components/navigation/MyPagination";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useTCC, useTCCUsers } from "@/hooks/useTCC";
-import { TCCService } from "@/lib/services/tccService";
-import { TCC, TCCUser } from "@/lib/types/tcc";
+import { useTCC } from "@/hooks/useTCC";
+import { useRestToken } from "@/hooks/useRestToken";
 import { Badge } from "@/components/ui/badge";
 
-// Transform TCCUser to match the existing interface for backward compatibility
-interface DisplayTCCUser {
-  id: string;
-  fullname: string;
-  email: string;
-  position: string;
-  role: string;
-  type: string;
-  status: "active" | "inactive";
-  phone: string;
-  password: string;
-  organisation: string;
-  matricule: string;
-}
-
-export default function TeneurComptesTitresPage() {
+export default function TCCPage() {
   const router = useRouter();
-  const t = useTranslations("TCCDetailsPage");
-  const tPage = useTranslations("TCCPage");
+  const t = useTranslations("TCCPage");
   const { toast } = useToast();
+  // API hooks - now expecting single TCC
+  const { tcc, isLoading, fetchTCC, hasTCC } = useTCC();
+  const { hasRestToken, isLoading: tokenLoading } = useRestToken();
 
-  // API hooks
-  const { tccs, isLoading: isLoadingTCC, fetchTCCs } = useTCC();
-  const { updateUser, updateUserRole } = useTCCUsers();
-
-  // State management
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<DisplayTCCUser | null>(null);
-  const [passwordVisibility, setPasswordVisibility] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [users, setUsers] = useState<DisplayTCCUser[]>([]);
-  const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
-    null
-  );
-  const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
-  const [viewUserDialog, setViewUserDialog] = useState(false);
-  const [currentTCC, setCurrentTCC] = useState<TCC | null>(null);
-
-  // Load TCC data on mount
+  // Load TCC data on mount and when token becomes available
   useEffect(() => {
-    loadTCCData();
-  }, []);
-
+    if (hasRestToken && !tokenLoading) {
+      loadTCCData();
+    }
+  }, [hasRestToken, tokenLoading]);
   const loadTCCData = async () => {
     try {
-      await fetchTCCs();
+      const result = await fetchTCC();
+      console.log("🔍 TCC fetch result:", result);
+      console.log("🔍 hasTCC():", hasTCC());
+      console.log("🔍 tcc state:", tcc);
     } catch (error) {
       console.error("Failed to load TCC data:", error);
-    }
-  };
-
-  // Transform TCC users for display
-  useEffect(() => {
-    if (tccs.length > 0) {
-      setCurrentTCC(tccs[0]); // Use the first TCC for now
-      // In a real app, you'd fetch users for the specific TCC
-      // For now, we'll create some sample data structure
-      setUsers([]);
-    }
-  }, [tccs]);
-
-  const togglePasswordVisibility = (userId: string) => {
-    setPasswordVisibility((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-  };
-
-  const handleToggleStatus = (userId: string) => {
-    setUserToToggleStatus(userId);
-    setStatusConfirmDialog(true);
-  };
-
-  const confirmToggleStatus = async () => {
-    if (!userToToggleStatus) return;
-
-    try {
-      const user = users.find((u) => u.id === userToToggleStatus);
-      if (!user) return;
-
-      const newStatus = user.status === "active" ? "inactif" : "actif";
-
-      await updateUser(userToToggleStatus, {
-        status: newStatus,
-      });
-
-      // Update local state
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === userToToggleStatus
-            ? {
-                ...user,
-                status: user.status === "active" ? "inactive" : "active",
-              }
-            : user
-        )
-      );
-
-      toast({
-        title: "Success",
-        description: "User status updated successfully",
-      });
-    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update user status",
+        description: "Failed to load TCC data",
         variant: "destructive",
       });
-    } finally {
-      setStatusConfirmDialog(false);
-      setUserToToggleStatus(null);
     }
   };
-  const cancelToggleStatus = () => {
-    setStatusConfirmDialog(false);
-    setUserToToggleStatus(null);
+
+  const handleCreateTCC = () => {
+    router.push("/tcc/form");
   };
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.position.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleAddUser = () => {
-    router.push("/tcc/form/users");
+  const handleEditTCC = () => {
+    if (tcc) {
+      router.push(`/tcc/form/${tcc.id}`);
+    }
   };
-
-  const handleEditUser = (user: DisplayTCCUser) => {
-    router.push(`/tcc/form/users/${user.id}`);
-  };
-
-  const handleDeleteClick = (user: DisplayTCCUser) => {
-    setSelectedUser(user);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDelete = () => {
-    // TODO: Implement user deletion via API
-    console.log(`Deleting user with ID: ${selectedUser?.id}`);
-    setIsDeleteDialogOpen(false);
-  };
-
-  const handleViewUser = (user: DisplayTCCUser) => {
-    setSelectedUser(user);
-    setViewUserDialog(true);
+  const handleManageUsers = () => {
+    if (tcc) {
+      // Since we only have one TCC, we can navigate to users without specific ID
+      router.push(`/tcc/users`);
+    }
   };
 
   // Show loading state
-  if (isLoadingTCC) {
+  if (isLoading || tokenLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex items-center gap-2">
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center gap-4 mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">TCC Management</h1>
           <RefreshCw className="h-6 w-6 animate-spin" />
-          <span>Loading TCC data...</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-6 bg-gray-200 rounded"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
-  }
+  } // Show empty state if no TCC exists and token is ready
+  const shouldShowEmpty =
+    !isLoading && !tokenLoading && hasRestToken && !hasTCC();
+  console.log("🔍 Empty state check:", {
+    isLoading,
+    tokenLoading,
+    hasRestToken,
+    hasTCC: hasTCC(),
+    tcc,
+    shouldShowEmpty,
+  });
 
-  // Show create button if no TCC exists
-  if (!currentTCC) {
+  if (shouldShowEmpty) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-center py-12">
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">
-              Teneur de Comptes Conservateur
-            </h1>
-            <p className="text-gray-600 mb-8">
-              No TCC configured. Create one to get started.
-            </p>
-            <Button
-              className="flex items-center gap-2 mx-auto"
-              onClick={() => router.push("/tcc/form")}
-            >
-              <Plus className="h-4 w-4" />
-              Create TCC
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            {currentTCC.libelle}
-          </h1>
-          <Button
-            className="flex items-center gap-2"
-            onClick={() => router.push(`/tcc/form/${currentTCC.id || "new"}`)}
-          >
-            <Pencil className="h-4 w-4" />
-            {t("edit")}
+          <h1 className="text-3xl font-bold text-gray-800">TCC Management</h1>
+          <Button onClick={loadTCCData} variant="outline" size="icon">
+            <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                {t("generalInformation")}
-              </h2>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("code")}
-                    </p>
-                    <p className="text-base">{currentTCC.code}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("type")}
-                    </p>
-                    <p className="text-base">
-                      {currentTCC.account_type || "-"}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {t("label")}
-                  </p>
-                  <p className="text-base">{currentTCC.libelle}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("status")}
-                    </p>
-                    <Badge
-                      variant={
-                        currentTCC.status === "ACTIVE" ? "default" : "secondary"
-                      }
-                    >
-                      {currentTCC.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("creationDate")}
-                    </p>
-                    <p className="text-base">
-                      {currentTCC.createdAt
-                        ? new Date(currentTCC.createdAt).toLocaleDateString()
-                        : "-"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <h2 className="text-xl font-semibold mt-8 mb-4 text-gray-800">
-                {t("contactInformation")}
-              </h2>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {t("address")}
-                  </p>
-                  <p className="text-base">{currentTCC.address}</p>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("postalCode")}
-                    </p>
-                    <p className="text-base">{currentTCC.postal_code}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("city")}
-                    </p>
-                    <p className="text-base">{currentTCC.city}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("country")}
-                    </p>
-                    <p className="text-base">{currentTCC.country}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("phone")}
-                    </p>
-                    <p className="text-base">{currentTCC.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("email")}
-                    </p>
-                    <p className="text-base">{currentTCC.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                {t("regulatoryInformation")}
-              </h2>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("approvalNumber")}
-                    </p>
-                    <p className="text-base">
-                      {currentTCC.agreement_number || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {t("approvalDate")}
-                    </p>
-                    <p className="text-base">
-                      {currentTCC.agreement_date || "-"}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    {t("surveillanceAuthority")}
-                  </p>
-                  <p className="text-base">
-                    {currentTCC.surveillance_authority || "-"}
-                  </p>
-                </div>
-                {currentTCC.name_correspondent && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Correspondent Name
-                      </p>
-                      <p className="text-base">
-                        {currentTCC.name_correspondent}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">
-                        Correspondent Code
-                      </p>
-                      <p className="text-base">
-                        {currentTCC.code_correspondent || "-"}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* Empty state */}
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="bg-gray-100 rounded-full p-6 mb-6">
+            <Building2 className="h-16 w-16 text-gray-400" />
           </div>
-        </div>
-
-        {/* Users Table Section */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">
-            {t("affectedUsers")}
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            No TCC Configured
           </h2>
+          <p className="text-gray-600 text-center mb-8 max-w-md">
+            You haven't set up your TCC (Teneur de Comptes Conservateur) yet.
+            Create your TCC configuration to get started with account
+            management.
+          </p>
+          <Button
+            onClick={handleCreateTCC}
+            size="lg"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            Create TCC Configuration
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-          <header className="flex items-center justify-end mb-8">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder={tPage("search")}
-                  className="pl-10 w-64 bg-white"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Button
-                className="flex items-center gap-2"
-                onClick={handleAddUser}
-              >
-                <Plus className="h-4 w-4" />
-                {t("addUser")}
-              </Button>
-            </div>
-          </header>
-
-          <div className="bg-white rounded-lg shadow-sm overflow-x-auto mb-8">
-            <Table>
-              <TableHeader className="bg-primary">
-                <TableRow>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap">
-                    {tPage("name")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
-                    {tPage("pos")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
-                    {tPage("mat")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
-                    {tPage("role")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
-                    {tPage("type")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[120px] truncate">
-                    {tPage("email")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[120px] truncate">
-                    {tPage("org")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap max-w-[100px]">
-                    {tPage("phone")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap w-[120px]">
-                    {tPage("pwd")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap">
-                    {tPage("status")}
-                  </TableHead>
-                  <TableHead className="text-primary-foreground font-medium whitespace-nowrap w-[80px]">
-                    {tPage("acts")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user, index) => (
-                  <TableRow
-                    key={user.id}
-                    className={index % 2 === 1 ? "bg-gray-100" : ""}
-                  >
-                    <TableCell className="whitespace-nowrap">
-                      {user.fullname}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
-                      {user.position}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
-                      {user.matricule}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
-                      {user.role}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
-                      {user.type}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap max-w-[120px] truncate">
-                      {user.email}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap max-w-[120px] truncate">
-                      {user.organisation}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap max-w-[100px] truncate">
-                      {user.phone}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center">
-                        <span className="truncate max-w-[80px]">
-                          {passwordVisibility[user.id]
-                            ? user.password
-                            : "••••••••••"}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 ml-1 p-0"
-                          onClick={() => togglePasswordVisibility(user.id)}
-                        >
-                          {passwordVisibility[user.id] ? (
-                            <EyeOff className="h-3.5 w-3.5" />
-                          ) : (
-                            <Eye className="h-3.5 w-3.5" />
-                          )}
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={user.status === "active"}
-                          onCheckedChange={() => handleToggleStatus(user.id)}
-                          className={
-                            user.status === "active"
-                              ? "bg-green-500 data-[state=checked]:bg-green-500"
-                              : "bg-red-500 data-[state=unchecked]:bg-red-500"
-                          }
-                        />
-                        <span
-                          className={
-                            user.status === "active"
-                              ? "text-green-600 text-sm font-medium"
-                              : "text-red-600 text-sm"
-                          }
-                        >
-                          {user.status === "active"
-                            ? t("active")
-                            : t("inactive")}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="w-[90px]">
-                      <div className="flex justify-center items-center space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-amber-600"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-red-600"
-                          onClick={() => handleDeleteClick(user)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-blue-600"
-                          onClick={() => handleViewUser(user)}
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredUsers.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-4">
-                      {t("noUsers")}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="mt-6">
-            <MyPagination />
-          </div>
+  // Show existing TCC (single instance)
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">TCC Management</h1>
+        <div className="flex gap-2">
+          <Button onClick={loadTCCData} variant="outline" size="icon">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("confirmDelete")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteUserConfirmation", { user: selectedUser?.fullname })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {t("delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Status Change Confirmation Dialog */}
-      <AlertDialog
-        open={statusConfirmDialog}
-        onOpenChange={setStatusConfirmDialog}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Modifier le statut</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir changer le statut de cet utilisateur ?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelToggleStatus}>
-              Annuler
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmToggleStatus}>
-              Confirmer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* User Details Dialog */}
-      <Dialog open={viewUserDialog} onOpenChange={setViewUserDialog}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Détails de l'utilisateur TCC</DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-6">
-              {/* Informations principales */}
+      {/* Single TCC Card */}
+      <div className="max-w-4xl mx-auto">
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
-                  Informations Principales
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Nom complet
-                    </p>
-                    <p className="text-base">{selectedUser.fullname}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Position
-                    </p>
-                    <p className="text-base">{selectedUser.position || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Matricule
-                    </p>
-                    <p className="text-base">{selectedUser.matricule || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Email</p>
-                    <p className="text-base">{selectedUser.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Téléphone
-                    </p>
-                    <p className="text-base">{selectedUser.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Mot de passe
-                    </p>
-                    <div className="flex items-center">
-                      <p className="text-base">
-                        {passwordVisibility[selectedUser.id]
-                          ? selectedUser.password
-                          : "••••••••••"}
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 ml-1 p-0"
-                        onClick={() =>
-                          togglePasswordVisibility(selectedUser.id)
-                        }
-                      >
-                        {passwordVisibility[selectedUser.id] ? (
-                          <EyeOff className="h-3.5 w-3.5" />
-                        ) : (
-                          <Eye className="h-3.5 w-3.5" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                <CardTitle className="text-2xl mb-2">{tcc!.libelle}</CardTitle>
+                <Badge
+                  variant={tcc!.status === "ACTIVE" ? "default" : "secondary"}
+                  className="mb-2"
+                >
+                  {tcc!.status}
+                </Badge>
               </div>
-
-              {/* Informations du rôle */}
-              <div>
-                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
-                  Informations du Rôle
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Rôle</p>
-                    <p className="text-base">{selectedUser.role || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Type</p>
-                    <p className="text-base">{selectedUser.type || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Organisation
-                    </p>
-                    <p className="text-base">
-                      {selectedUser.organisation || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Statut</p>
-                    <p className="text-base">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          selectedUser.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {selectedUser.status === "active"
-                          ? t("active")
-                          : t("inactive")}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <Building2 className="h-10 w-10 text-gray-400" />
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardHeader>{" "}
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <div>
+                <div className="text-sm font-medium text-gray-600">Code</div>
+                <div className="text-lg font-semibold">{tcc!.code}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-600">
+                  Account Type
+                </div>
+                <div className="text-sm">
+                  {tcc!.account_type === "DEPOSIT" && "Depot"}
+                  {tcc!.account_type === "SECURITIES" && "Titres"}
+                  {tcc!.account_type === "BOTH" && "Depot et Titres"}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-600">Email</div>
+                <div className="text-sm">{tcc!.email}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-600">Phone</div>
+                <div className="text-sm">{tcc!.phone}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-600">Address</div>
+                <div className="text-sm text-gray-500">
+                  {tcc!.address}
+                  <br />
+                  {tcc!.postal_code} {tcc!.city}
+                  <br />
+                  {tcc!.country}
+                </div>
+              </div>
+              {tcc!.agreement_number && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">
+                    Agreement Number
+                  </div>
+                  <div className="text-sm">{tcc!.agreement_number}</div>
+                </div>
+              )}
+              {tcc!.agreement_date && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">
+                    Agreement Date
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(tcc!.agreement_date).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
+              {tcc!.surveillance_authority && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">
+                    Surveillance Authority
+                  </div>
+                  <div className="text-sm">{tcc!.surveillance_authority}</div>
+                </div>
+              )}
+              {tcc!.name_correspondent && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">
+                    Correspondent Name
+                  </div>
+                  <div className="text-sm">{tcc!.name_correspondent}</div>
+                </div>
+              )}
+              {tcc!.code_correspondent && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">
+                    Correspondent Code
+                  </div>
+                  <div className="text-sm">{tcc!.code_correspondent}</div>
+                </div>
+              )}{" "}
+              {(tcc as any).financialInstitution && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">
+                    Financial Institution
+                  </div>
+                  <div className="text-sm">
+                    {(tcc as any).financialInstitution.institutionName}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Tax ID:{" "}
+                    {(tcc as any).financialInstitution.taxIdentificationNumber}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 pt-6 border-t">
+              <Button
+                onClick={handleEditTCC}
+                variant="default"
+                className="flex-1 min-w-[200px]"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit TCC Configuration
+              </Button>
+              <Button
+                onClick={handleManageUsers}
+                variant="outline"
+                className="flex-1 min-w-[200px]"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Manage Users
+              </Button>
+            </div>
+          </CardContent>
+        </Card>{" "}
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Users</p>
+                  <p className="text-2xl font-bold">{tcc!.users?.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Building2 className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Status</p>
+                  <p className="text-2xl font-bold">{tcc!.status}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

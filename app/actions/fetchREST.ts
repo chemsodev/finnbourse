@@ -46,9 +46,10 @@ export async function fetchREST<T = any>(
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_REST_API_URL;
-  const url = endpoint.startsWith("/")
-    ? `${baseUrl}${endpoint}`
-    : `${baseUrl}/${endpoint}`;
+
+  // Ensure endpoint starts with /
+  const apiPath = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = `${baseUrl}${apiPath}`;
 
   try {
     // Use REST token if available, otherwise fall back to main token
@@ -109,26 +110,36 @@ export function clientFetchREST<T = any>(
     throw new Error("REST API URL is not configured");
   }
 
-  const url = endpoint.startsWith("/")
-    ? `${baseUrl}${endpoint}`
-    : `${baseUrl}/${endpoint}`;
+  // Try to get token from localStorage if not provided in options
+  let token = options.token;
+  if (!token && typeof window !== "undefined") {
+    const storedToken = localStorage.getItem("finnbourse_rest_token");
+    if (storedToken) {
+      token = storedToken;
+      console.log("Using stored REST token from localStorage");
+    }
+  }
+
+  // Ensure endpoint starts with /
+  const apiPath = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = `${baseUrl}${apiPath}`;
+
   const fetchOptions: RequestInit = {
     method: options.method || "GET",
     headers: {
       "Content-Type": "application/json",
-      ...(options.token && { Authorization: `Bearer ${options.token}` }),
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
   };
 
-  // Debug log for token usage
-  if (options.token) {
-    console.log(`TCC API Request: ${options.method || "GET"} ${url}`);
-    console.log(`Using REST token: ${options.token.substring(0, 20)}...`);
+  // Debug log for API request
+  console.log(`REST API Request: ${options.method || "GET"} ${url}`);
+
+  if (token) {
+    console.log(`Using REST token: ${token.substring(0, 20)}...`);
   } else {
-    console.log(
-      `TCC API Request: ${options.method || "GET"} ${url} (No token)`
-    );
+    console.log(`REST API Request: No token provided`);
   }
 
   if (

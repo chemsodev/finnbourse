@@ -61,23 +61,12 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatNumber } from "@/lib/utils";
 import Commissiontooltip from "../Commissiontooltip";
 import { fr, ar, enUS } from "date-fns/locale";
-
-import {
-  FIND_UNIQUE_STOCKS_QUERY,
-  LIST_STOCKS_NAME_PRICE_QUERY,
-  FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
-} from "@/graphql/queries";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
-import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import { useSession } from "next-auth/react";
-
-interface CreateOrderResponse {
-  createOrder: {
-    id: string;
-  };
-}
+import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
+import { useStockREST, useStocksREST } from "@/hooks/useStockREST";
+import { Stock } from "@/lib/services/stockService";
+import { useClientsList } from "@/hooks/useClientsList";
 
 const FormPassationOrdreAction = ({
   titreId,
@@ -89,10 +78,9 @@ const FormPassationOrdreAction = ({
   const session = useSession();
   const userId = (session.data?.user as any)?.id;
   const negotiatorId = (session.data?.user as any)?.negotiatorId;
+  const restToken = (session.data?.user as any)?.restToken;
   const locale = useLocale().toLowerCase();
   const { toast } = useToast();
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [titre, setTitre] = useState("");
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
@@ -100,99 +88,70 @@ const FormPassationOrdreAction = ({
   const [grossAmount, setGrossAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [stockData, setStockData] = useState<any>(null);
   const [createdOrdreId, setCreatedOrdreId] = useState<string | null>(null);
   const [selectedTitreName, setSelectedTitreName] = useState<string | null>(
     null
   );
+  const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
+  const [clientOpen, setClientOpen] = useState(false);
 
-  const [extraFieldsData, setExtraFieldsData] = useState<any>(null); // New state variables for form conditions
+  // Form condition states
   const [conditionDuree, setConditionDuree] = useState("deJour");
   const [conditionPrix, setConditionPrix] = useState("prixMarche");
   const [conditionQuantite, setConditionQuantite] = useState("toutOuRien");
 
   const t = useTranslations("FormPassationOrdre");
 
+  // Use REST hooks for fetching data
+  const stockType = "action";
+  const { stocks: stockData, loading: stocksLoading } =
+    useStocksREST(stockType);
+  const { stock: data, loading } = useStockREST(titreId, stockType);
+  const {
+    clients,
+    loading: clientsLoading,
+    error: clientsError,
+  } = useClientsList();
+
+  // Initialize form and stock data when data is loaded
   useEffect(() => {
-    const ListStockData = async () => {
-      setLoading(true);
-      try {
-        const result = await fetchGraphQLClient<any>(
-          LIST_STOCKS_NAME_PRICE_QUERY,
-          {
-            type,
-          }
+    if (data && stockData?.length > 0) {
+      const selectedTitre = stockData.find((t: any) => t.id === titreId);
+
+      if (selectedTitre) {
+        setTitre(selectedTitre.name || selectedTitre.issuer?.name || "");
+        setSelectedPrice(selectedTitre.faceValue || selectedTitre.facevalue);
+        setSelectedTitreName(selectedTitre.name || "");
+        form.setValue("selectedTitreId", selectedTitre.id);
+        form.setValue(
+          "coursLimite",
+          Number(selectedTitre.faceValue || selectedTitre.facevalue)
         );
-        setStockData(result.listStocks);
-        const selectedTitreId = titreId;
-        if (selectedTitreId) {
-          const selectedTitre = result.listStocks.find(
-            (t: any) => t.id === selectedTitreId
-          );
-          if (selectedTitre) {
-            setTitre(selectedTitre.name);
-            setSelectedPrice(Number(selectedTitre.facevalue));
-            form.setValue("selectedTitreId", selectedTitre.id);
-            form.setValue("coursLimite", Number(selectedTitre.facevalue));
 
-            setTotalAmount(
-              calculateTotalValue(
-                selectedTitre.facevalue,
-                form.getValues("quantite"),
-                "action"
-              )
-            );
-            setGrossAmount(
-              calculateGrossAmount(
-                Number(selectedTitre.facevalue),
-                form.getValues("quantite")
-              )
-            );
-          }
+        // Extract issuer data if available
+        if (selectedTitre.issuer) {
+          setExtraFieldsData({
+            notice: selectedTitre.issuer.website || "",
+          });
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+
+        setTotalAmount(
+          calculateTotalValue(
+            selectedTitre.faceValue || selectedTitre.facevalue,
+            form.getValues("quantite"),
+            "action"
+          )
+        );
+        setGrossAmount(
+          calculateGrossAmount(
+            Number(selectedTitre.faceValue || selectedTitre.facevalue),
+            form.getValues("quantite")
+          )
+        );
       }
-    };
-    ListStockData();
-  }, []);
-
-  const fetchData = async (id: string) => {
-    setLoading(true);
-    try {
-      const result = await fetchGraphQLClient<any>(FIND_UNIQUE_STOCKS_QUERY, {
-        id,
-      });
-      setData(result.findUniqueStock);
-      setSelectedTitreName(result.findUniqueStock.name);
-      fetchExtraFieldsData(result.findUniqueStock.listedcompanyid);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const fetchExtraFieldsData = async (id: string) => {
-    try {
-      const result = await fetchGraphQLClient<any>(
-        FIND_UNIQUE_LISTED_COMPANY_EXTRA_FIELDS_QUERY,
-        {
-          id,
-        }
-      );
-
-      setExtraFieldsData(result.findUniqueListedCompany.extrafields);
-    } catch (error) {
-      console.error("Error fetching extra fields data:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData(titreId);
-  }, [titreId]);
+  }, [data, stockData, titreId]);
 
   const router = useRouter();
   const handleGoBack = () => {
@@ -218,6 +177,9 @@ const FormPassationOrdreAction = ({
       conditionQuantite: z.enum(["toutOuRien", "quantiteMinimale"]),
       quantiteMinimale: z.number().int().min(1).optional(),
       selectedTitreId: z.string(),
+      selectedClientId: z
+        .string()
+        .min(1, { message: "Veuillez sélectionner un client" }),
     })
     .refine(
       (data) => {
@@ -267,6 +229,7 @@ const FormPassationOrdreAction = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       selectedTitreId: "",
+      selectedClientId: "",
       buyTransaction: true,
       quantite: 1,
       conditionDuree: "deJour",
@@ -290,43 +253,51 @@ const FormPassationOrdreAction = ({
     });
     return () => subscription.unsubscribe();
   }, [form, selectedPrice]);
-  useEffect(() => {
-    const selectedTitreId = form.getValues("selectedTitreId");
-    if (selectedTitreId) {
-      fetchData(selectedTitreId.toString());
-    }
-  }, [form.watch("selectedTitreId")]);
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (formData: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      const retrunedData = await fetchGraphQLClient<CreateOrderResponse>(
-        CREATE_ORDER_MUTATION,
+      // Create order using REST API with the correct format
+      const response = await fetch(
+        "http://192.168.0.128:8080/api/v1/order/create",
         {
-          ordertypeone: data.conditionDuree,
-          ordertypetwo: data.conditionPrix,
-          orderdirection: Number(data.buyTransaction) ? 1 : 0,
-          securityid: data.selectedTitreId,
-          investorid: userId,
-          negotiatorid: negotiatorId || "",
-          securitytype: "stock",
-          quantity: data.quantite,
-          pricelimitmin:
-            data.conditionPrix === "prixLimite" ? data.coursLimite : 0,
-          pricelimitmax:
-            data.conditionPrix === "prixLimite" ? data.coursLimite : 0,
-          orderstatus: 0,
-          securityissuer: selectedTitreName,
-          validity: data.validite || new Date(),
-          quantityCondition: data.conditionQuantite,
-          minQuantity:
-            data.conditionQuantite === "quantiteMinimale"
-              ? data.quantiteMinimale
-              : undefined,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${restToken}`,
+          },
+          body: JSON.stringify({
+            stock_id: formData.selectedTitreId,
+            client_id: formData.selectedClientId,
+            quantity: formData.quantite,
+            price:
+              formData.conditionPrix === "prixLimite"
+                ? formData.coursLimite
+                : selectedPrice,
+            market_type: "S", // Secondary market
+            operation_type: formData.buyTransaction ? "A" : "V", // A for Achat (buy), V for Vente (sell)
+            conditionDuree: formData.conditionDuree,
+            conditionPrix: formData.conditionPrix,
+            conditionQuantite: formData.conditionQuantite,
+            minQuantity:
+              formData.conditionQuantite === "quantiteMinimale"
+                ? formData.quantiteMinimale
+                : undefined,
+            validity:
+              formData.conditionDuree === "dateDefinie"
+                ? formData.validite
+                : undefined,
+          }),
         }
       );
-      setCreatedOrdreId(retrunedData.createOrder.id);
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create order");
+      }
+
+      const result = await response.json();
+      setCreatedOrdreId(result.id || result.order_id);
       setIsDialogOpen(true);
 
       toast({
@@ -340,7 +311,7 @@ const FormPassationOrdreAction = ({
           </div>
         ),
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Form submission error", error);
       toast({
         variant: "destructive",
@@ -348,7 +319,7 @@ const FormPassationOrdreAction = ({
           <div className="w-full flex gap-6 items-center">
             <CircleAlert size={40} />
             <span className="first-letter:capitalize text-xs">
-              {t("erreur")}
+              {error.message || t("erreur")}
             </span>
           </div>
         ),
@@ -366,7 +337,7 @@ const FormPassationOrdreAction = ({
   const watchedConditionPrix = form.watch("conditionPrix");
   const watchedConditionQuantite = form.watch("conditionQuantite");
 
-  if (loading || !stockData || !data) {
+  if (loading || stocksLoading || clientsLoading || !data) {
     return <PasserUnOrdreSkeleton />;
   }
 
@@ -426,28 +397,39 @@ const FormPassationOrdreAction = ({
                                 stockData?.map((t: any) => (
                                   <CommandItem
                                     key={t.id}
-                                    value={t.name}
+                                    value={t.name || t.issuer?.name}
                                     onSelect={() => {
-                                      setTitre(t.name);
-                                      setSelectedPrice(Number(t.facevalue));
+                                      setTitre(t.name || t.issuer?.name || "");
+                                      setSelectedTitreName(t.name || "");
+                                      setSelectedPrice(
+                                        t.faceValue || t.facevalue
+                                      );
                                       form.setValue(
                                         "coursLimite",
-                                        Number(t.facevalue)
+                                        Number(t.faceValue || t.facevalue)
                                       );
                                       field.onChange(t.id);
                                       setTotalAmount(
                                         calculateTotalValue(
-                                          t.facevalue,
+                                          t.faceValue || t.facevalue,
                                           form.getValues("quantite"),
                                           "action"
                                         )
                                       );
                                       setGrossAmount(
                                         calculateGrossAmount(
-                                          Number(t.facevalue),
+                                          Number(t.faceValue || t.facevalue),
                                           form.getValues("quantite")
                                         )
                                       );
+
+                                      // Set extra fields data
+                                      if (t.issuer) {
+                                        setExtraFieldsData({
+                                          notice: t.issuer.website || "",
+                                        });
+                                      }
+
                                       setOpen(false);
                                     }}
                                   >
@@ -459,9 +441,71 @@ const FormPassationOrdreAction = ({
                                           : "opacity-0"
                                       )}
                                     />
-                                    {t.name}
+                                    {t.name || t.issuer?.name || t.id}
                                   </CommandItem>
                                 ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="selectedClientId"
+              render={({ field }) => (
+                <FormItem className="flex justify-between text-xl items-baseline mb-6">
+                  <FormLabel className="text-gray-400 capitalize text-lg">
+                    {t("selectClient") || "Sélectionner un client"}
+                  </FormLabel>
+                  <FormControl className="w-60">
+                    <Popover open={clientOpen} onOpenChange={setClientOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={clientOpen}
+                          className="w-[100%] justify-between"
+                        >
+                          {field.value
+                            ? clients.find(
+                                (client) => client.id === field.value
+                              )?.name
+                            : "Sélectionner un client"}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-96 p-0">
+                        <Command>
+                          <CommandInput placeholder="Rechercher un client..." />
+                          <CommandList>
+                            <CommandEmpty>Aucun client trouvé</CommandEmpty>
+                            <CommandGroup>
+                              {clients.map((client) => (
+                                <CommandItem
+                                  key={client.id}
+                                  value={client.name}
+                                  onSelect={() => {
+                                    field.onChange(client.id);
+                                    setClientOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === client.id
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {client.name}
+                                </CommandItem>
+                              ))}
                             </CommandGroup>
                           </CommandList>
                         </Command>
@@ -485,7 +529,7 @@ const FormPassationOrdreAction = ({
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
                 <div className="text-lg font-semibold">
-                  {data?.isincode || "N/A"}
+                  {data?.isinCode || data?.isincode || "N/A"}
                 </div>
               </div>{" "}
               <FormField
@@ -573,7 +617,7 @@ const FormPassationOrdreAction = ({
                   return (
                     <FormItem className="flex justify-between text-xl items-baseline">
                       <FormLabel className="text-gray-400 capitalize text-lg">
-                        Conditions de Prix
+                        {t("conditionsDePrix")}
                       </FormLabel>
                       <Select
                         onValueChange={(value) => {
@@ -584,15 +628,17 @@ const FormPassationOrdreAction = ({
                       >
                         <FormControl className="w-60">
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez une condition"></SelectValue>
+                            <SelectValue
+                              placeholder={t("selectionnerCondition")}
+                            ></SelectValue>
                           </SelectTrigger>
                         </FormControl>{" "}
                         <SelectContent>
                           <SelectItem value="prixMarche">
-                            Au prix du marché
+                            {t("prixMarche")}
                           </SelectItem>
                           <SelectItem value="prixLimite">
-                            À prix limite
+                            {t("prixLimite")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -613,13 +659,17 @@ const FormPassationOrdreAction = ({
                         <FormLabel className="text-gray-400 capitalize text-lg">
                           {isAchatSelected ? (
                             <>
-                              Cours{" "}
-                              <span className="text-green-500">maximal</span>
+                              {t("vn")}{" "}
+                              <span className="text-green-500">
+                                {t("coursMaximal")}
+                              </span>
                             </>
                           ) : (
                             <>
-                              Cours{" "}
-                              <span className="text-red-500">minimal</span>
+                              {t("vn")}{" "}
+                              <span className="text-red-500">
+                                {t("coursMinimal")}
+                              </span>
                             </>
                           )}
                         </FormLabel>
@@ -652,7 +702,7 @@ const FormPassationOrdreAction = ({
                   return (
                     <FormItem className="flex justify-between text-xl items-baseline w-full">
                       <FormLabel className="text-gray-400 capitalize text-lg">
-                        Conditions de Durée
+                        {t("conditionsDuree")}
                       </FormLabel>
                       <Select
                         onValueChange={(value) => {
@@ -663,16 +713,18 @@ const FormPassationOrdreAction = ({
                       >
                         <FormControl className="w-60">
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez une durée"></SelectValue>
+                            <SelectValue
+                              placeholder={t("selectionnerCondition")}
+                            ></SelectValue>
                           </SelectTrigger>
                         </FormControl>{" "}
                         <SelectContent>
-                          <SelectItem value="deJour">De jour</SelectItem>
+                          <SelectItem value="deJour">{t("dj")}</SelectItem>
                           <SelectItem value="dateDefinie">
-                            Jusqu'à une date définie (max 30 jours)
+                            {t("dl")} (max 30 jours)
                           </SelectItem>
                           <SelectItem value="sansStipulation">
-                            Sans stipulation (jusqu'à exécution)
+                            {t("ss")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -690,7 +742,7 @@ const FormPassationOrdreAction = ({
                     <FormItem className="text-xl items-baseline">
                       <div className="flex justify-between w-full">
                         <FormLabel className="text-gray-400 capitalize text-lg w-full">
-                          Date de validité
+                          {t("dv")}
                         </FormLabel>
                         <FormControl>
                           <Popover>
@@ -708,7 +760,7 @@ const FormPassationOrdreAction = ({
                                     locale: fr,
                                   })
                                 ) : (
-                                  <span>Choisir une date</span>
+                                  <span>{t("pickDate")}</span>
                                 )}
                               </Button>
                             </PopoverTrigger>
@@ -756,7 +808,7 @@ const FormPassationOrdreAction = ({
                   return (
                     <FormItem className="flex justify-between text-xl items-baseline w-full">
                       <FormLabel className="text-gray-400 capitalize text-lg">
-                        Conditions Quantitatives
+                        {t("conditionsQuantitatives")}
                       </FormLabel>
                       <Select
                         onValueChange={(value) => {
@@ -767,15 +819,17 @@ const FormPassationOrdreAction = ({
                       >
                         <FormControl className="w-60">
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez une condition"></SelectValue>
+                            <SelectValue
+                              placeholder={t("selectionnerCondition")}
+                            ></SelectValue>
                           </SelectTrigger>
                         </FormControl>{" "}
                         <SelectContent>
                           <SelectItem value="toutOuRien">
-                            Tout ou rien
+                            {t("toutOuRien")}
                           </SelectItem>
                           <SelectItem value="quantiteMinimale">
-                            Quantité minimale d'exécution
+                            {t("quantiteMinimale")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -826,8 +880,8 @@ const FormPassationOrdreAction = ({
                   {t("dateEmission")}
                 </div>
                 <div className="text-lg font-semibold">
-                  {(data?.emissiondate && formatDate(data.emissiondate)) ||
-                    "N/A"}
+                  {(data?.emissionDate || data?.emissiondate) &&
+                    formatDate(data?.emissionDate || data?.emissiondate)}
                 </div>
               </div>
               <div className="flex justify-between items-baseline">
@@ -868,6 +922,7 @@ const FormPassationOrdreAction = ({
                 <Link
                   href={extraFieldsData?.notice || ""}
                   className="w-full flex gap-2 justify-center items-center text-gray-600 border rounded-md p-2 text-center"
+                  target="_blank"
                 >
                   <div>{t("tn")}</div>
                   <svg

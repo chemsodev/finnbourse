@@ -36,12 +36,9 @@ interface DecodedToken {
 }
 
 async function refreshAccessToken(token: any) {
-  // No automatic refresh - just mark as expired
-  console.log("Token expired, marking for logout");
-  return {
-    ...token,
-    error: "TokenExpired",
-  };
+  // No automatic refresh - just return the token without expiry error
+  console.log("Token expired check disabled - returning token as is");
+  return token;
 }
 // @ts-ignore
 const auth: any = {
@@ -175,19 +172,19 @@ const auth: any = {
         token.restToken = user.restToken as string;
       }
 
-      // Check if token is expired - if so, mark for logout
-      if (token.tokenExpires) {
-        const expiryTime = token.tokenExpires * 1000;
-        const now = Date.now();
-
-        if (now > expiryTime) {
-          console.log("Token has expired, marking for logout");
-          return {
-            ...token,
-            error: "TokenExpired",
-          };
-        }
-      }
+      // Token expiration check disabled
+      // if (token.tokenExpires) {
+      //   const expiryTime = token.tokenExpires * 1000;
+      //   const now = Date.now();
+      //
+      //   if (now > expiryTime) {
+      //     console.log("Token has expired, marking for logout");
+      //     return {
+      //       ...token,
+      //       error: "TokenExpired",
+      //     };
+      //   }
+      // }
 
       // Token is still valid
       return token;

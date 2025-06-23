@@ -41,7 +41,6 @@ export default async function Home() {
       <DynamicSidebar />
       <div className="p-4 overflow-scroll h-screen md:w-5/6 mb-12 md:mb-0 motion-preset-focus motion-duration-2000">
         <TopBarDash />
-
         {(userRole === 3 || userRole === 2) && (
           <div className="flex justify-center md:justify-between mt-3 gap-4 flex-col md:flex-row">
             <DashWidgetTcc
@@ -69,7 +68,7 @@ export default async function Home() {
               icon={<BadgePercent className="w-8" />}
             />
           </div>
-        )}
+        )}{" "}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="mt-4 md:w-4/6">
             <StockTracker />
@@ -86,7 +85,7 @@ export default async function Home() {
             <FormattedDate date={dateTime} />
           </div>{" "}
           <MyMarquee />
-        </div>
+        </div>{" "}
         <div className="flex flex-col md:flex-row my-6 justify-between gap-6 md:gap-0">
           <DashItem1 />
           <DashItem2 />

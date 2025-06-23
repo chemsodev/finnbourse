@@ -18,45 +18,69 @@ import { useRestToken } from "@/hooks/useRestToken";
 
 export function useTCC() {
   const [isLoading, setIsLoading] = useState(false);
-  const [tccs, setTccs] = useState<TCC[]>([]);
+  const [tcc, setTcc] = useState<TCC | null>(null); // Single TCC instead of array
   const { toast } = useToast();
-  const { restToken } = useRestToken();
+  const { restToken, isLoading: tokenLoading, hasRestToken } = useRestToken();
 
-  const fetchTCCs = async () => {
+  const fetchTCC = async () => {
+    // Wait for token to be available
+    if (tokenLoading) {
+      console.log("⏳ Waiting for REST token...");
+      return null;
+    }
+
+    if (!hasRestToken) {
+      console.log("⚠️ No REST token available, skipping TCC fetch");
+      return null;
+    }
+
     setIsLoading(true);
     try {
-      const data = await TCCService.getAll(restToken || undefined);
-      setTccs(data);
+      console.log(
+        "🔄 Fetching TCC with token:",
+        restToken?.substring(0, 20) + "..."
+      );
+      const data = await TCCService.getTCC(restToken || undefined);
+
+      // Handle single TCC response
+      setTcc(data); // data is already TCC | null
       return data;
     } catch (error) {
+      // Only show error toast for actual API errors, not for "no TCC" scenarios
+      console.error("Failed to fetch TCC:", error);
       toast({
         title: "Error",
         description: "Failed to fetch TCC data",
         variant: "destructive",
       });
+      setTcc(null);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
-
-  const createOrUpdateTCC = async (data: TCCCreateRequest) => {
+  const createOrUpdateTCC = async (
+    data: TCCCreateRequest,
+    isUpdate?: boolean
+  ) => {
     setIsLoading(true);
     try {
       const result = await TCCService.createOrUpdate(
         data,
         restToken || undefined
       );
-      await fetchTCCs(); // Refresh the list
+      await fetchTCC(); // Refresh the TCC data
       toast({
         title: "Success",
-        description: "TCC saved successfully",
+        description: isUpdate
+          ? "TCC updated successfully"
+          : "TCC created successfully",
       });
       return result;
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save TCC",
+        description: isUpdate ? "Failed to update TCC" : "Failed to create TCC",
         variant: "destructive",
       });
       throw error;
@@ -65,11 +89,21 @@ export function useTCC() {
     }
   };
 
+  const getTCCId = () => {
+    return tcc?.id || null;
+  };
+
+  const hasTCC = () => {
+    return tcc !== null;
+  };
+
   return {
-    tccs,
+    tcc, // Single TCC object instead of array
     isLoading,
-    fetchTCCs,
+    fetchTCC, // Renamed from fetchTCCs
     createOrUpdateTCC,
+    getTCCId, // Helper to get TCC ID
+    hasTCC, // Helper to check if TCC exists
   };
 }
 
@@ -167,7 +201,7 @@ export function useTCCUsers() {
 
 export function useTCCForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createOrUpdateTCC } = useTCC();
+  const { createOrUpdateTCC, hasTCC } = useTCC();
   const { createUser } = useTCCUsers();
   const { toast } = useToast();
 
@@ -176,7 +210,8 @@ export function useTCCForm() {
     try {
       // Transform and submit TCC data
       const tccData = TCCService.transformFormDataToAPI(formData.custodian);
-      const tccResult = await createOrUpdateTCC(tccData);
+      const isUpdate = hasTCC(); // Check if we're updating existing TCC
+      const tccResult = await createOrUpdateTCC(tccData, isUpdate);
 
       // Submit related users if any
       if (formData.relatedUsers && formData.relatedUsers.length > 0) {
@@ -190,7 +225,9 @@ export function useTCCForm() {
 
       toast({
         title: "Success",
-        description: "TCC and users saved successfully",
+        description: isUpdate
+          ? "TCC updated and users saved successfully"
+          : "TCC created and users saved successfully",
       });
 
       return tccResult;

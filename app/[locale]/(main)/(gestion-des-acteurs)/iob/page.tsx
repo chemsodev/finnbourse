@@ -1,10 +1,18 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
-import { Search, Plus, Pencil, Trash2, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  RefreshCw,
+  Building2,
+  Eye,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -15,13 +23,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,258 +38,328 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import MyPagination from "@/components/navigation/MyPagination";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
+import { useIOB } from "@/hooks/useIOB";
+import { IOB } from "@/lib/types/actors";
+import { Badge } from "@/components/ui/badge";
 
-interface BankData {
-  id: number;
-  codeBank: string;
-  shortName: string;
-  longName: string;
-  correspondent: string;
-  address: string;
-  phone: string;
-  email?: string;
-  fax?: string;
-  telephone1?: string;
-  telephone2?: string;
-  telephone3?: string;
-  ordreDeTu?: string;
-}
-
-export default function BankCodePage() {
-  const t = useTranslations("IOBPage");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedBank, setSelectedBank] = useState<BankData | null>(null);
+export default function IOBPage() {
   const router = useRouter();
+  const t = useTranslations("IOBPage");
+  const { toast } = useToast();
 
-  const bankData: BankData[] = [
-    {
-      id: 1,
-      codeBank: "91001",
-      shortName: "SGA",
-      longName: "Société Générale Algérie",
-      correspondent: "1",
-      address: "ALGER",
-      phone: "11",
-      email: "contact@sga.dz",
-      fax: "021-111-222",
-      telephone1: "021-333-444",
-      telephone2: "021-555-666",
-      telephone3: "021-777-888",
-      ordreDeTu: "1",
-    },
-    {
-      id: 2,
-      codeBank: "91001",
-      shortName: "Inv Mart",
-      longName: "Invest Market",
-      correspondent: "1",
-      address: "ALGER",
-      phone: "11",
-    },
-    {
-      id: 3,
-      codeBank: "91001",
-      shortName: "Tell",
-      longName: "Tell Market",
-      correspondent: "1",
-      address: "ALGER",
-      phone: "11",
-    },
-    {
-      id: 4,
-      codeBank: "91001",
-      shortName: "CNEP",
-      longName: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
-      correspondent: "1",
-      address: "ALGER",
-      phone: "11",
-    },
-    {
-      id: 5,
-      codeBank: "91001",
-      shortName: "BNA",
-      longName: "BANQUE NATIONALE D'ALGERIE",
-      correspondent: "1",
-      address: "ALGER",
-      phone: "11",
-    },
-    {
-      id: 6,
-      codeBank: "91001",
-      shortName: "CPA",
-      longName: "Crédit Populair d'Algérie",
-      correspondent: "1",
-      address: "ALGER",
-      phone: "11",
-    },
-  ];
+  // State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [iobToDelete, setIOBToDelete] = useState<IOB | null>(null);
 
-  const handleAddClick = () => {
+  // API hooks
+  const { iobs, isLoading, fetchIOBs, deleteIOB } = useIOB();
+
+  // Load IOB data on mount
+  useEffect(() => {
+    loadIOBData();
+  }, []);
+
+  const loadIOBData = async () => {
+    try {
+      await fetchIOBs();
+    } catch (error) {
+      console.error("Failed to load IOB data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load IOB data",
+        variant: "destructive",
+      });
+    }
+  };
+  // Filter IOBs based on search term
+  const filteredIOBs = iobs.filter(
+    (iob) =>
+      iob.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      iob.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      iob.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleCreateIOB = () => {
     router.push("/iob/form");
   };
 
-  const handleEditClick = (bank: BankData) => {
-    router.push(`/iob/form/${bank.id}`);
+  const handleEditIOB = (iob: IOB) => {
+    router.push(`/iob/form/${iob.id}`);
   };
 
-  const handleInfoClick = (bank: BankData) => {
-    router.push(`/iob/${bank.id}/view`);
+  const handleViewIOB = (iob: IOB) => {
+    router.push(`/iob/${iob.id}`);
   };
 
-  const handleDeleteClick = (bank: BankData) => {
-    setSelectedBank(bank);
-    setIsDeleteDialogOpen(true);
+  const handleDeleteClick = (iob: IOB) => {
+    setIOBToDelete(iob);
+    setShowDeleteDialog(true);
   };
 
-  const handleDelete = () => {
-    // In a real app, you would delete the item from your database
-    console.log(`Deleting bank with ID: ${selectedBank?.id}`);
-    setIsDeleteDialogOpen(false);
-    // Then refresh your data
+  const handleConfirmDelete = async () => {
+    if (!iobToDelete) return;
+
+    try {
+      await deleteIOB(iobToDelete.id!);
+      toast({
+        title: "Success",
+        description: "IOB deleted successfully",
+      });
+      setShowDeleteDialog(false);
+      setIOBToDelete(null);
+      loadIOBData(); // Refresh the list
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete IOB",
+        variant: "destructive",
+      });
+    }
   };
 
-  const filteredBanks = bankData.filter((bank) => {
-    const searchTerm = searchQuery.toLowerCase();
+  // Show loading state
+  if (isLoading) {
     return (
-      bank.codeBank.toLowerCase().includes(searchTerm) ||
-      bank.shortName.toLowerCase().includes(searchTerm) ||
-      bank.longName.toLowerCase().includes(searchTerm)
-    );
-  });
-
-  return (
-    <div className="rounded-md shadow-inner bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold text-secondary my-4">{t("title")}</h1>
-        <header className="flex items-center justify-end mb-8">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                placeholder={t("search")}
-                className="pl-10 w-64 bg-white"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button
-              className="flex items-center gap-2"
-              onClick={handleAddClick}
-            >
-              <Plus className="h-4 w-4" />
-              {t("add")}
-            </Button>
-          </div>
-        </header>
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-          <Table>
-            <TableHeader className="bg-primary">
-              <TableRow>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("bankCode")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("shortName")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("longName")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("correspondent")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("address")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium">
-                  {t("phone")}
-                </TableHead>
-                <TableHead className="text-primary-foreground font-medium w-[120px]">
-                  {t("actions")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredBanks.map((bank, index) => (
-                <TableRow
-                  key={bank.id}
-                  className={index % 2 === 1 ? "bg-gray-100" : ""}
-                >
-                  <TableCell>{bank.codeBank}</TableCell>
-                  <TableCell>{bank.shortName}</TableCell>
-                  <TableCell>{bank.longName}</TableCell>
-                  <TableCell>{bank.correspondent}</TableCell>
-                  <TableCell>{bank.address}</TableCell>
-                  <TableCell>{bank.phone}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-blue-600"
-                        onClick={() => handleInfoClick(bank)}
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">{t("viewDetails")}</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-amber-600"
-                        onClick={() => handleEditClick(bank)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">{t("edit")}</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600"
-                        onClick={() => handleDeleteClick(bank)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">{t("delete")}</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="flex items-center gap-4 mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">IOB Management</h1>
+          <RefreshCw className="h-6 w-6 animate-spin" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-6 bg-gray-200 rounded"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no IOBs exist
+  if (!isLoading && iobs.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">IOB Management</h1>
+          <Button onClick={loadIOBData} variant="outline" size="icon">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
 
-        <MyPagination />
-
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("deleteConfirmation")}
-                <span className="font-medium"> {selectedBank?.shortName}</span>.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {t("delete")}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {/* Empty state */}
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="bg-gray-100 rounded-full p-6 mb-6">
+            <Building2 className="h-16 w-16 text-gray-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            No IOBs Found
+          </h2>
+          <p className="text-gray-600 text-center mb-8 max-w-md">
+            You haven't created any IOB (Intermediaire en Operations de Bourse)
+            yet. Create your first IOB to get started with broker management.
+          </p>
+          <Button
+            onClick={handleCreateIOB}
+            size="lg"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            Add First IOB
+          </Button>
+        </div>
       </div>
+    );
+  }
+
+  // Show IOBs table
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">IOB Management</h1>
+        <div className="flex gap-2">
+          <Button onClick={loadIOBData} variant="outline" size="icon">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button onClick={handleCreateIOB} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add IOB
+          </Button>
+        </div>
+      </div>
+
+      {/* Search and Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="md:col-span-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search IOBs by name, code, or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total IOBs</p>
+                <p className="text-2xl font-bold">{iobs.length}</p>
+              </div>
+              <Building2 className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {iobs.filter((iob) => iob.status === "ACTIVE").length}
+                </p>
+              </div>
+              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                <div className="h-3 w-3 rounded-full bg-green-600"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* IOBs Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>IOBs ({filteredIOBs.length})</span>
+            {searchTerm && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSearchTerm("")}
+              >
+                Clear Search
+              </Button>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredIOBs.length === 0 ? (
+            <div className="text-center py-8">
+              <Building2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm ? "No IOBs Found" : "No IOBs"}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm
+                  ? "Try adjusting your search criteria"
+                  : "Create your first IOB to get started"}
+              </p>
+              {!searchTerm && (
+                <Button onClick={handleCreateIOB}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add First IOB
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredIOBs.map((iob) => (
+                  <TableRow key={iob.id}>
+                    <TableCell className="font-medium">{iob.code}</TableCell>
+                    <TableCell>{iob.name}</TableCell>
+                    <TableCell>{iob.email}</TableCell>
+                    <TableCell>{iob.phone}</TableCell>
+                    <TableCell>{iob.city}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          iob.status === "ACTIVE" ? "default" : "secondary"
+                        }
+                      >
+                        {iob.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Actions
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleViewIOB(iob)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditIOB(iob)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(iob)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete IOB</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{iobToDelete?.name}"? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
