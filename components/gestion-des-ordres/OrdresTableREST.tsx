@@ -123,7 +123,7 @@ export default function OrdresTableREST({
       // For debugging, directly fetch from the API
       const BACKEND_API =
         process.env.NEXT_PUBLIC_BACKEND_API_URL ||
-        "http://192.168.0.128:8080/api/v1";
+        "https://poc.finnetude.com/api/v1";
 
       try {
         const directResponse = await fetch(`${BACKEND_API}/order/list`, {

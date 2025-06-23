@@ -259,7 +259,7 @@ const FormPassationOrdreAction = ({
     try {
       // Create order using REST API with the correct format
       const response = await fetch(
-        "http://192.168.0.128:8080/api/v1/order/create",
+        "https://poc.finnetude.com/api/v1/order/create",
         {
           method: "POST",
           headers: {

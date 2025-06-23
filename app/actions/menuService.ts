@@ -26,7 +26,7 @@ interface SessionUser {
 }
 
 // Menu endpoint configuration
-const MENU_API_BASE = "http://192.168.0.128:8080/api/v1";
+const MENU_API_BASE = "https://poc.finnetude.com/api/v1";
 const MENU_ENDPOINT = "/menu/list";
 
 // Function to sanitize and validate menu data from API
