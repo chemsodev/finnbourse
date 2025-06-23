@@ -1,7 +1,6 @@
 "use client";
 
 import FormPassationOrdreAction from "@/components/passation-ordre/FormPassationOrdreAction";
-import FormPassationOrdreObligation from "@/components/passation-ordre/FormPassationOrdreObligation";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useRestToken } from "@/hooks/useRestToken";
@@ -49,11 +48,8 @@ const SecondaryMarketStockPage = ({
           ? t("TitresParticipatifs")
           : t("obligation")}
       </div>
-      {type === "action" ? (
-        <FormPassationOrdreAction titreId={id} type={type} />
-      ) : (
-        <FormPassationOrdreObligation titreId={id} type={type} />
-      )}
+
+      <FormPassationOrdreAction titreId={id} type={type} />
     </div>
   );
 };

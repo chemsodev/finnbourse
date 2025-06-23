@@ -110,13 +110,13 @@ export function clientFetchREST<T = any>(
     throw new Error("REST API URL is not configured");
   }
 
-  // Try to get token from localStorage if not provided in options
+  // Try to get token from sessionStorage if not provided in options
   let token = options.token;
   if (!token && typeof window !== "undefined") {
-    const storedToken = localStorage.getItem("finnbourse_rest_token");
+    const storedToken = sessionStorage.getItem("finnbourse_rest_token");
     if (storedToken) {
       token = storedToken;
-      console.log("Using stored REST token from localStorage");
+      console.log("Using stored REST token from sessionStorage");
     }
   }
 

@@ -82,6 +82,8 @@ export const authReset = {
 
     // Clear session storage
     sessionStorage.clear();
+    // Specifically remove REST token from session storage
+    sessionStorage.removeItem("finnbourse_rest_token");
 
     console.log("✅ Auth data cleared. Try refreshing the page.");
   },

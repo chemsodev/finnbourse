@@ -38,7 +38,7 @@ export function useRestToken() {
   // Get token from storage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(REST_TOKEN_KEY);
+      const stored = sessionStorage.getItem(REST_TOKEN_KEY);
       if (stored) {
         setStoredRestToken(stored);
         console.log("🔑 REST Token loaded from storage");
@@ -99,14 +99,14 @@ export function useRestToken() {
 
   const storeRestToken = (token: string) => {
     if (typeof window !== "undefined") {
-      localStorage.setItem(REST_TOKEN_KEY, token);
+      sessionStorage.setItem(REST_TOKEN_KEY, token);
       setStoredRestToken(token);
     }
   };
 
   const clearStoredToken = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem(REST_TOKEN_KEY);
+      sessionStorage.removeItem(REST_TOKEN_KEY);
       setStoredRestToken(null);
     }
   };
