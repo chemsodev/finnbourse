@@ -122,8 +122,8 @@ export default function OrdresTableREST({
 
       // For debugging, directly fetch from the API
       const BACKEND_API =
-        process.env.NEXT_PUBLIC_BACKEND_API_URL ||
-        "https://poc.finnetude.com/api/v1";
+        (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
+        "/api/v1";
 
       try {
         const directResponse = await fetch(`${BACKEND_API}/order/list`, {
