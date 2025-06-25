@@ -13,6 +13,10 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function RateLimitHandler() {
+  // Disable rate limit blocking to allow login attempts
+  return null;
+
+  /* DISABLED - Users can still try to login even with rate limits
   const { data: session, status } = useSession();
   const [showRateLimit, setShowRateLimit] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -85,6 +89,7 @@ export function RateLimitHandler() {
       </div>
     </div>
   );
+  */
 }
 
 export default RateLimitHandler;

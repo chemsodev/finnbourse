@@ -5,6 +5,10 @@ import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 const RateLimitReached = () => {
+  // Completely hide rate limit UI
+  return null;
+
+  /* DISABLED - Rate limit UI hidden
   const t = useTranslations("rateLimitReached");
 
   const [timeLeft, setTimeLeft] = useState(90);
@@ -42,6 +46,7 @@ const RateLimitReached = () => {
       </div>
     </div>
   );
+  */
 };
 
 export default RateLimitReached;

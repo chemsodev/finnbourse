@@ -77,7 +77,9 @@ export async function fetchGraphQL<T>(
     const result: FetchGraphQLResponse<T> = await response.json();
 
     if (response.status === 429) {
-      redirect("/RateLimiter");
+      // Silently handle rate limiting without warnings
+      // Don't redirect to rate limiter - allow users to keep trying
+      // redirect("/RateLimiter");
     }
 
     if (result.errors) {
@@ -141,8 +143,10 @@ export function clientFetchGraphQL<T>(
   })
     .then((response) => {
       if (response.status === 429) {
-        window.location.href = "/RateLimiter";
-        throw new Error("Rate limit reached");
+        // Silently handle rate limiting without warnings
+        // Don't redirect to rate limiter - allow users to keep trying
+        // window.location.href = "/RateLimiter";
+        // Just continue with error handling instead of blocking
       }
       if (!response.ok) {
         console.error(

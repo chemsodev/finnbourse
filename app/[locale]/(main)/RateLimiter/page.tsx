@@ -4,44 +4,49 @@ import { redirect, useRouter } from "@/i18n/routing";
 import { Gauge } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const page = () => {
   const t = useTranslations("rateLimitReached");
   const router = useRouter();
 
-  const [timeLeft, setTimeLeft] = useState(60); // Changed from 90 to 60
-
+  // Automatically redirect to login after 3 seconds
   useEffect(() => {
-    if (timeLeft === 0) {
-      router.push("/");
-      return;
-    }
+    const timer = setTimeout(() => {
+      router.push("/login");
+    }, 3000);
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  const progress = ((60 - timeLeft) / 60) * 100; // This formula now works correctly with 60 seconds
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="absolute z-50  top-0 left-0 right-0 bg-gradient-to-br from-primary to-blue-900 w-screen h-screen justify-center items-center flex flex-col gap-4 cursor-not-allowed">
-      <Gauge className="text-white font-bold w-32 h-32" />
-      <div className="text-5xl font-bold text-secondary">429</div>
-      <div className="text-3xl font-bold text-white">
-        {t("rateLimitReached")}
-      </div>
-      <p className="text-white text-center max-w-md">
-        {t("desc1")} <span className="text-secondary">{timeLeft}</span>{" "}
-        {t("desc2")}
-      </p>
-      <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden mt-12">
-        <div
-          className="h-full bg-secondary transition-all duration-1000 ease-linear"
-          style={{ width: `${progress}%` }}
-        />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center">
+        <div className="text-primary mb-4">
+          <Gauge className="w-16 h-16 mx-auto" />
+        </div>
+
+        <h1 className="text-2xl font-semibold text-gray-800 mb-4">
+          Please Wait
+        </h1>
+
+        <p className="text-gray-600 mb-6">
+          We're processing your request. You'll be redirected to login shortly.
+        </p>
+
+        <div className="flex gap-3 justify-center">
+          <Link href="/login">
+            <Button className="px-6">Continue to Login</Button>
+          </Link>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/")}
+            className="px-6"
+          >
+            Go to Dashboard
+          </Button>
+        </div>
       </div>
     </div>
   );

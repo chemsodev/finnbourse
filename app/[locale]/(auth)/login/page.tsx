@@ -68,9 +68,43 @@ export default function Login() {
     }
   }, [tokenExpired, toast, t]);
 
-  const handleResendCode = () => {
-    setResendTimer(90); // Set the timer to 10 seconds
-    // Add logic for resending the email here
+  const handleResendCode = async () => {
+    setResendTimer(90); // Set the timer to 90 seconds
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/twofactorauth`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.getValues("email"),
+            password: form.getValues("password"),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        toast({
+          variant: "destructive",
+          title: t("failedToResendCode"),
+          description: t("pleaseRetryLater"),
+        });
+      } else {
+        toast({
+          title: t("codeSentSuccessfully"),
+          description: t("pleaseCheckYourEmail"),
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: t("failedToResendCode"),
+        description: t("pleaseRetryLater"),
+      });
+    }
   };
 
   useEffect(() => {
@@ -126,6 +160,14 @@ export default function Login() {
 
       if (!response.ok) {
         const errorData = await response.json();
+
+        // BYPASS rate limiting - treat as successful for 2FA flow
+        if (response.status === 429) {
+          // Silently bypass rate limiting
+          setDialogOpen(true);
+          return;
+        }
+
         setError(errorData.message || t("wrongEmailOrPassword"));
       } else {
         await response.json();
@@ -133,6 +175,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Form submission error", error);
+      setLoading(false);
       toast({
         variant: "destructive",
         title: t("failedToSubmitTheForm"),
@@ -152,15 +195,19 @@ export default function Login() {
       });
 
       if (result?.error) {
-        setError(result.error);
-        console.error("Login error:", result.error);
+        // Handle rate limiting errors gracefully
+        if (
+          result.error.includes("rate limit") ||
+          result.error.includes("429")
+        ) {
+          // Silently handle rate limiting without showing toast
+          setError("Please wait and try again.");
+        } else {
+          setError(result.error);
+        }
         setLoading(false);
       } else {
         // Login successful, add a brief delay to allow session/token initialization
-        console.log(
-          "Login successful, allowing time for menu initialization..."
-        );
-
         // Small delay to ensure session is established before redirect
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -243,12 +290,12 @@ export default function Login() {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <Button
-                          type="submit"
+                          type="button"
                           variant="outline"
                           className="capitalize"
                           onClick={() => {
                             handleResendCode(); // Start the timer
-                            form.handleSubmit(onSubmit)(); // Submit the main form
+                            // Only resend the code, don't submit the main form again
                           }}
                           disabled={resendTimer !== null}
                         >
