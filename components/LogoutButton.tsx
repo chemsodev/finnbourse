@@ -9,7 +9,12 @@ export default function LogoutButton() {
   return (
     <button
       className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
-      onClick={() => signOut()}
+      onClick={() =>{
+     if(typeof window !== "undefined") {
+        sessionStorage.removeItem("finnbourse-menu");
+     }
+        signOut()
+      }}
     >
       {t("deconnexion")}
     </button>
