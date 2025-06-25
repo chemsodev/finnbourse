@@ -1,8 +1,3 @@
-/**
- * /api/auth/rest-token
- * API endpoint to fetch REST token for authenticated users
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import auth from "@/auth";

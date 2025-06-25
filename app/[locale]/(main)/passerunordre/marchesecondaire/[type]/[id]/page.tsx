@@ -1,10 +1,12 @@
 "use client";
 
-import FormPassationOrdreAction from "@/components/passation-ordre/FormPassationOrdreAction";
+import FormPassationOrdreMarcheSocondaire from "@/components/passation-ordre/FormPassationOrdreMarcheSecondaire";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useRestToken } from "@/hooks/useRestToken";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
+import { Link } from "@/i18n/routing";
+import { ArrowLeft } from "lucide-react";
 
 const SecondaryMarketStockPage = ({
   params,
@@ -39,6 +41,7 @@ const SecondaryMarketStockPage = ({
 
   return (
     <div className="flex flex-col gap-10 motion-preset-focus motion-duration-2000">
+      
       <div className="h-32 bg-gray-100 rounded-md flex justify-center items-center text-3xl font-bold text-primary uppercase">
         {type === "action"
           ? t("action")
@@ -48,8 +51,7 @@ const SecondaryMarketStockPage = ({
           ? t("TitresParticipatifs")
           : t("obligation")}
       </div>
-
-      <FormPassationOrdreAction titreId={id} type={type} />
+      <FormPassationOrdreMarcheSocondaire titreId={id} type={type} />
     </div>
   );
 };

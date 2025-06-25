@@ -11,6 +11,7 @@ import { useTranslations } from "next-intl";
 import React, { useEffect } from "react";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
+import FormPassationOrdreMarchePrimaire from "@/components/passation-ordre/FormPassationOrdreMarchePrimaire";
 
 const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
   const { type } = params;

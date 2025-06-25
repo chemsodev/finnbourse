@@ -74,16 +74,16 @@ function sanitizeMenuData(data: any): MenuResponse {
 }
 
 // Get REST token from session (server-side)
-// This uses the token generated from localhost:3000 REST API during login
+// This uses the token generated from 192.168.0.213:3000 REST API during login
 async function getRestToken(): Promise<string | null> {
   try {
     const session = (await getServerSession(auth)) as Session & {
       user?: SessionUser;
     };
-    // Use the REST token generated from localhost:3000 for menu fetching
+    // Use the REST token generated from 192.168.0.213:3000 for menu fetching
     return session?.user?.restToken || null;
   } catch (error) {
-    console.error("Error getting REST token from localhost:3000:", error);
+    console.error("Error getting REST token from 192.168.0.213:3000:", error);
     return null;
   }
 }
@@ -95,13 +95,13 @@ export async function fetchMenu(): Promise<MenuResponse> {
 
     if (!restToken) {
       console.warn(
-        "No REST token from localhost:3000 available for menu fetch"
+        "No REST token from 192.168.0.213:3000 available for menu fetch"
       );
       return getFallbackMenu();
     }
 
     console.log(
-      "Fetching menu from 192.168.0.128 using localhost:3000 REST token"
+      "Fetching menu from 192.168.0.128 using 192.168.0.213:3000 REST token"
     );
 
     // Add timeout to prevent hanging
@@ -154,13 +154,13 @@ export async function fetchMenuClient(token?: string): Promise<MenuResponse> {
   try {
     if (!token) {
       console.warn(
-        "No localhost:3000 REST token provided for client menu fetch"
+        "No 192.168.0.213:3000 REST token provided for client menu fetch"
       );
       return getFallbackMenu();
     }
 
     console.log(
-      "Client: Fetching menu from 192.168.0.128 using localhost:3000 REST token"
+      "Client: Fetching menu from 192.168.0.128 using 192.168.0.213:3000 REST token"
     );
 
     // Add timeout to prevent hanging
