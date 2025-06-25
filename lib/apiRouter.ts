@@ -44,7 +44,8 @@ export function getAPIBaseURL(apiType: APIType): string {
   switch (apiType) {
     case "REST":
       return (
-        process.env.NEXT_PUBLIC_REST_API_URL || "http://localhost:3000/api/v1"
+        process.env.NEXT_PUBLIC_REST_API_URL ||
+        "https://kh.finnetude.com/api/v1"
       );
     case "GraphQL":
       return process.env.NEXT_PUBLIC_BACKEND_URL || "https://him.finnetude.com";
