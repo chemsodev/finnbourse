@@ -93,15 +93,8 @@ export const calculateTotalValue = (
   const subtotal = price * quantity;
   const commissionRate =
     securityType.toLowerCase() === "obligation"
-      ? Number(
-          (process.env.NEXT_PUBLIC_COMMISSION_OBLIGATION || "0,8").replace(
-            ",",
-            "."
-          )
-        ) / 100
-      : Number(
-          (process.env.NEXT_PUBLIC_COMMISSION_ACTION || "0,9").replace(",", ".")
-        ) / 100;
+      ? 0.008 // 0.8%
+      : 0.009; // 0.9%
   const commission = subtotal * commissionRate;
   return subtotal + commission;
 };

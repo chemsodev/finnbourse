@@ -5,8 +5,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { LIST_SUPPORT_QUERY } from "@/graphql/queries";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { LIST_SUPPORT_QUERY } from "@/graphql/queries";
 import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import RateLimitReached from "./RateLimitReached";
@@ -30,16 +30,40 @@ export function QstAccordion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const data = await fetchGraphQLClient<ListSupportqas>(
-          LIST_SUPPORT_QUERY,
-          {
-            take: 5,
-            language: locale,
-            state: 1,
-            ispublished: true,
-          }
-        );
-        setQuestions(data?.listSupportqas);
+        // TODO: Replace with REST API call
+        // const data = await fetchGraphQLClient<ListSupportqas>(
+        //   LIST_SUPPORT_QUERY,
+        //   {
+        //     take: 5,
+        //     language: locale,
+        //     state: 1,
+        //     ispublished: true,
+        //   }
+        // );
+
+        // Mock data for questions
+        const mockData = {
+          listSupportqas: [
+            {
+              id: "1",
+              question: "How to create an account?",
+              answer:
+                "You can create an account by clicking the sign up button.",
+              state: 1,
+              ispublished: true,
+            },
+            {
+              id: "2",
+              question: "How to place an order?",
+              answer:
+                "Navigate to the trading section and fill out the order form.",
+              state: 1,
+              ispublished: true,
+            },
+          ],
+        };
+
+        setQuestions(mockData?.listSupportqas);
       } catch (error) {
         console.error("Failed to fetch questions:", error);
         setError("Failed to load questions");

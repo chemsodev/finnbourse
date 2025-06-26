@@ -47,9 +47,9 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { LIST_STOCKS_QUERY, FIND_UNIQUE_STOCKS_QUERY } from "@/graphql/queries";
-import { DELETE_STOCK } from "@/graphql/mutations";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { LIST_STOCKS_QUERY, FIND_UNIQUE_STOCKS_QUERY } from "@/graphql/queries";
+// import { DELETE_STOCK } from "@/graphql/mutations";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "@/i18n/routing";
@@ -101,10 +101,42 @@ export default function ActionsTable({ onCreateNew }: ActionsTableProps) {
     const fetchStocks = async () => {
       setLoading(true);
       try {
-        const response = await fetchGraphQLClient(LIST_STOCKS_QUERY, {
-          type: selectedType === "all" ? "action" : selectedType,
-        });
-        setStocks((response as any).listStocks || []);
+        // TODO: Replace with REST API call
+        // const response = await fetchGraphQLClient(LIST_STOCKS_QUERY, {
+        //   type: selectedType === "all" ? "action" : selectedType,
+        // });
+
+        // Mock stocks data
+        const mockStocks: Stock[] = [
+          {
+            id: "1",
+            name: "ABC Corporation",
+            isincode: "TN0001234567",
+            code: "ABC",
+            issuer: "ABC Corp",
+            marketlisting: "BVMT",
+            emissiondate: "2023-01-15",
+            enjoymentdate: "2023-01-15",
+            quantity: 1000000,
+            facevalue: 10,
+            dividendrate: 5.5,
+          },
+          {
+            id: "2",
+            name: "XYZ Industries",
+            isincode: "TN0001234568",
+            code: "XYZ",
+            issuer: "XYZ Industries",
+            marketlisting: "BVMT",
+            emissiondate: "2023-02-20",
+            enjoymentdate: "2023-02-20",
+            quantity: 500000,
+            facevalue: 20,
+            dividendrate: 4.2,
+          },
+        ];
+
+        setStocks(mockStocks);
       } catch (error) {
         console.error("Error fetching stocks:", error);
         setError(String(error));
@@ -170,7 +202,10 @@ export default function ActionsTable({ onCreateNew }: ActionsTableProps) {
 
     setDeletingStock(true);
     try {
-      await fetchGraphQLClient(DELETE_STOCK, { securityId: stockToDelete });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient(DELETE_STOCK, { securityId: stockToDelete });
+
+      console.log("Stock deletion simulated for ID:", stockToDelete);
 
       // Remove the deleted stock from the state
       setStocks(stocks.filter((stock) => stock.id !== stockToDelete));

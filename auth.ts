@@ -1,7 +1,6 @@
 // @ts-ignore
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
-// GraphQL imports removed - using REST API only
 
 declare module "next-auth" {
   interface User {
@@ -101,6 +100,7 @@ const auth: any = {
   },
   pages: {
     signIn: "/login",
+    signOut: "/login",
     error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,

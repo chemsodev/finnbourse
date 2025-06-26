@@ -1,68 +1,56 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { SupportQuestion } from "@/lib/interfaces";
 import Message from "./Message";
-import { useSession } from "next-auth/react";
-import { GET_SUPPORT_QUESTIONS_QUERY } from "@/graphql/queries";
-import MessagesPagination from "./MessageesPagination";
-import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import RateLimitReached from "./RateLimitReached";
+
+// Static mock data for messages
+const mockMessages: SupportQuestion[] = [
+  {
+    id: "1",
+    question: "Comment annuler une transaction ?",
+    answer:
+      "Vous pouvez annuler une transaction en cours depuis votre tableau de bord.",
+    language: "fr",
+    description: "Question sur l'annulation de transaction",
+    userid: "user1",
+    state: true,
+  },
+  {
+    id: "2",
+    question: "Problème de connexion au compte",
+    answer: "Veuillez vérifier vos identifiants et réessayer.",
+    language: "fr",
+    description: "Problème de connexion",
+    userid: "user1",
+    state: false,
+  },
+  {
+    id: "3",
+    question: "Quels sont les frais de commission ?",
+    answer:
+      "Les frais de commission sont de 0.9% pour les actions et 0.8% pour les obligations.",
+    language: "fr",
+    description: "Question sur les frais",
+    userid: "user1",
+    state: true,
+  },
+];
 
 interface GetSupportQuestionsResponse {
   listSupportqas: SupportQuestion[];
 }
 
-// Define proper session user type
-interface CustomUser {
-  id?: string;
-  token?: string;
-  roleid?: number;
-  name?: string;
-  email?: string;
-}
-
 const Messages = () => {
-  const locale = useLocale().toLowerCase();
   const t = useTranslations("Messages");
-  const session = useSession();
-  const user = session?.data?.user as CustomUser;
-  const accessToken = user?.token || "";
   const [skip, setSkip] = useState(0);
-
   const take = 5;
-  const [messages, setMessages] = useState<GetSupportQuestionsResponse | null>(
-    null
-  );
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        if (!accessToken) {
-          return; // Don't fetch if no token available
-        }
-
-        const response = await clientFetchGraphQL<GetSupportQuestionsResponse>(
-          GET_SUPPORT_QUESTIONS_QUERY,
-          {
-            skip: 0,
-            take,
-            state: 0,
-            ispublished: false,
-          },
-          {},
-          accessToken
-        );
-
-        setMessages(response);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      }
-    };
-
-    fetchMessages();
-  }, [take, accessToken]); // Add accessToken to dependencies
+  // Use static mock data
+  const [messages] = useState<GetSupportQuestionsResponse>({
+    listSupportqas: mockMessages,
+  });
 
   return (
     <div className="h-full w-full">

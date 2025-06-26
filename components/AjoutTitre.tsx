@@ -53,9 +53,6 @@ import {
 } from "@/components/ui/dialog";
 import { CirclePlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { GET_LISTED_COMPANIES_QUERY } from "@/graphql/queries";
-import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
-import { CREATE_STOCK, CREATE_BOND } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/routing";
 import { fr, ar, enUS } from "date-fns/locale";
@@ -122,10 +119,19 @@ const AjoutTitre = ({ type }: { type: string }) => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await clientFetchGraphQL<GetListedCompaniesResponse>(
-          GET_LISTED_COMPANIES_QUERY
-        );
-        setCompanies(response);
+        // TODO: Replace with REST API call
+        // const response = await clientFetchGraphQL<GetListedCompaniesResponse>(
+        //   GET_LISTED_COMPANIES_QUERY
+        // );
+        // setCompanies(response);
+
+        // For now, use mock data or call REST endpoint
+        // Example: const response = await fetch('/api/companies');
+        // const data = await response.json();
+        // setCompanies(data);
+
+        // Mock response
+        setCompanies({ listListedCompanies: [] });
       } catch (error) {
         console.error("Error fetching companies:", error);
       }
@@ -149,63 +155,41 @@ const AjoutTitre = ({ type }: { type: string }) => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
-      const mutation =
-        type === "action" || type === "opv" ? CREATE_STOCK : CREATE_BOND;
+      // TODO: Replace with REST API call
+      // const mutation = type === "action" || type === "opv" ? CREATE_STOCK : CREATE_BOND;
+      // await clientFetchGraphQL<String>(mutation, { ... });
 
-      await clientFetchGraphQL<String>(mutation, {
-        name: `${values.codeBourse}`,
-        isincode: values.isin,
-        issuer: companies?.listListedCompanies?.find(
-          (company) => company.id === values.societeEmettrice
-        )?.nom,
-        code: values.codeBourse,
-        listedcompanyid: values.societeEmettrice,
-        marketlisting: values.MarcheCotation,
-        emissiondate: values.dateEmission.toISOString(),
-        enjoymentdate: values.dateJouissance.toISOString(),
-        quantity: values.nombreTitres,
-        type: type,
-        facevalue: values.valeurNominale,
-        couponschedule:
-          values.couponSchedule?.map((coupon) => ({
-            rate: coupon.rate,
-            year: coupon.year,
-          })) || [],
-        capitaloperation: values.capitalOperation,
-        commission: values.commission,
-        irg: values.irg,
-        tva: values.tva,
-        fixedrate: values.tauxFixe,
-        variableRate: values.tauxVariable,
-        estimatedRate: values.tauxEstime,
-        closingdate: values.closingDate.toISOString(),
-        dividendrate: values.dividendrate,
-        repaymentmethod: values.ModeRemboursement,
-        yieldrate: values.tauxRendement,
-      });
+      // For now, simulate the submission
+      // Example REST call:
+      // const response = await fetch('/api/securities', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ ...values, type })
+      // });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         variant: "success",
         title: t("success"),
-        description: t("titreajouteSucces"),
+        description: t("successDescription"),
       });
 
       form.reset();
-      window.location.reload();
-
       setOpen(false);
     } catch (error) {
       console.error("Form submission error", error);
       toast({
         variant: "destructive",
         title: t("error"),
-        description:
-          error instanceof Error ? error.message : "An error occurred",
+        description: t("errorDescription"),
       });
     } finally {
       setLoading(false);
     }
   }
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "couponSchedule",

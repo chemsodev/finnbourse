@@ -1,6 +1,6 @@
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+// import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import AvisOrdre from "@/components/pdf/AvisOrdre";
-import { LIST_ORDERS_QUERY_PDF } from "@/graphql/queries";
+// import { LIST_ORDERS_QUERY_PDF } from "@/graphql/queries";
 import { Order } from "@/lib/interfaces";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
@@ -31,7 +31,13 @@ export async function GET(request: Request) {
 
   let orders: GetOrdersResponse | null = null;
   try {
-    orders = await fetchGraphQL<GetOrdersResponse>(LIST_ORDERS_QUERY_PDF);
+    // TODO: Replace with REST API call
+    // orders = await fetchGraphQL<GetOrdersResponse>(LIST_ORDERS_QUERY_PDF);
+
+    // Mock empty orders data for PDF generation - replace with actual REST call
+    orders = {
+      listOrdersExtended: [],
+    };
   } catch (error) {
     console.error("Error fetching orders:", error);
   }

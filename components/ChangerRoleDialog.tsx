@@ -32,8 +32,10 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { UPDATE_USER_ROLE } from "@/graphql/mutations";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { UPDATE_USER_ROLE } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
@@ -75,21 +77,25 @@ const ChangerRoleDialog = ({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      await fetchGraphQLClient<String>(UPDATE_USER_ROLE, {
-        roleid:
-          values.role === "visiteur"
-            ? 0
-            : values.role === "investisseur"
-            ? 1
-            : values.role === "IOB"
-            ? 2
-            : values.role === "TCC"
-            ? 3
-            : values.role === "agence"
-            ? 4
-            : 0,
-        userid: userId,
-      });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<String>(UPDATE_USER_ROLE, {
+      //   roleid:
+      //     values.role === "visiteur"
+      //       ? 0
+      //       : values.role === "investisseur"
+      //       ? 1
+      //       : values.role === "IOB"
+      //       ? 2
+      //       : values.role === "TCC"
+      //       ? 3
+      //       : values.role === "agence"
+      //       ? 4
+      //       : 0,
+      //   userid: userId,
+      // });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         variant: "success",

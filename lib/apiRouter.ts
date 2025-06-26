@@ -38,7 +38,9 @@ export function getAPIType(operation: keyof typeof API_ROUTING): APIType {
 
 // Helper to get the REST API base URL
 export function getAPIBaseURL(): string {
-  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api/v1";
+  return (
+    process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com/api/v1"
+  );
 }
 
 // Helper to check if REST API is available

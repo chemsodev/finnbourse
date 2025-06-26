@@ -4,12 +4,12 @@ import MyPagination from "@/components/navigation/MyPagination";
 import PdfDialog from "@/components/PdfDialog";
 import AtribuerNegociateur from "@/components/AtribuerNegociateur";
 import { getTranslations } from "next-intl/server";
-import { FIND_UNIQUE_USER, GET_REST_USER_DATA } from "@/graphql/queries";
+// import { FIND_UNIQUE_USER, GET_REST_USER_DATA } from "@/graphql/queries";
 import SuspendreUtilisateurDialog from "@/components/SuspendreUtilisateurDialog";
 import BanDialog from "@/components/BanDialog";
 import RejetUtilisateur from "@/components/RejetUtilisateur";
 import ChangerRoleDialog from "@/components/ChangerRoleDialog";
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+// import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import { User } from "@/lib/interfaces";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import ValidateUser from "@/components/ValidateUser";
@@ -38,29 +38,60 @@ const page = async (props: {
 
   let userDetails: GetUserResponse | null = null;
   try {
-    userDetails = await fetchGraphQL<GetUserResponse>(FIND_UNIQUE_USER, {
-      userid: id,
-    });
+    // TODO: Replace with REST API call
+    // userDetails = await fetchGraphQL<GetUserResponse>(FIND_UNIQUE_USER, {
+    //   userid: id,
+    // });
+
+    // Mock user details
+    userDetails = {
+      findUniqueUser: {
+        id,
+        fullname: "Mock User",
+        email: "user@example.com",
+        roleid: 1,
+        followsbusiness: false,
+        phonenumber: "",
+        address: "",
+        birthdate: "",
+        trustnumber: "",
+        nationality: "",
+        countryofresidence: "",
+        negotiatorid: "",
+        countryofbirth: "",
+        profession: "",
+        zipcode: "",
+        status: 1,
+      },
+    };
   } catch (error) {
     console.error("Error fetching orders:", error);
   }
 
   let RestOfUserData: any;
   try {
-    RestOfUserData = await fetchGraphQL<any>(GET_REST_USER_DATA, {
-      userId: id,
-      type: "userdata",
-    });
+    // TODO: Replace with REST API call
+    // RestOfUserData = await fetchGraphQL<any>(GET_REST_USER_DATA, {
+    //   userId: id,
+    //   type: "userdata",
+    // });
+
+    // Mock user data
+    RestOfUserData = { listUserData: [] };
   } catch (error) {
     console.error("Error fetching orders:", error);
   }
 
   let userDataFiles: any;
   try {
-    userDataFiles = await fetchGraphQL<any>(GET_REST_USER_DATA, {
-      userId: id,
-      type: "file",
-    });
+    // TODO: Replace with REST API call
+    // userDataFiles = await fetchGraphQL<any>(GET_REST_USER_DATA, {
+    //   userId: id,
+    //   type: "file",
+    // });
+
+    // Mock user data files
+    userDataFiles = { listUserData: [] };
   } catch (error) {
     console.error("Error fetching orders:", error);
     userDataFiles = null;
@@ -353,9 +384,12 @@ const page = async (props: {
           <OrdresTable
             skip={currentPage}
             searchquery={searchquery}
-            pageType="utilisateurUnique"
-            uniqueUserId={id}
+            pageType="ordres"
             state={state}
+            marketType="all"
+            userRole="1"
+            userType="agence"
+            activeTab="all"
           />
           <div className="flex justify-end">
             <MyPagination />

@@ -31,8 +31,9 @@ import { Textarea } from "./ui/textarea";
 import { useTranslations } from "next-intl";
 import { CheckIcon, CircleAlert, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { CREATE_SUPPORT_MESSAGE } from "@/graphql/mutations";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { CREATE_SUPPORT_MESSAGE } from "@/graphql/mutations";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 const formSchema = z.object({
@@ -55,15 +56,20 @@ export function SupportDialog() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await fetchGraphQLClient<string>(CREATE_SUPPORT_MESSAGE, {
-        userid: userId,
-        question: values.probleme,
-        description: values.description,
-        answer: "",
-        state: 0,
-        language: locale,
-        ispublished: false,
-      });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<string>(CREATE_SUPPORT_MESSAGE, {
+      //   userid: userId,
+      //   question: values.probleme,
+      //   description: values.description,
+      //   answer: "",
+      //   state: 0,
+      //   language: locale,
+      //   ispublished: false,
+      // });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       form.reset();
       setOpen(false);
 

@@ -15,10 +15,10 @@ import { Button } from "./ui/button";
 import { useRouter } from "@/i18n/routing";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-
-import { DELETE_STOCK } from "@/graphql/mutations";
-import { DELETE_BOND } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { DELETE_STOCK } from "@/graphql/mutations";
+// import { DELETE_BOND } from "@/graphql/mutations";
 
 interface DeleteSecurityResponse {
   deleteSecurity: {
@@ -39,19 +39,23 @@ export function SupprimerTitre({
   const { toast } = useToast();
   const t = useTranslations("SupprimerTitre");
 
-  let mutation;
-  if (type === "action" || type === "opv") {
-    mutation = DELETE_STOCK;
-  } else {
-    mutation = DELETE_BOND;
-  }
-
   const deleteSecurity = async () => {
     setIsLoading(true);
     try {
-      await fetchGraphQLClient<DeleteSecurityResponse>(mutation, {
-        id: securityId,
-      });
+      // Simulate deletion - in real app, use REST API
+      // let mutation;
+      // if (type === "action" || type === "opv") {
+      //   mutation = DELETE_STOCK;
+      // } else {
+      //   mutation = DELETE_BOND;
+      // }
+      // await fetchGraphQLClient<DeleteSecurityResponse>(mutation, {
+      //   id: securityId,
+      // });
+
+      // Simulate async operation
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       toast({
         variant: "success",
         title: t("success"),
@@ -59,12 +63,11 @@ export function SupprimerTitre({
       });
       window.location.reload();
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("Error deleting security:", error);
       toast({
         variant: "destructive",
         title: t("error"),
-        description:
-          error instanceof Error ? error.message : "An error occurred",
+        description: t("errorDescription") || "An error occurred",
       });
     } finally {
       setIsLoading(false);

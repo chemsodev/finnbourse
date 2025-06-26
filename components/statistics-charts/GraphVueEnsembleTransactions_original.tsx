@@ -1,7 +1,7 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
@@ -10,16 +10,14 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-// Removed GraphQL dependencies - now using static data
-// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
-// Removed GraphQL dependencies - now using static data
-// import { HISTORIQUE_EXECUTION_ORDRE_QUERY } from "@/graphql/queries";
-import RateLimitReached from "./RateLimitReached";
+import { it } from "node:test";
+import { VUE_ENSEMBLE_TRANSACTIONS_QUERY } from "@/graphql/queries";
+import RateLimitReached from "../RateLimitReached";
 
-type ExecutionData = {
-  statusKey: number;
-  status: string;
+type TransactionData = {
+  securityIssuer: string;
   totalPrice: number;
   totalQuantity: number;
   count: number;
@@ -36,87 +34,63 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
-  const [chartData, setChartData] = useState<ExecutionData[]>([]);
+export function GraphVueEnsembleTransactions(titre: { titre: string }) {
+  const ititre = titre.titre;
+  const [chartData, setChartData] = useState<TransactionData[]>([]);
   const session = useSession();
-  const userid = (session?.data?.user as any)?.id;
-  const tStatus = useTranslations("status");
+  const userid = (session.data?.user as any)?.id;
+  const t = useTranslations("SecurityIssuers");
 
-  const processData = (rawData: any[]): ExecutionData[] => {
+  const processData = (rawData: any[]): TransactionData[] => {
     return rawData?.map((item) => ({
-      statusKey: item.orderstatus,
-      status: getStatusLabel(item.orderstatus),
+      securityIssuer: item.securityissuer,
       totalPrice: item._sum.validatedprice || 0,
       totalQuantity: item._sum.validatedquantity || 0,
       count: item._count.id,
     }));
   };
 
-  const getStatusLabel = (status: number): string => {
-    return tStatus(
-      {
-        0: "Draft",
-        1: "Pending",
-        2: "In_Progress",
-        3: "Validated",
-        4: "Being_Processed",
-        5: "Completed",
-        6: "Awaiting_Approval",
-        7: "Ongoing",
-        8: "Partially_Validated",
-        9: "Expired",
-        10: "Rejected",
-        11: "Cancelled",
-      }[status] || "Unknown"
-    );
-  };
-
-  const fetchExecutionHistory = async () => {
+  const fetchTransactionData = async () => {
     try {
-      // Mock data for execution history
-      const mockData = [
+      const result = await fetchGraphQLClient<any>(
+        VUE_ENSEMBLE_TRANSACTIONS_QUERY,
         {
-          code: "STOCK001",
-          codetitreemis: "EMIT001",
-          qte: 100,
-          px: 1250,
-          status: "EXECUTED",
-          heureexec: new Date().toISOString(),
-          dateexecution: new Date().toISOString(),
-        },
-      ];
-      const processedData = processData(mockData);
+          userid,
+        }
+      );
+      const processedData = processData(result.groupByOrder);
       setChartData(processedData);
-
-      // Use mock data for now
-      setChartData([]);
     } catch (error) {
       if (error === "Too many requests") {
         return <RateLimitReached />;
       }
-      console.error("Error fetching execution data:", error);
+      console.error("Error fetching transaction data:", error);
     }
   };
 
   useEffect(() => {
-    fetchExecutionHistory();
+    fetchTransactionData();
   }, []);
 
   return (
     <Card className="border-0 shadow-none w-[45%]">
       <CardHeader>
-        <CardTitle>{titre}</CardTitle>
+        <CardTitle>{ititre}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="w-full">
-          <BarChart data={chartData} margin={{ top: 20 }} barCategoryGap="20%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 20, left: 20 }}
+            barCategoryGap="20%"
+          >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="statusKey"
+              dataKey="securityIssuer"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => getStatusLabel(value)}
+              tickFormatter={(value) => value}
             />
             <ChartTooltip
               cursor={false}
@@ -126,7 +100,7 @@ export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
                 return (
                   <ChartTooltipContent>
                     <div className="flex flex-col gap-1">
-                      <p className="font-medium">{getStatusLabel(label)}</p>
+                      <p className="font-medium">{label}</p>
                       {payload?.map((entry: any, index: number) => (
                         <div
                           key={`tooltip-${index}`}
@@ -138,11 +112,14 @@ export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
                           />
                           <span>
                             {entry.name === "totalPrice"
-                              ? `Total Value: DZD${entry.value.toLocaleString()}`
-                              : `Total Quantity: ${entry.value.toLocaleString()} shares`}
+                              ? `Total Value: DA${entry.value.toLocaleString()}`
+                              : `Total Quantity: ${entry.value.toLocaleString()}`}
                           </span>
                         </div>
                       ))}
+                      <p className="text-muted-foreground text-xs mt-1">
+                        {payload[0]?.payload.count} transactions
+                      </p>
                     </div>
                   </ChartTooltipContent>
                 );
@@ -156,7 +133,7 @@ export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
               <LabelList
                 dataKey="totalPrice"
                 position="top"
-                formatter={(value: number) => `DZD${value.toLocaleString()}`}
+                formatter={(value: number) => `DA${value.toLocaleString()}`}
                 className="fill-foreground"
                 fontSize={12}
               />
@@ -169,7 +146,6 @@ export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
               <LabelList
                 dataKey="totalQuantity"
                 position="top"
-                formatter={(value: number) => `${value.toLocaleString()}`}
                 className="fill-foreground"
                 fontSize={12}
               />

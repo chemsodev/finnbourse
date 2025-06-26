@@ -64,7 +64,7 @@ const chartConfig = {
 
 export function GraphVueEnsembleTransactions(titre: { titre: string }) {
   const t = useTranslations("SecurityIssuers");
-  
+
   // Use static mock data instead of GraphQL
   const chartData = mockTransactionData;
 
@@ -100,7 +100,7 @@ export function GraphVueEnsembleTransactions(titre: { titre: string }) {
                 offset={12}
                 className="fill-foreground"
                 fontSize={12}
-                formatter={(value: number) => 
+                formatter={(value: number) =>
                   new Intl.NumberFormat("en-US", {
                     style: "currency",
                     currency: "USD",

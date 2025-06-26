@@ -16,9 +16,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
-import { PERF_NEGOCIATEURS_QUERY } from "@/graphql/queries";
+// import { PERF_NEGOCIATEURS_QUERY } from "@/graphql/queries";
 import RateLimitReached from "../RateLimitReached";
 
 // New GraphQL query to fetch the list of users with their fullnames
@@ -66,17 +66,33 @@ export function GraphPerfNegociateurs({ titre }: { titre: string }) {
   // Fetch performance data and list of users, then merge them.
   const fetchNegotiatorData = async () => {
     try {
-      // Fetch performance data
-      const performanceResult = await fetchGraphQLClient<any>(
-        PERF_NEGOCIATEURS_QUERY
-      );
-      const performanceData = processPerformanceData(
-        performanceResult.groupByOrder
-      );
+      // TODO: Replace with REST API calls
+      // const performanceResult = await fetchGraphQLClient<any>(
+      //   PERF_NEGOCIATEURS_QUERY
+      // );
+      // const usersResult = await fetchGraphQLClient<any>(LIST_USERS_QUERY);
 
-      // Fetch users data
-      const usersResult = await fetchGraphQLClient<any>(LIST_USERS_QUERY);
-      const users = usersResult.listUsers || [];
+      // Mock data for negotiator performance
+      const mockPerformanceData = [
+        {
+          negotiatorid: "neg1",
+          _sum: { validatedprice: 100000, validatedquantity: 200 },
+          _count: { id: 15 },
+        },
+        {
+          negotiatorid: "neg2",
+          _sum: { validatedprice: 150000, validatedquantity: 300 },
+          _count: { id: 20 },
+        },
+      ];
+
+      const mockUsers = [
+        { id: "neg1", fullname: "John Doe" },
+        { id: "neg2", fullname: "Jane Smith" },
+      ];
+
+      const performanceData = processPerformanceData(mockPerformanceData);
+      const users = mockUsers || [];
 
       // Create a lookup map for user full names: { userId: fullname, ... }
       const usersMap: Record<string, string> = {};

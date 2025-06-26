@@ -98,8 +98,10 @@ const FormPassationOrdreMarchePrimaire = ({
   // Use REST hooks for fetching data
   const { stocks: securityData, loading: stocksLoading } =
     useStocksREST(stockType);
-  const { stock: data, loading } = useStockREST(titreId || "", stockType);
-  const { stock: data, loading } = useStockREST(titreId || "", stockType);
+  const { stock: data, loading: stockLoading } = useStockREST(
+    titreId || "",
+    stockType
+  );
 
   const router = useRouter();
   const handleGoBack = () => {
@@ -209,7 +211,7 @@ const FormPassationOrdreMarchePrimaire = ({
     }
   };
 
-  if (loading || stocksLoading) {
+  if (stockLoading || stocksLoading) {
     return <PasserUnOrdreSkeleton />;
   }
 
@@ -398,9 +400,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 <div className=" text-gray-400 capitalize">
                   {t("visaCOSOB")}
                 </div>
-                <div className="text-lg font-semibold">
-                  {process.env.NEXT_PUBLIC_VISA_COSOB}
-                </div>
+                <div className="text-lg font-semibold">VISA-9237</div>
               </div>
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>

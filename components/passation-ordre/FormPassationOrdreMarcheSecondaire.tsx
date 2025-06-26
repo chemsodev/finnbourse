@@ -289,38 +289,37 @@ const FormPassationOrdreMarcheSocondaire = ({
     setIsSubmitting(true);
     try {
       // Create order using REST API with the correct format
-      const response = await fetch(
-        "https://poc.finnetude.com/api/v1/order/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${restToken}`,
-          },
-          body: JSON.stringify({
-            stock_id: formData.selectedTitreId,
-            client_id: formData.selectedClientId,
-            quantity: formData.quantite,
-            price:
-              formData.conditionPrix === "prixLimite"
-                ? formData.coursLimite
-                : selectedPrice,
-            market_type: "S", // Secondary market
-            operation_type: formData.buyTransaction ? "A" : "V", // A for Achat (buy), V for Vente (sell)
-            conditionDuree: formData.conditionDuree,
-            conditionPrix: formData.conditionPrix,
-            conditionQuantite: formData.conditionQuantite,
-            minQuantity:
-              formData.conditionQuantite === "quantiteMinimale"
-                ? formData.quantiteMinimale
-                : undefined,
-            validity:
-              formData.conditionDuree === "dateDefinie"
-                ? formData.validite
-                : undefined,
-          }),
-        }
-      );
+      const menuOrderBase =
+        process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
+      const response = await fetch(`${menuOrderBase}/api/v1/order/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${restToken}`,
+        },
+        body: JSON.stringify({
+          stock_id: formData.selectedTitreId,
+          client_id: formData.selectedClientId,
+          quantity: formData.quantite,
+          price:
+            formData.conditionPrix === "prixLimite"
+              ? formData.coursLimite
+              : selectedPrice,
+          market_type: "S", // Secondary market
+          operation_type: formData.buyTransaction ? "A" : "V", // A for Achat (buy), V for Vente (sell)
+          conditionDuree: formData.conditionDuree,
+          conditionPrix: formData.conditionPrix,
+          conditionQuantite: formData.conditionQuantite,
+          minQuantity:
+            formData.conditionQuantite === "quantiteMinimale"
+              ? formData.quantiteMinimale
+              : undefined,
+          validity:
+            formData.conditionDuree === "dateDefinie"
+              ? formData.validite
+              : undefined,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -551,9 +550,7 @@ const FormPassationOrdreMarcheSocondaire = ({
                 <div className=" text-gray-400 capitalize">
                   {t("visaCOSOB")}
                 </div>
-                <div className="text-lg font-semibold">
-                  {process.env.NEXT_PUBLIC_VISA_COSOB}
-                </div>
+                <div className="text-lg font-semibold">VISA-9237</div>
               </div>
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
@@ -938,9 +935,7 @@ const FormPassationOrdreMarcheSocondaire = ({
               {/* commission */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-500">{t("commission")}:</div>
-                <div className="font-semibold text-lg">
-                  {process.env.NEXT_PUBLIC_COMMISSION_ACTION} %
-                </div>
+                <div className="font-semibold text-lg">0,9 %</div>
               </div>
               <Separator />
               {/* montant total net */}

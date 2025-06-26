@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { LIST_LISTED_COMPANIES } from "@/graphql/queries";
 import {
   Table,
   TableBody,
@@ -32,7 +31,8 @@ import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmett
 import EditCompanyDialog from "@/components/listed-company/edit-company-dialog";
 import DeleteCompanyDialog from "@/components/listed-company/delete-company-dialog";
 import SearchFilter from "@/components/listed-company/search-filter";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL client - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import {
   Tooltip,
   TooltipContent,
@@ -41,6 +41,102 @@ import {
 } from "@/components/ui/tooltip";
 import { formatPrice } from "@/lib/utils";
 import { ExportButton } from "@/components/ExportButton";
+
+// Static mock data for listed companies
+const mockListedCompanies = [
+  {
+    id: "1",
+    nom: "AlphaStock Corporation",
+    secteuractivite: "Technology",
+    capitalisationboursiere: "1250000000",
+    siteofficiel: "https://alphastock.com",
+    contact: {
+      email: "investor@alphastock.com",
+      website: "https://alphastock.com",
+      phone: "+1-555-0101",
+      nom: "John",
+      prenom: "Doe",
+      fonction: "Investor Relations",
+      mobile: "+1-555-0101",
+      address: "123 Tech Street",
+    },
+    extrafields: {
+      notice: "Leading technology company",
+    },
+    description: "Leading technology company",
+    dateCreation: "2020-01-15",
+    statut: "Active",
+  },
+  {
+    id: "2",
+    nom: "BetaFinance Ltd",
+    secteuractivite: "Finance",
+    capitalisationboursiere: "890000000",
+    siteofficiel: "https://betafinance.com",
+    contact: {
+      email: "info@betafinance.com",
+      website: "https://betafinance.com",
+      phone: "+1-555-0102",
+      nom: "Jane",
+      prenom: "Smith",
+      fonction: "Public Relations",
+      mobile: "+1-555-0102",
+      address: "456 Finance Ave",
+    },
+    extrafields: {
+      notice: "Financial services provider",
+    },
+    description: "Financial services provider",
+    dateCreation: "2019-03-22",
+    statut: "Active",
+  },
+  {
+    id: "3",
+    nom: "GammaInvest SA",
+    secteuractivite: "Investment",
+    capitalisationboursiere: "675000000",
+    siteofficiel: "https://gammainvest.com",
+    contact: {
+      email: "contact@gammainvest.com",
+      website: "https://gammainvest.com",
+      phone: "+1-555-0103",
+      nom: "Mike",
+      prenom: "Johnson",
+      fonction: "Investment Director",
+      mobile: "+1-555-0103",
+      address: "789 Investment Blvd",
+    },
+    extrafields: {
+      notice: "Investment management firm",
+    },
+    description: "Investment management firm",
+    dateCreation: "2018-07-10",
+    statut: "Active",
+  },
+  {
+    id: "4",
+    nom: "DeltaTech Inc",
+    secteuractivite: "Technology",
+    capitalisationboursiere: "560000000",
+    siteofficiel: "https://deltatech.com",
+    contact: {
+      email: "hello@deltatech.com",
+      website: "https://deltatech.com",
+      phone: "+1-555-0104",
+      nom: "Sarah",
+      prenom: "Wilson",
+      fonction: "Communications Manager",
+      mobile: "+1-555-0104",
+      address: "321 Software St",
+    },
+    extrafields: {
+      notice: "Software development company",
+    },
+    description: "Software development company",
+    dateCreation: "2021-11-05",
+    statut: "Active",
+  },
+];
 
 type Company = {
   id: string;
@@ -55,130 +151,28 @@ type Company = {
 export default function CompaniesPage() {
   const t = useTranslations("Companies");
   const [searchTerm, setSearchTerm] = useState("");
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
+  const [filteredCompanies, setFilteredCompanies] =
+    useState<Company[]>(mockListedCompanies);
   const [editCompany, setEditCompany] = useState<Company | null>(null);
   const [deleteCompany, setDeleteCompany] = useState<{
     id: string;
     name: string;
   } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // No loading needed for static data
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Use static mock data instead of GraphQL
+  const companies = mockListedCompanies;
+
   const fetchCompanies = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const result = await fetchGraphQLClient<{
-        listListedCompanies: Company[];
-      }>(LIST_LISTED_COMPANIES);
-
-      if (!result || !result.listListedCompanies) {
-        throw new Error(t("fetchError"));
-      }
-
-      // Process the companies data to ensure contact and extrafields are properly formatted
-      const processedCompanies = result.listListedCompanies?.map((company) => {
-        // Process contact object
-        if (company.contact) {
-          // If the contact field contains nested 'set' properties
-          if (
-            typeof company.contact === "object" &&
-            (company.contact.email?.set ||
-              company.contact.phone?.set ||
-              company.contact.address?.set ||
-              company.contact.nom?.set ||
-              company.contact.prenom?.set ||
-              company.contact.fonction?.set ||
-              company.contact.mobile?.set)
-          ) {
-            company.contact = {
-              nom: company.contact.nom?.set || "",
-              prenom: company.contact.prenom?.set || "",
-              fonction: company.contact.fonction?.set || "",
-              email: company.contact.email?.set || "",
-              phone: company.contact.phone?.set || "",
-              mobile: company.contact.mobile?.set || "",
-              address: company.contact.address?.set || "",
-            };
-          }
-          // If contact is a string (JSON), try to parse it
-          else if (typeof company.contact === "string") {
-            try {
-              company.contact = JSON.parse(company.contact);
-            } catch (e) {
-              company.contact = {
-                nom: "",
-                prenom: "",
-                fonction: "",
-                email: "",
-                phone: "",
-                mobile: "",
-                address: "",
-              };
-            }
-          }
-        } else {
-          company.contact = {
-            nom: "",
-            prenom: "",
-            fonction: "",
-            email: "",
-            phone: "",
-            mobile: "",
-            address: "",
-          };
-        }
-
-        // Process extrafields object
-        if (company.extrafields) {
-          // If extrafields has a notice with a 'set' property
-          if (
-            typeof company.extrafields === "object" &&
-            company.extrafields.notice
-          ) {
-            // Handle the case where notice is an object with 'set' property
-            if (
-              typeof company.extrafields.notice === "object" &&
-              company.extrafields.notice.set !== undefined
-            ) {
-              company.extrafields = {
-                notice: company.extrafields.notice.set,
-              };
-            }
-            // Notice is already a string, keep it as is
-          }
-          // If extrafields is a string (JSON), try to parse it
-          else if (typeof company.extrafields === "string") {
-            try {
-              company.extrafields = JSON.parse(company.extrafields);
-            } catch (e) {
-              company.extrafields = { notice: "" };
-            }
-          }
-        } else {
-          company.extrafields = { notice: "" };
-        }
-
-        return company;
-      });
-
-      setCompanies(processedCompanies);
-      setFilteredCompanies(processedCompanies);
-    } catch (error) {
-      console.error("Error fetching companies:", error);
-      setError(error instanceof Error ? error.message : t("unknownError"));
-    } finally {
-      setLoading(false);
+    // Static data - no fetching needed
+    // Simulate refresh for static data
+    setIsRefreshing(true);
+    setTimeout(() => {
       setIsRefreshing(false);
-    }
+    }, 500);
   };
-
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
 
   useEffect(() => {
     if (searchTerm) {

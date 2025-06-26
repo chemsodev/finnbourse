@@ -1,9 +1,9 @@
-import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
+// import { fetchGraphQL } from "@/app/actions/fetchGraphQL";
 import OrdreDeBourse from "@/components/pdf/OrdreDeBourse";
-import {
-  GET_REST_USER_DATA,
-  LIST_ORDERS_QUERY_ONE_ORDER,
-} from "@/graphql/queries";
+// import {
+//   GET_REST_USER_DATA,
+//   LIST_ORDERS_QUERY_ONE_ORDER,
+// } from "@/graphql/queries";
 import { Order } from "@/lib/interfaces";
 import { renderToStream } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
@@ -33,26 +33,62 @@ export async function GET(
   let userData: Record<string, any> | null = null;
 
   try {
-    // Fetch order details
-    const { listOrdersExtended } = await fetchGraphQL<OrderGraphQLResponse>(
-      LIST_ORDERS_QUERY_ONE_ORDER,
-      { orderId: ordreId }
-    );
-    order = listOrdersExtended?.[0] ?? null;
+    // Mock order data - TODO: Replace with REST API call
+    const mockOrder: Order = {
+      id: ordreId,
+      securityissuer: "Sample Corp",
+      securitytype: "action",
+      securityid: "sec123",
+      securityquantity: 1000000,
+      quantity: 100,
+      orderdate: new Date().toISOString(),
+      orderstatus: 2, // executed status
+      investorid: "user123",
+      negotiatorid: "neg123",
+      validity: "GTD",
+      duration: 30,
+      createdat: new Date().toISOString(),
+      payedWithCard: false,
+      visaCosob: "VISA123456",
+      isinCode: "TN0001234567",
+      emissionDate: "2023-01-01",
+      mst: "MST123",
+      orderdirection: 1, // buy order
+      priceInstruction: "LIMIT",
+      timeInstruction: "DAY",
+      validityDate: new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      grossAmount: "2550.00",
+    };
+
+    order = mockOrder;
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Fetch user data
-    const { listData } = await fetchGraphQL<UserDataResponse>(
-      GET_REST_USER_DATA,
-      {
-        userId: order.investorid.id,
-        type: "userdata",
-      }
-    );
-    userData = transformUserData(listData);
+    // Mock user data - TODO: Replace with REST API call
+    const mockUserData = {
+      personal: {
+        firstName: "John",
+        lastName: "Doe",
+        email: "john.doe@example.com",
+        phone: "+216 12345678",
+      },
+      address: {
+        street: "123 Main Street",
+        city: "Tunis",
+        country: "Tunisia",
+        postalCode: "1000",
+      },
+      account: {
+        accountNumber: "ACC123456789",
+        rib: "12345678901234567890123",
+      },
+    };
+
+    userData = mockUserData;
     console.log("👺👺👺👺", order, userData);
   } catch (error) {
     console.error("Error fetching data:", error);

@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/file-upload";
 import { DialogClose } from "../ui/dialog";
 import { useLocale, useTranslations } from "next-intl";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { fr, ar, enUS } from "date-fns/locale";
 
@@ -160,7 +160,9 @@ const FinalisationInscriptionParticulier = () => {
       }
     `;
 
-      const result = await fetchGraphQLClient<string>(createUpdateManyMutation);
+      // TODO: Replace with REST API call
+      // const result = await fetchGraphQLClient<string>(createUpdateManyMutation);
+      console.log("User creation simulated");
       setStep(2);
 
       // Show success toast

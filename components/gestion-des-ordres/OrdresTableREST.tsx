@@ -41,7 +41,7 @@ import { Label } from "@/components/ui/label";
 
 // API base URL with fallback
 const API_BASE =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api/v1";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com/api/v1";
 
 console.log("Using API Base URL:", API_BASE);
 
@@ -283,15 +283,15 @@ export default function OrdresTableREST({
           if (!stockId) return; // Skip if stockId is null or undefined
 
           try {
-            // Direct fetch from localhost API
-            const response = await fetch(
-              `http://localhost:3000/api/v1/stock/${stockId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
+            // Direct fetch from backend API
+            const backendUrl =
+              process.env.NEXT_PUBLIC_BACKEND_URL ||
+              "https://kh.finnetude.com/api/v1";
+            const response = await fetch(`${backendUrl}/stock/${stockId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
             if (response.ok) {
               const stockData = await response.json();
@@ -336,15 +336,15 @@ export default function OrdresTableREST({
           if (!clientId) return; // Skip if clientId is null or undefined
 
           try {
-            // Direct fetch from localhost API
-            const response = await fetch(
-              `http://localhost:3000/api/v1/client/${clientId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
+            // Direct fetch from backend API
+            const backendUrl =
+              process.env.NEXT_PUBLIC_BACKEND_URL ||
+              "https://kh.finnetude.com/api/v1";
+            const response = await fetch(`${backendUrl}/client/${clientId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
             if (response.ok) {
               const clientData = await response.json();

@@ -3,12 +3,16 @@
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { clearAllSessionData } from "@/lib/utils/menuUtils";
 
 export default function LogoutNotification() {
   const t = useTranslations("tokenRevoked");
   const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
+    // Clear menu and storage immediately using utility
+    clearAllSessionData();
+
     const timer = setInterval(() => {
       setCountdown((prevCount) => {
         if (prevCount <= 1) {

@@ -102,13 +102,18 @@ const StockComparison: React.FC = () => {
   const chartData = useMemo(() => {
     if (!selectedSecurity1) return [];
 
-    const security1Data = mockSecurityHistory[selectedSecurity1 as keyof typeof mockSecurityHistory] || [];
-    const security2Data = selectedSecurity2 
-      ? mockSecurityHistory[selectedSecurity2 as keyof typeof mockSecurityHistory] || []
+    const security1Data =
+      mockSecurityHistory[
+        selectedSecurity1 as keyof typeof mockSecurityHistory
+      ] || [];
+    const security2Data = selectedSecurity2
+      ? mockSecurityHistory[
+          selectedSecurity2 as keyof typeof mockSecurityHistory
+        ] || []
       : [];
 
     const dateMap = new Map();
-    
+
     security1Data.forEach((item) => {
       dateMap.set(item.date, {
         date: item.date,
@@ -140,12 +145,12 @@ const StockComparison: React.FC = () => {
   };
 
   const getSecurity1Name = () => {
-    const security = mockSecurities.find(s => s.id === selectedSecurity1);
+    const security = mockSecurities.find((s) => s.id === selectedSecurity1);
     return security ? `${security.name} (${security.code})` : "Security 1";
   };
 
   const getSecurity2Name = () => {
-    const security = mockSecurities.find(s => s.id === selectedSecurity2);
+    const security = mockSecurities.find((s) => s.id === selectedSecurity2);
     return security ? `${security.name} (${security.code})` : "Security 2";
   };
 
@@ -161,9 +166,14 @@ const StockComparison: React.FC = () => {
             <label className="text-sm font-medium mb-2 block">
               {t?.("selectSecurity1") || "Select First Security"}
             </label>
-            <Select value={selectedSecurity1} onValueChange={setSelectedSecurity1}>
+            <Select
+              value={selectedSecurity1}
+              onValueChange={setSelectedSecurity1}
+            >
               <SelectTrigger>
-                <SelectValue placeholder={t?.("selectSecurity") || "Select a security"} />
+                <SelectValue
+                  placeholder={t?.("selectSecurity") || "Select a security"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {mockSecurities.map((security) => (
@@ -179,14 +189,19 @@ const StockComparison: React.FC = () => {
             <label className="text-sm font-medium mb-2 block">
               {t?.("selectSecurity2") || "Select Second Security (Optional)"}
             </label>
-            <Select value={selectedSecurity2} onValueChange={setSelectedSecurity2}>
+            <Select
+              value={selectedSecurity2}
+              onValueChange={setSelectedSecurity2}
+            >
               <SelectTrigger>
-                <SelectValue placeholder={t?.("selectSecurity") || "Select a security"} />
+                <SelectValue
+                  placeholder={t?.("selectSecurity") || "Select a security"}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">None</SelectItem>
                 {mockSecurities
-                  .filter(security => security.id !== selectedSecurity1)
+                  .filter((security) => security.id !== selectedSecurity1)
                   .map((security) => (
                     <SelectItem key={security.id} value={security.id}>
                       {security.name} ({security.code})
@@ -205,9 +220,14 @@ const StockComparison: React.FC = () => {
             </label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : (t?.("pickDate") || "Pick a date")}
+                  {startDate
+                    ? format(startDate, "PPP")
+                    : t?.("pickDate") || "Pick a date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -227,9 +247,14 @@ const StockComparison: React.FC = () => {
             </label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : (t?.("pickDate") || "Pick a date")}
+                  {endDate
+                    ? format(endDate, "PPP")
+                    : t?.("pickDate") || "Pick a date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -245,12 +270,14 @@ const StockComparison: React.FC = () => {
         </div>
 
         {/* Compare Button */}
-        <Button 
+        <Button
           onClick={handleCompare}
           disabled={!selectedSecurity1 || loading}
           className="w-full"
         >
-          {loading ? (t?.("loading") || "Loading...") : (t?.("compare") || "Compare")}
+          {loading
+            ? t?.("loading") || "Loading..."
+            : t?.("compare") || "Compare"}
         </Button>
 
         {/* Chart */}
@@ -259,32 +286,34 @@ const StockComparison: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tick={{ fontSize: 12 }}
                   tickFormatter={(value) => format(new Date(value), "MMM dd")}
                 />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip 
+                <Tooltip
                   labelFormatter={(value) => format(new Date(value), "PPP")}
                   formatter={(value, name) => [
                     `$${value}`,
-                    name === "security1" ? getSecurity1Name() : getSecurity2Name()
+                    name === "security1"
+                      ? getSecurity1Name()
+                      : getSecurity2Name(),
                   ]}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="security1" 
-                  stroke="#8884d8" 
+                <Line
+                  type="monotone"
+                  dataKey="security1"
+                  stroke="#8884d8"
                   name={getSecurity1Name()}
                   strokeWidth={2}
                 />
                 {selectedSecurity2 && (
-                  <Line 
-                    type="monotone" 
-                    dataKey="security2" 
-                    stroke="#82ca9d" 
+                  <Line
+                    type="monotone"
+                    dataKey="security2"
+                    stroke="#82ca9d"
                     name={getSecurity2Name()}
                     strokeWidth={2}
                   />
@@ -322,7 +351,9 @@ const StockComparison: React.FC = () => {
             {selectedSecurity2 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">{getSecurity2Name()}</CardTitle>
+                  <CardTitle className="text-lg">
+                    {getSecurity2Name()}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">

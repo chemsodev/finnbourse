@@ -1,8 +1,8 @@
 import { Button } from "./ui/button";
 import { CheckIcon, CircleAlert } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { UPDATE_ORDER_PAYED_WITH_CARD } from "@/graphql/mutations";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { UPDATE_ORDER_PAYED_WITH_CARD } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
 import TermsAndConditions from "./TermsAndConditions";
@@ -89,10 +89,13 @@ const PayButton: React.FC<PayButtonProps> = ({
                   if (EventData.event === "success") {
                     // here add the UPDATE_ORDER_PAYED_WITH_CARD mutation
                     try {
-                      await fetchGraphQLClient(UPDATE_ORDER_PAYED_WITH_CARD, {
-                        id: createdOrdreId,
-                        payedwithcard: true,
-                      });
+                      // TODO: Replace with REST API call
+                      // await fetchGraphQLClient(UPDATE_ORDER_PAYED_WITH_CARD, {
+                      //   id: createdOrdreId,
+                      //   payedwithcard: true,
+                      // });
+
+                      console.log("Payment card update simulated");
                       setpayedWithCard(true);
                       setPaymentData(
                         <div className="w-full flex gap-6 items-center">
