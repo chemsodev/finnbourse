@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
-import { PERF_PLATEFORME_QUERY } from "@/graphql/queries";
+// import { PERF_PLATEFORME_QUERY } from "@/graphql/queries";
 import RateLimitReached from "../RateLimitReached";
 
 type SecurityTransaction = {
@@ -58,7 +58,24 @@ export function GraphPerfPlat(titre: { titre: string }) {
 
   const fetchTransactions = async () => {
     try {
-      const result = await fetchGraphQLClient<any>(PERF_PLATEFORME_QUERY);
+      // TODO: Replace with REST API call
+      // const result = await fetchGraphQLClient<any>(PERF_PLATEFORME_QUERY);
+
+      // Mock data for platform performance
+      const mockData = [
+        {
+          securityissuer: "Company A",
+          _sum: { validatedprice: 150000, validatedquantity: 500 },
+          _count: { id: 25 },
+        },
+        {
+          securityissuer: "Company B",
+          _sum: { validatedprice: 200000, validatedquantity: 300 },
+          _count: { id: 30 },
+        },
+      ];
+
+      const result = { data: { groupByOrder: mockData } };
       console.log("API Response:", result); // Debug log
 
       if (result?.data?.groupByOrder) {

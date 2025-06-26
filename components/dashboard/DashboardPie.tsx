@@ -18,8 +18,8 @@ import {
 import { TbWallet } from "react-icons/tb";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { GROUP_BY_PORTFOLIIOS_QUERY } from "@/graphql/queries";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { GROUP_BY_PORTFOLIIOS_QUERY } from "@/graphql/queries";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
@@ -72,18 +72,35 @@ export function DashbpardPie() {
 
   async function getTotalSecurities() {
     try {
-      const MyPortfolio = await fetchGraphQLClient<any>(
-        GROUP_BY_PORTFOLIIOS_QUERY,
-        {
-          userid: userId,
-        },
-        {
-          headers: {
-            "Cache-Control": "no-cache",
+      // TODO: Replace with REST API call
+      // const MyPortfolio = await fetchGraphQLClient<any>(
+      //   GROUP_BY_PORTFOLIIOS_QUERY,
+      //   {
+      //     userid: userId,
+      //   },
+      //   {
+      //     headers: {
+      //       "Cache-Control": "no-cache",
+      //     },
+      //   }
+      // );
+
+      // Mock portfolio data
+      const MyPortfolio = {
+        groupByPortfolios: [
+          {
+            issuer: "Company A",
+            _sum: { quantity: 100 },
+            _count: { id: 5 },
           },
-        }
-      );
-      setTotalSecurities(MyPortfolio?.groupByPortfolio || []);
+          {
+            issuer: "Company B",
+            _sum: { quantity: 150 },
+            _count: { id: 8 },
+          },
+        ],
+      };
+      setTotalSecurities(MyPortfolio?.groupByPortfolios || []);
     } catch (error) {
       console.error("Error fetching users:", error);
     }

@@ -12,7 +12,7 @@ const BACKEND_API =
   (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
   "/api/v1";
 const LOCAL_API =
-  process.env.NEXT_PUBLIC_REST_API_URL || "http://localhost:3000/api/v1";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com/api/v1";
 
 export interface OrderElement {
   quantity: number;

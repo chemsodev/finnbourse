@@ -43,7 +43,8 @@ import {
   Paperclip,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 
 const formSchema = z.object({
   bulletinDeSouscriptionSigneFiles: z.string(),

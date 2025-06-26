@@ -10,11 +10,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  LIST_STOCKS_QUERY,
-  PORTFOLIO_PERFORMANCE_QUERY,
-} from "@/graphql/queries";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import {
+//   LIST_STOCKS_QUERY,
+//   PORTFOLIO_PERFORMANCE_QUERY,
+// } from "@/graphql/queries";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import RateLimitReached from "../RateLimitReached";
@@ -208,10 +210,14 @@ export function GraphPerfPortefeille(titre: { titre: string }) {
       setLoading(true);
       setError(null);
 
+      // TODO: Replace with REST API call
       // Use our custom query to ensure we get all needed fields
-      const result = await fetchGraphQLClient<any>(CUSTOM_PORTFOLIO_QUERY, {
-        userid,
-      });
+      // const result = await fetchGraphQLClient<any>(CUSTOM_PORTFOLIO_QUERY, {
+      //   userid,
+      // });
+
+      // Use mock data for now
+      const result = { listOrdersExtended: [] };
 
       console.log("Portfolio data:", result);
 

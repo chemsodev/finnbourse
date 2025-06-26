@@ -28,12 +28,12 @@ import { PiChatsCircle } from "react-icons/pi";
 import { Button } from "./ui/button";
 import { CheckIcon, Loader2, SendHorizontal, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
-import { DELETE_QUESTION, UPDATE_SUPPORT_MESSAGE } from "@/graphql/mutations";
+// import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
+// import { DELETE_QUESTION, UPDATE_SUPPORT_MESSAGE } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/routing";
-import { FIND_UNIQUE_USER } from "@/graphql/queries";
+// import { FIND_UNIQUE_USER } from "@/graphql/queries";
 import { User } from "@/lib/interfaces";
 import RateLimitReached from "./RateLimitReached";
 import { useSession } from "next-auth/react";
@@ -83,16 +83,37 @@ const Message = ({
     if (open) {
       const fetchUser = async () => {
         try {
-          const response = await clientFetchGraphQL<{ findUniqueUser: User }>(
-            FIND_UNIQUE_USER,
-            {
-              userid,
-            },
-            {},
-            accessToken
-          );
+          // TODO: Replace with REST API call
+          // const response = await clientFetchGraphQL<{ findUniqueUser: User }>(
+          //   FIND_UNIQUE_USER,
+          //   {
+          //     userid,
+          //   },
+          //   {},
+          //   accessToken
+          // );
 
-          setUser(response.findUniqueUser);
+          // Mock user data
+          const mockUser: User = {
+            id: userid,
+            fullname: "User " + userid,
+            email: "user@example.com",
+            followsbusiness: false,
+            roleid: 1,
+            phonenumber: "",
+            address: "",
+            birthdate: "",
+            trustnumber: "",
+            nationality: "",
+            countryofresidence: "",
+            negotiatorid: "",
+            countryofbirth: "",
+            profession: "",
+            zipcode: "",
+            status: 1,
+          };
+
+          setUser(mockUser);
         } catch (error) {
           console.error("Error fetching user:", error);
         }
@@ -104,14 +125,17 @@ const Message = ({
   async function onDelete() {
     setIsSubmitting(true);
     try {
-      await clientFetchGraphQL<String>(
-        DELETE_QUESTION,
-        {
-          id: id,
-        },
-        {},
-        accessToken
-      );
+      // TODO: Replace with REST API call
+      // await clientFetchGraphQL<String>(
+      //   DELETE_QUESTION,
+      //   {
+      //     id: id,
+      //   },
+      //   {},
+      //   accessToken
+      // );
+
+      console.log("Question deletion simulated");
 
       toast({
         variant: "success",
@@ -136,16 +160,19 @@ const Message = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await clientFetchGraphQL<String>(
-        UPDATE_SUPPORT_MESSAGE,
-        {
-          id,
-          answer: values.reponseProbleme,
-          state: 1,
-        },
-        {},
-        accessToken
-      );
+      // TODO: Replace with REST API call
+      // await clientFetchGraphQL<String>(
+      //   UPDATE_SUPPORT_MESSAGE,
+      //   {
+      //     id,
+      //     answer: values.reponseProbleme,
+      //     state: 1,
+      //   },
+      //   {},
+      //   accessToken
+      // );
+
+      console.log("Support message update simulated");
       toast({
         variant: "success",
         title: t("success"),

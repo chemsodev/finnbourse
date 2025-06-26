@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { ORDER_HISTORY_QUERY } from "@/graphql/queries";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { ORDER_HISTORY_QUERY } from "@/graphql/queries";
 import { useTranslations } from "next-intl";
 import RateLimitReached from "../RateLimitReached";
 
@@ -70,11 +71,15 @@ export function GraphHistoriqueOrdres(titre: { titre: string }) {
 
   const fetchOrderHistoryData = async () => {
     try {
-      const result = await fetchGraphQLClient<any>(ORDER_HISTORY_QUERY, {
-        userid,
-      });
-      const processedData = processData(result.groupByOrder);
-      setChartData(processedData);
+      // TODO: Replace with REST API call
+      // const result = await fetchGraphQLClient<any>(ORDER_HISTORY_QUERY, {
+      //   userid,
+      // });
+      // const processedData = processData(result.groupByOrder);
+      // setChartData(processedData);
+
+      // Use mock data for now
+      setChartData([]);
     } catch (error) {
       if (error === "Too many requests") {
         return <RateLimitReached />;

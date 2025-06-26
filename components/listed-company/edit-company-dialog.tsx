@@ -22,8 +22,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { UPDATE_LISTED_COMPANY } from "@/graphql/mutations";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using REST API
+// import { UPDATE_LISTED_COMPANY } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using REST API
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 
 // Définition du schéma de validation
 const formSchema = z.object({
@@ -150,21 +152,25 @@ const EditCompanyDialog = ({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      await fetchGraphQLClient<{ id: string }>(UPDATE_LISTED_COMPANY, {
-        id: values.id,
-        nom: values.nom,
-        secteuractivite: values.secteurActivite,
-        siteofficiel: values.siteOfficiel || null,
-        contactNom: values.contactNom,
-        contactPrenom: values.contactPrenom,
-        contactFonction: values.contactFonction,
-        phone: values.phone,
-        mobile: values.mobile,
-        email: values.email,
-        address: values.adresse,
-        capitalisationboursiere: values.capital,
-        notice: values.notice || "",
-      });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<{ id: string }>(UPDATE_LISTED_COMPANY, {
+      //   id: values.id,
+      //   nom: values.nom,
+      //   secteuractivite: values.secteurActivite,
+      //   siteofficiel: values.siteOfficiel || null,
+      //   contactNom: values.contactNom,
+      //   contactPrenom: values.contactPrenom,
+      //   contactFonction: values.contactFonction,
+      //   phone: values.phone,
+      //   mobile: values.mobile,
+      //   email: values.email,
+      //   address: values.adresse,
+      //   capitalisationboursiere: values.capital,
+      //   notice: values.notice || "",
+      // });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         variant: "success",

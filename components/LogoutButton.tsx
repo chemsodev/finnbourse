@@ -2,23 +2,20 @@
 
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useMenuContext } from "@/contexts/MenuContext";
+import { clearAllSessionData } from "@/lib/utils/menuUtils";
 
 export default function LogoutButton() {
   const t = useTranslations("DeconnexionDialog");
+  const { clearMenu } = useMenuContext();
 
   const handleLogout = async () => {
     try {
-      // Clear all session storage immediately
-      if (typeof window !== "undefined") {
-        sessionStorage.clear();
-        localStorage.removeItem("finnbourse_rest_token");
-        localStorage.removeItem("finnbourse-menu");
+      // Clear menu context
+      clearMenu();
 
-        // Clear any token manager state
-        if ((window as any).tokenManager) {
-          (window as any).tokenManager.reset();
-        }
-      }
+      // Clear all session data using utility
+      clearAllSessionData();
 
       // Sign out with proper cleanup
       await signOut({ redirect: true, callbackUrl: "/login" });

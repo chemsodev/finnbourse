@@ -400,7 +400,7 @@ export const actorAPI = {
 export async function checkRestAPIStatus(): Promise<boolean> {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_REST_API_URL}/health`
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/health`
     );
     return response.ok;
   } catch (error) {

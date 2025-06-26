@@ -1,136 +1,47 @@
 "use client";
-import { Link } from "@/i18n/routing";
-import React, { useEffect, useState } from "react";
-import { IoReloadSharp } from "react-icons/io5";
-import { MdDoneOutline } from "react-icons/md";
-import { TbMessages } from "react-icons/tb";
-import { useTranslations } from "next-intl";
-import OrderCounter from "./gestion-des-ordres/OrderCounter";
-import { useSession } from "next-auth/react";
-import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
-import {
-  COUNT_UNOPENED_MESSAGES_QUERY,
-  COUNT_VALIDATED_ORDERS_QUERY,
-} from "@/graphql/queries";
-import { startOfWeek, endOfWeek } from "date-fns";
-import RateLimitReached from "./RateLimitReached";
 
-// Define proper session user type
-interface CustomUser {
-  id?: string;
-  token?: string;
-  roleid?: number;
-  name?: string;
-  email?: string;
-}
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import { TrendingUp, Users, DollarSign } from "lucide-react";
 
 const NegotiatiorStats = () => {
-  const t = useTranslations("NegotiatiorStats");
-  const session = useSession();
-  // Use type assertion to access custom fields
-  const user = session?.data?.user as CustomUser;
-  const userId = user?.id;
-  const accessToken = user?.token || "";
-  const [nbMessages, setNbMessages] = useState(0);
-  const userRole = user?.roleid || "";
-  const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const currentWeekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
-  const variables =
-    userRole === 2
-      ? {
-          negotiatorid: userId,
-          startOfWeek: currentWeekStart.toISOString(),
-          endOfWeek: currentWeekEnd.toISOString(),
-        }
-      : {
-          startOfWeek: currentWeekStart.toISOString(),
-          endOfWeek: currentWeekEnd.toISOString(),
-        };
-  const [validatedOrderCounter, setValidatedOrderCounter] = useState(0);
-
-  const countValidatedOrders = async () => {
-    try {
-      const response = await clientFetchGraphQL<any>(
-        COUNT_VALIDATED_ORDERS_QUERY,
-        {
-          variables,
-        },
-        {},
-        accessToken
-      );
-
-      setValidatedOrderCounter(response.aggregateOrder._count._all);
-    } catch (error) {
-      if (error === "Too many requests") {
-        return <RateLimitReached />;
-      }
-      console.error("Error fetching orders:", error);
-    }
-  };
-
-  const countMessages = async () => {
-    try {
-      const response = await clientFetchGraphQL<any>(
-        COUNT_UNOPENED_MESSAGES_QUERY,
-        {},
-        {},
-        accessToken
-      );
-      setNbMessages(response.aggregateSupportqa._count._all);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (accessToken) {
-      countMessages();
-    }
-  }, [userId, accessToken]);
+  const t = useTranslations("HomePage");
 
   return (
-    <div className="flex flex-col gap-6 h-full justify-between">
-      <Link
-        href="/ordres"
-        className="bg-primary hover:scale-105 transition-all duration-300 rounded-md h-full w-full text-white flex gap-6 justify-start ltr:pl-6 rtl:pr-6 py-4 items-center"
-      >
-        <div className="bg-white/20 w-16 h-16 rounded-full flex justify-center items-center">
-          <MdDoneOutline size={30} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-xl ">{t("ordresExecute")}</div>
-          <div className="text-2xl font-semibold">
-            {validatedOrderCounter || 0}
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5" />
+          Negotiator Statistics
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-500" />
+              <span className="text-sm">Active Clients</span>
+            </div>
+            <span className="font-semibold">247</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-green-500" />
+              <span className="text-sm">Total Volume</span>
+            </div>
+            <span className="font-semibold">2.4M DZD</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-purple-500" />
+              <span className="text-sm">Performance</span>
+            </div>
+            <span className="font-semibold text-green-600">+12.5%</span>
           </div>
         </div>
-      </Link>
-      <Link
-        href="/ordres?state=1"
-        className="bg-primary hover:scale-105 transition-all duration-300 rounded-md h-full w-full text-white flex gap-6 justify-start ltr:pl-6 rtl:pr-6 py-4 items-center"
-      >
-        <div className="bg-white/20 w-16 h-16 rounded-full flex justify-center items-center">
-          <IoReloadSharp size={30} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-xl">{t("ordresEnAttente")}</div>
-          <div className="text-2xl font-semibold">
-            <OrderCounter />
-          </div>
-        </div>
-      </Link>
-      <Link
-        href="/serviceclients"
-        className="bg-primary hover:scale-105 transition-all duration-300 rounded-md h-full w-full text-white flex gap-6 justify-start ltr:pl-6 rtl:pr-6 py-4 items-center"
-      >
-        <div className="bg-white/20 w-16 h-16 rounded-full flex justify-center items-center">
-          <TbMessages size={30} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-xl">{t("messages")}</div>
-          <div className="text-2xl font-semibold">{nbMessages || 0}</div>
-        </div>
-      </Link>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

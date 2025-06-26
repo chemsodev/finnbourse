@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Line,
@@ -29,28 +29,54 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
-import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
 
-// Updated GraphQL queries that match the backend schema
-const GET_SECURITIES_QUERY = `
-  query ListSecurities {
-    listStocks {
-      id
-      name
-      code
-      issuer
-    }
-  }
-`;
+// Static mock data for securities
+const mockSecurities = [
+  { id: "1", name: "AlphaStock Corp", code: "ALPH", issuer: "AlphaStock Corp" },
+  { id: "2", name: "BetaFinance Ltd", code: "BETA", issuer: "BetaFinance Ltd" },
+  { id: "3", name: "GammaInvest SA", code: "GAMA", issuer: "GammaInvest SA" },
+  { id: "4", name: "DeltaTech Inc", code: "DELT", issuer: "DeltaTech Inc" },
+];
 
-const GET_SECURITY_HISTORY_QUERY = `
-  query GetSecurityHistory($securityId: String!) {
-    getSecurityHistory(securityId: $securityId) {
-      date
-      price
-    }
-  }
-`;
+// Static mock data for security history
+const mockSecurityHistory = {
+  "1": [
+    { date: "2024-01-01", price: 100 },
+    { date: "2024-01-02", price: 105 },
+    { date: "2024-01-03", price: 102 },
+    { date: "2024-01-04", price: 108 },
+    { date: "2024-01-05", price: 112 },
+    { date: "2024-01-06", price: 115 },
+    { date: "2024-01-07", price: 110 },
+  ],
+  "2": [
+    { date: "2024-01-01", price: 150 },
+    { date: "2024-01-02", price: 155 },
+    { date: "2024-01-03", price: 148 },
+    { date: "2024-01-04", price: 162 },
+    { date: "2024-01-05", price: 158 },
+    { date: "2024-01-06", price: 165 },
+    { date: "2024-01-07", price: 160 },
+  ],
+  "3": [
+    { date: "2024-01-01", price: 80 },
+    { date: "2024-01-02", price: 82 },
+    { date: "2024-01-03", price: 85 },
+    { date: "2024-01-04", price: 88 },
+    { date: "2024-01-05", price: 84 },
+    { date: "2024-01-06", price: 87 },
+    { date: "2024-01-07", price: 85 },
+  ],
+  "4": [
+    { date: "2024-01-01", price: 90 },
+    { date: "2024-01-02", price: 95 },
+    { date: "2024-01-03", price: 92 },
+    { date: "2024-01-04", price: 98 },
+    { date: "2024-01-05", price: 96 },
+    { date: "2024-01-06", price: 100 },
+    { date: "2024-01-07", price: 95 },
+  ],
+};
 
 interface Security {
   id: string;
@@ -59,343 +85,136 @@ interface Security {
   issuer: string;
 }
 
-interface SecurityHistoryPoint {
+interface SecurityHistory {
   date: string;
   price: number;
 }
 
-export function StockComparison() {
-  const t = useTranslations("stockComparison");
+const StockComparison: React.FC = () => {
+  const t = useTranslations("StockComparison");
+  const [selectedSecurity1, setSelectedSecurity1] = useState<string>("");
+  const [selectedSecurity2, setSelectedSecurity2] = useState<string>("");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [loading, setLoading] = useState(false);
 
-  const [security1, setSecurity1] = useState<string>("");
-  const [security2, setSecurity2] = useState<string>("");
-  const [fromDate, setFromDate] = useState<Date>(
-    new Date(new Date().setMonth(new Date().getMonth() - 1))
-  );
-  const [toDate, setToDate] = useState<Date>(new Date());
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [securities, setSecurities] = useState<Security[]>([]);
+  // Process data for chart
+  const chartData = useMemo(() => {
+    if (!selectedSecurity1) return [];
 
-  // Fetch available securities
-  useEffect(() => {
-    const fetchSecurities = async () => {
-      try {
-        const result = await clientFetchGraphQL<{ listStocks: Security[] }>(
-          GET_SECURITIES_QUERY
-        );
-        if (result?.listStocks && result.listStocks.length > 0) {
-          setSecurities(result.listStocks);
-        } else {
-          // Fallback to mock data if API returns empty result
-          generateMockSecurities();
-        }
-      } catch (error) {
-        console.error("Error fetching securities:", error);
-        // Fallback to mock data if API fails
-        generateMockSecurities();
-      }
-    };
+    const security1Data = mockSecurityHistory[selectedSecurity1 as keyof typeof mockSecurityHistory] || [];
+    const security2Data = selectedSecurity2 
+      ? mockSecurityHistory[selectedSecurity2 as keyof typeof mockSecurityHistory] || []
+      : [];
 
-    // Initialize with mock data immediately for better UX
-    generateMockSecurities();
-    // Then try to fetch real data
-    fetchSecurities();
-  }, []);
-
-  // Generate mock securities for testing
-  const generateMockSecurities = () => {
-    setSecurities([
-      { id: "stock1", name: "AIR ALGÉRIE", code: "AIR", issuer: "AIR ALGÉRIE" },
-      { id: "stock2", name: "SONATRACH", code: "SON", issuer: "SONATRACH" },
-      {
-        id: "stock3",
-        name: "BANQUE EXTÉRIEURE D'ALGÉRIE",
-        code: "BEA",
-        issuer: "BEA",
-      },
-      {
-        id: "stock4",
-        name: "BANQUE DE DÉVELOPPEMENT LOCAL",
-        code: "BDL",
-        issuer: "BDL",
-      },
-      { id: "stock5", name: "SAIDAL", code: "SAI", issuer: "SAIDAL" },
-    ]);
-  };
-
-  // Function to fetch security history data
-  const fetchSecurityData = async () => {
-    if (!security1 || !fromDate || !toDate) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Create a map to store combined data
-      const combinedData = new Map();
-
-      // Try to fetch data for security 1
-      try {
-        const security1Result = await clientFetchGraphQL<{
-          getSecurityHistory: SecurityHistoryPoint[];
-        }>(GET_SECURITY_HISTORY_QUERY, {
-          securityId: security1,
-        });
-
-        const security1Code =
-          securities.find((s) => s.id === security1)?.code || "Security 1";
-
-        if (security1Result?.getSecurityHistory?.length > 0) {
-          // Process real data if available
-          security1Result.getSecurityHistory.forEach((item) => {
-            const itemDate = new Date(item.date);
-            if (itemDate >= fromDate && itemDate <= toDate) {
-              combinedData.set(item.date, {
-                date: format(itemDate, "yyyy-MM-dd"),
-                [security1Code]: item.price,
-              });
-            }
-          });
-        } else {
-          throw new Error("No history data available");
-        }
-      } catch (error) {
-        // Generate mock data for security 1
-        generateMockDataForSecurity(security1, combinedData);
-      }
-
-      // If security 2 is selected, try to fetch its data
-      if (security2) {
-        try {
-          const security2Result = await clientFetchGraphQL<{
-            getSecurityHistory: SecurityHistoryPoint[];
-          }>(GET_SECURITY_HISTORY_QUERY, {
-            securityId: security2,
-          });
-
-          const security2Code =
-            securities.find((s) => s.id === security2)?.code || "Security 2";
-
-          if (security2Result?.getSecurityHistory?.length > 0) {
-            // Process real data if available
-            security2Result.getSecurityHistory.forEach((item) => {
-              const itemDate = new Date(item.date);
-              if (itemDate >= fromDate && itemDate <= toDate) {
-                const existing = combinedData.get(item.date) || {
-                  date: format(itemDate, "yyyy-MM-dd"),
-                };
-                combinedData.set(item.date, {
-                  ...existing,
-                  [security2Code]: item.price,
-                });
-              }
-            });
-          } else {
-            throw new Error("No history data available");
-          }
-        } catch (error) {
-          // Generate mock data for security 2
-          generateMockDataForSecurity(security2, combinedData, true);
-        }
-      }
-
-      // Convert map to array and sort by date
-      let chartDataArray = Array.from(combinedData.values()).sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-
-      // If we have no data points (API failure), generate complete mock data
-      if (chartDataArray.length === 0) {
-        chartDataArray = generateFullMockData();
-      }
-
-      setChartData(chartDataArray);
-    } catch (error) {
-      console.error("Error fetching security data:", error);
-      // Use mock data as fallback
-      setChartData(generateFullMockData());
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Generate mock data for a specific security
-  const generateMockDataForSecurity = (
-    securityId: string,
-    dataMap: Map<string, any>,
-    isSecond = false
-  ) => {
-    const currentDate = new Date(fromDate);
-    const endDate = new Date(toDate);
-    const securityCode =
-      securities.find((s) => s.id === securityId)?.code ||
-      (isSecond ? "Security 2" : "Security 1");
-
-    // Base value and trend for the security
-    const baseValue = isSecond ? 120 : 100;
-    const volatility = isSecond ? 0.8 : 1.2;
-
-    while (currentDate <= endDate) {
-      const dateStr = format(currentDate, "yyyy-MM-dd");
-      const daysPassed = Math.floor(
-        (currentDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      // Create a realistic price movement with some randomness and trend
-      const trendComponent = isSecond
-        ? Math.sin(daysPassed / 15) * 10
-        : daysPassed * 0.5;
-
-      const randomComponent = (Math.random() - 0.5) * 10 * volatility;
-      const price = baseValue + trendComponent + randomComponent;
-
-      const existing = dataMap.get(dateStr) || { date: dateStr };
-      dataMap.set(dateStr, {
-        ...existing,
-        [securityCode]: Math.max(price, 10).toFixed(2),
+    const dateMap = new Map();
+    
+    security1Data.forEach((item) => {
+      dateMap.set(item.date, {
+        date: item.date,
+        security1: item.price,
       });
+    });
 
-      currentDate.setDate(currentDate.getDate() + 1);
+    if (selectedSecurity2) {
+      security2Data.forEach((item) => {
+        const existing = dateMap.get(item.date) || { date: item.date };
+        dateMap.set(item.date, {
+          ...existing,
+          security2: item.price,
+        });
+      });
     }
+
+    return Array.from(dateMap.values()).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }, [selectedSecurity1, selectedSecurity2]);
+
+  const handleCompare = () => {
+    setLoading(true);
+    // Simulate loading
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
   };
 
-  // Generate full mock data for both securities
-  const generateFullMockData = useCallback(() => {
-    const mockData = [];
-    const currentDate = new Date(fromDate);
-    const endDate = new Date(toDate);
+  const getSecurity1Name = () => {
+    const security = mockSecurities.find(s => s.id === selectedSecurity1);
+    return security ? `${security.name} (${security.code})` : "Security 1";
+  };
 
-    const security1Code =
-      securities.find((s) => s.id === security1)?.code || "Security 1";
-    const security2Code =
-      securities.find((s) => s.id === security2)?.code || "Security 2";
-
-    // Base values and trends
-    const baseValue1 = 100;
-    const baseValue2 = security2 ? 120 : 0;
-    let trend1 = 0;
-    let trend2 = 0;
-
-    // Limit the number of data points to improve performance
-    const totalDays = Math.ceil(
-      (endDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const interval = totalDays > 60 ? Math.ceil(totalDays / 30) : 1; // Sample at most ~30 points
-
-    let dayCount = 0;
-    while (currentDate <= endDate) {
-      // Only add data points at specified intervals to reduce load
-      if (dayCount % interval === 0) {
-        // Add some realistic price movements
-        trend1 += (Math.random() - 0.48) * 2;
-        trend2 += (Math.random() - 0.52) * 2;
-
-        // Limit the trend to prevent extreme values
-        trend1 = Math.max(-15, Math.min(15, trend1));
-        trend2 = Math.max(-15, Math.min(15, trend2));
-
-        const dataPoint: any = {
-          date: format(currentDate, "yyyy-MM-dd"),
-          [security1Code]: (baseValue1 + trend1).toFixed(2),
-        };
-
-        if (security2) {
-          dataPoint[security2Code] = (baseValue2 + trend2).toFixed(2);
-        }
-
-        mockData.push(dataPoint);
-      }
-
-      currentDate.setDate(currentDate.getDate() + 1);
-      dayCount++;
-    }
-
-    return mockData;
-  }, [fromDate, toDate, security1, security2, securities]);
-
-  // Memoize the chart lines to prevent unnecessary re-renders
-  const chartLines = useMemo(() => {
-    if (!chartData.length) return [];
-
-    return Object.keys(chartData[0])
-      .filter((key) => key !== "date")
-      .map((key, index) => (
-        <Line
-          key={key}
-          type="monotone"
-          dataKey={key}
-          stroke={index === 0 ? "#8884d8" : "#82ca9d"}
-          activeDot={{ r: 8 }}
-          name={key}
-          // Optimize rendering by reducing the number of segments
-          isAnimationActive={false}
-        />
-      ));
-  }, [chartData]);
+  const getSecurity2Name = () => {
+    const security = mockSecurities.find(s => s.id === selectedSecurity2);
+    return security ? `${security.name} (${security.code})` : "Security 2";
+  };
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
+        <CardTitle>{t?.("title") || "Stock Comparison"}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <CardContent className="space-y-4">
+        {/* Security Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="text-sm font-medium mb-2">{t("stock1")}</h3>
-            <Select value={security1} onValueChange={setSecurity1}>
+            <label className="text-sm font-medium mb-2 block">
+              {t?.("selectSecurity1") || "Select First Security"}
+            </label>
+            <Select value={selectedSecurity1} onValueChange={setSelectedSecurity1}>
               <SelectTrigger>
-                <SelectValue placeholder={t("chooseStock")} />
+                <SelectValue placeholder={t?.("selectSecurity") || "Select a security"} />
               </SelectTrigger>
               <SelectContent>
-                {securities.map((security) => (
+                {mockSecurities.map((security) => (
                   <SelectItem key={security.id} value={security.id}>
-                    {security.issuer} ({security.code})
+                    {security.name} ({security.code})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("compareWith")}
-            </p>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium mb-2">{t("stock2")}</h3>
-            <Select value={security2} onValueChange={setSecurity2}>
+            <label className="text-sm font-medium mb-2 block">
+              {t?.("selectSecurity2") || "Select Second Security (Optional)"}
+            </label>
+            <Select value={selectedSecurity2} onValueChange={setSelectedSecurity2}>
               <SelectTrigger>
-                <SelectValue placeholder={t("chooseStock")} />
+                <SelectValue placeholder={t?.("selectSecurity") || "Select a security"} />
               </SelectTrigger>
               <SelectContent>
-                {securities.map((security) => (
-                  <SelectItem key={security.id} value={security.id}>
-                    {security.issuer} ({security.code})
-                  </SelectItem>
-                ))}
+                <SelectItem value="">None</SelectItem>
+                {mockSecurities
+                  .filter(security => security.id !== selectedSecurity1)
+                  .map((security) => (
+                    <SelectItem key={security.id} value={security.id}>
+                      {security.name} ({security.code})
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("stockToCompare")}
-            </p>
           </div>
+        </div>
 
+        {/* Date Range Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="text-sm font-medium mb-2">{t("fromDate")}</h3>
+            <label className="text-sm font-medium mb-2 block">
+              {t?.("startDate") || "Start Date"}
+            </label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
+                <Button variant="outline" className="w-full justify-start text-left font-normal">
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {fromDate ? format(fromDate, "PPP") : t("pickDate")}
+                  {startDate ? format(startDate, "PPP") : (t?.("pickDate") || "Pick a date")}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
-                  selected={fromDate}
-                  onSelect={(date) => date && setFromDate(date)}
+                  selected={startDate}
+                  onSelect={setStartDate}
                   initialFocus
                 />
               </PopoverContent>
@@ -403,22 +222,21 @@ export function StockComparison() {
           </div>
 
           <div>
-            <h3 className="text-sm font-medium mb-2">{t("toDate")}</h3>
+            <label className="text-sm font-medium mb-2 block">
+              {t?.("endDate") || "End Date"}
+            </label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
+                <Button variant="outline" className="w-full justify-start text-left font-normal">
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {toDate ? format(toDate, "PPP") : t("pickDate")}
+                  {endDate ? format(endDate, "PPP") : (t?.("pickDate") || "Pick a date")}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
-                  selected={toDate}
-                  onSelect={(date) => date && setToDate(date)}
+                  selected={endDate}
+                  onSelect={setEndDate}
                   initialFocus
                 />
               </PopoverContent>
@@ -426,37 +244,109 @@ export function StockComparison() {
           </div>
         </div>
 
-        <Button
-          className="w-full mb-6"
-          onClick={fetchSecurityData}
-          disabled={loading || !security1 || !fromDate || !toDate}
+        {/* Compare Button */}
+        <Button 
+          onClick={handleCompare}
+          disabled={!selectedSecurity1 || loading}
+          className="w-full"
         >
-          {loading ? t("loading") : t("view")}
+          {loading ? (t?.("loading") || "Loading...") : (t?.("compare") || "Compare")}
         </Button>
 
-        {chartData.length > 0 && (
-          <div className="h-[300px]">
+        {/* Chart */}
+        {selectedSecurity1 && chartData.length > 0 && (
+          <div className="h-96 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={chartData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  // Optimize X-axis rendering by showing fewer ticks
-                  interval="preserveStartEnd"
-                  minTickGap={50}
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => format(new Date(value), "MMM dd")}
                 />
-                <YAxis />
-                <Tooltip />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip 
+                  labelFormatter={(value) => format(new Date(value), "PPP")}
+                  formatter={(value, name) => [
+                    `$${value}`,
+                    name === "security1" ? getSecurity1Name() : getSecurity2Name()
+                  ]}
+                />
                 <Legend />
-                {chartLines}
+                <Line 
+                  type="monotone" 
+                  dataKey="security1" 
+                  stroke="#8884d8" 
+                  name={getSecurity1Name()}
+                  strokeWidth={2}
+                />
+                {selectedSecurity2 && (
+                  <Line 
+                    type="monotone" 
+                    dataKey="security2" 
+                    stroke="#82ca9d" 
+                    name={getSecurity2Name()}
+                    strokeWidth={2}
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Summary Statistics */}
+        {selectedSecurity1 && chartData.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{getSecurity1Name()}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>{t?.("currentPrice") || "Current Price"}:</span>
+                    <span className="font-semibold">
+                      ${chartData[chartData.length - 1]?.security1 || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t?.("startPrice") || "Start Price"}:</span>
+                    <span className="font-semibold">
+                      ${chartData[0]?.security1 || 0}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {selectedSecurity2 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{getSecurity2Name()}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>{t?.("currentPrice") || "Current Price"}:</span>
+                      <span className="font-semibold">
+                        ${chartData[chartData.length - 1]?.security2 || 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t?.("startPrice") || "Start Price"}:</span>
+                      <span className="font-semibold">
+                        ${chartData[0]?.security2 || 0}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </CardContent>
     </Card>
   );
-}
+};
+
+export default StockComparison;

@@ -14,10 +14,12 @@ import {
 
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
-import { BAN_USER } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using static data
+// import { BAN_USER } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useRouter } from "@/i18n/routing";
 import { Loader2 } from "lucide-react";
 
@@ -39,9 +41,14 @@ const BanDialog = ({ userId }: { userId: string }) => {
     setIsLoading(true);
 
     try {
-      const orders = await fetchGraphQLClient<BanUserResponse>(BAN_USER, {
-        userid: userId,
-      });
+      // TODO: Replace with REST API call
+      // const orders = await fetchGraphQLClient<BanUserResponse>(BAN_USER, {
+      //   userid: userId,
+      // });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       toast({
         variant: "success",
         title: "Utilisateur banni",

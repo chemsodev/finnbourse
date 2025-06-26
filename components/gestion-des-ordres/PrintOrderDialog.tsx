@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 import { useState, useRef } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { LIST_ORDERS_QUERY_ONE_ORDER } from "@/graphql/queries";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { LIST_ORDERS_QUERY_ONE_ORDER } from "@/graphql/queries";
 import { formatDate } from "@/lib/utils";
 import { Loader2, FileText, Printer } from "lucide-react";
 import RateLimitReached from "../RateLimitReached";
@@ -46,13 +47,17 @@ export default function PrintOrderDialog({
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchGraphQLClient<OrderResponse>(
-        LIST_ORDERS_QUERY_ONE_ORDER,
-        {
-          orderid: titreId,
-        }
-      );
-      setData(result.listOrdersExtended?.[0] || null);
+      // TODO: Replace with REST API call
+      // const result = await fetchGraphQLClient<OrderResponse>(
+      //   LIST_ORDERS_QUERY_ONE_ORDER,
+      //   {
+      //     orderid: titreId,
+      //   }
+      // );
+      // setData(result.listOrdersExtended?.[0] || null);
+
+      // Use mock data for now
+      setData(null);
     } catch (error) {
       if (error === "Too many requests") {
         setError("rate-limit");

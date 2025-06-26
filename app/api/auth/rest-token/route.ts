@@ -1,8 +1,3 @@
-/**
- * /api/auth/rest-token
- * API endpoint to fetch REST token for authenticated users
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import auth from "@/auth";
@@ -38,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (user.token || user.email) {
       try {
         const loginResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_REST_API_URL}/auth/login`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
           {
             method: "POST",
             headers: {

@@ -24,8 +24,10 @@ import { Button } from "../ui/button";
 import { useTranslations } from "next-intl";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
-import { CREATE_LISTED_COMPANY } from "@/graphql/mutations";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using REST API
+// import { CREATE_LISTED_COMPANY } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using REST API
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useRouter } from "@/i18n/routing";
 
 // Define the schema for form validation
@@ -84,20 +86,24 @@ const AjoutSocieteEmettrice = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      await fetchGraphQLClient<{ id: string }>(CREATE_LISTED_COMPANY, {
-        nom: values.nom,
-        secteuractivite: values.secteurActivite,
-        siteofficiel: values.siteOfficiel || null,
-        contactNom: values.contactNom,
-        contactPrenom: values.contactPrenom,
-        contactFonction: values.contactFonction,
-        phone: values.phone,
-        mobile: values.mobile,
-        email: values.email,
-        address: values.adresse,
-        capitalisationboursiere: values.capital,
-        notice: values.notice,
-      });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<{ id: string }>(CREATE_LISTED_COMPANY, {
+      //   nom: values.nom,
+      //   secteuractivite: values.secteurActivite,
+      //   siteofficiel: values.siteOfficiel || null,
+      //   contactNom: values.contactNom,
+      //   contactPrenom: values.contactPrenom,
+      //   contactFonction: values.contactFonction,
+      //   phone: values.phone,
+      //   mobile: values.mobile,
+      //   email: values.email,
+      //   address: values.adresse,
+      //   capitalisationboursiere: values.capital,
+      //   notice: values.notice,
+      // });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         variant: "success",

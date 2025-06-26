@@ -224,7 +224,15 @@
     "stockTwo": "Stock 2",
     "pickADate": "Pick a date",
     "startPeriod": "Start Period",
-    "endPeriod": "End Period"
+    "endPeriod": "End Period",
+    "chartPlaceholder": "Stock price chart will appear here",
+    "chartNote": "Historical price data for selected stocks",
+    "priceHistory": "Price History",
+    "stockTracker": "Stock Tracker",
+    "liveData": "Live Data",
+    "chart": "Chart",
+    "table": "Table",
+    "lastUpdate": "Last Update"
   },
   "TopBarDash": {
     "title": "Portfolio Value",
@@ -2807,5 +2815,28 @@
     "submitResultsDescription": "Insert execution results for orders to be transmitted to TCC",
     "resultsSubmission": "Results Submission",
     "resultsSubmissionDescription": "Insert execution results for orders to be transmitted to TCC"
+  },
+  "ordres": {
+    "draft": "Draft",
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "validated": "Validated",
+    "partiallyValidated": "Partially Validated",
+    "expired": "Expired",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled",
+    "buy": "Buy",
+    "sell": "Sell",
+    "recentOrders": "Recent Orders",
+    "orders": "Orders",
+    "viewAll": "View All",
+    "id": "ID",
+    "security": "Security",
+    "direction": "Direction",
+    "quantity": "Quantity",
+    "priceLimit": "Price Limit",
+    "status": "Status",
+    "orderDate": "Order Date",
+    "showingRecent": "Showing Recent"
   }
 }

@@ -34,8 +34,8 @@ const MENU_ENDPOINT = "/api/v1/menu/list";
 function sanitizeMenuData(data: any): MenuResponse {
   try {
     if (!data || !data.elements || !Array.isArray(data.elements)) {
-      console.warn("Invalid menu data structure, using fallback");
-      return getFallbackMenu();
+      console.warn("Invalid menu data structure received from API");
+      throw new Error("Invalid menu data structure");
     }
 
     const sanitizeElement = (element: any): MenuElement | null => {
@@ -62,53 +62,52 @@ function sanitizeMenuData(data: any): MenuResponse {
       .map(sanitizeElement)
       .filter(Boolean) as MenuElement[];
 
-    return {
-      elements:
-        sanitizedElements.length > 0
-          ? sanitizedElements
-          : getFallbackMenu().elements,
-    };
+    if (sanitizedElements.length === 0) {
+      throw new Error("No valid menu elements found");
+    }
+
+    return { elements: sanitizedElements };
   } catch (error) {
     console.error("Error sanitizing menu data:", error);
-    return getFallbackMenu();
+    throw error;
   }
 }
 
 // Get REST token from session (server-side)
-// This uses the token generated from localhost:3000 REST API during login
+// This uses the token generated from 192.168.0.213:3000 REST API during login
 async function getRestToken(): Promise<string | null> {
   try {
     const session = (await getServerSession(auth)) as Session & {
       user?: SessionUser;
     };
-    // Use the REST token generated from localhost:3000 for menu fetching
+    // Use the REST token generated from 192.168.0.213:3000 for menu fetching
     return session?.user?.restToken || null;
   } catch (error) {
-    console.error("Error getting REST token from localhost:3000:", error);
+    console.error("Error getting REST token from 192.168.0.213:3000:", error);
     return null;
   }
 }
 
 // Server-side menu fetch
 export async function fetchMenu(): Promise<MenuResponse> {
-  try {
-    const restToken = await getRestToken();
+  const restToken = await getRestToken();
 
-    if (!restToken) {
-      console.warn(
-        "No REST token from localhost:3000 available for menu fetch"
-      );
-      return getFallbackMenu();
-    }
-
-    console.log(
-      "Fetching menu from 192.168.0.128 using localhost:3000 REST token"
+  if (!restToken) {
+    console.error(
+      "No REST token from 192.168.0.213:3000 available for menu fetch"
     );
+    throw new Error("No REST token available for menu fetch");
+  }
 
-    // Add timeout to prevent hanging
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+  console.log(
+    "Fetching menu from 192.168.0.128 using 192.168.0.213:3000 REST token"
+  );
 
+  // Add timeout to prevent hanging
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+  try {
     const response = await fetch(`${MENU_API_BASE}${MENU_ENDPOINT}`, {
       method: "GET",
       headers: {
@@ -122,52 +121,46 @@ export async function fetchMenu(): Promise<MenuResponse> {
 
     if (!response.ok) {
       console.error(`Menu fetch failed with status: ${response.status}`);
-      console.log("Using fallback menu due to API error");
-      return getFallbackMenu();
+      throw new Error(`Menu API returned status: ${response.status}`);
     }
+
     const menuData: MenuResponse = await response.json();
     console.log("Successfully fetched menu from 192.168.0.128");
     console.log("Raw menu data:", JSON.stringify(menuData, null, 2));
 
     // Validate and sanitize the menu data
-    if (menuData && menuData.elements && Array.isArray(menuData.elements)) {
-      return sanitizeMenuData(menuData);
-    } else {
-      console.warn("Invalid menu data structure received, using fallback");
-      return getFallbackMenu();
-    }
+    return sanitizeMenuData(menuData);
   } catch (error) {
+    clearTimeout(timeoutId);
+
     if (error instanceof Error && error.name === "AbortError") {
-      console.warn("Menu fetch timed out (5s), using fallback menu");
+      console.error("Menu fetch timed out (5s)");
+      throw new Error("Menu fetch timed out");
     } else {
-      console.warn(
-        "Error fetching menu from 192.168.0.128, using fallback menu:",
-        error
-      );
+      console.error("Error fetching menu from 192.168.0.128:", error);
+      throw error;
     }
-    console.log("Fallback menu will be used for navigation");
-    return getFallbackMenu();
   }
 }
 
 // Client-side menu fetch
 export async function fetchMenuClient(token?: string): Promise<MenuResponse> {
-  try {
-    if (!token) {
-      console.warn(
-        "No localhost:3000 REST token provided for client menu fetch"
-      );
-      return getFallbackMenu();
-    }
-
-    console.log(
-      "Client: Fetching menu from 192.168.0.128 using localhost:3000 REST token"
+  if (!token) {
+    console.error(
+      "No 192.168.0.213:3000 REST token provided for client menu fetch"
     );
+    throw new Error("No REST token provided for client menu fetch");
+  }
 
-    // Add timeout to prevent hanging
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+  console.log(
+    "Client: Fetching menu from 192.168.0.128 using 192.168.0.213:3000 REST token"
+  );
 
+  // Add timeout to prevent hanging
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+  try {
     const response = await fetch(`${MENU_API_BASE}${MENU_ENDPOINT}`, {
       method: "GET",
       headers: {
@@ -181,66 +174,48 @@ export async function fetchMenuClient(token?: string): Promise<MenuResponse> {
 
     if (!response.ok) {
       console.error(`Client menu fetch failed with status: ${response.status}`);
-      console.log("Client: Using fallback menu due to API error");
-      return getFallbackMenu();
+      throw new Error(`Client menu API returned status: ${response.status}`);
     }
+
     const menuData: MenuResponse = await response.json();
     console.log("Client: Successfully fetched menu from 192.168.0.128");
     console.log("Client: Raw menu data:", JSON.stringify(menuData, null, 2));
 
     // Validate and sanitize the menu data
-    if (menuData && menuData.elements && Array.isArray(menuData.elements)) {
-      return sanitizeMenuData(menuData);
-    } else {
-      console.warn(
-        "Client: Invalid menu data structure received, using fallback"
-      );
-      return getFallbackMenu();
-    }
+    return sanitizeMenuData(menuData);
   } catch (error) {
+    clearTimeout(timeoutId);
+
     if (error instanceof Error && error.name === "AbortError") {
-      console.warn("Client: Menu fetch timed out (5s), using fallback menu");
+      console.error("Client: Menu fetch timed out (5s)");
+      throw new Error("Client menu fetch timed out");
     } else {
-      console.warn(
-        "Client: Error fetching menu from 192.168.0.128, using fallback menu:",
-        error
-      );
+      console.error("Client: Error fetching menu from 192.168.0.128:", error);
+      throw error;
     }
-    console.log("Client: Fallback menu will be used for navigation");
-    return getFallbackMenu();
   }
 }
 
 // Function to fetch and store menu during login
 export async function fetchAndStoreMenu(token?: string): Promise<MenuResponse> {
-  try {
-    let menuData;
+  console.log("fetchAndStoreMenu called with token:", !!token);
+  console.log("Token (first 10 chars):", token?.substring(0, 10));
 
-    if (token) {
-      // Use provided token
-      menuData = await fetchMenuClient(token);
-    } else {
-      // Try to fetch with client-side method
-      menuData = await fetchMenuClient();
-    }
-
-    // Store in sessionStorage for persistence across page reloads
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("finnbourse-menu", JSON.stringify(menuData));
-    }
-
-    console.log("Menu fetched and stored during login");
-    return menuData;
-  } catch (error) {
-    console.warn("Failed to fetch menu during login, using fallback:", error);
-    const fallbackMenu = getFallbackMenu();
-
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("finnbourse-menu", JSON.stringify(fallbackMenu));
-    }
-
-    return fallbackMenu;
+  if (!token) {
+    console.error("No token provided to fetchAndStoreMenu");
+    throw new Error("No token provided for menu fetch");
   }
+
+  // Fetch menu using provided token
+  const menuData = await fetchMenuClient(token);
+
+  // Store in sessionStorage for persistence across page reloads
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("finnbourse-menu", JSON.stringify(menuData));
+  }
+
+  console.log("Menu fetched and stored during login");
+  return menuData;
 }
 
 // Function to get stored menu from sessionStorage
@@ -257,69 +232,6 @@ export function getStoredMenu(): MenuResponse | null {
   }
 
   return null;
-}
-
-// Fallback menu structure (default menu if API fails)
-// This represents the current FinnBourse sidebar structure
-export function getFallbackMenu(): MenuResponse {
-  return {
-    elements: [
-      { id: "dashboard" },
-      { id: "place-order" },
-      { id: "portfolio" },
-      {
-        id: "orders-dropdown",
-        children: [
-          { id: "premiere-validation" },
-          { id: "validation-finale" },
-          { id: "validation-tcc-premiere" },
-          { id: "validation-tcc-finale" },
-          { id: "execution" },
-          { id: "resultats" },
-        ],
-      },
-      {
-        id: "titles-emissions-dropdown",
-        children: [
-          { id: "emetteurs" },
-          { id: "commissions" },
-          { id: "gestion-titres" },
-        ],
-      },
-      {
-        id: "account-management-dropdown",
-        children: [
-          { id: "compte-espece" },
-          { id: "compte-titre" },
-          { id: "lien-comptes" },
-        ],
-      },
-      {
-        id: "actors-management-dropdown",
-        children: [
-          { id: "iob" },
-          { id: "tcc" },
-          { id: "agence" },
-          { id: "clients" },
-          { id: "utilisateurs" },
-        ],
-      },
-      {
-        id: "operations-dropdown",
-        children: [
-          { id: "annonce-ost" },
-          { id: "paiement-dividendes" },
-          { id: "paiement-droits-garde" },
-          { id: "paiement-coupon" },
-          { id: "remboursement" },
-        ],
-      },
-      { id: "charts-editions" },
-      { id: "client-service" },
-      { id: "settings" },
-      { id: "statistics" },
-    ],
-  };
 }
 
 // Menu item mapping for navigation and display
@@ -531,12 +443,6 @@ export const menuItemMap: Record<
     icon: "Headphones",
     translationKey: "ServiceClients",
   },
-  settings: {
-    label: "Settings",
-    href: "/parametres",
-    icon: "Settings",
-    translationKey: "parametres",
-  },
   statistics: {
     label: "Statistics",
     href: "/statistiques",
@@ -566,7 +472,6 @@ export default {
   fetchMenu,
   fetchMenuClient,
   fetchAndStoreMenu,
-  getFallbackMenu,
   getMenuItemInfo,
   getStoredMenu,
   hasMenuAccess,

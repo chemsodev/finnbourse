@@ -48,9 +48,10 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { LIST_BOND_QUERY, FIND_UNIQUE_BOND_QUERY } from "@/graphql/queries";
-import { DELETE_BOND } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { LIST_BOND_QUERY, FIND_UNIQUE_BOND_QUERY } from "@/graphql/queries";
+// import { DELETE_BOND } from "@/graphql/mutations";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "@/i18n/routing";
@@ -107,10 +108,71 @@ export default function ObligationsTable({
     const fetchBonds = async () => {
       setLoading(true);
       try {
-        const response = await fetchGraphQLClient(LIST_BOND_QUERY, {
-          type: selectedType === "all" ? undefined : selectedType,
-        });
-        setBonds((response as any).listBonds || []);
+        // TODO: Replace with REST API call
+        // const response = await fetchGraphQLClient(LIST_BOND_QUERY, {
+        //   type: selectedType === "all" ? undefined : selectedType,
+        // });
+        // setBonds((response as any).listBonds || []);
+
+        // Mock data for bonds/obligations
+        const mockBonds: Bond[] = [
+          {
+            id: "1",
+            name: "Government Bond 2025",
+            isincode: "TN0009876543",
+            code: "GOV25",
+            issuer: "Republic of Tunisia",
+            marketlisting: "BVMT",
+            emissiondate: "2023-01-15",
+            enjoymentdate: "2023-01-15",
+            maturitydate: "2025-01-15",
+            quantity: 1000000,
+            facevalue: 100,
+            yieldrate: 6.5,
+            repaymentmethod: "At maturity",
+            type: "government",
+          },
+          {
+            id: "2",
+            name: "Corporate Bond ABC Corp",
+            isincode: "TN0009876544",
+            code: "ABC24",
+            issuer: "ABC Corporation",
+            marketlisting: "BVMT",
+            emissiondate: "2023-03-10",
+            enjoymentdate: "2023-03-10",
+            maturitydate: "2024-03-10",
+            quantity: 500000,
+            facevalue: 1000,
+            yieldrate: 7.2,
+            repaymentmethod: "Annual coupon",
+            type: "corporate",
+          },
+          {
+            id: "3",
+            name: "Municipal Bond Tunis",
+            isincode: "TN0009876545",
+            code: "MUN26",
+            issuer: "Municipality of Tunis",
+            marketlisting: "BVMT",
+            emissiondate: "2023-06-01",
+            enjoymentdate: "2023-06-01",
+            maturitydate: "2026-06-01",
+            quantity: 300000,
+            facevalue: 500,
+            yieldrate: 5.8,
+            repaymentmethod: "Semi-annual coupon",
+            type: "municipal",
+          },
+        ];
+
+        // Filter by type if needed
+        const filteredBonds =
+          selectedType === "all"
+            ? mockBonds
+            : mockBonds.filter((bond) => bond.type === selectedType);
+
+        setBonds(filteredBonds);
       } catch (error) {
         console.error("Error fetching bonds:", error);
         setError(String(error));
@@ -176,7 +238,11 @@ export default function ObligationsTable({
 
     setDeletingBond(true);
     try {
-      await fetchGraphQLClient(DELETE_BOND, { securityId: bondToDelete });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient(DELETE_BOND, { securityId: bondToDelete });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Remove the deleted bond from the state
       setBonds(bonds.filter((bond) => bond.id !== bondToDelete));

@@ -32,9 +32,10 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
-import { LIST_ORDERS_SIMPLE } from "@/graphql/queries";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using static data
+// import { LIST_ORDERS_SIMPLE } from "@/graphql/queries";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { CREATE_ORDER_MUTATION } from "@/graphql/mutations";
 
 const formSchema = z.object({
   quantiteValidee: z.number().min(1),
@@ -78,31 +79,39 @@ export function ValiderPartiellement({ ordreId }: { ordreId: string }) {
       }
       let order = null;
       try {
-        const data = await fetchGraphQLClient<any>(LIST_ORDERS_SIMPLE, {
-          orderId: ordreId,
-        });
-        order = data.findUniqueOrder ?? null;
+        // TODO: Replace with REST API call
+        // const data = await fetchGraphQLClient<any>(LIST_ORDERS_SIMPLE, {
+        //   orderId: ordreId,
+        // });
+        // order = data.findUniqueOrder ?? null;
+
+        // Use mock data for now
+        order = null;
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
       try {
-        const retrunedData = await fetchGraphQLClient<any>(
-          CREATE_ORDER_MUTATION,
-          {
-            ordertypes: order.instructionOrdreTemps,
-            orderdirection: order.typeTransaction ? 1 : 0,
-            securityissuer: order.securityIssuer,
-            securityid: order.selectedTitreId,
-            quantity: order.quantite - values.quantiteValidee,
-            pricelimitmin: order.valeurMin,
-            pricelimitmax: order.valeurMax,
-            validity: order.validity,
-            duration: order.duration,
-            orderdate: order.orderDate,
-            investorid: order.investorid,
-            negotiatorid: order.negotiatorId,
-          }
-        );
+        // TODO: Replace with REST API call
+        // const retrunedData = await fetchGraphQLClient<any>(
+        //   CREATE_ORDER_MUTATION,
+        //   {
+        //     ordertypes: order.instructionOrdreTemps,
+        //     orderdirection: order.typeTransaction ? 1 : 0,
+        //     securityissuer: order.securityIssuer,
+        //     securityid: order.selectedTitreId,
+        //     quantity: order.quantite - values.quantiteValidee,
+        //     pricelimitmin: order.valeurMin,
+        //     pricelimitmax: order.valeurMax,
+        //     validity: order.validity,
+        //     duration: order.duration,
+        //     orderdate: order.orderDate,
+        //     investorid: order.investorid,
+        //     negotiatorid: order.negotiatorId,
+        //   }
+        // );
+
+        // Simulate API call
+        console.log("Order creation simulated");
       } catch (error) {
         console.error("Error fetching orders:", error);
       }

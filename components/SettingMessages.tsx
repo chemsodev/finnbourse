@@ -16,8 +16,9 @@ import {
 } from "./ui/dialog";
 import { DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { GET_SUPPORT_QUESTIONS_QUERY } from "@/graphql/queries";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { GET_SUPPORT_QUESTIONS_QUERY } from "@/graphql/queries";
 import { useEffect, useState } from "react";
 import Message from "./Message";
 import { SupportQuestion } from "@/lib/interfaces";
@@ -40,17 +41,21 @@ const SettingMessages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       setLoading(true);
-      const messages = await fetchGraphQLClient<GetSupportQuestionsResponse>(
-        GET_SUPPORT_QUESTIONS_QUERY,
-        {
-          skip,
-          take: 5,
-          // language: locale,
-          state: 0,
-          ispublished: false,
-        }
-      );
-      setMessages(messages);
+      // TODO: Replace with REST API call
+      // const messages = await fetchGraphQLClient<GetSupportQuestionsResponse>(
+      //   GET_SUPPORT_QUESTIONS_QUERY,
+      //   {
+      //     skip,
+      //     take: 5,
+      //     // language: locale,
+      //     state: 0,
+      //     ispublished: false,
+      //   }
+      // );
+      // setMessages(messages);
+
+      // Use mock data for now
+      setMessages({ listSupportqas: [] });
       setLoading(false);
     };
     fetchMessages();

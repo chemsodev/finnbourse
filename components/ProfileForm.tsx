@@ -34,7 +34,7 @@ import * as z from "zod";
 import { Input } from "./ui/input";
 import { Link } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/routing";
 import ReenitialiserMdpDialog from "./ReenitialiserMdpDialog";
@@ -160,78 +160,82 @@ export default function ProfileForm(props: {
 
       // Update user details (fullname, email, phonenumber) if needed
       if (Object.keys(updatedUserDetails).length > 0) {
-        await fetchGraphQLClient<String>(
-          `
-          mutation updateUser {
-            updateUser(
-              where: { id: "${userId}" }
-              data: {
-                ${
-                  updatedUserDetails.fullname
-                    ? `fullname: { set: "${updatedUserDetails.fullname}" },`
-                    : ""
-                }
-                ${
-                  updatedUserDetails.email
-                    ? `email: { set: "${updatedUserDetails.email}" },`
-                    : ""
-                }
-                ${
-                  updatedUserDetails.phonenumber
-                    ? `phonenumber: { set: "${updatedUserDetails.phonenumber}" },`
-                    : ""
-                }
-              }
-            ) {
-              id
-            }
-          }
-          `
-        );
+        // TODO: Replace with REST API call
+        // await fetchGraphQLClient<String>(
+        //   `
+        //   mutation updateUser {
+        //     updateUser(
+        //       where: { id: "${userId}" }
+        //       data: {
+        //         ${
+        //           updatedUserDetails.fullname
+        //             ? `fullname: { set: "${updatedUserDetails.fullname}" },`
+        //             : ""
+        //         }
+        //         ${
+        //           updatedUserDetails.email
+        //             ? `email: { set: "${updatedUserDetails.email}" },`
+        //             : ""
+        //         }
+        //         ${
+        //           updatedUserDetails.phonenumber
+        //             ? `phonenumber: { set: "${updatedUserDetails.phonenumber}" },`
+        //             : ""
+        //         }
+        //       }
+        //     ) {
+        //       id
+        //     }
+        //   }
+        //   `
+        // );
+        console.log("User details update simulated");
       }
 
       const excludedFields = ["fullname", "email", "telephone", "profileImage"];
 
-      const createUpdateManyMutation = `
-      mutation createOrUpdateManyData {
-        createOrUpdateManyData(
-          items: [
-            ${Object.entries(data)
-              .filter(([name]) => !excludedFields.includes(name))
-              ?.map(
-                ([name, data]) => `
-              {
-                createArgs: {
-                  data: {
-                    userid: "${userid}",
-                    data: ${JSON.stringify(data)},
-                    name: "${name}",
-                    type: "userdata",
-                  }
-                },
-                condition: {
-                  where: {
-                    userid: {
-                      equals: "${userid}"
-                    },
-                    name: {
-                      equals: "${name}"
-                    }
-                  }
-                }
-              }
-            `
-              )
-              .join(",")}
-          ]
-        ) {
-          id
-        }
-      }
-    `;
+      // TODO: Replace with REST API call
+      // const createUpdateManyMutation = `
+      // mutation createOrUpdateManyData {
+      //   createOrUpdateManyData(
+      //     items: [
+      //       ${Object.entries(data)
+      //         .filter(([name]) => !excludedFields.includes(name))
+      //         ?.map(
+      //           ([name, data]) => `
+      //         {
+      //           createArgs: {
+      //             data: {
+      //               userid: "${userid}",
+      //               data: ${JSON.stringify(data)},
+      //               name: "${name}",
+      //               type: "userdata",
+      //             }
+      //           },
+      //           condition: {
+      //             where: {
+      //               userid: {
+      //                 equals: "${userid}"
+      //               },
+      //               name: {
+      //                 equals: "${name}"
+      //               }
+      //             }
+      //           }
+      //         }
+      //       `
+      //         )
+      //         .join(",")}
+      //     ]
+      //   ) {
+      //     id
+      //   }
+      // }
+      // `;
 
       // Call the GraphQL mutation
-      const result = await fetchGraphQLClient<string>(createUpdateManyMutation);
+      // const result = await fetchGraphQLClient<string>(createUpdateManyMutation);
+      console.log("Profile data update simulated");
 
       // Show success toast
       toast({

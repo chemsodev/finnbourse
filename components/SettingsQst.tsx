@@ -6,9 +6,47 @@ import Question from "./Question";
 import { Dialog, DialogContent, DialogDescription } from "./ui/dialog";
 import { DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { LIST_SUPPORT_QUERY } from "@/graphql/queries";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { LIST_SUPPORT_QUERY } from "@/graphql/queries";
 import { useEffect, useState } from "react";
+
+// Static mock data for support questions
+const mockSupportQuestions = {
+  listSupportqas: [
+    {
+      id: 1,
+      question: "How do I place an order?",
+      answer:
+        "You can place an order by navigating to the trading section and selecting your desired security.",
+      state: 1,
+      language: "en",
+    },
+    {
+      id: 2,
+      question: "What are the trading hours?",
+      answer: "Trading hours are Monday to Friday, 9:00 AM to 4:00 PM.",
+      state: 1,
+      language: "en",
+    },
+    {
+      id: 3,
+      question: "Comment passer un ordre ?",
+      answer:
+        "Vous pouvez passer un ordre en naviguant vers la section trading et en sélectionnant votre titre désiré.",
+      state: 1,
+      language: "fr",
+    },
+    {
+      id: 4,
+      question: "Quels sont les horaires de trading ?",
+      answer:
+        "Les horaires de trading sont du lundi au vendredi, de 9h00 à 16h00.",
+      state: 1,
+      language: "fr",
+    },
+  ],
+};
 
 interface ListSupportqas {
   listSupportqas: {
@@ -21,29 +59,37 @@ interface ListSupportqas {
 }
 const SettingsQst = () => {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [questions, setQuestions] = useState<ListSupportqas | null>(null);
-  const t = useTranslations("settingsQst");
+  const [loading, setLoading] = useState(false); // No loading needed for static data
   const locale = useLocale();
+  const t = useTranslations("settingsQst");
 
-  useEffect(() => {
-    if (open) {
-      const fetchQuestions = async () => {
-        const data = await fetchGraphQLClient<ListSupportqas>(
-          LIST_SUPPORT_QUERY,
-          {
-            take: 5,
-            language: locale,
-            state: 1,
-            ispublished: true,
-          }
-        );
-        setQuestions(data);
-        setLoading(false);
-      };
-      fetchQuestions();
-    }
-  }, [open]);
+  // Filter mock data by locale
+  const filteredQuestions = {
+    listSupportqas: mockSupportQuestions.listSupportqas.filter(
+      (q) => q.language === locale
+    ),
+  };
+  const [questions] = useState<ListSupportqas>(filteredQuestions);
+
+  // Removed GraphQL fetch logic - using static data instead
+  // useEffect(() => {
+  //   if (open) {
+  //     const fetchQuestions = async () => {
+  //       const data = await fetchGraphQLClient<ListSupportqas>(
+  //         LIST_SUPPORT_QUERY,
+  //         {
+  //           take: 5,
+  //           language: locale,
+  //           state: 1,
+  //           ispublished: true,
+  //         }
+  //       );
+  //       setQuestions(data);
+  //       setLoading(false);
+  //     };
+  //     fetchQuestions();
+  //   }
+  // }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -1,10 +1,12 @@
 "use client";
 
-import FormPassationOrdreAction from "@/components/passation-ordre/FormPassationOrdreAction";
+import FormPassationOrdreMarcheSocondaire from "@/components/passation-ordre/FormPassationOrdreMarcheSecondaire";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useRestToken } from "@/hooks/useRestToken";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
+import { Link } from "@/i18n/routing";
+import { ArrowLeft } from "lucide-react";
 
 const SecondaryMarketStockPage = ({
   params,
@@ -48,8 +50,7 @@ const SecondaryMarketStockPage = ({
           ? t("TitresParticipatifs")
           : t("obligation")}
       </div>
-
-      <FormPassationOrdreAction titreId={id} type={type} />
+      <FormPassationOrdreMarcheSocondaire titreId={id} type={type} />
     </div>
   );
 };

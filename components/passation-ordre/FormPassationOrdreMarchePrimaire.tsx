@@ -61,7 +61,7 @@ const FormPassationOrdreMarchePrimaire = ({
   titreId,
   type,
 }: {
-  titreId: string;
+  titreId?: string;
   type: string;
 }) => {
   const session = useSession();
@@ -98,7 +98,10 @@ const FormPassationOrdreMarchePrimaire = ({
   // Use REST hooks for fetching data
   const { stocks: securityData, loading: stocksLoading } =
     useStocksREST(stockType);
-  const { stock: data, loading } = useStockREST(titreId, stockType);
+  const { stock: data, loading: stockLoading } = useStockREST(
+    titreId || "",
+    stockType
+  );
 
   const router = useRouter();
   const handleGoBack = () => {
@@ -208,59 +211,60 @@ const FormPassationOrdreMarchePrimaire = ({
     }
   };
 
-  if (loading || stocksLoading) {
+  if (stockLoading || stocksLoading) {
     return <PasserUnOrdreSkeleton />;
   }
 
-  return (
-    <>
-      <BulletinSubmitDialog
-        createdOrdreId={createdOrdreId || ""}
-        isDialogOpen={isDialogOpen}
-        setIsDialogOpen={setIsDialogOpen}
-      />
-      <div className="flex justify-center items-center">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="w-full max-w-2xl"
+  // Si aucun titre sélectionné, afficher le dropdown de sélection
+  if (!form.watch("selectedTitreId")) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full">
+        <div className="w-full flex justify-start mb-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
+            onClick={handleGoBack}
           >
+            <ArrowRight className="w-5" /> <div>{t("annuler")}</div>
+          </Button>
+        </div>
+        <h2 className="text-2xl font-bold mb-4">
+          {t("selectTitre") || "Sélectionner un titre"}
+        </h2>
+        <div className="w-full max-w-2xl">
+          <Form {...form}>
             <FormField
               control={form.control}
               name="selectedTitreId"
               render={({ field }) => (
                 <FormItem className="flex justify-between text-xl items-baseline">
-                  <FormControl className="w-40">
+                  <FormControl className="w-full">
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           role="combobox"
                           aria-expanded={open}
-                          className="w-[100%] justify-between rounded-md mb-6 h-14"
+                          className="w-full justify-between rounded-md mb-6 h-14"
                         >
                           <div className="flex gap-4 items-center">
-                            {titre && (
-                              <div className="w-10 h-10 bg-primary rounded-md"></div>
-                            )}
                             <div className="text-xl text-primary font-semibold">
-                              {titre || "Selectionnez un titre"}
+                              {titre ||
+                                t("selectTitre") ||
+                                "Sélectionnez un titre"}
                             </div>
                           </div>
-                          <div className="flex items-center">
-                            {titre && (
-                              <div>
-                                {formatPrice(Number(selectedPrice) || 0)}{" "}
-                                {t("currency")}
-                              </div>
-                            )}
-                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </div>
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-96 p-0">
                         <Command>
-                          <CommandInput placeholder="Rechercher un titre..." />
+                          <CommandInput
+                            placeholder={
+                              t("searchTitre") || "Rechercher un titre..."
+                            }
+                          />
                           <CommandList>
                             <CommandEmpty>{t("noTitle")}</CommandEmpty>
                             <CommandGroup>
@@ -281,8 +285,6 @@ const FormPassationOrdreMarchePrimaire = ({
                                           form.getValues("quantite")
                                       );
                                       setOpen(false);
-
-                                      // Set extra fields data
                                       if (t.issuer) {
                                         setExtraFieldsData({
                                           notice: t.issuer.website || "",
@@ -311,76 +313,116 @@ const FormPassationOrdreMarchePrimaire = ({
                 </FormItem>
               )}
             />
+          </Form>
+        </div>
+      </div>
+    );
+  }
 
-            <div className="px-10 py-4 border rounded-md flex flex-col mb-4">
-              <FormField
-                control={form.control}
-                name="quantite"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="text-xl items-baseline">
-                      <div className="flex justify-between items-baseline">
-                        <FormLabel className="text-gray-400 capitalize text-lg">
-                          {t("quantite")}
-                        </FormLabel>
-                        <FormControl className="w-40">
-                          <Input
-                            placeholder="Quantité"
-                            type="number"
-                            min="0"
-                            {...field}
-                            onChange={(e) => {
-                              const value = Math.max(
-                                1,
-                                Math.min(
-                                  data?.quantity || 1,
-                                  parseInt(e.target.value) || 0
-                                )
-                              );
-                              field.onChange(value);
-                            }}
-                            onKeyDown={preventNonNumericInput}
-                          />
-                        </FormControl>
-                      </div>
-                    </FormItem>
-                  );
-                }}
-              />
+  // Si un titre est sélectionné, afficher le formulaire harmonisé
+  return (
+    <>
+      <BulletinSubmitDialog
+        createdOrdreId={createdOrdreId || ""}
+        isDialogOpen={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+      />
+      <div className="flex flex-col justify-center items-center w-full">
+        {/* Bouton Retour aligné à gauche */}
+        <div className="w-full flex justify-start mb-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
+            onClick={() => form.setValue("selectedTitreId", "")}
+          >
+            <ArrowRight className="w-5" /> <div>{t("retour") || "Retour"}</div>
+          </Button>
+        </div>
+        {/* Bloc titre sélectionné */}
+        <div className="w-[100%] flex items-center justify-between rounded-md mb-6 h-14 border px-4 bg-muted">
+          <div className="flex gap-4 items-center">
+            {titre && <div className="w-10 h-10 bg-primary rounded-md"></div>}
+            <div className="text-xl text-primary font-semibold">
+              {titre || t("aucunTitre") || "Aucun titre sélectionné"}
             </div>
-            <div className="p-10 border rounded-md shadow flex flex-col gap-10">
+          </div>
+          <div className="flex items-center">
+            {titre && (
+              <div>
+                {formatPrice(Number(selectedPrice) || 0)} {t("currency")}
+              </div>
+            )}
+          </div>
+        </div>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="w-full max-w-2xl"
+          >
+            {/* Quantité */}
+            <FormField
+              control={form.control}
+              name="quantite"
+              render={({ field }) => (
+                <FormItem className="text-xl items-baseline">
+                  <div className="flex justify-between ">
+                    <FormLabel className="text-gray-400 capitalize text-lg">
+                      {t("quantite")}
+                    </FormLabel>
+                    <FormControl className="w-40">
+                      <Input
+                        placeholder="Quantité"
+                        type="number"
+                        min="0"
+                        {...field}
+                        onChange={(e) => {
+                          const value = Math.max(
+                            1,
+                            Math.min(
+                              data?.quantity || 1,
+                              parseInt(e.target.value) || 0
+                            )
+                          );
+                          field.onChange(value);
+                        }}
+                        onKeyDown={preventNonNumericInput}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Détails du titre */}
+            <div className="p-10 border rounded-md shadow flex flex-col gap-10 mt-6">
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("visaCOSOB")}
                 </div>
-                <div className="text-lg font-semibold">
-                  {process.env.NEXT_PUBLIC_VISA_COSOB}
-                </div>
+                <div className="text-lg font-semibold">VISA-9237</div>
               </div>
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
                 <div className="text-lg font-semibold">
-                  {data?.isinCode || data?.isincode}
+                  {data?.isinCode || data?.isincode || "N/A"}
                 </div>
               </div>
-
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("dateEmission")}
                 </div>
                 <div className="text-lg font-semibold">
                   {(data?.emissionDate || data?.emissiondate) &&
-                    formatDate(data.emissionDate || data.emissiondate)}
+                    formatDate(data?.emissionDate || data?.emissiondate)}
                 </div>
               </div>
-
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">{t("nbTitres")}</div>
                 <div className="text-lg font-semibold">
                   {data?.quantity && formatNumber(data?.quantity)}
                 </div>
               </div>
-
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("commission")}
@@ -389,7 +431,6 @@ const FormPassationOrdreMarchePrimaire = ({
                   {t("pasDeCommission")}
                 </div>
               </div>
-
               <Separator />
               <div className="flex justify-between items-baseline">
                 <div className="text-gray-400 capitalize text-lg ">
@@ -401,6 +442,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 </div>
               </div>
             </div>
+            {/* CouponTable si applicable */}
             {type !== "opv" && data?.couponschedule && (
               <div className="px-10 py-4 border rounded-md shadow flex flex-col gap-10 mt-6">
                 <CouponTable
@@ -409,6 +451,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 />
               </div>
             )}
+            {/* Notice émetteur */}
             <div className="flex justify-between gap-6 mt-4">
               {extraFieldsData?.notice && (
                 <Link
@@ -430,16 +473,11 @@ const FormPassationOrdreMarchePrimaire = ({
                 </Link>
               )}
             </div>
-            <div className="flex justify-between gap-6 mt-4">
+            {/*<div className="flex justify-between gap-6 mt-4">
               <Button onClick={handleGoBack} type="reset" variant="outline">
                 {t("annuler")}
               </Button>
-
-              <Button
-                type="submit"
-                className="w-full group gap-2"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="w-full group gap-2" disabled={isSubmitting}>
                 {t("suivant")}
                 {isSubmitting ? (
                   <svg
@@ -462,7 +500,7 @@ const FormPassationOrdreMarchePrimaire = ({
                   <ArrowRight className="hidden group-hover:block text-white " />
                 )}
               </Button>
-            </div>
+            </div>*/}
           </form>
         </Form>
       </div>

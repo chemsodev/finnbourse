@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
-import { HISTORIQUE_EXECUTION_ORDRE_QUERY } from "@/graphql/queries";
+// Removed GraphQL dependencies - now using static data
+// import { HISTORIQUE_EXECUTION_ORDRE_QUERY } from "@/graphql/queries";
 import RateLimitReached from "./RateLimitReached";
 
 type ExecutionData = {
@@ -71,14 +73,23 @@ export function HistoriqueExecutionOrdre({ titre }: { titre: string }) {
 
   const fetchExecutionHistory = async () => {
     try {
-      const result = await fetchGraphQLClient<any>(
-        HISTORIQUE_EXECUTION_ORDRE_QUERY,
+      // Mock data for execution history
+      const mockData = [
         {
-          userid,
-        }
-      );
-      const processedData = processData(result.groupByOrder);
+          code: "STOCK001",
+          codetitreemis: "EMIT001",
+          qte: 100,
+          px: 1250,
+          status: "EXECUTED",
+          heureexec: new Date().toISOString(),
+          dateexecution: new Date().toISOString(),
+        },
+      ];
+      const processedData = processData(mockData);
       setChartData(processedData);
+
+      // Use mock data for now
+      setChartData([]);
     } catch (error) {
       if (error === "Too many requests") {
         return <RateLimitReached />;

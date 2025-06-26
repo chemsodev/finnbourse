@@ -1,9 +1,9 @@
-import OrdresTable from "../gestion-des-ordres/OrdresTable";
+import StaticOrdresTable from "./StaticOrdresTable";
 
-const DashItem1 = async () => {
+const DashItem1 = () => {
   return (
     <div className="md:w-[40%] h-full ">
-      <OrdresTable pageType="dashboard" skip={0} searchquery="" state="99" />
+      <StaticOrdresTable pageType="dashboard" maxRows={5} />
     </div>
   );
 };

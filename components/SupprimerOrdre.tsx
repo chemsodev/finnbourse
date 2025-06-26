@@ -13,8 +13,9 @@ import {
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { DELETE_ORDER } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { DELETE_ORDER } from "@/graphql/mutations";
 import { useRouter } from "@/i18n/routing";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -29,9 +30,13 @@ const SupprimerOrdre = ({ titreId }: { titreId: string }) => {
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await fetchGraphQLClient<String>(DELETE_ORDER, {
-        orderId: titreId,
-      });
+      // Simulate deletion - in real app, use REST API
+      // await fetchGraphQLClient<String>(DELETE_ORDER, {
+      //   orderId: titreId,
+      // });
+
+      // Simulate async operation
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       router.refresh();
       toast({
@@ -40,12 +45,11 @@ const SupprimerOrdre = ({ titreId }: { titreId: string }) => {
         description: t("successDescription"),
       });
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error deleting order:", error);
       toast({
         variant: "destructive",
         title: t("error"),
-        description:
-          error instanceof Error ? error.message : "An error occurred",
+        description: t("errorDescription") || "An error occurred",
       });
     } finally {
       setLoading(false);

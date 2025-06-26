@@ -53,8 +53,9 @@ import {
 } from "@/components/ui/dialog";
 import { CirclePlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { GET_LISTED_COMPANIES_QUERY } from "@/graphql/queries";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { GET_LISTED_COMPANIES_QUERY } from "@/graphql/queries";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/routing";
 import { fr, ar, enUS } from "date-fns/locale";
@@ -113,10 +114,14 @@ const ModifierTitre = ({
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await fetchGraphQLClient<GetListedCompaniesResponse>(
-          GET_LISTED_COMPANIES_QUERY
-        );
-        setCompanies(response);
+        // TODO: Replace with REST API call
+        // const response = await fetchGraphQLClient<GetListedCompaniesResponse>(
+        //   GET_LISTED_COMPANIES_QUERY
+        // );
+        // setCompanies(response);
+
+        // Use mock data for now
+        setCompanies({ listListedCompanies: [] });
       } catch (error) {
         console.error("Error fetching companies:", error);
       }
@@ -216,7 +221,11 @@ const ModifierTitre = ({
       // Generate the appropriate mutation based on type
       const mutation = generateMutation(type, changedFields);
 
-      await fetchGraphQLClient<String>(mutation, changedFields);
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<String>(mutation, changedFields);
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         variant: "success",

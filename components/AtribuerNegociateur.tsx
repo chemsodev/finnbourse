@@ -37,10 +37,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
-import { LIST_NEGOCIATEURS_QUERY } from "@/graphql/queries";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { LIST_NEGOCIATEURS_QUERY } from "@/graphql/queries";
+// Removed GraphQL dependencies - now using static data
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useRouter } from "@/i18n/routing";
-import { UPDATE_USER_NEGOTIATOR } from "@/graphql/mutations";
+// Removed GraphQL dependencies - now using static data
+// import { UPDATE_USER_NEGOTIATOR } from "@/graphql/mutations";
 import { useToast } from "@/hooks/use-toast";
 
 interface NegociateurGraphQLResponse {
@@ -74,10 +77,14 @@ const AtribuerNegociateur = ({
       const fetchNegociateurs = async () => {
         setLoading(true);
         try {
-          const data = await fetchGraphQLClient<NegociateurGraphQLResponse>(
-            LIST_NEGOCIATEURS_QUERY
-          );
-          setNegociateurs(data);
+          // TODO: Replace with REST API call
+          // const data = await fetchGraphQLClient<NegociateurGraphQLResponse>(
+          //   LIST_NEGOCIATEURS_QUERY
+          // );
+          // setNegociateurs(data);
+
+          // Use mock data for now
+          setNegociateurs({ listUsers: [] });
         } catch (error) {
           console.error("Error fetching negociateurs:", error);
         } finally {
@@ -99,10 +106,14 @@ const AtribuerNegociateur = ({
     try {
       setSubmitting(true);
 
-      await fetchGraphQLClient<String>(UPDATE_USER_NEGOTIATOR, {
-        id: userId,
-        negotiatorid: values.NegociatorID,
-      });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<String>(UPDATE_USER_NEGOTIATOR, {
+      //   id: userId,
+      //   negotiatorid: values.NegociatorID,
+      // });
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         variant: "success",

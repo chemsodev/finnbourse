@@ -1,12 +1,5 @@
 "use client";
 
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-
 import Link from "next/link";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,14 +31,6 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 export default function Login() {
   const t = useTranslations("Login");
@@ -53,8 +38,6 @@ export default function Login() {
   const [error, setError] = useState<string>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [resendTimer, setResendTimer] = useState<number | null>(90);
   const searchParams = useSearchParams();
   const tokenExpired = searchParams.get("tokenExpired");
 
@@ -67,69 +50,12 @@ export default function Login() {
       });
     }
   }, [tokenExpired, toast, t]);
-
-  const handleResendCode = async () => {
-    setResendTimer(90); // Set the timer to 90 seconds
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/twofactorauth`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: form.getValues("email"),
-            password: form.getValues("password"),
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        toast({
-          variant: "destructive",
-          title: t("failedToResendCode"),
-          description: t("pleaseRetryLater"),
-        });
-      } else {
-        toast({
-          title: t("codeSentSuccessfully"),
-          description: t("pleaseCheckYourEmail"),
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: t("failedToResendCode"),
-        description: t("pleaseRetryLater"),
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (resendTimer === null) return;
-
-    const timer = setInterval(() => {
-      setResendTimer((prev) => {
-        if (prev && prev > 1) {
-          return prev - 1;
-        } else {
-          clearInterval(timer);
-          return null;
-        }
-      });
-    }, 1000);
-
-    return () => clearInterval(timer); // Cleanup on unmount
-  }, [resendTimer]);
   const formSchema = z.object({
     email: z.string().email({ message: t("invalidEmail") }),
     password: z
       .string()
       .min(6, { message: t("passwordMinLength") })
       .regex(/[a-zA-Z0-9]/, { message: t("passwordAlphanumeric") }),
-    twoFactorCode: z.string().optional(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -142,55 +68,9 @@ export default function Login() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/twofactorauth`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: values.email,
-            password: values.password,
-          }),
-        }
-      );
-
-      setLoading(false);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-
-        // BYPASS rate limiting - treat as successful for 2FA flow
-        if (response.status === 429) {
-          // Silently bypass rate limiting
-          setDialogOpen(true);
-          return;
-        }
-
-        setError(errorData.message || t("wrongEmailOrPassword"));
-      } else {
-        await response.json();
-        setDialogOpen(true);
-      }
-    } catch (error) {
-      console.error("Form submission error", error);
-      setLoading(false);
-      toast({
-        variant: "destructive",
-        title: t("failedToSubmitTheForm"),
-        description:
-          error instanceof Error ? error.message : "An error occurred",
-      });
-    }
-  }
-  async function onSubmitWith2FA(values: z.infer<typeof formSchema>) {
-    try {
-      setLoading(true);
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
-        twoFactorCode: values.twoFactorCode,
         redirect: false,
       });
 
@@ -246,76 +126,6 @@ export default function Login() {
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-8 w-full p-4"
                 >
-                  <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <AlertDialogContent className="w-fit">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-center font-bold text-xl text-primary">
-                          {t("enterTheVerificationCode")}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          <div className="mt-8">
-                            {t("verificationCodeSent")}
-                          </div>
-                          <div>
-                            <FormField
-                              control={form.control}
-                              name="twoFactorCode"
-                              render={({ field }) => (
-                                <FormItem className="grid gap-2 mt-4 w-full justify-center">
-                                  <FormControl>
-                                    <InputOTP
-                                      type="text"
-                                      maxLength={6}
-                                      {...field}
-                                    >
-                                      <InputOTPGroup>
-                                        <InputOTPSlot index={0} />
-                                        <InputOTPSlot index={1} />
-                                        <InputOTPSlot index={2} />
-                                      </InputOTPGroup>
-                                      <InputOTPSeparator />
-                                      <InputOTPGroup>
-                                        <InputOTPSlot index={3} />
-                                        <InputOTPSlot index={4} />
-                                        <InputOTPSlot index={5} />
-                                      </InputOTPGroup>
-                                    </InputOTP>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="capitalize"
-                          onClick={() => {
-                            handleResendCode(); // Start the timer
-                            // Only resend the code, don't submit the main form again
-                          }}
-                          disabled={resendTimer !== null}
-                        >
-                          {resendTimer !== null
-                            ? `${t("sendEmailAgain")} (${resendTimer}s)`
-                            : t("sendEmailAgain")}
-                        </Button>
-                        <Button
-                          type="submit"
-                          onClick={() => {
-                            form.handleSubmit(onSubmitWith2FA)();
-                            setDialogOpen(false);
-                          }}
-                          className="capitalize"
-                        >
-                          {t("validate")}
-                        </Button>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                   <FormField
                     control={form.control}
                     name="email"

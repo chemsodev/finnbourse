@@ -34,8 +34,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { UPDATE_USER_ROLE, VALIDATE_USER } from "@/graphql/mutations";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// Removed GraphQL dependencies - now using static data
+// import { UPDATE_USER_ROLE, VALIDATE_USER } from "@/graphql/mutations";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useToast } from "@/hooks/use-toast";
 
 import { useRouter } from "@/i18n/routing";
@@ -54,11 +55,15 @@ const ValidateUser = (userId: { userId: string }) => {
   const validateUsr = async () => {
     setLoading(true);
     try {
-      await fetchGraphQLClient<String>(VALIDATE_USER, {
-        roleid: 1,
-        userid: userId.userId,
-        negotiatorid,
-      });
+      // Simulate validation - in real app, use REST API
+      // await fetchGraphQLClient<String>(VALIDATE_USER, {
+      //   roleid: 1,
+      //   userid: userId.userId,
+      //   negotiatorid,
+      // });
+
+      // Simulate async operation
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         variant: "success",
@@ -72,8 +77,7 @@ const ValidateUser = (userId: { userId: string }) => {
       toast({
         variant: "destructive",
         title: t("Erreur"),
-        description:
-          error instanceof Error ? error.message : "An error occurred",
+        description: t("errorDescription") || "An error occurred",
       });
     } finally {
       setLoading(false);

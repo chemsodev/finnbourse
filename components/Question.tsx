@@ -41,8 +41,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { CREATE_SUPPORT_MESSAGE, DELETE_QUESTION } from "@/graphql/mutations";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+// import { CREATE_SUPPORT_MESSAGE, DELETE_QUESTION } from "@/graphql/mutations";
+// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
 import { TbSquareRoundedPlus } from "react-icons/tb";
@@ -83,15 +83,18 @@ export default function Question({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await fetchGraphQLClient<string>(CREATE_SUPPORT_MESSAGE, {
-        userid: userId,
-        question: values.qst,
-        description: "",
-        answer: values.answer,
-        state: 1,
-        language: locale,
-        ispublished: true,
-      });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<string>(CREATE_SUPPORT_MESSAGE, {
+      //   userid: userId,
+      //   question: values.qst,
+      //   description: "",
+      //   answer: values.answer,
+      //   state: 1,
+      //   language: locale,
+      //   ispublished: true,
+      // });
+
+      console.log("Support message creation simulated");
 
       setOpen(false);
 
@@ -139,25 +142,28 @@ export default function Question({
       }
 
       if (Object.keys(updatedData).length > 0) {
-        await fetchGraphQLClient<String>(
-          `
-    mutation updateQas {
-    updateQas(
-      where: { id: ${qstId} }
-      data: {
-        ${
-          updatedData.question
-            ? `question: { set: "${updatedData.question}" },`
-            : ""
-        }
-        ${updatedData.answer ? `answer: { set: "${updatedData.answer}" },` : ""}
+        // TODO: Replace with REST API call
+        // await fetchGraphQLClient<String>(
+        //   `
+        // mutation updateQas {
+        // updateQas(
+        //   where: { id: ${qstId} }
+        //   data: {
+        //     ${
+        //       updatedData.question
+        //         ? `question: { set: "${updatedData.question}" },`
+        //         : ""
+        //     }
+        //     ${updatedData.answer ? `answer: { set: "${updatedData.answer}" },` : ""}
+        //   }
+        // ) {
+        //   id
+        // }
+        // }
+        // `
+        // );
 
-      }
-    ) {
-      id
-    }
-  }`
-        );
+        console.log("QAS update simulated");
       }
 
       toast({
@@ -185,9 +191,12 @@ export default function Question({
     setIsSubmitting(true);
 
     try {
-      await fetchGraphQLClient<string>(DELETE_QUESTION, {
-        id: qstId,
-      });
+      // TODO: Replace with REST API call
+      // await fetchGraphQLClient<string>(DELETE_QUESTION, {
+      //   id: qstId,
+      // });
+
+      console.log("Question deletion simulated");
       toast({
         variant: "success",
         title: t("success"),

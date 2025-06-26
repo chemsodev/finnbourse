@@ -8,13 +8,41 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
 import { useTranslations } from "next-intl";
-import { it } from "node:test";
-import { VUE_ENSEMBLE_TRANSACTIONS_QUERY } from "@/graphql/queries";
-import RateLimitReached from "../RateLimitReached";
+
+// Static mock data for transaction overview
+const mockTransactionData = [
+  {
+    securityIssuer: "AlphaStock Corp",
+    totalPrice: 1250000,
+    totalQuantity: 15000,
+    count: 25,
+  },
+  {
+    securityIssuer: "BetaFinance Ltd",
+    totalPrice: 890000,
+    totalQuantity: 12000,
+    count: 18,
+  },
+  {
+    securityIssuer: "GammaInvest SA",
+    totalPrice: 675000,
+    totalQuantity: 8500,
+    count: 14,
+  },
+  {
+    securityIssuer: "DeltaTech Inc",
+    totalPrice: 560000,
+    totalQuantity: 7200,
+    count: 12,
+  },
+  {
+    securityIssuer: "EpsilonHoldings",
+    totalPrice: 420000,
+    totalQuantity: 5800,
+    count: 9,
+  },
+];
 
 type TransactionData = {
   securityIssuer: string;
@@ -35,54 +63,24 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function GraphVueEnsembleTransactions(titre: { titre: string }) {
-  const ititre = titre.titre;
-  const [chartData, setChartData] = useState<TransactionData[]>([]);
-  const session = useSession();
-  const userid = (session.data?.user as any)?.id;
   const t = useTranslations("SecurityIssuers");
-
-  const processData = (rawData: any[]): TransactionData[] => {
-    return rawData?.map((item) => ({
-      securityIssuer: item.securityissuer,
-      totalPrice: item._sum.validatedprice || 0,
-      totalQuantity: item._sum.validatedquantity || 0,
-      count: item._count.id,
-    }));
-  };
-
-  const fetchTransactionData = async () => {
-    try {
-      const result = await fetchGraphQLClient<any>(
-        VUE_ENSEMBLE_TRANSACTIONS_QUERY,
-        {
-          userid,
-        }
-      );
-      const processedData = processData(result.groupByOrder);
-      setChartData(processedData);
-    } catch (error) {
-      if (error === "Too many requests") {
-        return <RateLimitReached />;
-      }
-      console.error("Error fetching transaction data:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTransactionData();
-  }, []);
+  
+  // Use static mock data instead of GraphQL
+  const chartData = mockTransactionData;
 
   return (
-    <Card className="border-0 shadow-none w-[45%]">
+    <Card>
       <CardHeader>
-        <CardTitle>{ititre}</CardTitle>
+        <CardTitle>{t("transactionOverview")}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="w-full">
+        <ChartContainer config={chartConfig}>
           <BarChart
+            accessibilityLayer
             data={chartData}
-            margin={{ top: 20, right: 20, left: 20 }}
-            barCategoryGap="20%"
+            margin={{
+              top: 20,
+            }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -90,64 +88,25 @@ export function GraphVueEnsembleTransactions(titre: { titre: string }) {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value}
+              tickFormatter={(value) => value.slice(0, 10) + "..."}
             />
             <ChartTooltip
               cursor={false}
-              content={({ payload, label }: any) => {
-                if (!payload || payload.length === 0) return null;
-
-                return (
-                  <ChartTooltipContent>
-                    <div className="flex flex-col gap-1">
-                      <p className="font-medium">{label}</p>
-                      {payload?.map((entry: any, index: number) => (
-                        <div
-                          key={`tooltip-${index}`}
-                          className="flex items-center gap-2"
-                        >
-                          <span
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: entry.color }}
-                          />
-                          <span>
-                            {entry.name === "totalPrice"
-                              ? `Total Value: DA${entry.value.toLocaleString()}`
-                              : `Total Quantity: ${entry.value.toLocaleString()}`}
-                          </span>
-                        </div>
-                      ))}
-                      <p className="text-muted-foreground text-xs mt-1">
-                        {payload[0]?.payload.count} transactions
-                      </p>
-                    </div>
-                  </ChartTooltipContent>
-                );
-              }}
+              content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar
-              dataKey="totalPrice"
-              fill="var(--color-totalPrice)"
-              radius={[8, 8, 0, 0]}
-            >
+            <Bar dataKey="totalPrice" fill="var(--color-totalPrice)" radius={4}>
               <LabelList
-                dataKey="totalPrice"
                 position="top"
-                formatter={(value: number) => `DA${value.toLocaleString()}`}
+                offset={12}
                 className="fill-foreground"
                 fontSize={12}
-              />
-            </Bar>
-            <Bar
-              dataKey="totalQuantity"
-              fill="var(--color-totalQuantity)"
-              radius={[8, 8, 0, 0]}
-            >
-              <LabelList
-                dataKey="totalQuantity"
-                position="top"
-                className="fill-foreground"
-                fontSize={12}
+                formatter={(value: number) => 
+                  new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                    notation: "compact",
+                  }).format(value)
+                }
               />
             </Bar>
           </BarChart>

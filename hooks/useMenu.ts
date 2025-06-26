@@ -10,7 +10,6 @@ import { useSession } from "next-auth/react";
 import { useRestToken } from "@/hooks/useRestToken";
 import {
   MenuResponse,
-  getFallbackMenu,
   getStoredMenu,
   fetchAndStoreMenu,
 } from "@/app/actions/menuService";
@@ -23,7 +22,7 @@ interface UseMenuReturn {
 }
 
 export function useMenu(): UseMenuReturn {
-  const [menu, setMenu] = useState<MenuResponse>(getFallbackMenu());
+  const [menu, setMenu] = useState<MenuResponse>({ elements: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { data: session, status } = useSession();
@@ -34,10 +33,14 @@ export function useMenu(): UseMenuReturn {
       if (status === "loading") {
         return; // Still loading session
       }
-      if (!session || !restToken) {
-        console.log("useMenu: No session or REST token, using fallback menu");
-        console.log("Session:", !!session, "REST Token:", !!restToken);
-        setMenu(getFallbackMenu());
+
+      // If no session, clear menu and show empty menu
+      if (status === "unauthenticated" || !session || !restToken) {
+        console.log("useMenu: No session or REST token, showing empty menu");
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("finnbourse-menu");
+        }
+        setMenu({ elements: [] });
         setIsLoading(false);
         return;
       }
@@ -63,8 +66,8 @@ export function useMenu(): UseMenuReturn {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to load menu";
         setError(errorMessage);
-        console.warn("useMenu: Error loading menu, using fallback:", err);
-        setMenu(getFallbackMenu());
+        console.error("useMenu: Error loading menu:", err);
+        setMenu({ elements: [] }); // Show empty menu on error
       } finally {
         setIsLoading(false);
       }
@@ -72,6 +75,7 @@ export function useMenu(): UseMenuReturn {
 
     loadMenu();
   }, [session, status, restToken]);
+
   const refreshMenu = async () => {
     if (!session || !restToken) return;
 
@@ -84,6 +88,7 @@ export function useMenu(): UseMenuReturn {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to refresh menu";
       setError(errorMessage);
+      setMenu({ elements: [] }); // Show empty menu on error
     } finally {
       setIsLoading(false);
     }
