@@ -61,7 +61,7 @@ const FormPassationOrdreMarchePrimaire = ({
   titreId,
   type,
 }: {
-  titreId?: string;
+  titreId: string;
   type: string;
 }) => {
   const session = useSession();
@@ -98,7 +98,7 @@ const FormPassationOrdreMarchePrimaire = ({
   // Use REST hooks for fetching data
   const { stocks: securityData, loading: stocksLoading } =
     useStocksREST(stockType);
-  const { stock: data, loading } = useStockREST(titreId || "", stockType);
+  const { stock: data, loading } = useStockREST(titreId, stockType);
 
   const router = useRouter();
   const handleGoBack = () => {
@@ -430,7 +430,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 </Link>
               )}
             </div>
-            {/*<div className="flex justify-between gap-6 mt-4">
+            <div className="flex justify-between gap-6 mt-4">
               <Button onClick={handleGoBack} type="reset" variant="outline">
                 {t("annuler")}
               </Button>
@@ -462,7 +462,7 @@ const FormPassationOrdreMarchePrimaire = ({
                   <ArrowRight className="hidden group-hover:block text-white " />
                 )}
               </Button>
-            </div>*/}
+            </div>
           </form>
         </Form>
       </div>

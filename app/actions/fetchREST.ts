@@ -1,7 +1,7 @@
 /**
  * fetchREST.ts
  * -----------------------
- * REST API fetcher for localhost:3000 backend
+ * REST API fetcher for 192.168.0.213:3000 backend
  * Handles authentication, actor management, and other REST endpoints
  * while keeping GraphQL functionality intact for dashboard
  */

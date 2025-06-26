@@ -137,7 +137,7 @@ export function UserTable({
 
     // Merge base and custom fields. Base fields take precedence for typing.
     const initialUser = { ...customFields, ...base }; // Spread customFields first, then base
-
+ 
     return {
       ...initialUser,
       // Ensure all required fields from GenericUser are present and correctly typed
