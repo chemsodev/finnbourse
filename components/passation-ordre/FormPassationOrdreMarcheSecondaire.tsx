@@ -3,6 +3,15 @@ import { useRouter } from "@/i18n/routing";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import {
   Form,
   FormControl,
@@ -27,6 +36,9 @@ import {
   CheckIcon,
   ChevronDown,
   CircleAlert,
+  ChevronLeft,
+  ChevronRight,
+  Search,
 } from "lucide-react";
 import {
   calculateTotalValue,
@@ -68,7 +80,7 @@ import { useStockREST, useStocksREST } from "@/hooks/useStockREST";
 import { Stock } from "@/lib/services/stockService";
 import { useClientsList } from "@/hooks/useClientsList";
 
-const FormPassationOrdreAction = ({
+const FormPassationOrdreMarcheSocondaire = ({
   titreId,
   type,
 }: {
@@ -113,6 +125,19 @@ const FormPassationOrdreAction = ({
     loading: clientsLoading,
     error: clientsError,
   } = useClientsList();
+
+  // Pagination pour le tableau des clients
+  const [currentPage, setCurrentPage] = useState(0);
+  const rowsPerPage = 10;
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredClients = clients.filter(
+    (client) =>
+      (client.client_code && client.client_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.name && client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  const totalPages = Math.ceil(filteredClients.length / rowsPerPage);
+  const paginatedClients = filteredClients.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage);
 
   // Initialize form and stock data when data is loaded
   useEffect(() => {
@@ -259,9 +284,7 @@ const FormPassationOrdreAction = ({
     try {
       // Create order using REST API with the correct format
       const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com"
-        }/api/v1/order/create`,
+        "https://poc.finnetude.com/api/v1/order/create",
         {
           method: "POST",
           headers: {
@@ -339,8 +362,96 @@ const FormPassationOrdreAction = ({
   const watchedConditionPrix = form.watch("conditionPrix");
   const watchedConditionQuantite = form.watch("conditionQuantite");
 
+  // Trouver le client sélectionné
+  const selectedClient = clients.find((c) => c.id === form.watch("selectedClientId"));
+
   if (loading || stocksLoading || clientsLoading || !data) {
     return <PasserUnOrdreSkeleton />;
+  }
+
+  if (!form.watch("selectedClientId")) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full">
+        <div className="w-full flex justify-start mb-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="w-5" /> <div>Retour</div>
+          </Button>
+        </div>
+        <h2 className="text-2xl font-bold mb-4">{t("selectClient") || "Sélectionner un client"}</h2>
+        <div className="relative mb-4 w-full max-w-2xl">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher un client..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(0);
+            }}
+            className="pl-8"
+          />
+        </div>
+        <div className="overflow-x-auto border rounded-lg w-full max-w-2xl">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Code</TableHead>
+                <TableHead className="text-center">Nom</TableHead>
+                <TableHead className="text-center">Email</TableHead>
+                <TableHead className="text-center">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedClients.map((client) => (
+                <TableRow
+                  key={client.id}
+                  className={form.watch("selectedClientId") === client.id ? "bg-blue-100" : "hover:bg-gray-100"}
+                >
+                  <TableCell className="text-center">{client.client_code}</TableCell>
+                  <TableCell className="text-center">{client.name || client.agency_name}</TableCell>
+                  <TableCell className="text-center">{client.email}</TableCell>
+                  <TableCell className="text-center">
+                    <Button
+                      type="button"
+                      variant={form.watch("selectedClientId") === client.id ? "default" : "outline"}
+                      onClick={() => form.setValue("selectedClientId", client.id)}
+                    >
+                      {form.watch("selectedClientId") === client.id ? "Sélectionné" : "Choisir"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        {/* Pagination */}
+        <div className="flex justify-center items-center gap-4 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <span>
+            {currentPage + 1} / {totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={currentPage >= totalPages - 1}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -350,7 +461,24 @@ const FormPassationOrdreAction = ({
         isDialogOpen={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
       />
-      <div className="flex justify-center items-center">
+      <div className="flex flex-col justify-center items-center w-full">
+        {/* Bouton pour fermer le formulaire et revenir à la sélection du client, aligné à gauche */}
+        <div className="w-full flex justify-start mb-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex gap-2 items-center border rounded-md px-2 bg-primary hover:bg-primary text-white w-fit hover:text-white"
+            onClick={() => form.setValue("selectedClientId", "")}
+          >
+            <ArrowLeft className="w-5" /> <div>Retour</div>
+          </Button>
+        </div>
+        {/* Titre avec le code du client sélectionné */}
+        <h2 className="text-2xl font-bold mb-6">
+          {selectedClient?.client_code && selectedClient?.name
+            ? `${selectedClient.client_code} - ${selectedClient.name}`
+            : selectedClient?.client_code || selectedClient?.name}
+        </h2>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -362,163 +490,31 @@ const FormPassationOrdreAction = ({
               render={({ field }) => (
                 <FormItem className="flex justify-between text-xl items-baseline">
                   <FormControl className="w-40">
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-[100%] justify-between rounded-md mb-6 h-14"
-                        >
-                          <div className="flex gap-4 items-center">
-                            {titre && (
-                              <div className="w-10 h-10 bg-primary rounded-md"></div>
-                            )}
-                            <div className="text-xl text-primary font-semibold">
-                              {titre || "Selectionnez un titre"}
-                            </div>
+                    <div className="w-[100%] flex items-center justify-between rounded-md mb-6 h-14 border px-4 bg-muted">
+                      <div className="flex gap-4 items-center">
+                        {titre && (
+                          <div className="w-10 h-10 bg-primary rounded-md"></div>
+                        )}
+                        <div className="text-xl text-primary font-semibold">
+                          {titre || "Aucun titre sélectionné"}
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        {titre && (
+                          <div>
+                            {formatPrice(Number(selectedPrice) || 0)}
+                            {t("currency")}
                           </div>
-                          <div className="flex items-center">
-                            {titre && (
-                              <div>
-                                {formatPrice(Number(selectedPrice) || 0)}
-                                {t("currency")}
-                              </div>
-                            )}
-                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </div>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-96 p-0">
-                        <Command>
-                          <CommandInput placeholder="Rechercher un titre..." />
-                          <CommandList>
-                            <CommandEmpty>{t("noTitle")}</CommandEmpty>
-                            <CommandGroup>
-                              {stockData &&
-                                stockData?.map((t: any) => (
-                                  <CommandItem
-                                    key={t.id}
-                                    value={t.name || t.issuer?.name}
-                                    onSelect={() => {
-                                      setTitre(t.name || t.issuer?.name || "");
-                                      setSelectedTitreName(t.name || "");
-                                      setSelectedPrice(
-                                        t.faceValue || t.facevalue
-                                      );
-                                      form.setValue(
-                                        "coursLimite",
-                                        Number(t.faceValue || t.facevalue)
-                                      );
-                                      field.onChange(t.id);
-                                      setTotalAmount(
-                                        calculateTotalValue(
-                                          t.faceValue || t.facevalue,
-                                          form.getValues("quantite"),
-                                          "action"
-                                        )
-                                      );
-                                      setGrossAmount(
-                                        calculateGrossAmount(
-                                          Number(t.faceValue || t.facevalue),
-                                          form.getValues("quantite")
-                                        )
-                                      );
-
-                                      // Set extra fields data
-                                      if (t.issuer) {
-                                        setExtraFieldsData({
-                                          notice: t.issuer.website || "",
-                                        });
-                                      }
-
-                                      setOpen(false);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        field.value === t.id
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {t.name || t.issuer?.name || t.id}
-                                  </CommandItem>
-                                ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                        )}
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="selectedClientId"
-              render={({ field }) => (
-                <FormItem className="flex justify-between text-xl items-baseline mb-6">
-                  <FormLabel className="text-gray-400 capitalize text-lg">
-                    {t("selectClient") || "Sélectionner un client"}
-                  </FormLabel>
-                  <FormControl className="w-60">
-                    <Popover open={clientOpen} onOpenChange={setClientOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={clientOpen}
-                          className="w-[100%] justify-between"
-                        >
-                          {field.value
-                            ? clients.find(
-                                (client) => client.id === field.value
-                              )?.name
-                            : "Sélectionner un client"}
-                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-96 p-0">
-                        <Command>
-                          <CommandInput placeholder="Rechercher un client..." />
-                          <CommandList>
-                            <CommandEmpty>Aucun client trouvé</CommandEmpty>
-                            <CommandGroup>
-                              {clients.map((client) => (
-                                <CommandItem
-                                  key={client.id}
-                                  value={client.name}
-                                  onSelect={() => {
-                                    field.onChange(client.id);
-                                    setClientOpen(false);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value === client.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {client.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            {/*debut form */}
             <div className="p-10 border rounded-md shadow flex flex-col gap-10">
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
@@ -534,6 +530,9 @@ const FormPassationOrdreAction = ({
                   {data?.isinCode || data?.isincode || "N/A"}
                 </div>
               </div>{" "}
+
+
+
               <FormField
                 control={form.control}
                 name="buyTransaction"
@@ -541,9 +540,12 @@ const FormPassationOrdreAction = ({
                   return (
                     <FormItem className="gap-32 text-lg">
                       <div className="flex items-baseline justify-between ">
+                        {/*1*/}
                         <FormLabel className="text-gray-400 capitalize text-lg">
                           {t("TypeTransaction")}
                         </FormLabel>
+
+                      {/*2*/}
                         <FormControl>
                           <div className="flex gap-4">
                             <button
@@ -570,12 +572,15 @@ const FormPassationOrdreAction = ({
                             </button>
                           </div>
                         </FormControl>
+
                       </div>
                       <FormMessage />
                     </FormItem>
                   );
                 }}
               />
+
+              {/* quantity */}
               <FormField
                 control={form.control}
                 name="quantite"
@@ -611,6 +616,8 @@ const FormPassationOrdreAction = ({
                   );
                 }}
               />
+
+
               {/* Conditions de Prix */}
               <FormField
                 control={form.control}
@@ -649,6 +656,8 @@ const FormPassationOrdreAction = ({
                   );
                 }}
               />
+
+
               {/* Cours limite field - only show when prix limite is selected */}
               {watchedConditionPrix === "prixLimite" && (
                 <FormField
@@ -696,6 +705,8 @@ const FormPassationOrdreAction = ({
                   )}
                 />
               )}
+
+
               {/* Conditions de Durée */}
               <FormField
                 control={form.control}
@@ -735,6 +746,8 @@ const FormPassationOrdreAction = ({
                   );
                 }}
               />
+
+
               {/* Date de validité - only show when date definie is selected */}
               {watchedConditionDuree === "dateDefinie" && (
                 <FormField
@@ -802,6 +815,8 @@ const FormPassationOrdreAction = ({
                   )}
                 />
               )}
+
+
               {/* Conditions Quantitatives */}
               <FormField
                 control={form.control}
@@ -840,6 +855,8 @@ const FormPassationOrdreAction = ({
                   );
                 }}
               />
+
+
               {/* Quantité minimale - only show when quantite minimale is selected */}
               {watchedConditionQuantite === "quantiteMinimale" && (
                 <FormField
@@ -877,6 +894,9 @@ const FormPassationOrdreAction = ({
                   )}
                 />
               )}
+
+
+              {/* date emission */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("dateEmission")}
@@ -886,6 +906,7 @@ const FormPassationOrdreAction = ({
                     formatDate(data?.emissionDate || data?.emissiondate)}
                 </div>
               </div>
+              {/* nb action */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("nbActions")}
@@ -894,6 +915,7 @@ const FormPassationOrdreAction = ({
                   {(data?.quantity && formatNumber(data?.quantity)) || "N/A"}
                 </div>
               </div>
+              {/* montant brut */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-500">{t("montantBrut")}:</div>
                 <div className="font-semibold text-lg flex gap-1">
@@ -901,13 +923,16 @@ const FormPassationOrdreAction = ({
                   <span> {t("currency")}</span>
                 </div>
               </div>
+              {/* commission */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-500">{t("commission")}:</div>
                 <div className="font-semibold text-lg">
                   {process.env.NEXT_PUBLIC_COMMISSION_ACTION} %
                 </div>
               </div>
+
               <Separator />
+              {/* montant total net */}
               <div className="flex justify-between items-baseline">
                 <div className="text-gray-400 capitalize text-lg ">
                   {t("mtt")}
@@ -919,6 +944,7 @@ const FormPassationOrdreAction = ({
               </div>
             </div>
 
+            {/* buttons */}
             <div className="flex justify-between gap-6 mt-4">
               {extraFieldsData?.notice && (
                 <Link
@@ -980,4 +1006,4 @@ const FormPassationOrdreAction = ({
   );
 };
 
-export default FormPassationOrdreAction;
+export default FormPassationOrdreMarcheSocondaire;

@@ -1,6 +1,6 @@
 "use client";
 
-import FormPassationOrdreAction from "@/components/passation-ordre/FormPassationOrdreAction";
+import FormPassationOrdreAction from "@/components/passation-ordre/FormPassationOrdreMarcheSecondaire";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useRestToken } from "@/hooks/useRestToken";
