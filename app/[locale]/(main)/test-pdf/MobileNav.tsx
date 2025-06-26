@@ -33,9 +33,6 @@ interface MobileNavProps {
     mesOrdres: string;
     ordres: string;
     chiffresEtEditions: string;
-    serviceClients: string;
-    parametres: string;
-    statistiques: string;
     operationsSurTitres: string;
     annonceOst: string;
     paiementDividendes: string;
@@ -143,37 +140,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
                 href: "/chiffres-et-editions",
                 icon: <FileBarChart size={15} />,
                 label: translations.chiffresEtEditions,
-              }}
-            />
-          )}
-          {(userRole === 1 || userRole === 0) && (
-            <Link
-              href="/serviceclients"
-              className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-            >
-              <HiOutlineSupport size={15} />
-              <div className="capitalize text-sm">
-                {translations.serviceClients}
-              </div>
-            </Link>
-          )}
-          {(userRole === 3 || userRole === 2) && (
-            <Link
-              href="/parametres"
-              className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-            >
-              <Settings size={15} />
-              <div className="capitalize text-xs">
-                {translations.parametres}
-              </div>
-            </Link>
-          )}
-          {userRole === 1 && (
-            <NavbarLink
-              link={{
-                href: "/statistiques",
-                icon: <ImStatsBars size={15} />,
-                label: translations.statistiques,
               }}
             />
           )}

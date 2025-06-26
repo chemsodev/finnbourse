@@ -86,24 +86,6 @@ const BottomNav = async () => {
               {t("Profile")}
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link href="/statistiques" className="flex items-center gap-2">
-              <ImStatsBars size={16} />
-              {t("Statistiques")}
-            </Link>
-          </DropdownMenuItem>{" "}
-          <DropdownMenuItem>
-            <Link href="/parametres" className="flex items-center gap-2">
-              <IoSettingsOutline size={16} />
-              {t("Parametres")}
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link href="/serviceclients" className="flex items-center gap-2">
-              <HiOutlineSupport size={16} />
-              {t("ServiceClients")}
-            </Link>
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

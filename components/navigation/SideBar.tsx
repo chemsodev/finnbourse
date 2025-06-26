@@ -40,9 +40,6 @@ const SideBar = async () => {
     mesOrdres: t("mesOrdres"),
     ordres: t("ordres"),
     chiffresEtEditions: t("chiffresEtEditions"),
-    serviceClients: t("ServiceClients"),
-    parametres: t("parametres"),
-    statistiques: t("Statistiques"),
     operationsSurTitres: t("operationsSurTitres"),
     annonceOst: t("annonceOst"),
     paiementDividendes: t("paiementDividendes"),
@@ -113,30 +110,6 @@ const SideBar = async () => {
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <Link
-            href="/serviceclients"
-            className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-          >
-            <HiOutlineSupport size={15} />
-            <div className="capitalize text-sm">
-              {translations.serviceClients}
-            </div>
-          </Link>
-
-          <Link
-            href="/parametres"
-            className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-          >
-            <Settings size={15} />
-            <div className="capitalize text-xs">{translations.parametres}</div>
-          </Link>
-          <NavbarLink
-            link={{
-              href: "/statistiques",
-              icon: <ImStatsBars size={15} />,
-              label: translations.statistiques,
-            }}
-          />
           <DeconnexionDialog />
           <div className="flex">
             <Link
