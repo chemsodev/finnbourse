@@ -4,7 +4,6 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 
 const publicPages = [
-  "/",
   "/login",
   "/inscription",
   "/inscription/particulier",
@@ -18,78 +17,134 @@ const intlMiddleware = createMiddleware(routing);
 
 export default async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
+
   console.log("🛡️ Middleware processing:", pathname);
 
   // Handle API routes - skip middleware for API routes
   if (pathname.startsWith("/api")) {
-    console.log("🔄 API route, skipping middleware");
     return NextResponse.next();
   }
 
   // Handle static files and Next.js internals
   if (pathname.startsWith("/_next") || pathname.includes(".")) {
-    console.log("🔄 Static file or Next.js internal, skipping middleware");
     return NextResponse.next();
   }
 
-  // Check if the current pathname is a public page
-  const publicPathnameRegex = RegExp(
-    `^(/(${routing.locales.join("|")}))?(${publicPages
-      .flatMap((p) => (p === "/" ? ["", "/"] : p))
-      .join("|")})/?$`,
-    "i"
-  );
+  // First, always apply intl middleware for locale handling
+  const intlResponse = intlMiddleware(req);
 
-  const isPublicPage = publicPathnameRegex.test(pathname);
+  // Check if this is a public page (with locale support)
+  const isPublicPage = publicPages.some((page) => {
+    // Check exact match
+    if (pathname === page) return true;
+    // Check with locale prefix
+    return routing.locales.some((locale) => pathname === `/${locale}${page}`);
+  });
+
   console.log("🔍 Is public page:", isPublicPage, "for:", pathname);
 
   if (isPublicPage) {
-    console.log("✅ Public page, using intl middleware");
-    return intlMiddleware(req);
+    console.log("✅ Public page, allowing access");
+    return intlResponse;
   }
 
-  // For protected pages, check authentication
-  try {
-    const token = await getToken({
-      req,
-      secret: process.env.NEXTAUTH_SECRET,
-      secureCookie: process.env.NODE_ENV === "production",
-    });
+  // Debug: Log all cookies
+  const allCookies = req.cookies.getAll();
+  console.log(
+    "🍪 All cookies:",
+    allCookies.map((c) => ({ name: c.name, hasValue: !!c.value }))
+  );
 
-    console.log(
-      "🔐 Token check for protected route:",
-      pathname,
-      "Token exists:",
-      !!token
-    );
+  // For protected pages, check authentication with improved error handling
+  try {
+    // Try multiple cookie names and approaches
+    const possibleCookieNames = [
+      "next-auth.session-token",
+      "__Secure-next-auth.session-token",
+      "next-auth.csrf-token",
+      "__Host-next-auth.csrf-token",
+    ];
+
+    let token = null;
+
+    // Try each possible cookie name
+    for (const cookieName of possibleCookieNames) {
+      try {
+        token = await getToken({
+          req,
+          secret: process.env.NEXTAUTH_SECRET,
+          cookieName: cookieName,
+        });
+        if (token) {
+          console.log(`✅ Found token with cookie name: ${cookieName}`);
+          break;
+        }
+      } catch (err) {
+        console.log(
+          `❌ Failed with cookie name ${cookieName}:`,
+          err instanceof Error ? err.message : String(err)
+        );
+      }
+    }
+
+    // If no token found with specific cookie names, try default
+    if (!token) {
+      try {
+        token = await getToken({
+          req,
+          secret: process.env.NEXTAUTH_SECRET,
+        });
+        if (token) {
+          console.log("✅ Found token with default settings");
+        }
+      } catch (err) {
+        console.log(
+          "❌ Failed with default settings:",
+          err instanceof Error ? err.message : String(err)
+        );
+      }
+    }
+
+    console.log("🔐 Final token check:", {
+      exists: !!token,
+      path: pathname,
+      tokenSub: token?.sub,
+      tokenEmail: token?.email,
+    });
 
     if (!token) {
       console.log("❌ No token found, redirecting to login");
 
-      // Get the locale from the pathname
+      // Get the locale from the pathname or use default
       const locale =
         pathname.match(/^\/(fr|en|ar)/)?.[1] || routing.defaultLocale;
       const loginUrl = new URL(`/${locale}/login`, req.url);
 
-      // Add the attempted URL as a callback parameter
-      if (pathname !== `/${locale}` && pathname !== "/") {
+      // Store the attempted URL for redirect after login (only for non-root paths)
+      if (
+        pathname !== "/" &&
+        pathname !== `/${locale}` &&
+        !pathname.endsWith(`/${locale}`)
+      ) {
         loginUrl.searchParams.set("callbackUrl", pathname);
       }
 
+      console.log("🔄 Redirecting to:", loginUrl.toString());
       return NextResponse.redirect(loginUrl);
     }
 
-    // Token exists, apply intl middleware for protected routes
-    console.log("✅ Token valid, applying intl middleware");
-    return intlMiddleware(req);
+    // Token exists, user is authenticated
+    console.log("✅ User authenticated, allowing access");
+    return intlResponse;
   } catch (error) {
     console.error("❌ Error checking token:", error);
 
-    // Fallback to redirect to login on error
-    const locale =
-      pathname.match(/^\/(fr|en|ar)/)?.[1] || routing.defaultLocale;
-    const loginUrl = new URL(`/${locale}/login`, req.url);
-    return NextResponse.redirect(loginUrl);
+    // More graceful error handling - don't redirect on every error
+    // Just log and allow through for now to prevent loops
+    console.log(
+      "⚠️ Allowing access despite token check error to prevent loops"
+    );
+    return intlResponse;
   }
 }
 

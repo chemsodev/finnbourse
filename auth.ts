@@ -94,8 +94,23 @@ const auth: any = {
       },
     }),
   ],
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     session: async ({ session, token }: { session: any; token: any }) => {
+      console.log("📋 Session callback called", {
+        hasToken: !!token,
+        hasAccessToken: !!token?.accessToken,
+      });
+
       if (token.accessToken) {
         const decodedToken = jwt.decode(
           token.accessToken as string
@@ -117,10 +132,18 @@ const auth: any = {
 
         // Assign the user object to session.user
         session.user = user;
+        console.log("✅ Session user set successfully");
+      } else {
+        console.log("❌ No access token in JWT token");
       }
       return session;
     },
     jwt: async ({ token, user }: { token: any; user: any }) => {
+      console.log("🔑 JWT callback called", {
+        hasUser: !!user,
+        hasUserToken: !!user?.token,
+      });
+
       if (user && user.token) {
         token.accessToken = user.token as string;
         token.refreshToken = user.refreshToken as string;
@@ -128,6 +151,17 @@ const auth: any = {
         token.error = user.error as string;
         token.loginSource = user.loginSource as string;
         token.restToken = user.restToken as string;
+
+        console.log("✅ JWT token set successfully");
+      }
+
+      // Check if user is logging out (no session)
+      if (!user && !token.accessToken) {
+        console.log("🚪 User logging out, shutting down token manager");
+        // Import tokenManager dynamically to avoid circular imports
+        if (typeof window !== "undefined" && (window as any).tokenManager) {
+          (window as any).tokenManager.shutdown();
+        }
       }
 
       // Token expiration check disabled

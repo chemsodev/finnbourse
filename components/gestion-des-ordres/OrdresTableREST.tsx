@@ -285,7 +285,7 @@ export default function OrdresTableREST({
           try {
             // Direct fetch from localhost API
             const response = await fetch(
-              `https://kh.finnetude.com/api/v1/stock/${stockId}`,
+              `http://localhost:3000/api/v1/stock/${stockId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -338,7 +338,7 @@ export default function OrdresTableREST({
           try {
             // Direct fetch from localhost API
             const response = await fetch(
-              `https://kh.finnetude.com/api/v1/client/${clientId}`,
+              `http://localhost:3000/api/v1/client/${clientId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

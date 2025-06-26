@@ -132,12 +132,18 @@ const FormPassationOrdreMarcheSocondaire = ({
   const [searchTerm, setSearchTerm] = useState("");
   const filteredClients = clients.filter(
     (client) =>
-      (client.client_code && client.client_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.name && client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()))
+      (client.client_code &&
+        client.client_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.name &&
+        client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.email &&
+        client.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   const totalPages = Math.ceil(filteredClients.length / rowsPerPage);
-  const paginatedClients = filteredClients.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage);
+  const paginatedClients = filteredClients.slice(
+    currentPage * rowsPerPage,
+    (currentPage + 1) * rowsPerPage
+  );
 
   // Initialize form and stock data when data is loaded
   useEffect(() => {
@@ -284,9 +290,7 @@ const FormPassationOrdreMarcheSocondaire = ({
     try {
       // Create order using REST API with the correct format
       const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com"
-        }/api/v1/order/create`,
+        "https://poc.finnetude.com/api/v1/order/create",
         {
           method: "POST",
           headers: {
@@ -365,7 +369,9 @@ const FormPassationOrdreMarcheSocondaire = ({
   const watchedConditionQuantite = form.watch("conditionQuantite");
 
   // Trouver le client sélectionné
-  const selectedClient = clients.find((c) => c.id === form.watch("selectedClientId"));
+  const selectedClient = clients.find(
+    (c) => c.id === form.watch("selectedClientId")
+  );
 
   if (loading || stocksLoading || clientsLoading || !data) {
     return <PasserUnOrdreSkeleton />;
@@ -386,7 +392,9 @@ const FormPassationOrdreMarcheSocondaire = ({
             <ArrowLeft className="w-5" /> <div>Retour</div>
           </Button>
         </div>
-        <h2 className="text-2xl font-bold mb-4">{t("selectClient") || "Sélectionner un client"}</h2>
+        <h2 className="text-2xl font-bold mb-4">
+          {t("selectClient") || "Sélectionner un client"}
+        </h2>
         {/* Champ de recherche */}
         <div className="relative mb-4 w-full max-w-2xl">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -414,18 +422,34 @@ const FormPassationOrdreMarcheSocondaire = ({
               {paginatedClients.map((client) => (
                 <TableRow
                   key={client.id}
-                  className={form.watch("selectedClientId") === client.id ? "bg-blue-100" : "hover:bg-gray-100"}
+                  className={
+                    form.watch("selectedClientId") === client.id
+                      ? "bg-blue-100"
+                      : "hover:bg-gray-100"
+                  }
                 >
-                  <TableCell className="text-center">{client.client_code}</TableCell>
-                  <TableCell className="text-center">{client.name || client.agency_name}</TableCell>
+                  <TableCell className="text-center">
+                    {client.client_code}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {client.name || client.agency_name}
+                  </TableCell>
                   <TableCell className="text-center">{client.email}</TableCell>
                   <TableCell className="text-center">
                     <Button
                       type="button"
-                      variant={form.watch("selectedClientId") === client.id ? "default" : "outline"}
-                      onClick={() => form.setValue("selectedClientId", client.id)}
+                      variant={
+                        form.watch("selectedClientId") === client.id
+                          ? "default"
+                          : "outline"
+                      }
+                      onClick={() =>
+                        form.setValue("selectedClientId", client.id)
+                      }
                     >
-                      {form.watch("selectedClientId") === client.id ? "Sélectionné" : "Choisir"}
+                      {form.watch("selectedClientId") === client.id
+                        ? "Sélectionné"
+                        : "Choisir"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -450,7 +474,9 @@ const FormPassationOrdreMarcheSocondaire = ({
             type="button"
             variant="outline"
             disabled={currentPage >= totalPages - 1}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
+            }
           >
             <ChevronRight className="w-5 h-5" />
           </Button>
@@ -535,9 +561,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   {data?.isinCode || data?.isincode || "N/A"}
                 </div>
               </div>{" "}
-
-
-
               <FormField
                 control={form.control}
                 name="buyTransaction"
@@ -550,7 +573,7 @@ const FormPassationOrdreMarcheSocondaire = ({
                           {t("TypeTransaction")}
                         </FormLabel>
 
-                      {/*2*/}
+                        {/*2*/}
                         <FormControl>
                           <div className="flex gap-4">
                             <button
@@ -577,14 +600,12 @@ const FormPassationOrdreMarcheSocondaire = ({
                             </button>
                           </div>
                         </FormControl>
-
                       </div>
                       <FormMessage />
                     </FormItem>
                   );
                 }}
               />
-
               {/* quantity */}
               <FormField
                 control={form.control}
@@ -621,8 +642,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   );
                 }}
               />
-
-
               {/* Conditions de Prix */}
               <FormField
                 control={form.control}
@@ -661,8 +680,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   );
                 }}
               />
-
-
               {/* Cours limite field - only show when prix limite is selected */}
               {watchedConditionPrix === "prixLimite" && (
                 <FormField
@@ -710,8 +727,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   )}
                 />
               )}
-
-
               {/* Conditions de Durée */}
               <FormField
                 control={form.control}
@@ -751,8 +766,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   );
                 }}
               />
-
-
               {/* Date de validité - only show when date definie is selected */}
               {watchedConditionDuree === "dateDefinie" && (
                 <FormField
@@ -820,8 +833,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   )}
                 />
               )}
-
-
               {/* Conditions Quantitatives */}
               <FormField
                 control={form.control}
@@ -860,8 +871,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   );
                 }}
               />
-
-
               {/* Quantité minimale - only show when quantite minimale is selected */}
               {watchedConditionQuantite === "quantiteMinimale" && (
                 <FormField
@@ -899,8 +908,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   )}
                 />
               )}
-
-
               {/* date emission */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
@@ -935,7 +942,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                   {process.env.NEXT_PUBLIC_COMMISSION_ACTION} %
                 </div>
               </div>
-
               <Separator />
               {/* montant total net */}
               <div className="flex justify-between items-baseline">
@@ -949,10 +955,6 @@ const FormPassationOrdreMarcheSocondaire = ({
               </div>
             </div>
 
-
-
-
-            
             {/* buttons */}
             <div className="flex justify-between gap-6 mt-4">
               {extraFieldsData?.notice && (

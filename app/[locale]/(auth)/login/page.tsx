@@ -75,15 +75,19 @@ export default function Login() {
       });
 
       if (result?.error) {
-        setError(result.error);
-        console.error("Login error:", result.error);
+        // Handle rate limiting errors gracefully
+        if (
+          result.error.includes("rate limit") ||
+          result.error.includes("429")
+        ) {
+          // Silently handle rate limiting without showing toast
+          setError("Please wait and try again.");
+        } else {
+          setError(result.error);
+        }
         setLoading(false);
       } else {
         // Login successful, add a brief delay to allow session/token initialization
-        console.log(
-          "Login successful, allowing time for menu initialization..."
-        );
-
         // Small delay to ensure session is established before redirect
         await new Promise((resolve) => setTimeout(resolve, 1000));
 

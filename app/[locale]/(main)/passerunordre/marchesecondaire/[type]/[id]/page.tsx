@@ -41,7 +41,6 @@ const SecondaryMarketStockPage = ({
 
   return (
     <div className="flex flex-col gap-10 motion-preset-focus motion-duration-2000">
-      
       <div className="h-32 bg-gray-100 rounded-md flex justify-center items-center text-3xl font-bold text-primary uppercase">
         {type === "action"
           ? t("action")
