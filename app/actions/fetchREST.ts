@@ -35,8 +35,7 @@ export async function fetchREST<T = any>(
       restToken?: string;
     };
   };
-
-  if (!process.env.NEXT_PUBLIC_REST_API_URL) {
+  if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
     console.error(
       "REST API URL is not defined. Please check your environment variables."
     );
@@ -45,7 +44,7 @@ export async function fetchREST<T = any>(
     );
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_REST_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   // Ensure endpoint starts with /
   const apiPath = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
@@ -104,7 +103,7 @@ export function clientFetchREST<T = any>(
   endpoint: string,
   options: FetchRESTOptions = {}
 ): Promise<T> {
-  const baseUrl = process.env.NEXT_PUBLIC_REST_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   if (!baseUrl) {
     throw new Error("REST API URL is not configured");

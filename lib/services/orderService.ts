@@ -11,7 +11,7 @@ import { Session } from "next-auth";
 const BACKEND_API =
   process.env.NEXT_PUBLIC_BACKEND_API_URL || "https://poc.finnetude.com/api/v1";
 const LOCAL_API =
-  process.env.NEXT_PUBLIC_REST_API_URL || "http://localhost:3000/api/v1";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api/v1";
 
 export interface OrderElement {
   quantity: number;

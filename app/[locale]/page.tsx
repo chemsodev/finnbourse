@@ -5,7 +5,6 @@ import FormattedDate from "@/components/FormattedDate";
 import DashItem3 from "@/components/dashboard/DashItem3";
 import DashItem2 from "@/components/dashboard/DashItem2";
 import DashItem1 from "@/components/dashboard/DashItem1";
-import DashGraph from "@/components/dashboard/DashGraph";
 import DynamicSidebar from "@/components/navigation/DynamicSidebar";
 import DynamicBottomNav from "@/components/navigation/DynamicBottomNav";
 import MyPortfolio from "@/components/MyPortfolio";
@@ -13,7 +12,7 @@ import auth from "@/auth";
 import { getServerSession } from "next-auth/next";
 import { Session } from "next-auth";
 import LogOutAgent from "@/components/LogOutAgent";
-import { StockTracker } from "@/components/dashboard/StockTracker";
+import { StaticStockTracker } from "@/components/dashboard/StaticStockTracker";
 import DashWidgetTcc from "@/components/dashboard/dash-widget-tcc";
 import { BadgePercent, Database, LineChart, Users } from "lucide-react";
 import IPOAnnouncement from "@/components/dashboard/IPOAnnouncement";
@@ -71,7 +70,7 @@ export default async function Home() {
         )}{" "}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="mt-4 md:w-4/6">
-            <StockTracker />
+            <StaticStockTracker />
           </div>
           <div className="md:m-6 flex flex-col gap-6 md:w-3/6">
             <div className="font-semibold text-center md:ltr:text-left md:rtl:text-right md:text-2xl text-sm">

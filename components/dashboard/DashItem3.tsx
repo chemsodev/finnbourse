@@ -1,16 +1,12 @@
 import React from "react";
-import DashNews from "./DashNews";
-import Messages from "../Messages";
+import StaticDashNews from "./StaticDashNews";
+import StaticMessages from "../StaticMessages";
 
-interface DashItem3Props {
-  skipNews?: number;
-  skipMessages?: number;
-}
-const DashItem3 = async () => {
+const DashItem3 = () => {
   return (
     <div className="md:w-[33%] h-full space-y-4">
-      <DashNews />
-      <Messages />
+      <StaticDashNews />
+      <StaticMessages />
     </div>
   );
 };

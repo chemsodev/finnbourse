@@ -11,10 +11,6 @@ export function checkEnvironmentConfig() {
     issues.push("NEXT_PUBLIC_BACKEND_URL is not set");
   }
 
-  if (!process.env.NEXT_PUBLIC_REST_API_URL) {
-    issues.push("NEXT_PUBLIC_REST_API_URL is not set");
-  }
-
   if (!process.env.NEXTAUTH_SECRET) {
     issues.push("NEXTAUTH_SECRET is not set");
   }
@@ -28,7 +24,6 @@ export function checkEnvironmentConfig() {
     issues,
     config: {
       backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
-      restApiUrl: process.env.NEXT_PUBLIC_REST_API_URL,
       nextAuthUrl: process.env.NEXTAUTH_URL,
     },
   };
@@ -44,7 +39,6 @@ export function logEnvironmentConfig() {
     console.log("✅ All required environment variables are set");
     console.log("📋 Configuration:");
     console.log(`   Backend URL: ${check.config.backendUrl}`);
-    console.log(`   REST API URL: ${check.config.restApiUrl}`);
     console.log(`   NextAuth URL: ${check.config.nextAuthUrl}`);
   } else {
     console.error("❌ Missing required environment variables:");

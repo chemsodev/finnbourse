@@ -315,7 +315,6 @@ export function getFallbackMenu(): MenuResponse {
       },
       { id: "charts-editions" },
       { id: "client-service" },
-      { id: "settings" },
       { id: "statistics" },
     ],
   };
@@ -529,12 +528,6 @@ export const menuItemMap: Record<
     href: "/serviceclients",
     icon: "Headphones",
     translationKey: "ServiceClients",
-  },
-  settings: {
-    label: "Settings",
-    href: "/parametres",
-    icon: "Settings",
-    translationKey: "parametres",
   },
   statistics: {
     label: "Statistics",

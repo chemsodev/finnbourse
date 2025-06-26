@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     if (user.token || user.email) {
       try {
         const loginResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_REST_API_URL}/auth/login`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
           {
             method: "POST",
             headers: {

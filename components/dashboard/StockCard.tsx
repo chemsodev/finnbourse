@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Card } from "../ui/card";
 import { MdArrowOutward } from "react-icons/md";
@@ -5,10 +7,9 @@ import { useTranslations } from "next-intl";
 import { Stock } from "@/lib/interfaces";
 import { formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
-import { getServerSession } from "next-auth";
-import auth from "@/auth";
+import { useSession } from "next-auth/react";
 
-const StockCard = async ({
+const StockCard = ({
   stock,
   variation,
 }: {
@@ -16,8 +17,8 @@ const StockCard = async ({
   variation: string;
 }) => {
   const t = useTranslations("StockCard");
-  const session = await getServerSession(auth);
-  const userRole = session?.user?.roleid;
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.roleid;
   return (
     <Link
       href={

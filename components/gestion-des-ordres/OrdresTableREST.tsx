@@ -41,7 +41,7 @@ import { Label } from "@/components/ui/label";
 
 // API base URL with fallback
 const API_BASE =
-  process.env.NEXT_PUBLIC_REST_API_URL || "http://localhost:3000/api/v1";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api/v1";
 
 console.log("Using API Base URL:", API_BASE);
 

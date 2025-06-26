@@ -261,7 +261,12 @@
     "stockTwo": "Action 2",
     "pickADate": "Choisir une date",
     "startPeriod": "Période de début",
-    "endPeriod": "Période de fin"
+    "endPeriod": "Période de fin",
+    "stockTracker": "Suivi des Actions",
+    "liveData": "Données en Direct",
+    "chart": "Graphique",
+    "table": "Tableau",
+    "lastUpdate": "Dernière Mise à Jour"
   },
   "TopBarDash": {
     "title": "Mon portefeuille",
@@ -2732,5 +2737,28 @@
     "authRequired": "Authentification requise",
     "tokenRequired": "Récupération du jeton d'authentification en cours...",
     "preparingInterface": "Préparation de l'interface utilisateur..."
+  },
+  "ordres": {
+    "draft": "Brouillon",
+    "pending": "En Attente",
+    "inProgress": "En Cours",
+    "validated": "Validé",
+    "partiallyValidated": "Partiellement Validé",
+    "expired": "Expiré",
+    "rejected": "Rejeté",
+    "cancelled": "Annulé",
+    "buy": "Achat",
+    "sell": "Vente",
+    "recentOrders": "Ordres Récents",
+    "orders": "Ordres",
+    "viewAll": "Voir Tout",
+    "id": "ID",
+    "security": "Titre",
+    "direction": "Direction",
+    "quantity": "Quantité",
+    "priceLimit": "Limite de Prix",
+    "status": "Statut",
+    "orderDate": "Date d'Ordre",
+    "showingRecent": "Affichage Récent"
   }
 }

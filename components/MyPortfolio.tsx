@@ -1,18 +1,13 @@
+"use client";
+
 import React from "react";
 import StockCard from "./dashboard/StockCard";
-import { Stock } from "@/lib/interfaces";
-import { LIST_STOCKS_SIMPLE_QUERY } from "@/graphql/queries";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+import { mockStocks } from "@/lib/staticData";
 import { calculateVariation } from "@/lib/utils";
 
-const MyPortfolio = async () => {
-  const data = await fetchGraphQLClient<{ listStocks: Stock[] }>(
-    LIST_STOCKS_SIMPLE_QUERY,
-    {
-      take: 4,
-      type: "action",
-    }
-  );
+const MyPortfolio = () => {
+  // Use static mock data instead of GraphQL
+  const data = { listStocks: mockStocks.slice(0, 4) };
 
   const stocksWithVariation = data?.listStocks?.map((stock: any) => {
     const marketMetadata = stock.marketmetadata;
@@ -24,6 +19,12 @@ const MyPortfolio = async () => {
       marketMetadata.cours.length >= 2
     ) {
       variation = calculateVariation(marketMetadata.cours);
+    } else {
+      // Generate random variation for demo purposes
+      const randomVariation = (Math.random() - 0.5) * 10;
+      variation = `${randomVariation > 0 ? "+" : ""}${randomVariation.toFixed(
+        2
+      )}%`;
     }
     return { ...stock, variation };
   });

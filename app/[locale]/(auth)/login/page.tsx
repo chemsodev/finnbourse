@@ -116,7 +116,7 @@ export default function Login() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: values.email,
+            username: values.email,
             password: values.password,
           }),
         }

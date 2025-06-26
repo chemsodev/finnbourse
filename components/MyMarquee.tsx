@@ -3,44 +3,32 @@
 import React, { useEffect, useState } from "react";
 import Marquee from "react-fast-marquee";
 import MarqueeObject from "./MarqueeObject";
-import { LIST_STOCKS_SIMPLE_QUERY } from "@/graphql/queries";
+import { mockStocks } from "@/lib/staticData";
 import { Stock } from "@/lib/interfaces";
-import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
-import { calculateVariation } from "@/lib/utils";
 
 const MyMarquee = () => {
   const [stocksWithVariation, setStocksWithVariation] = useState<
     Array<Stock & { variation: string }>
   >([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    fetchGraphQLClient<{ listStocks: Stock[] }>(LIST_STOCKS_SIMPLE_QUERY, {
-      type: "action",
-    })
-      .then((data) => {
-        const stocks = data.listStocks?.map((stock: any) => {
-          const marketMetadata = stock.marketmetadata;
-          let variation = "0.00%";
-          if (
-            typeof marketMetadata === "object" &&
-            marketMetadata !== null &&
-            Array.isArray(marketMetadata.cours) &&
-            marketMetadata.cours.length >= 2
-          ) {
-            variation = calculateVariation(marketMetadata.cours);
-          }
-          return { ...stock, variation };
-        });
+    // Use static mock data instead of GraphQL
+    const stocksWithVar = mockStocks.map((stock: any) => {
+      // Calculate mock variation
+      const lastPrice = stock.marketmetadata?.cours?.[0] || stock.price;
+      const prevPrice = stock.marketmetadata?.cours?.[1] || stock.price * 0.98;
+      const variation = (((lastPrice - prevPrice) / prevPrice) * 100).toFixed(
+        2
+      );
 
-        setStocksWithVariation(stocks);
-      })
-      .catch((error) => {
-        console.error("Error fetching stocks:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      return {
+        ...stock,
+        variation: `${variation}%`,
+      };
+    });
+
+    setStocksWithVariation(stocksWithVar);
+    setLoading(false);
   }, []);
 
   if (loading) {

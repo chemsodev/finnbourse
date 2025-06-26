@@ -1,10 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import React from "react";
-import { GraphPerfPortefeille } from "./statistics-charts/GraphPerfPortefeille";
-import { GraphHistoriqueOrdres } from "./statistics-charts/GraphHistoriqueOrdres";
-import { HistoriqueExecutionOrdre } from "./HistoriqueExecutionOrdre";
-import { GraphVueEnsembleTransactions } from "./statistics-charts/GraphVueEnsembleTransactions";
-import { GraphPerfNegociateurs } from "./statistics-charts/GraphPerfNegociateurs";
+import StaticGraphPerfPortefeille from "./statistics-charts/StaticGraphPerfPortefeille";
+import StaticGraphHistoriqueOrdres from "./statistics-charts/StaticGraphHistoriqueOrdres";
+import StaticGraphVueEnsembleTransactions from "./statistics-charts/StaticGraphVueEnsembleTransactions";
+import StaticGraphPerfNegociateurs from "./statistics-charts/StaticGraphPerfNegociateurs";
+import StaticGraphPerfPlat from "./statistics-charts/StaticGraphPerfPlat";
 
 const StatCharts = async () => {
   const t = await getTranslations("StatCharts");
@@ -12,16 +12,16 @@ const StatCharts = async () => {
     <div className="mx-10 my-4">
       <div className="space-y-8">
         <div className="flex justify-between gap-16">
-          <GraphPerfPortefeille titre={t("perfPortefeille")} />
-          <GraphHistoriqueOrdres titre={t("HistoriqueOrdres")} />
+          <StaticGraphPerfPortefeille />
+          <StaticGraphHistoriqueOrdres />
         </div>
         <div className="flex justify-between gap-16">
-          <HistoriqueExecutionOrdre titre={t("HistoriqueExecutionOrdre")} />
-          <GraphVueEnsembleTransactions titre={t("VueEnsembleTransactions")} />
+          <StaticGraphVueEnsembleTransactions />
+          <StaticGraphPerfPlat />
         </div>
         <div className="flex justify-between gap-16">
-          <GraphPerfPortefeille titre={t("perfPlat")} />
-          <GraphPerfNegociateurs titre={t("perNeg")} />
+          <StaticGraphPerfNegociateurs />
+          <StaticGraphVueEnsembleTransactions />
         </div>
       </div>
     </div>

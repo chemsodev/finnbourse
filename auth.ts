@@ -1,12 +1,7 @@
 // @ts-ignore
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
-import { REFRESH_TOKEN_MUTATION } from "@/graphql/mutations";
-import {
-  graphqlClient,
-  TokenRefreshError,
-  AuthenticationError,
-} from "@/lib/graphql-client";
+// GraphQL imports removed - using REST API only
 
 declare module "next-auth" {
   interface User {
@@ -55,9 +50,7 @@ const auth: any = {
           const ip =
             (req?.headers?.["x-forwarded-for"] as string) ||
             (req?.headers?.["x-real-ip"] as string) ||
-            "IP not available";
-
-          // Use GraphQL backend for primary authentication
+            "IP not available"; // Use REST backend for authentication only
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
             {
@@ -67,50 +60,17 @@ const auth: any = {
                 "x-forwarded-for": ip,
               },
               body: JSON.stringify({
-                email: credentials?.email,
+                username: credentials?.email,
                 password: credentials?.password,
-                twoFactorCode: credentials?.twoFactorCode,
+                otp: credentials?.twoFactorCode,
               }),
             }
           );
           const user = await res.json();
 
           if (res.ok && user?.access_token) {
-            console.log("Login successful with GraphQL backend");
+            console.log("Login successful with REST backend");
             const decodedToken = jwt.decode(user.access_token) as DecodedToken;
-
-            // Generate REST API token in background for actor management
-            let restToken = null;
-            try {
-              console.log(
-                "Attempting to get REST API token for actor management..."
-              );
-              const restRes = await fetch(
-                `${process.env.NEXT_PUBLIC_REST_API_URL}/auth/login`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "x-forwarded-for": ip,
-                  },
-                  body: JSON.stringify({
-                    username: credentials?.email,
-                    password: credentials?.password,
-                    otp: credentials?.twoFactorCode,
-                  }),
-                }
-              );
-
-              if (restRes.ok) {
-                const restUser = await restRes.json();
-                if (restUser?.access_token) {
-                  restToken = restUser.access_token;
-                  console.log("REST API token obtained for actor management");
-                }
-              }
-            } catch (restError) {
-              console.log("Could not obtain REST API token:", restError);
-            }
 
             return {
               id: decodedToken.sub,
@@ -122,8 +82,8 @@ const auth: any = {
               token: user.access_token,
               refreshToken: user.refresh_token,
               tokenExpires: decodedToken.exp,
-              loginSource: "GraphQL",
-              restToken: restToken, // Store REST token for actor management
+              loginSource: "REST",
+              restToken: user.access_token, // Same token for both
             };
           } else {
             console.error("Login failed:", user);
