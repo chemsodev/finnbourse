@@ -96,7 +96,7 @@ export default function StaticVoletNotif() {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-4 w-4" />
+          <Bell className="h-4 w-4 text-black hover:text-black" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
