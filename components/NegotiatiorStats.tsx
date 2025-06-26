@@ -9,14 +9,8 @@ const NegotiatiorStats = () => {
   const t = useTranslations("HomePage");
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
-          Negotiator Statistics
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className="h-full flex flex-col gap-4 w-full bg-transparent border-none">
+        <CardContent>
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">

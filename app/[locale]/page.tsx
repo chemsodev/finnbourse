@@ -45,25 +45,21 @@ export default async function Home() {
           
         </div>
         <div className="">
-          <div className="mt-4 w-full">
+          <div className="mt-6 w-full">
             <StaticStockTracker />
           </div>
-          <div className="">
-            <div className="font-semibold text-center md:ltr:text-left md:rtl:text-right md:text-2xl text-sm">
-              {t("portefeuille")}
+          <div className="mt-8 w-full flex flex-col lg:flex-row gap-4 p-4 h-full">
+            <div className="flex-1 h-full">
+              <MyPortfolio />
             </div>
-            <MyPortfolio />
+            <div className="lg:w-1/4 h-full">
+              <DashItem2 />
+            </div>
           </div>
         </div>
-        <div>
-          <div className="flex items-baseline gap-1 mx-2 mt-8 md:mt-0">
-            <FormattedDate date={dateTime} />
-          </div>{" "}
-          
+        <div>          
         </div>{" "}
-        {/*<div className="flex flex-col md:flex-row my-6 justify-between gap-6 md:gap-0">*/}
-        <div>
-          <DashItem2 />
+        <div className="mt-8 w-full">
           <DashItem3 />
         </div>
       </div>
