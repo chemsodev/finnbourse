@@ -43,7 +43,6 @@ const auth: any = {
       credentials: {
         email: { label: "email", type: "email" },
         password: { label: "password", type: "password" },
-        twoFactorCode: { label: "twoFactorCode", type: "text" },
       },
       async authorize(credentials, req) {
         try {
@@ -62,7 +61,6 @@ const auth: any = {
               body: JSON.stringify({
                 username: credentials?.email,
                 password: credentials?.password,
-                otp: credentials?.twoFactorCode,
               }),
             }
           );
