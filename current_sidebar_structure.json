@@ -183,24 +183,6 @@
       "href": "/chiffres-et-editions",
       "icon": "FileBarChart",
       "translationKey": "chiffresEtEditions"
-    },
-    {
-      "id": "client-service",
-      "href": "/serviceclients",
-      "icon": "Headphones",
-      "translationKey": "ServiceClients"
-    },
-    {
-      "id": "settings",
-      "href": "/parametres",
-      "icon": "Settings",
-      "translationKey": "parametres"
-    },
-    {
-      "id": "statistics",
-      "href": "/statistiques",
-      "icon": "BarChart3",
-      "translationKey": "Statistiques"
     }
   ]
 }

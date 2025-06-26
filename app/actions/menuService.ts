@@ -437,18 +437,6 @@ export const menuItemMap: Record<
     icon: "FileBarChart",
     translationKey: "chiffresEtEditions",
   },
-  "client-service": {
-    label: "Client Service",
-    href: "/serviceclients",
-    icon: "Headphones",
-    translationKey: "ServiceClients",
-  },
-  statistics: {
-    label: "Statistics",
-    href: "/statistiques",
-    icon: "BarChart3",
-    translationKey: "Statistiques",
-  },
 };
 
 // Helper function to get menu item info

@@ -94,30 +94,6 @@ const DynamicSidebar = () => {
       </div>{" "}
       {/* Bottom section - matching original sidebar */}
       <div className="flex flex-col gap-2">
-        <Link
-          href="/serviceclients"
-          className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-        >
-          <HiOutlineSupport size={15} />
-          <div className="capitalize text-sm">{t("ServiceClients")}</div>
-        </Link>
-
-        <Link
-          href="/parametres"
-          className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-        >
-          <Settings size={15} />
-          <div className="capitalize text-xs">{t("parametres")}</div>
-        </Link>
-
-        <Link
-          href="/statistiques"
-          className="flex items-center gap-4 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-6 w-full rounded-xl "
-        >
-          <ImStatsBars size={15} />
-          <div className="capitalize text-sm">{t("Statistiques")}</div>
-        </Link>
-
         <DeconnexionDialog />
 
         <div className="flex">
