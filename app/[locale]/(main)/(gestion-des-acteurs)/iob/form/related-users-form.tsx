@@ -130,10 +130,8 @@ export function RelatedUsersForm({
     const updatedUsers = [...users];
 
     if (editingIndex !== null) {
-      // Update existing user
       updatedUsers[editingIndex] = values;
     } else {
-      // Add new user
       updatedUsers.push(values);
     }
 
@@ -187,7 +185,7 @@ export function RelatedUsersForm({
                     {
                       user.roles && user.roles.length > 0
                         ? user.roles.map((role) => t(role)).join(", ")
-                        : t(user.role) // Fallback to legacy role if no roles array
+                        : t(user.role) 
                     }
                   </TableCell>
                   <TableCell>{t(user.type)}</TableCell>
@@ -250,64 +248,123 @@ export function RelatedUsersForm({
 
       {/* User Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-3xl p-2 text-center font-bold">
               {editingIndex !== null ? t("editUser") : t("addUser")}
             </DialogTitle>
           </DialogHeader>
-
           <Form {...userForm}>
             <form
               onSubmit={userForm.handleSubmit(handleSaveUser)}
-              className="space-y-4"
+              className="space-y-6"
             >
-              <FormField
-                control={userForm.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("fullName")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
-                name="position"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("position")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />{" "}
-              <FormField
-                control={userForm.control}
-                name="matricule"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("matricule")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="space-y-2">
-                <FormLabel>{t("roles")}</FormLabel>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={userForm.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("fullName")}</FormLabel>
+                      <FormControl>
+                        <Input {...field} autoFocus />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userForm.control}
+                  name="position"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("position")}</FormLabel>
+                      <FormControl>
+                        <Input {...field}/>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userForm.control}
+                  name="matricule"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("matricule")}</FormLabel>
+                      <FormControl>
+                        <Input {...field}/>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userForm.control}
+                  name="organization"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("organization")}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={userForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("status")}</FormLabel>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("selectStatus")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">{t("active")}</SelectItem>
+                            <SelectItem value="inactive">{t("inactive")}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userForm.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("type")}</FormLabel>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("selectType")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">{t("admin")}</SelectItem>
+                            <SelectItem value="member">{t("member")}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="space-y-2 flex flex-col items-center">
+                <FormLabel className="text-center">{t("roles")} <span title="Sélectionnez un ou plusieurs rôles pour cet utilisateur.">🛈</span></FormLabel>
+                {/*<div className="text-sm text-muted-foreground">{t("roles.assignRoles")}</div>
+                <div className="text-xs text-muted-foreground">{t("roles.selectAppropriateRoles")}</div>*/}
                 <RolesAssignment
                   selectedRoles={userForm.watch("roles") || []}
                   onRolesChange={(roles) => {
                     userForm.setValue("roles", roles);
-                    // For backward compatibility, set the first role as the primary role
                     if (roles.length > 0) {
                       userForm.setValue("role", roles[0]);
                     } else {
@@ -323,70 +380,6 @@ export function RelatedUsersForm({
               </div>
               <FormField
                 control={userForm.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("type")}</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("selectType")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">{t("admin")}</SelectItem>
-                          <SelectItem value="member">{t("member")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("status")}</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        {" "}
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("selectStatus")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">{t("active")}</SelectItem>
-                          <SelectItem value="inactive">
-                            {t("inactive")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
-                name="organization"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("organization")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -397,37 +390,35 @@ export function RelatedUsersForm({
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        onClick={() =>
-                          setShowPasswordInForm(!showPasswordInForm)
-                        }
+                        onClick={() => setShowPasswordInForm(!showPasswordInForm)}
                       >
-                        {showPasswordInForm ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        {showPasswordInForm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                     <FormControl>
                       <Input
                         {...field}
                         type={showPasswordInForm ? "text" : "password"}
-                        placeholder={t("enterPassword")}
+                        placeholder={t("enterPassword") || "Entrer un mot de passe"}
                       />
                     </FormControl>
+                    <div className="text-xs text-muted-foreground mt-1">Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.</div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="flex flex-col md:flex-row md:justify-end gap-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
+                  className="w-full md:w-auto"
                   onClick={() => setIsDialogOpen(false)}
                 >
                   {t("cancel")}
                 </Button>
-                <Button type="submit">{t("save")}</Button>
+                <Button type="submit" className="w-full md:w-auto">
+                  {t("save")}
+                </Button>
               </DialogFooter>
             </form>
           </Form>
