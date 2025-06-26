@@ -9,7 +9,8 @@ import { Session } from "next-auth";
 
 // Use environment variables with fallbacks
 const BACKEND_API =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "https://poc.finnetude.com/api/v1";
+  (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
+  "/api/v1";
 const LOCAL_API =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api/v1";
 

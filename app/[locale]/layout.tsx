@@ -6,6 +6,8 @@ import SessionWrapper from "@/components/SessionWrapper";
 import { Toaster } from "@/components/ui/toaster";
 import DebugInitializer from "@/components/DebugInitializer";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import MenuFetchInitializer from "@/components/MenuFetchInitializer";
+
 export const metadata: Metadata = {
   title: "FinnBourse",
   description: "",
@@ -27,6 +29,7 @@ export default async function RootLayout({
           <ErrorBoundary>
             <NextIntlClientProvider locale={locale} messages={messages}>
               <DebugInitializer />
+              <MenuFetchInitializer />
               {children}
               <Toaster />
             </NextIntlClientProvider>

@@ -26,8 +26,9 @@ interface SessionUser {
 }
 
 // Menu endpoint configuration
-const MENU_API_BASE = "https://poc.finnetude.com/api/v1";
-const MENU_ENDPOINT = "/menu/list";
+const MENU_API_BASE =
+  process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
+const MENU_ENDPOINT = "/api/v1/menu/list";
 
 // Function to sanitize and validate menu data from API
 function sanitizeMenuData(data: any): MenuResponse {

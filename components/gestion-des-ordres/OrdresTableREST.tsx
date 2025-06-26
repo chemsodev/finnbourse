@@ -122,8 +122,8 @@ export default function OrdresTableREST({
 
       // For debugging, directly fetch from the API
       const BACKEND_API =
-        process.env.NEXT_PUBLIC_BACKEND_API_URL ||
-        "https://poc.finnetude.com/api/v1";
+        (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
+        "/api/v1";
 
       try {
         const directResponse = await fetch(`${BACKEND_API}/order/list`, {
@@ -285,7 +285,7 @@ export default function OrdresTableREST({
           try {
             // Direct fetch from localhost API
             const response = await fetch(
-              `http://localhost:3000/api/v1/stock/${stockId}`,
+              `https://kh.finnetude.com/api/v1/stock/${stockId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -338,7 +338,7 @@ export default function OrdresTableREST({
           try {
             // Direct fetch from localhost API
             const response = await fetch(
-              `http://localhost:3000/api/v1/client/${clientId}`,
+              `https://kh.finnetude.com/api/v1/client/${clientId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

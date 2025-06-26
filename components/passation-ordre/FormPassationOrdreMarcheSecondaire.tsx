@@ -284,7 +284,9 @@ const FormPassationOrdreMarcheSocondaire = ({
     try {
       // Create order using REST API with the correct format
       const response = await fetch(
-        "https://poc.finnetude.com/api/v1/order/create",
+        `${
+          process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com"
+        }/api/v1/order/create`,
         {
           method: "POST",
           headers: {
