@@ -7,7 +7,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Bell, CheckCircle, AlertCircle, Info, Sparkles } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -57,13 +57,34 @@ const mockNotifications = [
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case "SUCCESS":
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
+      return <CheckCircle className="h-5 w-5 text-green-600" />;
     case "WARNING":
-      return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      return <AlertCircle className="h-5 w-5 text-yellow-600" />;
     case "ERROR":
-      return <AlertCircle className="h-4 w-4 text-red-500" />;
+      return <AlertCircle className="h-5 w-5 text-red-600" />;
+    case "INFO":
+      return <Info className="h-5 w-5 text-blue-600" />;
     default:
-      return <Bell className="h-4 w-4 text-blue-500" />;
+      return <Bell className="h-5 w-5 text-blue-600" />;
+  }
+};
+
+const getNotificationColor = (type: string, read: boolean) => {
+  if (read) {
+    return "bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 hover:from-slate-100 hover:to-slate-150";
+  }
+  
+  switch (type) {
+    case "SUCCESS":
+      return "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:from-green-100 hover:to-emerald-100";
+    case "WARNING":
+      return "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 hover:from-yellow-100 hover:to-amber-100";
+    case "ERROR":
+      return "bg-gradient-to-r from-red-50 to-rose-50 border-red-200 hover:from-red-100 hover:to-rose-100";
+    case "INFO":
+      return "bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 hover:from-blue-100 hover:to-cyan-100";
+    default:
+      return "bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 hover:from-blue-100 hover:to-cyan-100";
   }
 };
 
@@ -95,29 +116,44 @@ export default function StaticVoletNotif() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-4 w-4 text-black hover:text-black" />
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="relative hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-200 transition-all duration-300 shadow-sm hover:shadow-lg border-slate-300 hover:border-slate-400 group"
+        >
+          <Bell className="h-5 w-5 text-slate-700 group-hover:scale-110 transition-transform duration-200" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+              className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold animate-pulse bg-gradient-to-r from-red-500 to-red-600 shadow-lg"
             >
               {unreadCount}
             </Badge>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
+
+      <SheetContent className="bg-gradient-to-b from-white to-slate-50 w-full h-full">
+        <SheetHeader className="border-b shadow-2xl border-slate-200 pb-4 bg-gradient-to-r from-slate-50 to-white rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <SheetTitle>Notifications</SheetTitle>
-            {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+            <SheetTitle className="text-xl font-bold flex items-center gap-2 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              <div className="p-2 bg-gradient-to-r from-primary to-primary/80 rounded-lg">
+                <Bell className="h-5 w-5 text-white" />
+              </div>
+              Notifications
+            </SheetTitle>
+            {/*{unreadCount > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={markAllAsRead}
+                className="text-primary hover:bg-primary/10 hover:shadow-md transition-all duration-200"
+              >
                 Tout marquer comme lu
               </Button>
-            )}
+            )}*/}
           </div>
-          <SheetDescription>
+          <SheetDescription className="text-sm text-slate-600">
             {unreadCount > 0
               ? `Vous avez ${unreadCount} notification${
                   unreadCount > 1 ? "s" : ""
@@ -126,53 +162,61 @@ export default function StaticVoletNotif() {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
           {notifications.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Aucune notification</p>
+            <div className="text-center py-12 text-slate-500">
+              <div className="relative">
+                <Bell className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                <Sparkles className="h-6 w-6 absolute top-0 right-1/4 text-primary animate-pulse" />
+              </div>
+              <p className="text-lg font-medium bg-gradient-to-r from-slate-600 to-slate-500 bg-clip-text text-transparent">
+                Aucune notification
+              </p>
+              <p className="text-sm text-slate-400">Vous êtes à jour !</p>
             </div>
           ) : (
-            notifications.map((notification) => (
+            notifications.map((notification, index) => (
               <div
                 key={notification.id}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                  notification.read
-                    ? "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                    : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
-                }`}
+                className={`p-2 w-full border cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${getNotificationColor(notification.type, notification.read)}`}
                 onClick={() => markAsRead(notification.id)}
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animation: 'slideInFromRight 0.5s ease-out forwards'
+                }}
               >
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 mt-1">
+                  <div className="flex-shrink-0 mt-0.5 p-1.5 bg-transparent rounded-full">
                     {getNotificationIcon(notification.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-2">
                       <h4
-                        className={`text-sm font-medium ${
+                        className={`text-sm font-semibold flex-1 ${
                           notification.read
-                            ? "text-slate-700 dark:text-slate-300"
-                            : "text-slate-900 dark:text-slate-100"
+                            ? "text-slate-600"
+                            : "text-slate-900"
                         }`}
                       >
                         {notification.title}
                       </h4>
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 ml-2" />
-                      )}
+                      <div className="flex items-center gap-2 ml-4">
+                        <span className="text-xs text-slate-400 whitespace-nowrap">
+                          {formatDate(notification.createdAt)}
+                        </span>
+                        {!notification.read && (
+                          <div className="w-2.5 h-2.5 bg-gradient-to-r from-primary to-primary/80 rounded-full animate-pulse shadow-sm" />
+                        )}
+                      </div>
                     </div>
                     <p
-                      className={`text-sm ${
+                      className={`text-sm leading-relaxed ${
                         notification.read
-                          ? "text-slate-500 dark:text-slate-400"
-                          : "text-slate-700 dark:text-slate-300"
+                          ? "text-slate-500"
+                          : "text-slate-700"
                       }`}
                     >
                       {notification.message}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-2">
-                      {formatDate(notification.createdAt)}
                     </p>
                   </div>
                 </div>
@@ -180,6 +224,19 @@ export default function StaticVoletNotif() {
             ))
           )}
         </div>
+        
+        <style jsx>{`
+          @keyframes slideInFromRight {
+            from {
+              opacity: 0;
+              transform: translateX(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+        `}</style>
       </SheetContent>
     </Sheet>
   );
