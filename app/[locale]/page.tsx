@@ -44,6 +44,7 @@ export default async function Home() {
           </div>
           
         </div>
+        
         <div className="">
           <div className="mt-6 w-full">
             <StaticStockTracker />
