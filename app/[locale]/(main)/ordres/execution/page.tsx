@@ -120,10 +120,12 @@ const page = async (props: {
         </div>
       </div>
       <div className="border border-gray-100 rounded-md p-4 mt-10">
-        <div className="flex justify-between w-full">
-          <TabSearch />
-          <div className="flex gap-4">
-            <PDFDropdownMenu />
+        <div className="flex justify-between w-full gap-4">
+          <div className="w-[30%]">
+            <TabSearch />
+          </div>
+          <div className="flex gap-4 flex-shrink-0">
+            {/*<PDFDropdownMenu />*/}
             <Link
               href="/ordres/sessions"
               className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
@@ -131,7 +133,7 @@ const page = async (props: {
               <CalendarClock size={20} />
               Sessions de Bourse
             </Link>
-            <ExportButton data={exportData} />
+            {/*<ExportButton data={exportData} />*/}
           </div>
         </div>
         <div className="my-8">

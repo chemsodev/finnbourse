@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Printer,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 import { Order } from "@/lib/interfaces";
 import { useState } from "react";
@@ -77,11 +78,11 @@ export default function OrdreDrawer({
         {/* Print button for souscriptions */}
         {isSouscription && (
           <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
             onClick={handlePrintSouscription}
           >
             <Printer className="mr-2 h-4 w-4" />
-            Imprimer
+            {t("print")}
           </Button>
         )}
       </div>
@@ -95,8 +96,14 @@ export default function OrdreDrawer({
       case 0: // Draft
         return (
           <>
-            <Button className="bg-primary text-white">Soumettre</Button>
-            <Button variant="destructive">Supprimer</Button>
+            <Button className="bg-primary text-white hover:bg-primary/90">
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              {t("submit")}
+            </Button>
+            <Button variant="destructive" className="hover:bg-red-700">
+              <XCircle className="mr-2 h-4 w-4" />
+              {t("delete")}
+            </Button>
           </>
         );
 
@@ -105,11 +112,11 @@ export default function OrdreDrawer({
           <>
             <Button className="bg-green-600 hover:bg-green-700 text-white">
               <CheckCircle2 className="mr-2 h-4 w-4" />
-              Valider
+              {t("validate")}
             </Button>
-            <Button variant="destructive">
+            <Button variant="destructive" className="hover:bg-red-700">
               <XCircle className="mr-2 h-4 w-4" />
-              Rejeter
+              {t("reject")}
             </Button>
           </>
         );
@@ -119,15 +126,15 @@ export default function OrdreDrawer({
           <>
             <Button className="bg-green-600 hover:bg-green-700 text-white">
               <CheckCircle2 className="mr-2 h-4 w-4" />
-              Valider Totalement
+              {t("validateTotally")}
             </Button>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white">
               <AlertCircle className="mr-2 h-4 w-4" />
-              Valider Partiellement
+              {t("validatePartially")}
             </Button>
-            <Button variant="destructive">
+            <Button variant="destructive" className="hover:bg-red-700">
               <XCircle className="mr-2 h-4 w-4" />
-              Rejeter
+              {t("reject")}
             </Button>
           </>
         );
@@ -137,11 +144,11 @@ export default function OrdreDrawer({
           <>
             <Button className="bg-green-600 hover:bg-green-700 text-white">
               <CheckCircle2 className="mr-2 h-4 w-4" />
-              Valider
+              {t("validate")}
             </Button>
-            <Button variant="destructive">
+            <Button variant="destructive" className="hover:bg-red-700">
               <XCircle className="mr-2 h-4 w-4" />
-              Rejeter
+              {t("reject")}
             </Button>
           </>
         );
@@ -151,25 +158,39 @@ export default function OrdreDrawer({
           <>
             <Button className="bg-green-600 hover:bg-green-700 text-white">
               <CheckCircle2 className="mr-2 h-4 w-4" />
-              Valider Totalement
+              {t("validateTotally")}
             </Button>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white">
               <AlertCircle className="mr-2 h-4 w-4" />
-              Valider Partiellement
+              {t("validatePartially")}
             </Button>
-            <Button variant="destructive">
+            <Button variant="destructive" className="hover:bg-red-700">
               <XCircle className="mr-2 h-4 w-4" />
-              Rejeter
+              {t("reject")}
             </Button>
           </>
         );
 
       case 5: // Completed (waiting for iob_order_executor)
-        return <Button className="bg-primary text-white">Exécuter</Button>;
+        return (
+          <>
+            <Button className="bg-primary text-white hover:bg-primary/90">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              {t("execute")}
+            </Button>
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              {t("complete")}
+            </Button>
+          </>
+        );
 
       case 6: // Awaiting Approval (waiting for iob_result_submitter)
         return (
-          <Button className="bg-primary text-white">Soumettre Résultats</Button>
+          <Button className="bg-primary text-white hover:bg-primary/90">
+            <FileText className="mr-2 h-4 w-4" />
+            {t("submitResults")}
+          </Button>
         );
 
       // Add other statuses as needed
@@ -180,11 +201,11 @@ export default function OrdreDrawer({
           <>
             <Button className="bg-green-600 hover:bg-green-700 text-white">
               <CheckCircle2 className="mr-2 h-4 w-4" />
-              Approuver
+              {t("approve")}
             </Button>
-            <Button variant="destructive">
+            <Button variant="destructive" className="hover:bg-red-700">
               <XCircle className="mr-2 h-4 w-4" />
-              Rejeter
+              {t("reject")}
             </Button>
           </>
         );
@@ -194,37 +215,95 @@ export default function OrdreDrawer({
   const renderSouscriptionDetails = () => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm font-medium text-gray-500">Visa COSOB</p>
-          <p>{orderData.visaCosob}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("visaCosob")}</p>
+          <p className="font-semibold">{orderData.visaCosob}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Code ISIN</p>
-          <p>{orderData.isinCode}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("isinCode")}</p>
+          <p className="font-semibold">{orderData.isinCode}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">BDL</p>
-          <p>{orderData.bdl}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("bdl")}</p>
+          <p className="font-semibold">{orderData.bdl}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Quantité</p>
-          <p>{orderData.quantity}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("quantity")}</p>
+          <p className="font-semibold">{orderData.quantity?.toLocaleString()}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Date d'émission</p>
-          <p>{new Date(orderData.emissionDate).toLocaleDateString()}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("emissionDate")}</p>
+          <p className="font-semibold">{new Date(orderData.emissionDate).toLocaleDateString()}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Nombre de titres</p>
-          <p>{orderData.totalShares?.toLocaleString()}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("totalShares")}</p>
+          <p className="font-semibold">{orderData.totalShares?.toLocaleString()}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Commission</p>
-          <p>{orderData.commission}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("commission")}</p>
+          <p className="font-semibold">{orderData.commission}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Montant Net</p>
-          <p>{orderData.netAmount}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("netAmount")}</p>
+          <p className="font-semibold">{orderData.netAmount}</p>
+        </div>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("orderStatus")}</p>
+          <div
+            className={`mt-1 px-2 py-1 rounded-md text-white text-xs inline-block w-fit ${
+              orderData.orderstatus === 0
+                ? "bg-gray-600"
+                : orderData.orderstatus === 1
+                ? "bg-yellow-600"
+                : orderData.orderstatus === 2
+                ? "bg-secondary"
+                : orderData.orderstatus === 3
+                ? "bg-green-600"
+                : orderData.orderstatus === 4
+                ? "bg-purple-600"
+                : orderData.orderstatus === 5
+                ? "bg-teal-600"
+                : orderData.orderstatus === 6
+                ? "bg-orange-600"
+                : orderData.orderstatus === 7
+                ? "bg-indigo-600"
+                : orderData.orderstatus === 8
+                ? "bg-orange-600"
+                : orderData.orderstatus === 9
+                ? "bg-red-700"
+                : orderData.orderstatus === 10
+                ? "bg-red-600"
+                : orderData.orderstatus === 11
+                ? "bg-gray-700"
+                : "bg-gray-600"
+            }`}
+          >
+            {orderData.orderstatus === 0
+              ? t("draft")
+              : orderData.orderstatus === 1
+              ? t("pending")
+              : orderData.orderstatus === 2
+              ? t("inProgress")
+              : orderData.orderstatus === 3
+              ? t("validated")
+              : orderData.orderstatus === 4
+              ? t("beingProcessed")
+              : orderData.orderstatus === 5
+              ? t("completed")
+              : orderData.orderstatus === 6
+              ? t("awaitingApproval")
+              : orderData.orderstatus === 7
+              ? t("inExecution")
+              : orderData.orderstatus === 8
+              ? t("partiallyValidated")
+              : orderData.orderstatus === 9
+              ? t("expired")
+              : orderData.orderstatus === 10
+              ? t("rejected")
+              : orderData.orderstatus === 11
+              ? t("cancelled")
+              : t("unknown")}
+          </div>
         </div>
       </div>
     </div>
@@ -233,69 +312,127 @@ export default function OrdreDrawer({
   const renderOrdreDetails = () => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm font-medium text-gray-500">Visa COSOB</p>
-          <p>{orderData.visaCosob}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("visaCosob")}</p>
+          <p className="font-semibold">{orderData.visaCosob}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Code ISIN</p>
-          <p>{orderData.isinCode}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("isinCode")}</p>
+          <p className="font-semibold">{orderData.isinCode}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">MST</p>
-          <p>{orderData.mst}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("mst")}</p>
+          <p className="font-semibold">{orderData.mst}</p>
         </div>
-        <div>
+        <div className="bg-gray-50 p-3 rounded-md">
           <p className="text-sm font-medium text-gray-500">
-            Type de transaction
+            {t("transactionType")}
           </p>
           <p
-            className={
+            className={`font-semibold ${
               orderData.orderdirection === 1 ? "text-green-600" : "text-red-600"
-            }
+            }`}
           >
             {orderData.orderdirection === 1 ? t("achat") : t("vente")}
           </p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Quantité</p>
-          <p>{orderData.quantity}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("quantity")}</p>
+          <p className="font-semibold">{orderData.quantity?.toLocaleString()}</p>
         </div>
-        <div>
+        <div className="bg-gray-50 p-3 rounded-md">
           <p className="text-sm font-medium text-gray-500">
-            Instruction d'ordre par prix
+            {t("priceInstruction")}
           </p>
-          <p>{orderData.priceInstruction}</p>
+          <p className="font-semibold">{orderData.priceInstruction}</p>
         </div>
-        <div>
+        <div className="bg-gray-50 p-3 rounded-md">
           <p className="text-sm font-medium text-gray-500">
-            Instruction d'ordre par temps
+            {t("timeInstruction")}
           </p>
-          <p>{orderData.timeInstruction}</p>
+          <p className="font-semibold">{orderData.timeInstruction}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Date de validité</p>
-          <p>{new Date(orderData.validityDate || "").toLocaleDateString()}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("validityDate")}</p>
+          <p className="font-semibold">{new Date(orderData.validityDate || "").toLocaleDateString()}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Date d'émission</p>
-          <p>{new Date(orderData.emissionDate).toLocaleDateString()}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("emissionDate")}</p>
+          <p className="font-semibold">{new Date(orderData.emissionDate).toLocaleDateString()}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Nombre d'actions</p>
-          <p>{orderData.totalShares?.toLocaleString()}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("numberOfShares")}</p>
+          <p className="font-semibold">{orderData.totalShares?.toLocaleString()}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Montant Brut</p>
-          <p>{orderData.grossAmount}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("grossAmount")}</p>
+          <p className="font-semibold">{orderData.grossAmount}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Commission</p>
-          <p>{orderData.commission}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("commission")}</p>
+          <p className="font-semibold">{orderData.commission}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">Montant Net</p>
-          <p>{orderData.netAmount}</p>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("netAmount")}</p>
+          <p className="font-semibold">{orderData.netAmount}</p>
+        </div>
+        <div className="bg-gray-50 p-3 rounded-md">
+          <p className="text-sm font-medium text-gray-500">{t("orderStatus")}</p>
+          <div
+            className={`mt-1 px-2 py-1 rounded-md text-white text-xs inline-block w-fit ${
+              orderData.orderstatus === 0
+                ? "bg-gray-600"
+                : orderData.orderstatus === 1
+                ? "bg-yellow-600"
+                : orderData.orderstatus === 2
+                ? "bg-secondary"
+                : orderData.orderstatus === 3
+                ? "bg-green-600"
+                : orderData.orderstatus === 4
+                ? "bg-purple-600"
+                : orderData.orderstatus === 5
+                ? "bg-teal-600"
+                : orderData.orderstatus === 6
+                ? "bg-orange-600"
+                : orderData.orderstatus === 7
+                ? "bg-indigo-600"
+                : orderData.orderstatus === 8
+                ? "bg-orange-600"
+                : orderData.orderstatus === 9
+                ? "bg-red-700"
+                : orderData.orderstatus === 10
+                ? "bg-red-600"
+                : orderData.orderstatus === 11
+                ? "bg-gray-700"
+                : "bg-gray-600"
+            }`}
+          >
+            {orderData.orderstatus === 0
+              ? t("draft")
+              : orderData.orderstatus === 1
+              ? t("pending")
+              : orderData.orderstatus === 2
+              ? t("inProgress")
+              : orderData.orderstatus === 3
+              ? t("validated")
+              : orderData.orderstatus === 4
+              ? t("beingProcessed")
+              : orderData.orderstatus === 5
+              ? t("completed")
+              : orderData.orderstatus === 6
+              ? t("awaitingApproval")
+              : orderData.orderstatus === 7
+              ? t("inExecution")
+              : orderData.orderstatus === 8
+              ? t("partiallyValidated")
+              : orderData.orderstatus === 9
+              ? t("expired")
+              : orderData.orderstatus === 10
+              ? t("rejected")
+              : orderData.orderstatus === 11
+              ? t("cancelled")
+              : t("unknown")}
+          </div>
         </div>
       </div>
     </div>
@@ -311,10 +448,10 @@ export default function OrdreDrawer({
       <DrawerContent>
         <div className="mx-auto w-full max-w-2xl">
           <DrawerHeader>
-            <DrawerTitle>
+            <DrawerTitle className="text-2xl text-center font-bold">
               {isSouscription ? t("souscriptionDetails") : t("ordreDetails")}
             </DrawerTitle>
-            <DrawerDescription>
+            <DrawerDescription className="text-center">
               {isSouscription
                 ? t("souscriptionDetailsDescription")
                 : t("ordreDetailsDescription")}
@@ -324,71 +461,13 @@ export default function OrdreDrawer({
             {isSouscription
               ? renderSouscriptionDetails()
               : renderOrdreDetails()}
-
-            {/* Display order status */}
-            <div className="mt-4 p-2 bg-gray-100 rounded-md">
-              <p className="text-sm font-medium text-gray-500">Status</p>
-              <div
-                className={`mt-1 px-2 py-1 rounded-md text-white text-xs inline-block w-fit ${
-                  orderData.orderstatus === 0
-                    ? "bg-gray-600"
-                    : orderData.orderstatus === 1
-                    ? "bg-yellow-600"
-                    : orderData.orderstatus === 2
-                    ? "bg-secondary"
-                    : orderData.orderstatus === 3
-                    ? "bg-green-600"
-                    : orderData.orderstatus === 4
-                    ? "bg-purple-600"
-                    : orderData.orderstatus === 5
-                    ? "bg-teal-600"
-                    : orderData.orderstatus === 6
-                    ? "bg-orange-600"
-                    : orderData.orderstatus === 7
-                    ? "bg-indigo-600"
-                    : orderData.orderstatus === 8
-                    ? "bg-orange-600"
-                    : orderData.orderstatus === 9
-                    ? "bg-red-700"
-                    : orderData.orderstatus === 10
-                    ? "bg-red-600"
-                    : orderData.orderstatus === 11
-                    ? "bg-gray-700"
-                    : "bg-gray-600"
-                }`}
-              >
-                {orderData.orderstatus === 0
-                  ? "Brouillon"
-                  : orderData.orderstatus === 1
-                  ? "En attente"
-                  : orderData.orderstatus === 2
-                  ? "En cours"
-                  : orderData.orderstatus === 3
-                  ? "Validé"
-                  : orderData.orderstatus === 4
-                  ? "En traitement"
-                  : orderData.orderstatus === 5
-                  ? "Complété"
-                  : orderData.orderstatus === 6
-                  ? "En attente d'approbation"
-                  : orderData.orderstatus === 7
-                  ? "En exécution"
-                  : orderData.orderstatus === 8
-                  ? "Partiellement validé"
-                  : orderData.orderstatus === 9
-                  ? "Expiré"
-                  : orderData.orderstatus === 10
-                  ? "Rejeté"
-                  : orderData.orderstatus === 11
-                  ? "Annulé"
-                  : "Inconnu"}
-              </div>
-            </div>
           </div>
           <DrawerFooter className="border-t pt-4">
             <div className="flex justify-between items-center">
               <DrawerClose asChild>
-                <Button variant="outline">{t("close")}</Button>
+                <Button variant="outline" className="hover:bg-gray-100">
+                  {t("close")}
+                </Button>
               </DrawerClose>
               {renderActionButtons()}
             </div>
