@@ -28,6 +28,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 // Mock data for demonstration
 const mockSessions = [
@@ -95,12 +96,17 @@ interface SessionOrdersProps {
   selectedSessionId?: string | null;
 }
 
+type SortField = 'securityIssuer' | 'direction' | 'quantity' | 'status' | 'investorName' | 'negotiatorName' | 'createdat';
+type SortDirection = 'asc' | 'desc';
+
 export default function SessionOrders({ selectedSessionId }: SessionOrdersProps) {
   const t = useTranslations("bourseSessions.orders");
   const [orders, setOrders] = useState(mockOrders);
   const [selectedSession, setSelectedSession] = useState<string>(
     selectedSessionId || "1" // Session actuelle par défaut
   );
+  const [sortField, setSortField] = useState<SortField>('createdat');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   // Mettre à jour la session sélectionnée si la prop change
   useEffect(() => {
@@ -110,6 +116,77 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   }, [selectedSessionId]);
 
   const sessionOrders = orders.filter((order) => order.sessionId === selectedSession);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ChevronDown className="ml-2 h-4 w-4" />
+    );
+  };
+
+  const sortOrders = (data: any[]) => {
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'securityIssuer':
+          aValue = a.securityIssuer;
+          bValue = b.securityIssuer;
+          break;
+        case 'direction':
+          aValue = a.direction;
+          bValue = b.direction;
+          break;
+        case 'quantity':
+          aValue = a.quantity;
+          bValue = b.quantity;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'investorName':
+          aValue = a.investorName;
+          bValue = b.investorName;
+          break;
+        case 'negotiatorName':
+          aValue = a.negotiatorName;
+          bValue = b.negotiatorName;
+          break;
+        case 'createdat':
+          aValue = a.createdat;
+          bValue = b.createdat;
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedOrders = sortOrders(sessionOrders);
 
   const assignOrderToSession = (orderId: string) => {
     setOrders(
@@ -150,57 +227,111 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="w-64">
-          <Label htmlFor="session-select" className="text-sm font-medium mb-2">Selectionner une session</Label>
-          <Select
-            onValueChange={setSelectedSession}
-            value={selectedSession}
-          >
-            <SelectTrigger id="session-select">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {mockSessions.map((session) => (
-                <SelectItem key={session.id} value={session.id}>
-                  {session.name} 
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       <Card>
-        <CardHeader>
-          <CardTitle>Ordres de la Session</CardTitle>
-          <CardDescription>
-            Ordres assignes a la session: {mockSessions.find(s => s.id === selectedSession)?.name}
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Ordres de la Session</CardTitle>
+            <CardDescription>
+              Ordres assignes a la session: {mockSessions.find(s => s.id === selectedSession)?.name}
+            </CardDescription>
+          </div>
+          <div className="w-64">
+            <Select
+              onValueChange={setSelectedSession}
+              value={selectedSession}
+            >
+              <SelectTrigger id="session-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {mockSessions.map((session) => (
+                  <SelectItem key={session.id} value={session.id}>
+                    {session.name} 
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Titre</TableHead>
-                <TableHead>Sens</TableHead>
-                <TableHead>Quantite</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Investisseur</TableHead>
-                <TableHead>Negociateur</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('securityIssuer')}
+                >
+                  <div className="flex items-center">
+                    Titre
+                    {getSortIcon('securityIssuer')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('direction')}
+                >
+                  <div className="flex items-center">
+                    Sens
+                    {getSortIcon('direction')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('quantity')}
+                >
+                  <div className="flex items-center">
+                    Quantite
+                    {getSortIcon('quantity')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('status')}
+                >
+                  <div className="flex items-center">
+                    Statut
+                    {getSortIcon('status')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('investorName')}
+                >
+                  <div className="flex items-center">
+                    Investisseur
+                    {getSortIcon('investorName')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('negotiatorName')}
+                >
+                  <div className="flex items-center">
+                    Negociateur
+                    {getSortIcon('negotiatorName')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('createdat')}
+                >
+                  <div className="flex items-center">
+                    Date
+                    {getSortIcon('createdat')}
+                  </div>
+                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sessionOrders.length === 0 ? (
+              {sortedOrders.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-4">
                     Aucun ordre trouve pour cette session
                   </TableCell>
                 </TableRow>
               ) : (
-                sessionOrders.map((order) => (
+                sortedOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell>
                       <div className="flex flex-col">
