@@ -49,13 +49,11 @@ export default async function Home() {
           <div className="mt-6 w-full">
             <StaticStockTracker />
           </div>
-          <div className="mt-8 w-full flex flex-col lg:flex-row gap-4 p-4 h-full">
-            <div className="flex-1 h-full">
-              <MyPortfolio />
-            </div>
-            <div className="lg:w-1/4 h-full">
-              <DashItem2 />
-            </div>
+          <div className="mt-8 w-full">
+            <DashItem2 />
+          </div>
+          <div className="mt-8 w-full">
+            <MyPortfolio />
           </div>
         </div>
         <div>          

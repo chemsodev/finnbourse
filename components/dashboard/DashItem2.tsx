@@ -15,18 +15,22 @@ const DashItem2 = async () => {
   };
 
   return (
-    <Card className="w-full h-full bg-gradient-to-br from-white to-slate-100 shadow-lg rounded-2xl">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between text-2xl font-bold">
-          <span className="flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-primary" />
-            Statistiques
-          </span>
-          <Badge variant="outline">Stats</Badge>
+    <Card className="w-full border border-gray-200 bg-white">
+      <CardHeader className="pb-4 border-b border-gray-100">
+        <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
+          <div className="p-2 bg-gray-100 rounded-lg">
+            <BarChart3 className="w-5 h-5 text-gray-600" />
+          </div>
+          Statistiques
+          <Badge variant="secondary" className="ml-auto text-xs bg-gray-100 text-gray-600 border-gray-200">
+            Stats
+          </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1">
-        <NegotiatiorStats />
+      <CardContent className="p-6">
+        <div className="h-auto">
+          <NegotiatiorStats />
+        </div>
       </CardContent>
     </Card>
   );

@@ -4,11 +4,22 @@ import React from "react";
 import { Card } from "../ui/card";
 import { MdArrowOutward } from "react-icons/md";
 import { useTranslations } from "next-intl";
-import { Stock } from "@/lib/interfaces";
 import { formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
-import { useSession } from "next-auth/react";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+
+interface Stock {
+  id: string;
+  issuer: string;
+  code: string;
+  name: string;
+  facevalue: number;
+  marketmetadata?: {
+    cours: Array<{
+      date: string;
+      price: number;
+    }>;
+  };
+}
 
 const StockCard = ({
   stock,
@@ -18,58 +29,57 @@ const StockCard = ({
   variation: string;
 }) => {
   const t = useTranslations("StockCard");
-  const { data: session } = useSession();
-  const userRole = (session?.user as any)?.roleid;
   
-  const isPositive = parseFloat(variation) > 0;
-  const isNegative = parseFloat(variation) < 0;
-  const isNeutral = parseFloat(variation) === 0;
-
   return (
-    <Link
-      href={
-        userRole === 1
-          ? `/passerunordre/marchesecondaire/action/${stock.id}`
-          : `/passerunordre`
-      }
-    >
-      <Card className="p-6 transition-all duration-300 cursor-pointer shadow-md rounded-xl border-0 bg-gradient-to-br from-white to-slate-50">
+    <Link href={`/passerunordre/marchesecondaire/action/${stock.id}`}>
+      <Card className="py-3 px-4 hover:scale-110 transition-transform duration-300 cursor-pointer">
         <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-3">
-            <div className="text-sm font-medium text-slate-600">
-              {stock.issuer || "N/A"}
-            </div>
-            <div className="font-bold text-2xl text-primary">
+          <div className="flex flex-col gap-1">
+            <div className="text-sm">{stock.issuer || "N/A"}</div>
+            <div className="font-bold text-lg">
               {formatPrice(stock.facevalue || 0)} {t("dzd")}
             </div>
             <div
-              className={`text-sm font-medium ${
-                isPositive
-                  ? "text-green-600"
-                  : isNegative
-                  ? "text-red-600"
-                  : "text-slate-500"
+              className={`text-xs ${
+                parseFloat(variation) > 0
+                  ? "text-green-500"
+                  : parseFloat(variation) < 0
+                  ? "text-red-500"
+                  : "text-gray-400"
               }`}
             >
               {variation} {t("fluct")}
             </div>
           </div>
           <div
-            className={`w-12 h-12 rounded-xl flex justify-center items-center shadow-sm ${
-              isPositive
-                ? "bg-green-100 text-green-600"
-                : isNegative
-                ? "bg-red-100 text-red-600"
-                : "bg-slate-100 text-slate-500"
-            }`}
+            className={`${
+              parseFloat(variation) > 0
+                ? "bg-green-500"
+                : parseFloat(variation) < 0
+                ? "bg-red-500"
+                : "bg-gray-400"
+            }  w-10 h-10 rounded-md flex justify-center items-center`}
           >
-            {isPositive ? (
-              <TrendingUp className="w-6 h-6" />
-            ) : isNegative ? (
-              <TrendingDown className="w-6 h-6" />
-            ) : (
-              <Minus className="w-6 h-6" />
-            )}
+            <MdArrowOutward
+              className={`w-6 text-white transform ${
+                parseFloat(variation) > 0
+                  ? "rotate-0"
+                  : parseFloat(variation) < 0
+                  ? "rotate-180"
+                  : "hidden"
+              }`}
+            />
+            <div
+              className={`w-10 text-white text-center font-bold ${
+                parseFloat(variation) > 0
+                  ? "hidden"
+                  : parseFloat(variation) < 0
+                  ? "hidden"
+                  : "block"
+              }`}
+            >
+              -
+            </div>
           </div>
         </div>
       </Card>

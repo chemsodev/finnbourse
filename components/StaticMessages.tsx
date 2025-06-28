@@ -1,233 +1,117 @@
-/**
- * Static version of Messages component that uses mock data instead of GraphQL
- */
-
 "use client";
-
 import React, { useState } from "react";
-import { MessageCircle, User, Clock, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocale, useTranslations } from "next-intl";
+import { SupportQuestion } from "@/lib/interfaces";
+import Message from "./Message";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// Mock data for support questions and messages
-const mockSupportQuestions = [
+// Mock data for messages
+const mockMessages: SupportQuestion[] = [
   {
     id: "1",
-    question: "Comment puis-je modifier mes informations personnelles ?",
-    status: "PENDING",
-    createdAt: "2024-12-16T10:30:00Z",
-    user: {
-      id: "user1",
-      fullname: "Jean Dupont",
-      email: "jean.dupont@example.com",
-    },
-    messages: [
-      {
-        id: "msg1",
-        content:
-          "J'aimerais modifier mon adresse et mon numéro de téléphone dans mon profil. Comment puis-je procéder ?",
-        createdAt: "2024-12-16T10:30:00Z",
-        isFromUser: true,
-      },
-      {
-        id: "msg2",
-        content:
-          "Bonjour, vous pouvez modifier vos informations en allant dans votre profil utilisateur. Si vous avez des difficultés, notre équipe peut vous aider.",
-        createdAt: "2024-12-16T14:20:00Z",
-        isFromUser: false,
-      },
-    ],
+    question: "Comment puis-je réinitialiser mon mot de passe ?",
+    answer: "Vous pouvez utiliser la fonction 'Mot de passe oublié' sur la page de connexion.",
+    state: false,
+    description: "Question sur la réinitialisation du mot de passe",
+    userid: "user1",
+    language: "fr"
   },
   {
-    id: "2",
-    question: "Problème de connexion à la plateforme",
-    status: "RESOLVED",
-    createdAt: "2024-12-15T16:45:00Z",
-    user: {
-      id: "user2",
-      fullname: "Marie Martin",
-      email: "marie.martin@example.com",
-    },
-    messages: [
-      {
-        id: "msg3",
-        content:
-          "Je n'arrive pas à me connecter avec mes identifiants habituels. Le système me dit que mon mot de passe est incorrect.",
-        createdAt: "2024-12-15T16:45:00Z",
-        isFromUser: true,
-      },
-      {
-        id: "msg4",
-        content:
-          "Nous avons identifié le problème. Votre compte a été temporairement verrouillé pour sécurité. Nous l'avons déverrouillé.",
-        createdAt: "2024-12-15T17:30:00Z",
-        isFromUser: false,
-      },
-      {
-        id: "msg5",
-        content:
-          "Merci beaucoup ! Je peux maintenant me connecter sans problème.",
-        createdAt: "2024-12-15T18:00:00Z",
-        isFromUser: true,
-      },
-    ],
+    id: "2", 
+    question: "Comment ajouter un nouveau titre à mon portefeuille ?",
+    answer: "Allez dans la section 'Portefeuille' et cliquez sur 'Ajouter un titre'.",
+    state: false,
+    description: "Question sur l'ajout de titres",
+    userid: "user2",
+    language: "fr"
   },
   {
     id: "3",
-    question: "Question sur les frais de transaction",
-    status: "PENDING",
-    createdAt: "2024-12-16T09:15:00Z",
-    user: {
-      id: "user3",
-      fullname: "Pierre Dubois",
-      email: "pierre.dubois@example.com",
-    },
-    messages: [
-      {
-        id: "msg6",
-        content:
-          "Pouvez-vous m'expliquer la structure des frais pour les transactions d'actions ? J'ai remarqué des variations selon le montant.",
-        createdAt: "2024-12-16T09:15:00Z",
-        isFromUser: true,
-      },
-    ],
+    question: "Quels sont les frais de transaction ?",
+    answer: "Les frais varient selon le type de transaction. Consultez notre tarification.",
+    state: false,
+    description: "Question sur les frais",
+    userid: "user3",
+    language: "fr"
   },
+  {
+    id: "4",
+    question: "Comment consulter l'historique de mes ordres ?",
+    answer: "L'historique est disponible dans la section 'Ordres' de votre tableau de bord.",
+    state: false,
+    description: "Question sur l'historique",
+    userid: "user4",
+    language: "fr"
+  },
+  {
+    id: "5",
+    question: "Puis-je annuler un ordre en cours ?",
+    answer: "Oui, vous pouvez annuler un ordre tant qu'il n'est pas encore exécuté.",
+    state: false,
+    description: "Question sur l'annulation d'ordres",
+    userid: "user5",
+    language: "fr"
+  }
 ];
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const Messages = () => {
+  const locale = useLocale().toLowerCase();
+  const t = useTranslations("Messages");
+  const [skip, setSkip] = useState(0);
+  const take = 5;
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "PENDING":
-      return (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
-          En attente
-        </Badge>
-      );
-    case "RESOLVED":
-      return (
-        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-          Résolu
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary" className="text-xs">Inconnu</Badge>;
-  }
-};
-
-export default function StaticMessages() {
-  const [selectedQuestion, setSelectedQuestion] = useState<any>(
-    mockSupportQuestions[0]
-  );
-
-  const pendingQuestions = mockSupportQuestions.filter(
-    (q) => q.status === "PENDING"
-  );
-  const resolvedQuestions = mockSupportQuestions.filter(
-    (q) => q.status === "RESOLVED"
-  );
+  // Get paginated messages
+  const paginatedMessages = mockMessages.slice(skip, skip + take);
 
   return (
-    <div className="space-y-4">
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-8">
-          <TabsTrigger value="all" className="text-xs">
-            Tous ({mockSupportQuestions.length})
-          </TabsTrigger>
-          <TabsTrigger value="pending" className="text-xs flex items-center space-x-1">
-            <AlertCircle className="h-3 w-3" />
-            <span>En attente ({pendingQuestions.length})</span>
-          </TabsTrigger>
-          <TabsTrigger value="resolved" className="text-xs">
-            Résolus ({resolvedQuestions.length})
-          </TabsTrigger>
-        </TabsList>
+    <div className="h-full w-full">
+      {paginatedMessages.length === 0 ? (
+        <div className="flex justify-center items-center h-80">
+          <div className="text-gray-500">{t("noMessages")}</div>
+        </div>
+      ) : (
+        <div className="border rounded-md flex flex-col ">
+          {paginatedMessages.map((message: SupportQuestion) => (
+            <Message
+              key={message.id}
+              question={message.question}
+              answer={message.answer}
+              state={message.state}
+              description={message.description}
+              id={message.id}
+              userid={message.userid}
+            />
+          ))}
+        </div>
+      )}
 
-        <TabsContent value="all" className="mt-4">
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {mockSupportQuestions.map((question) => (
-              <Card
-                key={question.id}
-                className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-                  selectedQuestion?.id === question.id
-                    ? "border-primary bg-primary/5"
-                    : "hover:bg-slate-50"
-                }`}
-                onClick={() => setSelectedQuestion(question)}
-              >
-                <CardContent className="p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-sm line-clamp-2">
-                      {question.question}
-                    </h4>
-                    {getStatusBadge(question.status)}
-                  </div>
-                  <div className="flex items-center space-x-2 text-xs text-slate-600">
-                    <User className="h-3 w-3" />
-                    <span>{question.user.fullname}</span>
-                    <Clock className="h-3 w-3 ml-2" />
-                    <span>{formatDate(question.createdAt)}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {question.messages.length} message{question.messages.length > 1 ? "s" : ""}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+      <div className="flex justify-end mt-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setSkip(skip - take)}
+            className={`p-1 rounded-md ${
+              skip === 0 ? "bg-gray-100 text-gray-300" : "bg-primary text-white"
+            }`}
+            disabled={skip === 0}
+          >
+            <ChevronLeft size={20} />
+          </button>
 
-        <TabsContent value="pending" className="mt-4">
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {pendingQuestions.map((question) => (
-              <Card key={question.id} className="hover:shadow-md transition-all duration-200">
-                <CardContent className="p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-sm line-clamp-2">{question.question}</h4>
-                    {getStatusBadge(question.status)}
-                  </div>
-                  <div className="flex items-center space-x-2 text-xs text-slate-600">
-                    <User className="h-3 w-3" />
-                    <span>{question.user.fullname}</span>
-                    <Clock className="h-3 w-3 ml-2" />
-                    <span>{formatDate(question.createdAt)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="resolved" className="mt-4">
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {resolvedQuestions.map((question) => (
-              <Card key={question.id} className="hover:shadow-md transition-all duration-200">
-                <CardContent className="p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-medium text-sm line-clamp-2">{question.question}</h4>
-                    {getStatusBadge(question.status)}
-                  </div>
-                  <div className="flex items-center space-x-2 text-xs text-slate-600">
-                    <User className="h-3 w-3" />
-                    <span>{question.user.fullname}</span>
-                    <Clock className="h-3 w-3 ml-2" />
-                    <span>{formatDate(question.createdAt)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+          <button
+            onClick={() => setSkip(skip + take)}
+            className={`p-1 rounded-md ${
+              paginatedMessages.length < take
+                ? "bg-gray-100 text-gray-300"
+                : "bg-primary text-white"
+            }`}
+            disabled={paginatedMessages.length < take}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Messages;
