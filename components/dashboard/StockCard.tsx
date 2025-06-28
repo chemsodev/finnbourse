@@ -4,10 +4,22 @@ import React from "react";
 import { Card } from "../ui/card";
 import { MdArrowOutward } from "react-icons/md";
 import { useTranslations } from "next-intl";
-import { Stock } from "@/lib/interfaces";
 import { formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
-import { useSession } from "next-auth/react";
+
+interface Stock {
+  id: string;
+  issuer: string;
+  code: string;
+  name: string;
+  facevalue: number;
+  marketmetadata?: {
+    cours: Array<{
+      date: string;
+      price: number;
+    }>;
+  };
+}
 
 const StockCard = ({
   stock,
@@ -17,16 +29,9 @@ const StockCard = ({
   variation: string;
 }) => {
   const t = useTranslations("StockCard");
-  const { data: session } = useSession();
-  const userRole = (session?.user as any)?.roleid;
+  
   return (
-    <Link
-      href={
-        userRole === 1
-          ? `/passerunordre/marchesecondaire/action/${stock.id}`
-          : `/passerunordre`
-      }
-    >
+    <Link href={`/passerunordre/marchesecondaire/action/${stock.id}`}>
       <Card className="py-3 px-4 hover:scale-110 transition-transform duration-300 cursor-pointer">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">

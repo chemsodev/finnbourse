@@ -4,9 +4,8 @@ import StaticMessages from "../StaticMessages";
 
 const DashItem3 = () => {
   return (
-    <div className="md:w-[33%] h-full space-y-4">
+    <div className="w-full h-full space-y-4">
       <StaticDashNews />
-      <StaticMessages />
     </div>
   );
 };
