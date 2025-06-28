@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Edit, Trash2, Plus } from "lucide-react";
+import { Edit, Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +42,9 @@ interface Remboursement {
   commentaire: string;
 }
 
+type SortField = 'titrePrincipal' | 'referenceOst' | 'evenement' | 'descriptionOst' | 'prixUnitaireNet' | 'dateExecution' | 'dateValeurPaiement';
+type SortDirection = 'asc' | 'desc';
+
 export default function OperationsTable() {
   const t = useTranslations("Remboursement");
 
@@ -75,6 +78,79 @@ export default function OperationsTable() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentRemboursement, setCurrentRemboursement] =
     useState<Remboursement | null>(null);
+  const [sortField, setSortField] = useState<SortField>('titrePrincipal');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ChevronDown className="ml-2 h-4 w-4" />
+    );
+  };
+
+  const sortRemboursements = (data: Remboursement[]) => {
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'titrePrincipal':
+          aValue = a.titrePrincipal;
+          bValue = b.titrePrincipal;
+          break;
+        case 'referenceOst':
+          aValue = a.referenceOst;
+          bValue = b.referenceOst;
+          break;
+        case 'evenement':
+          aValue = a.evenement;
+          bValue = b.evenement;
+          break;
+        case 'descriptionOst':
+          aValue = a.descriptionOst;
+          bValue = b.descriptionOst;
+          break;
+        case 'prixUnitaireNet':
+          aValue = parseFloat(a.prixUnitaireNet);
+          bValue = parseFloat(b.prixUnitaireNet);
+          break;
+        case 'dateExecution':
+          aValue = a.dateExecution || new Date(0);
+          bValue = b.dateExecution || new Date(0);
+          break;
+        case 'dateValeurPaiement':
+          aValue = a.dateValeurPaiement || new Date(0);
+          bValue = b.dateValeurPaiement || new Date(0);
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedRemboursements = sortRemboursements(remboursements);
 
   // Open dialog for creating a new remboursement
   const handleAddNew = () => {
@@ -142,18 +218,74 @@ export default function OperationsTable() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("selectionTitrePrincipal")}</TableHead>
-                <TableHead>{t("referenceOst")}</TableHead>
-                <TableHead>{t("evenement")}</TableHead>
-                <TableHead>{t("descriptionOST")}</TableHead>
-                <TableHead>{t("montantUnitaireNet")}</TableHead>
-                <TableHead>{t("dateExecution")}</TableHead>
-                <TableHead>{t("valuePaymentDate")}</TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('titrePrincipal')}
+                >
+                  <div className="flex items-center">
+                    {t("selectionTitrePrincipal")}
+                    {getSortIcon('titrePrincipal')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('referenceOst')}
+                >
+                  <div className="flex items-center">
+                    {t("referenceOst")}
+                    {getSortIcon('referenceOst')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('evenement')}
+                >
+                  <div className="flex items-center">
+                    {t("evenement")}
+                    {getSortIcon('evenement')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('descriptionOst')}
+                >
+                  <div className="flex items-center">
+                    {t("descriptionOST")}
+                    {getSortIcon('descriptionOst')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('prixUnitaireNet')}
+                >
+                  <div className="flex items-center">
+                    {t("montantUnitaireNet")}
+                    {getSortIcon('prixUnitaireNet')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('dateExecution')}
+                >
+                  <div className="flex items-center">
+                    {t("dateExecution")}
+                    {getSortIcon('dateExecution')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer"
+                  onClick={() => handleSort('dateValeurPaiement')}
+                >
+                  <div className="flex items-center">
+                    {t("valuePaymentDate")}
+                    {getSortIcon('dateValeurPaiement')}
+                  </div>
+                </TableHead>
                 <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {remboursements.length === 0 ? (
+              {sortedRemboursements.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={8}
@@ -163,7 +295,7 @@ export default function OperationsTable() {
                   </TableCell>
                 </TableRow>
               ) : (
-                remboursements.map((remboursement) => (
+                sortedRemboursements.map((remboursement) => (
                   <TableRow key={remboursement.id}>
                     <TableCell className="font-medium">
                       {remboursement.titrePrincipal}

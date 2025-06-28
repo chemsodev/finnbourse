@@ -28,6 +28,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 // Mock data for demonstration
 const mockSessions = [
@@ -91,15 +92,80 @@ const mockOrders = [
   },
 ];
 
+type SortField = 'security' | 'direction' | 'quantity' | 'status';
+type SortDirection = 'asc' | 'desc';
+
 export default function SessionOrders() {
   const t = useTranslations("bourseSessions.orders");
   const [orders, setOrders] = useState(mockOrders);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('security');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const unprocessedOrders = orders.filter((order) => order.sessionId === null);
   const sessionOrders = selectedSession
     ? orders.filter((order) => order.sessionId === selectedSession)
     : [];
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ChevronDown className="ml-2 h-4 w-4" />
+    );
+  };
+
+  const sortOrders = (data: typeof orders) => {
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'security':
+          aValue = a.securityIssuer;
+          bValue = b.securityIssuer;
+          break;
+        case 'direction':
+          aValue = a.direction;
+          bValue = b.direction;
+          break;
+        case 'quantity':
+          aValue = a.quantity;
+          bValue = b.quantity;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedUnprocessedOrders = sortOrders(unprocessedOrders);
+  const sortedSessionOrders = sortOrders(sessionOrders);
 
   const assignOrderToSession = (orderId: string) => {
     if (!selectedSession) return;
@@ -174,24 +240,56 @@ export default function SessionOrders() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("tableHeaders.security")}</TableHead>
-                  <TableHead>{t("tableHeaders.direction")}</TableHead>
-                  <TableHead>{t("tableHeaders.quantity")}</TableHead>
-                  <TableHead>{t("tableHeaders.status")}</TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('security')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.security")}
+                      {getSortIcon('security')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('direction')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.direction")}
+                      {getSortIcon('direction')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('quantity')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.quantity")}
+                      {getSortIcon('quantity')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('status')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.status")}
+                      {getSortIcon('status')}
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">
                     {t("tableHeaders.action")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {unprocessedOrders.length === 0 ? (
+                {sortedUnprocessedOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-4">
                       {t("noUnassignedOrders")}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  unprocessedOrders.map((order) => (
+                  sortedUnprocessedOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell>
                         <div className="flex flex-col">
@@ -251,10 +349,42 @@ export default function SessionOrders() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("tableHeaders.security")}</TableHead>
-                  <TableHead>{t("tableHeaders.direction")}</TableHead>
-                  <TableHead>{t("tableHeaders.quantity")}</TableHead>
-                  <TableHead>{t("tableHeaders.status")}</TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('security')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.security")}
+                      {getSortIcon('security')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('direction')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.direction")}
+                      {getSortIcon('direction')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('quantity')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.quantity")}
+                      {getSortIcon('quantity')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('status')}
+                  >
+                    <div className="flex items-center">
+                      {t("tableHeaders.status")}
+                      {getSortIcon('status')}
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">
                     {t("tableHeaders.action")}
                   </TableHead>
@@ -267,14 +397,14 @@ export default function SessionOrders() {
                       {t("selectSessionPrompt")}
                     </TableCell>
                   </TableRow>
-                ) : sessionOrders.length === 0 ? (
+                ) : sortedSessionOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-4">
                       {t("noSessionOrders")}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sessionOrders.map((order) => (
+                  sortedSessionOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell>
                         <div className="flex flex-col">

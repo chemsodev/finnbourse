@@ -45,7 +45,7 @@ import PrintOrderDialog from "@/components/gestion-des-ordres/PrintOrderDialog";
 import OrdreDrawer from "./OrdreDrawer";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import SupprimerOrdre from "../SupprimerOrdre";
-import { List, AlertTriangle, Printer } from "lucide-react";
+import { List, AlertTriangle, Printer, ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import RateLimitReached from "../RateLimitReached";
 import { ValiderTotallement } from "../ValiderTotallement";
 import { Order } from "@/lib/interfaces";
@@ -80,6 +80,9 @@ interface OrdresTableProps {
   activeTab: string;
 }
 
+type SortField = 'id' | 'titre' | 'investisseur' | 'iob' | 'sens' | 'type' | 'quantity' | 'statut' | 'date';
+type SortDirection = 'asc' | 'desc' | null;
+
 export default function OrdresTable({
   searchquery,
   skip,
@@ -97,6 +100,94 @@ export default function OrdresTable({
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+  // Sort function
+  const sortData = (data: Order[], field: SortField, direction: SortDirection) => {
+    if (!direction) return data;
+
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (field) {
+        case 'id':
+          aValue = a.id || '';
+          bValue = b.id || '';
+          break;
+        case 'titre':
+          aValue = (a.securityissuer || '') + (a.securityid || '');
+          bValue = (b.securityissuer || '') + (b.securityid || '');
+          break;
+        case 'investisseur':
+          aValue = a.investorid || '';
+          bValue = b.investorid || '';
+          break;
+        case 'iob':
+          aValue = a.negotiatorid || '';
+          bValue = b.negotiatorid || '';
+          break;
+        case 'sens':
+          aValue = a.orderdirection;
+          bValue = b.orderdirection;
+          break;
+        case 'type':
+          aValue = a.securitytype || '';
+          bValue = b.securitytype || '';
+          break;
+        case 'quantity':
+          aValue = a.quantity || 0;
+          bValue = b.quantity || 0;
+          break;
+        case 'statut':
+          aValue = a.orderstatus || 0;
+          bValue = b.orderstatus || 0;
+          break;
+        case 'date':
+          aValue = new Date(a.createdat || '').getTime();
+          bValue = new Date(b.createdat || '').getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+  };
+
+  // Handle sort click
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null);
+        setSortField(null);
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Get sort icon
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronsUpDown className="ml-1 h-4 w-4 text-gray-400" />;
+    }
+    if (sortDirection === 'asc') {
+      return <ChevronUp className="ml-1 h-4 w-4 text-blue-600" />;
+    }
+    if (sortDirection === 'desc') {
+      return <ChevronDown className="ml-1 h-4 w-4 text-blue-600" />;
+    }
+    return <ChevronsUpDown className="ml-1 h-4 w-4 text-gray-400" />;
+  };
 
   // Filter data based on pageType and userRole
   const filterOrdersByPageAndRole = (orders: Order[]) => {
@@ -190,6 +281,20 @@ export default function OrdresTable({
     return () => clearTimeout(timer);
   }, [searchquery, skip, state, marketType, pageType, userRole]);
 
+  // Separate effect for sorting to avoid loading state
+  useEffect(() => {
+    if (!loading && data.length > 0) {
+      let sortedData = [...data];
+      
+      // Apply sorting
+      if (sortField && sortDirection) {
+        sortedData = sortData(sortedData, sortField, sortDirection);
+      }
+      
+      setData(sortedData);
+    }
+  }, [sortField, sortDirection, loading]);
+
   const getStatusBgColor = (statut: number) => {
     switch (statut) {
       case 0:
@@ -234,27 +339,101 @@ export default function OrdresTable({
       <TableHeader>
         <TableRow>
           {pageType !== "dashboard" && (
-            <TableHead className="font-bold uppercase">ID</TableHead>
+            <TableHead 
+              className="font-bold uppercase cursor-pointer"
+              onClick={() => handleSort('id')}
+            >
+              <div className="flex items-center">
+                ID
+                {getSortIcon('id')}
+              </div>
+            </TableHead>
           )}
-          <TableHead>{t("titre")}</TableHead>
+          <TableHead 
+            className="cursor-pointer"
+            onClick={() => handleSort('titre')}
+          >
+            <div className="flex items-center">
+              {t("titre")}
+              {getSortIcon('titre')}
+            </div>
+          </TableHead>
           {pageType === "carnetordres" && (
-            <TableHead>{t("investisseur")}</TableHead>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('investisseur')}
+            >
+              <div className="flex items-center">
+                {t("investisseur")}
+                {getSortIcon('investisseur')}
+              </div>
+            </TableHead>
           )}
           {pageType === "carnetordres" && (
-            <TableHead>IOB</TableHead>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('iob')}
+            >
+              <div className="flex items-center">
+                IOB
+                {getSortIcon('iob')}
+              </div>
+            </TableHead>
           )}
-          <TableHead>{t("sens")}</TableHead>
-          <TableHead>{t("type")}</TableHead>
-          <TableHead>{t("quantity")}</TableHead>
+          <TableHead 
+            className="cursor-pointer"
+            onClick={() => handleSort('sens')}
+          >
+            <div className="flex items-center">
+              {t("sens")}
+              {getSortIcon('sens')}
+            </div>
+          </TableHead>
+          <TableHead 
+            className="cursor-pointer"
+            onClick={() => handleSort('type')}
+          >
+            <div className="flex items-center">
+              {t("type")}
+              {getSortIcon('type')}
+            </div>
+          </TableHead>
+          <TableHead 
+            className="cursor-pointer"
+            onClick={() => handleSort('quantity')}
+          >
+            <div className="flex items-center">
+              {t("quantity")}
+              {getSortIcon('quantity')}
+            </div>
+          </TableHead>
           <TableHead>
-            {pageType === "carnetordres" ? <OrderStateFilter /> : t("statut")}
+            {pageType === "carnetordres" ? (
+              <OrderStateFilter />
+            ) : (
+              <div 
+                className="flex items-center cursor-pointer"
+                onClick={() => handleSort('statut')}
+              >
+                {t("statut")}
+                {getSortIcon('statut')}
+              </div>
+            )}
           </TableHead>
           {pageType === "carnetordres" && (
             <TableHead>
               <MarketTypeFilter />
             </TableHead>
           )}
-          <TableHead>{t("date")}</TableHead>
+          <TableHead 
+            className="cursor-pointer"
+            onClick={() => handleSort('date')}
+          >
+            <div className="flex items-center">
+              {t("date")}
+              {getSortIcon('date')}
+            </div>
+          </TableHead>
           {pageType !== "dashboard" && <TableHead></TableHead>}
         </TableRow>
       </TableHeader>

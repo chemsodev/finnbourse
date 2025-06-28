@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Pencil, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus, Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
@@ -79,6 +79,9 @@ const mockSessions = [
   },
 ];
 
+type SortField = 'name' | 'date' | 'status' | 'orders' | 'processed';
+type SortDirection = 'asc' | 'desc';
+
 export default function SessionManagement() {
   const t = useTranslations("bourseSessions.management");
   const [sessions, setSessions] = useState(mockSessions);
@@ -90,6 +93,71 @@ export default function SessionManagement() {
     date: new Date(),
     status: "scheduled",
   });
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ChevronDown className="ml-2 h-4 w-4" />
+    );
+  };
+
+  const sortSessions = (data: any[]) => {
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'name':
+          aValue = a.name;
+          bValue = b.name;
+          break;
+        case 'date':
+          aValue = a.date;
+          bValue = b.date;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'orders':
+          aValue = a.ordersCount;
+          bValue = b.ordersCount;
+          break;
+        case 'processed':
+          aValue = a.processedCount;
+          bValue = b.processedCount;
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedSessions = sortSessions(sessions);
 
   const handleCreateSession = () => {
     const session = {
@@ -214,18 +282,58 @@ export default function SessionManagement() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("tableHeaders.name")}</TableHead>
-              <TableHead>{t("tableHeaders.date")}</TableHead>
-              <TableHead>{t("tableHeaders.status")}</TableHead>
-              <TableHead>{t("tableHeaders.orders")}</TableHead>
-              <TableHead>{t("tableHeaders.processed")}</TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center">
+                  {t("tableHeaders.name")}
+                  {getSortIcon('name')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('date')}
+              >
+                <div className="flex items-center">
+                  {t("tableHeaders.date")}
+                  {getSortIcon('date')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('status')}
+              >
+                <div className="flex items-center">
+                  {t("tableHeaders.status")}
+                  {getSortIcon('status')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('orders')}
+              >
+                <div className="flex items-center">
+                  {t("tableHeaders.orders")}
+                  {getSortIcon('orders')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('processed')}
+              >
+                <div className="flex items-center">
+                  {t("tableHeaders.processed")}
+                  {getSortIcon('processed')}
+                </div>
+              </TableHead>
               <TableHead className="text-right">
                 {t("tableHeaders.actions")}
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sessions.map((session) => (
+            {sortedSessions.map((session) => (
               <TableRow key={session.id}>
                 <TableCell className="font-medium">{session.name}</TableCell>
                 <TableCell>{format(session.date, "dd/MM/yyyy")}</TableCell>
