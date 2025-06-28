@@ -38,36 +38,44 @@ export default async function BourseSessionsPage() {
         <MyMarquee />
       </div>
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
-        <div className="w-full flex justify-start mb-2">
+        <div className="w-full flex justify-between items-center mb-2">
+          <div className="flex flex-col gap-1">
+            <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
+              Gestion des Sessions de Bourse
+            </div>
+            <div className="text-xs text-gray-500 text-center md:ltr:text-left md:rtl:text-right">
+              {t("description")}
+            </div>
+          </div>
           <Link href="/ordres/execution">
             <Button type="button" variant="outline" className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit">
             <ArrowLeft className="w-5" /> <div>{tForm("retour")}</div>
             </Button>
           </Link>
         </div>
-        <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
-          {t("title")}
-        </div>
-        <div className="text-xs text-gray-500 md:w-[50%] text-center md:ltr:text-left md:rtl:text-right">
-          {t("description")}
-        </div>
       </div>
 
       <div className="border border-gray-100 rounded-md p-4 mt-10">
         <Tabs defaultValue="management" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="management">{t("tabs.management")}</TabsTrigger>
-            <TabsTrigger value="orders">{t("tabs.orders")}</TabsTrigger>
-            <TabsTrigger value="stats">{t("tabs.stats")}</TabsTrigger>
+          <TabsList className="flex w-full border-b bg-transparent p-0 h-auto mb-10">
+            <TabsTrigger 
+              value="management" 
+              className="flex-1 text-md data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent px-4 py-2"
+            >
+              {t("tabs.management")}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="orders" 
+              className="flex-1 text-md data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent px-4 py-2"
+            >
+              {t("tabs.orders")}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="management" className="mt-6">
             <SessionManagement />
           </TabsContent>
           <TabsContent value="orders" className="mt-6">
             <SessionOrders />
-          </TabsContent>
-          <TabsContent value="stats" className="mt-6">
-            <SessionStats />
           </TabsContent>
         </Tabs>
       </div>
