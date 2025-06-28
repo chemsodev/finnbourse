@@ -1,190 +1,157 @@
+import MyMarquee from "@/components/MyMarquee";
 import { getTranslations } from "next-intl/server";
+import MyPagination from "@/components/navigation/MyPagination";
+import TabSearch from "@/components/TabSearch";
+import Link from "next/link"; 
+import { CalendarClock } from "lucide-react";
+import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { getServerSession } from "next-auth/next";
 import auth from "@/auth";
-import MyMarquee from "@/components/MyMarquee";
-import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
-import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
-import Link from "next/link";
-import { ArrowLeft, Printer, CalendarClock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import TabSearch from "@/components/TabSearch";
-import MyPagination from "@/components/navigation/MyPagination";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExportButton } from "@/components/ExportButton";
+import type { Order } from "@/lib/interfaces";
 import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
+import { mockOrders, filterOrdersByMarketType } from "@/lib/mockData";
 
-export default async function OrderExecutionPage({
-  searchParams,
-}: {
-  searchParams?: {
+// Helper function to determine if an order is from primary or secondary market
+const isPrimaryMarketOrder = (securitytype: string) => {
+  return [
+    "empruntobligataire",
+    "opv",
+    "sukukmp",
+    "titresparticipatifsmp",
+  ].includes(securitytype);
+};
+
+const isSecondaryMarketOrder = (securitytype: string) => {
+  return ["action", "obligation", "sukukms", "titresparticipatifsms"].includes(
+    securitytype
+  );
+};
+
+const page = async (props: {
+  searchParams?: Promise<{
     searchquery?: string;
     page?: string;
     state?: string;
     marketType?: string;
-    tab?: string;
-  };
-}) {
+  }>;
+}) => {
   const session = await getServerSession(auth);
   const userRole = (session as any)?.user?.roleid;
-  const userType = (session as any)?.user?.type;
-
+  const searchParams = await props.searchParams;
   const currentPage = Number(searchParams?.page) || 0;
   const searchquery = searchParams?.searchquery || "";
   const state = searchParams?.state || "99";
-  const marketType = searchParams?.marketType || "S";
-  const activeTab = searchParams?.tab || "all";
+  const marketType = searchParams?.marketType || "all";
 
-  const t = await getTranslations("orderManagement");
-  const tOrders = await getTranslations("mesOrdres");
+  const t = await getTranslations("mesOrdres");
+  const tStatus = await getTranslations("status");
+  
+  // Use mock data instead of GraphQL
+  const data = mockOrders;
+
+  // Filter data based on market type
+  let filteredData = [...data];
+  if (marketType === "primaire") {
+    filteredData = filterOrdersByMarketType(data, "primaire");
+  } else if (marketType === "secondaire") {
+    filteredData = filterOrdersByMarketType(data, "secondaire");
+  }
+
+  const exportData = filteredData?.map((order) => ({
+    id: order.id,
+    ordertypes: order.orderdirection === 1 ? "Achat" : "Vente",
+    direction: order.orderdirection === 1 ? "Achat" : "Vente",
+    securityid: order.securityid,
+    securitytype: order.securitytype,
+    securityquantity: order.securityquantity,
+    currentMarketPrice: order.securityquantity,
+    quantity: order.quantity,
+    pricelimitmin: order.mst || "N/A",
+    pricelimitmax: order.mst || "N/A",
+    duration: order.duration,
+    orderdate: order.orderdate,
+    orderstatus:
+      order?.orderstatus === 0 && order?.payedWithCard
+        ? "Brouillon payé"
+        : order?.orderstatus === 0 && !order?.payedWithCard
+        ? tStatus("Draft")
+        : order?.orderstatus === 1
+        ? tStatus("Pending")
+        : order?.orderstatus === 2
+        ? tStatus("In_Progress")
+        : order?.orderstatus === 3
+        ? tStatus("Validated")
+        : order?.orderstatus === 4
+        ? tStatus("Being_Processed")
+        : order?.orderstatus === 5
+        ? tStatus("Completed")
+        : order?.orderstatus === 6
+        ? tStatus("Awaiting_Approval")
+        : order?.orderstatus === 7
+        ? tStatus("Ongoing")
+        : order?.orderstatus === 8
+        ? tStatus("Partially_Validated")
+        : order?.orderstatus === 9
+        ? tStatus("Expired")
+        : order?.orderstatus === 10
+        ? tStatus("Rejected")
+        : order?.orderstatus === 11
+        ? tStatus("Cancelled")
+        : "Unknown",
+    investor: order.investorid,
+    negotiator: order.negotiatorid,
+    securityissuer: order.securityissuer,
+    validity: order.validity,
+    createdat: order.createdat,
+  }));
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
       <div className="mt-3">
         <MyMarquee />
       </div>
-
-      <div className="flex gap-8 mt-16">
-        {/* Main content */}
-        <div className="flex-1">
-          {/* Tabs at the top */}
-          <div className="mb-2">
-            <Tabs value={activeTab} className="w-auto">
-              <TabsList className="bg-gray-100/70 p-1 flex gap-2">
-                <TabsTrigger
-                  value="all"
-                  className={`${
-                    activeTab === "all"
-                      ? "bg-white/90 font-medium shadow-sm"
-                      : "hover:bg-gray-200/80"
-                  } transition-all duration-200`}
-                >
-                  <Link
-                    href={`/ordres/execution?${new URLSearchParams({
-                      searchquery: searchquery || "",
-                      page: "0",
-                      tab: "all",
-                      state: state || "99",
-                      marketType: "S",
-                    }).toString()}`}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {"Carnet d'ordres"}
-                  </Link>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="souscriptions"
-                  className={`${
-                    activeTab === "souscriptions"
-                      ? "bg-white/90 font-medium shadow-sm"
-                      : "hover:bg-gray-200/80"
-                  } transition-all duration-200`}
-                >
-                  <Link
-                    href={`/ordres/execution?${new URLSearchParams({
-                      searchquery: searchquery || "",
-                      page: "0",
-                      tab: "souscriptions",
-                      state: state || "99",
-                      marketType: "P",
-                    }).toString()}`}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {tOrders("souscriptions")}
-                  </Link>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+      <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
+        <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
+          Carnet d'Ordres
+        </div>
+        <div className="text-xs text-gray-500 md:w-[50%] text-center md:ltr:text-left md:rtl:text-right">
+          Gestion et suivi des ordres de bourse
+        </div>
+      </div>
+      <div className="border border-gray-100 rounded-md p-4 mt-10">
+        <div className="flex justify-between w-full">
+          <TabSearch />
+          <div className="flex gap-4">
+            <PDFDropdownMenu />
+            <Link
+              href="/ordres/sessions"
+              className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
+            >
+              <CalendarClock size={20} />
+              Sessions de Bourse
+            </Link>
+            <ExportButton data={exportData} />
           </div>
-
-          <div className="flex flex-col gap-1 mb-8">
-            <div className="text-2xl font-bold text-primary flex items-center justify-between">
-              <div>
-                {activeTab === "souscriptions"
-                  ? tOrders("souscriptions")
-                  : t("orderExecution")}
-
-                {activeTab === "souscriptions" && (
-                  <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-primary/20 text-primary">
-                    {tOrders("marcheprimaire")}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Printer className="h-4 w-4" />
-                  Print Order List
-                </Button>
-                <Link href="/ordres/validation-tcc-finale">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <p className="text-gray-500 mt-2 mb-6">
-              {t("orderExecutionDescription")}
-            </p>
-          </div>
-
-          <div
-            className={`border ${
-              activeTab === "souscriptions"
-                ? "border-primary/20 bg-primary/5"
-                : "border-gray-100"
-            } rounded-md p-4 transition-colors duration-300`}
-          >
-            <div className="flex justify-between w-full">
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <TabSearch />
-              </div>
-
-              <div className="flex gap-4">
-                <PDFDropdownMenu
-                  customTitle={
-                    activeTab === "souscriptions"
-                      ? tOrders("souscriptions")
-                      : t("orderExecution")
-                  }
-                />
-
-                <ExportButton
-                  data={[]}
-                  customTitle={
-                    activeTab === "souscriptions"
-                      ? tOrders("souscriptions")
-                      : tOrders("ordres")
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="my-8">
-              <OrdresTableREST
-                key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
-                searchquery={searchquery}
-                taskID="execution"
-                marketType={activeTab === "souscriptions" ? "P" : marketType}
-                pageType="orderExecution"
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <MyPagination preserveParams={["tab", "marketType", "state"]} />
-            </div>
-          </div>
+        </div>
+        <div className="my-8">
+          <OrdresTable
+            searchquery={searchquery}
+            skip={currentPage}
+            state={state}
+            marketType={marketType}
+            pageType="orderExecution"
+            userRole={userRole?.toString() || "1"}
+            userType="iob"
+            activeTab="all"
+          />
+        </div>
+        <div className="flex justify-end">
+          <MyPagination />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default page;

@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import auth from "@/auth";
 import MyMarquee from "@/components/MyMarquee";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,9 +9,9 @@ import SessionStats from "@/components/bourse-sessions/session-stats";
 
 export default async function BourseSessionsPage() {
   const session = await getServerSession(auth);
-  const userRole = session?.user?.roleid;
+  const userRole = (session as any)?.user?.roleid;
 
-  // Only allow admin and negotiator roles to access this page
+  /* Only allow admin and negotiator roles to access this page
   if (userRole !== 2 && userRole !== 3) {
     const t = await getTranslations("bourseSessions");
     return (
@@ -24,7 +24,7 @@ export default async function BourseSessionsPage() {
         </div>
       </div>
     );
-  }
+  }*/
 
   const t = await getTranslations("bourseSessions");
 
