@@ -17,7 +17,7 @@ export const TopBarDash = () => {
   const totalValue = 1150000;
 
   return (
-    <div className="bg-primary rounded-md flex justify-between text-white py-3 px-6 relative">
+    <div className="bg-primary rounded-md flex justify-between text-white py-2.5 px-3 relative">
       <div className="md:hidden absolute top-0 left-0 w-full bg-primary z-50 shadow-sm py-2 px-4 flex justify-between items-center">
         <DynamicMobileNav
           userName={session?.data?.user?.name || undefined}

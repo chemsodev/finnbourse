@@ -1,429 +1,48 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
-import {
-  RelatedUserFormValues,
-  RelatedUsersFormValues,
-  relatedUserSchema,
-  relatedUsersFormSchema,
-} from "./schema";
-import { RolesAssignment } from "@/components/RolesAssignment";
+import { useTranslations } from "next-intl";
+import { UserSelectionForm } from "@/components/UserSelectionForm";
+
+interface User {
+  id: string;
+  fullname: string;
+  email: string;
+  phonenumber: string;
+  roleid: number;
+  status: number | string;
+  position?: string;
+  organisation?: string;
+  matricule?: string;
+}
 
 interface RelatedUsersFormProps {
-  defaultValues: RelatedUsersFormValues;
-  onFormChange: (values: RelatedUserFormValues[]) => void;
+  defaultValues: {
+    users: User[];
+  };
+  onFormChange: (values: User[]) => void;
+  entityName?: string;
 }
 
 export function RelatedUsersForm({
   defaultValues,
   onFormChange,
+  entityName = "",
 }: RelatedUsersFormProps) {
   const t = useTranslations("IOBPage");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [users, setUsers] = useState<RelatedUserFormValues[]>(
-    defaultValues.users || []
-  );
-  const [passwordVisibility, setPasswordVisibility] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const [showPasswordInForm, setShowPasswordInForm] = useState(false);
+  const [users, setUsers] = useState<User[]>(defaultValues.users || []);
 
-  // Toggle password visibility in the table
-  const togglePasswordVisibility = (index: number) => {
-    setPasswordVisibility((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
-  }; // Form for adding/editing a user
-  const userForm = useForm<RelatedUserFormValues>({
-    resolver: zodResolver(relatedUserSchema),
-    defaultValues: {
-      fullName: "",
-      position: "",
-      matricule: "",
-      roles: [], // Initialize with empty array
-      role: "initiator", // Keep for backward compatibility
-      type: "member",
-      status: "active",
-      organization: "",
-      password: "",
-    },
-  });
-
-  // Update parent form when users list changes
-  const updateParentForm = (updatedUsers: RelatedUserFormValues[]) => {
-    setUsers(updatedUsers);
-    onFormChange(updatedUsers);
-  }; // Open dialog to add a new user
-  const handleAddUser = () => {
-    userForm.reset({
-      fullName: "",
-      position: "",
-      matricule: "",
-      roles: [], // Initialize with empty array
-      role: "initiator", // Keep for backward compatibility
-      type: "member",
-      status: "active",
-      organization: "",
-      password: "",
-    });
-    setEditingIndex(null);
-    setIsDialogOpen(true);
-    setShowPasswordInForm(false);
-  };
-
-  // Open dialog to edit an existing user
-  const handleEditUser = (index: number) => {
-    const user = users[index];
-    userForm.reset(user);
-    setEditingIndex(index);
-    setIsDialogOpen(true);
-    setShowPasswordInForm(false);
-  };
-
-  // Remove a user from the list
-  const handleDeleteUser = (index: number) => {
-    const updatedUsers = [...users];
-    updatedUsers.splice(index, 1);
-    updateParentForm(updatedUsers);
-  };
-
-  // Save the user (add new or update existing)
-  const handleSaveUser = (values: RelatedUserFormValues) => {
-    const updatedUsers = [...users];
-
-    if (editingIndex !== null) {
-      updatedUsers[editingIndex] = values;
-    } else {
-      updatedUsers.push(values);
-    }
-
-    updateParentForm(updatedUsers);
-    setIsDialogOpen(false);
+  const handleUsersChange = (newUsers: User[]) => {
+    setUsers(newUsers);
+    onFormChange(newUsers);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium">{t("relatedUsers")}</h3>
-        <Button onClick={handleAddUser} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          {t("addUser")}
-        </Button>
-      </div>
-
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("fullName")}</TableHead>
-              <TableHead>{t("position")}</TableHead>
-              <TableHead>{t("matricule")}</TableHead>
-              <TableHead>{t("role")}</TableHead>
-              <TableHead>{t("type")}</TableHead>
-              <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("organization")}</TableHead>
-              <TableHead>{t("password")}</TableHead>
-              <TableHead className="w-[100px]">{t("actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-center py-4 text-muted-foreground"
-                >
-                  {t("noUsers")}
-                </TableCell>
-              </TableRow>
-            ) : (
-              users.map((user, index) => (
-                <TableRow key={index}>
-                  {" "}
-                  <TableCell>{user.fullName}</TableCell>
-                  <TableCell>{user.position}</TableCell>
-                  <TableCell>{user.matricule}</TableCell>
-                  <TableCell>
-                    {
-                      user.roles && user.roles.length > 0
-                        ? user.roles.map((role) => t(role)).join(", ")
-                        : t(user.role) 
-                    }
-                  </TableCell>
-                  <TableCell>{t(user.type)}</TableCell>
-                  <TableCell>{t(user.status)}</TableCell>
-                  <TableCell>{user.organization || "-"}</TableCell>
-                  <TableCell className="relative">
-                    <div className="flex items-center">
-                      <span>
-                        {passwordVisibility[index]
-                          ? user.password || "Not set"
-                          : "••••••••••"}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 ml-2"
-                        onClick={() => togglePasswordVisibility(index)}
-                      >
-                        {passwordVisibility[index] ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">
-                          {passwordVisibility[index]
-                            ? t("hidePassword")
-                            : t("showPassword")}
-                        </span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-amber-600"
-                        onClick={() => handleEditUser(index)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">{t("edit")}</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600"
-                        onClick={() => handleDeleteUser(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">{t("delete")}</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* User Form Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-3xl p-2 text-center font-bold">
-              {editingIndex !== null ? t("editUser") : t("addUser")}
-            </DialogTitle>
-          </DialogHeader>
-          <Form {...userForm}>
-            <form
-              onSubmit={userForm.handleSubmit(handleSaveUser)}
-              className="space-y-6"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={userForm.control}
-                  name="fullName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("fullName")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} autoFocus />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={userForm.control}
-                  name="position"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("position")}</FormLabel>
-                      <FormControl>
-                        <Input {...field}/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={userForm.control}
-                  name="matricule"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("matricule")}</FormLabel>
-                      <FormControl>
-                        <Input {...field}/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={userForm.control}
-                  name="organization"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("organization")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={userForm.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("status")}</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("selectStatus")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">{t("active")}</SelectItem>
-                            <SelectItem value="inactive">{t("inactive")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={userForm.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("type")}</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("selectType")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">{t("admin")}</SelectItem>
-                            <SelectItem value="member">{t("member")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="space-y-2 flex flex-col items-center">
-                <FormLabel className="text-center">{t("roles")} <span title="Sélectionnez un ou plusieurs rôles pour cet utilisateur.">🛈</span></FormLabel>
-                {/*<div className="text-sm text-muted-foreground">{t("roles.assignRoles")}</div>
-                <div className="text-xs text-muted-foreground">{t("roles.selectAppropriateRoles")}</div>*/}
-                <RolesAssignment
-                  selectedRoles={userForm.watch("roles") || []}
-                  onRolesChange={(roles) => {
-                    userForm.setValue("roles", roles);
-                    if (roles.length > 0) {
-                      userForm.setValue("role", roles[0]);
-                    } else {
-                      userForm.setValue("role", "");
-                    }
-                  }}
-                  userTypes={["iob"]}
-                  showTabs={false}
-                />
-                <FormMessage>
-                  {userForm.formState.errors.roles?.message}
-                </FormMessage>
-              </div>
-              <FormField
-                control={userForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex justify-between items-center">
-                      <FormLabel>{t("password")}</FormLabel>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => setShowPasswordInForm(!showPasswordInForm)}
-                      >
-                        {showPasswordInForm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type={showPasswordInForm ? "text" : "password"}
-                        placeholder={t("enterPassword") || "Entrer un mot de passe"}
-                      />
-                    </FormControl>
-                    <div className="text-xs text-muted-foreground mt-1">Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.</div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter className="flex flex-col md:flex-row md:justify-end gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full md:w-auto"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  {t("cancel")}
-                </Button>
-                <Button type="submit" className="w-full md:w-auto">
-                  {t("save")}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-    </div>
+    <UserSelectionForm
+      selectedUsers={users}
+      onUsersChange={handleUsersChange}
+      entityType="IOB"
+      entityName={entityName}
+    />
   );
 }
