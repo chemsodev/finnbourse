@@ -335,9 +335,9 @@ export default function OrdresTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
+      <Table>
+        <TableHeader>
+          <TableRow>
           {pageType !== "dashboard" && (
             <TableHead 
               className="font-bold uppercase cursor-pointer"
@@ -419,12 +419,12 @@ export default function OrdresTable({
                 {getSortIcon('statut')}
               </div>
             )}
-          </TableHead>
-          {pageType === "carnetordres" && (
-            <TableHead>
-              <MarketTypeFilter />
             </TableHead>
-          )}
+            {pageType === "carnetordres" && (
+              <TableHead>
+                <MarketTypeFilter />
+              </TableHead>
+            )}
           <TableHead 
             className="cursor-pointer"
             onClick={() => handleSort('date')}
@@ -434,108 +434,108 @@ export default function OrdresTable({
               {getSortIcon('date')}
             </div>
           </TableHead>
-          {pageType !== "dashboard" && <TableHead></TableHead>}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+            {pageType !== "dashboard" && <TableHead></TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
         {data.map((order: Order) => (
-          <TableRow key={order.id}>
+            <TableRow key={order.id}>
             {pageType !== "dashboard" && (
-              <TableCell className="font-bold overflow-x-scroll w-60">
-                {order?.id
-                  ? order.id.split("-").slice(0, 2).join("-")
-                  : "N/A"}
-              </TableCell>
+                  <TableCell className="font-bold overflow-x-scroll w-60">
+                    {order?.id
+                      ? order.id.split("-").slice(0, 2).join("-")
+                      : "N/A"}
+                  </TableCell>
             )}
-            <TableCell>
-              <div className="flex flex-col">
-                <div className="font-medium capitalize">
+              <TableCell>
+                <div className="flex flex-col">
+                  <div className="font-medium capitalize">
                   {order?.securityissuer || "N/A"}
-                </div>
-                <div className="font-medium text-xs uppercase text-gray-400">
+                  </div>
+                  <div className="font-medium text-xs uppercase text-gray-400">
                   {order?.securityid || "N/A"}
                 </div>
-              </div>
-            </TableCell>
+                </div>
+              </TableCell>
             {pageType === "carnetordres" && (
               <TableCell>{order?.investorid || "N/A"}</TableCell>
-            )}
+              )}
             {pageType === "carnetordres" && (
               <TableCell>{order?.negotiatorid || "N/A"}</TableCell>
-            )}
-            <TableCell
-              className={`${
-                order.orderdirection === 1 ? "text-green-500" : "text-red-600"
-              }`}
-            >
-              {order.orderdirection === 1 ? t("achat") : t("vente")}
-            </TableCell>
-            <TableCell>
-              {order.securitytype === "action"
-                ? t("action")
-                : order.securitytype === "obligation"
-                ? t("obligation")
-                : order.securitytype === "sukuk"
-                ? t("sukuk")
-                : order.securitytype === "opv"
-                ? t("opv")
-                : order.securitytype === "titresparticipatifs"
-                ? t("titre_participatif")
-                : order.securitytype === "empruntobligataire"
-                ? t("emprunt_obligataire")
-                : order.securitytype}
-            </TableCell>
-            <TableCell>{order.quantity}</TableCell>
-            <TableCell>
-              <div
-                className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${getStatusBgColor(
-                  Number(order.orderstatus)
-                )}`}
+              )}
+              <TableCell
+                className={`${
+                  order.orderdirection === 1 ? "text-green-500" : "text-red-600"
+                }`}
               >
-                {order?.orderstatus === 0 && order?.payedWithCard
-                  ? "Brouillon payé"
-                  : order?.orderstatus === 0 && !order?.payedWithCard
-                  ? tStatus("Draft")
-                  : order?.orderstatus === 1
-                  ? tStatus("Pending")
-                  : order?.orderstatus === 2
-                  ? tStatus("In_Progress")
-                  : order?.orderstatus === 3
-                  ? tStatus("Validated")
-                  : order?.orderstatus === 4
-                  ? tStatus("Being_Processed")
-                  : order?.orderstatus === 5
-                  ? tStatus("Completed")
-                  : order?.orderstatus === 6
-                  ? tStatus("Awaiting_Approval")
-                  : order?.orderstatus === 7
-                  ? tStatus("Ongoing")
-                  : order?.orderstatus === 8
-                  ? tStatus("Partially_Validated")
-                  : order?.orderstatus === 9
-                  ? tStatus("Expired")
-                  : order?.orderstatus === 10
-                  ? tStatus("Rejected")
-                  : order?.orderstatus === 11
-                  ? tStatus("Cancelled")
-                  : "Unknown"}
-              </div>
-            </TableCell>
-            <TableCell className="text-xs">
-              {new Date(order.createdat).toLocaleDateString()}
-            </TableCell>
-            {pageType !== "dashboard" && (
+                {order.orderdirection === 1 ? t("achat") : t("vente")}
+              </TableCell>
               <TableCell>
+              {order.securitytype === "action"
+                  ? t("action")
+                : order.securitytype === "obligation"
+                  ? t("obligation")
+                : order.securitytype === "sukuk"
+                  ? t("sukuk")
+                : order.securitytype === "opv"
+                  ? t("opv")
+                : order.securitytype === "titresparticipatifs"
+                  ? t("titre_participatif")
+                  : order.securitytype === "empruntobligataire"
+                  ? t("emprunt_obligataire")
+                  : order.securitytype}
+              </TableCell>
+              <TableCell>{order.quantity}</TableCell>
+              <TableCell>
+                <div
+                  className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${getStatusBgColor(
+                    Number(order.orderstatus)
+                  )}`}
+                >
+                  {order?.orderstatus === 0 && order?.payedWithCard
+                    ? "Brouillon payé"
+                    : order?.orderstatus === 0 && !order?.payedWithCard
+                    ? tStatus("Draft")
+                    : order?.orderstatus === 1
+                    ? tStatus("Pending")
+                    : order?.orderstatus === 2
+                    ? tStatus("In_Progress")
+                    : order?.orderstatus === 3
+                    ? tStatus("Validated")
+                    : order?.orderstatus === 4
+                    ? tStatus("Being_Processed")
+                    : order?.orderstatus === 5
+                    ? tStatus("Completed")
+                    : order?.orderstatus === 6
+                    ? tStatus("Awaiting_Approval")
+                    : order?.orderstatus === 7
+                    ? tStatus("Ongoing")
+                    : order?.orderstatus === 8
+                    ? tStatus("Partially_Validated")
+                    : order?.orderstatus === 9
+                    ? tStatus("Expired")
+                    : order?.orderstatus === 10
+                    ? tStatus("Rejected")
+                    : order?.orderstatus === 11
+                    ? tStatus("Cancelled")
+                    : "Unknown"}
+                </div>
+              </TableCell>
+                <TableCell className="text-xs">
+                  {new Date(order.createdat).toLocaleDateString()}
+                </TableCell>
+              {pageType !== "dashboard" && (
+                <TableCell>
                 <OrdreDrawer 
                   titreId={order.id} 
                   orderData={order}
                   isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
                 />
-              </TableCell>
-            )}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
   );
 }

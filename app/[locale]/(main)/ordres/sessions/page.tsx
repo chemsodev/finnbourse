@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SessionManagement from "@/components/bourse-sessions/session-management";
 import SessionOrders from "@/components/bourse-sessions/session-orders";
 import SessionStats from "@/components/bourse-sessions/session-stats";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default async function BourseSessionsPage() {
   const session = await getServerSession(auth);
@@ -27,6 +30,7 @@ export default async function BourseSessionsPage() {
   }*/
 
   const t = await getTranslations("bourseSessions");
+  const tForm = await getTranslations("FormPassationOrdreObligation");
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
@@ -34,6 +38,13 @@ export default async function BourseSessionsPage() {
         <MyMarquee />
       </div>
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
+        <div className="w-full flex justify-start mb-2">
+          <Link href="/ordres/execution">
+            <Button type="button" variant="outline" className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit">
+            <ArrowLeft className="w-5" /> <div>{tForm("retour")}</div>
+            </Button>
+          </Link>
+        </div>
         <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
           {t("title")}
         </div>

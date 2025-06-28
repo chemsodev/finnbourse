@@ -40,7 +40,7 @@ const UpdateFaceValue = ({ securityId }: { securityId: string }) => {
   const session = useSession();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const t = useTranslations("FormPassationOrdre");
+  const t = useTranslations("FormPassationOrdreObligation");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

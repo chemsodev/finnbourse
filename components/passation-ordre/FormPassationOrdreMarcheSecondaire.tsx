@@ -113,7 +113,7 @@ const FormPassationOrdreMarcheSocondaire = ({
   const [conditionPrix, setConditionPrix] = useState("prixMarche");
   const [conditionQuantite, setConditionQuantite] = useState("toutOuRien");
 
-  const t = useTranslations("FormPassationOrdre");
+  const t = useTranslations("FormPassationOrdreObligation");
 
   // Use REST hooks for fetching data
   const stockType = "action";
@@ -388,7 +388,7 @@ const FormPassationOrdreMarcheSocondaire = ({
             className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
             onClick={() => router.back()}
           >
-            <ArrowLeft className="w-5" /> <div>Retour</div>
+            <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
           </Button>
         </div>
         <h2 className="text-2xl font-bold mb-4">
@@ -497,10 +497,10 @@ const FormPassationOrdreMarcheSocondaire = ({
           <Button
             type="button"
             variant="outline"
-            className="flex gap-2 items-center border rounded-md px-2 bg-primary hover:bg-primary text-white w-fit hover:text-white"
+            className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
             onClick={() => form.setValue("selectedClientId", "")}
           >
-            <ArrowLeft className="w-5" /> <div>Retour</div>
+            <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
           </Button>
         </div>
         {/* Titre avec le code du client sélectionné */}

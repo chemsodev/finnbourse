@@ -50,11 +50,12 @@ const formSchema = z.object({
 });
 
 const AddSecurityHistory = ({ securityId }: { securityId: string }) => {
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const t = useTranslations("FormPassationOrdreObligation");
   const session = useSession();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const t = useTranslations("FormPassationOrdre");
 
   const [dialogPage, setDialogPage] = useState(1);
 
@@ -115,7 +116,7 @@ const AddSecurityHistory = ({ securityId }: { securityId: string }) => {
   };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    setSubmitting(true);
+    setIsSubmitting(true);
     if (!securiyHisoryFile || securiyHisoryFile.length === 0) {
       toast({
         variant: "destructive",
@@ -176,7 +177,7 @@ const AddSecurityHistory = ({ securityId }: { securityId: string }) => {
         ),
       });
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
