@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Search, CheckCircle, XCircle } from "lucide-react";
+import { Eye, EyeOff, Search, CheckCircle, XCircle, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -735,6 +735,14 @@ export default function UtilisateursPage({
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <Button
+              onClick={() => router.push("/utilisateurs/nouveau")}
+              className="flex items-center gap-2"
+              variant="default"
+            >
+              <Plus className="w-4 h-4" />
+              {t("addUser")}
+            </Button>
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
