@@ -1,36 +1,48 @@
-import { getTranslations } from "next-intl/server";
-import { getServerSession } from "next-auth/next";
-import auth from "@/auth";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import MyMarquee from "@/components/MyMarquee";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SessionManagement from "@/components/bourse-sessions/session-management";
 import SessionOrders from "@/components/bourse-sessions/session-orders";
-import SessionStats from "@/components/bourse-sessions/session-stats";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default async function BourseSessionsPage() {
-  const session = await getServerSession(auth);
-  const userRole = (session as any)?.user?.roleid;
+export default function BourseSessionsPage() {
+  const t = useTranslations("bourseSessions");
+  const tForm = useTranslations("FormPassationOrdreObligation");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const [activeTab, setActiveTab] = useState("management");
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
-  /* Only allow admin and negotiator roles to access this page
-  if (userRole !== 2 && userRole !== 3) {
-    const t = await getTranslations("bourseSessions");
-    return (
-      <div className="flex items-center justify-center h-[70vh]">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">
-            {t("accessDeniedTitle")}
-          </h1>
-          <p className="text-gray-600">{t("accessDeniedMessage")}</p>
-        </div>
-      </div>
-    );
-  }*/
+  // Gérer les paramètres d'URL pour l'onglet et la session
+  useEffect(() => {
+    const tab = searchParams.get("tab") || "management";
+    const sessionId = searchParams.get("sessionId");
+    setActiveTab(tab);
+    setSelectedSessionId(sessionId);
+  }, [searchParams]);
 
-  const t = await getTranslations("bourseSessions");
-  const tForm = await getTranslations("FormPassationOrdreObligation");
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", value);
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleSessionSelect = (sessionId: string) => {
+    setSelectedSessionId(sessionId);
+    setActiveTab("orders");
+    const params = new URLSearchParams();
+    params.set("tab", "orders");
+    params.set("sessionId", sessionId);
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
@@ -56,7 +68,7 @@ export default async function BourseSessionsPage() {
       </div>
 
       <div className="border border-gray-100 rounded-md p-4 mt-10">
-        <Tabs defaultValue="management" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="flex w-full border-b bg-transparent p-0 h-auto mb-10">
             <TabsTrigger 
               value="management" 
@@ -72,10 +84,10 @@ export default async function BourseSessionsPage() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="management" className="mt-6">
-            <SessionManagement />
+            <SessionManagement onSessionSelect={handleSessionSelect} />
           </TabsContent>
           <TabsContent value="orders" className="mt-6">
-            <SessionOrders />
+            <SessionOrders selectedSessionId={selectedSessionId} />
           </TabsContent>
         </Tabs>
       </div>

@@ -82,7 +82,11 @@ const mockSessions = [
 type SortField = 'name' | 'date' | 'status' | 'orders' | 'processed';
 type SortDirection = 'asc' | 'desc';
 
-export default function SessionManagement() {
+interface SessionManagementProps {
+  onSessionSelect?: (sessionId: string) => void;
+}
+
+export default function SessionManagement({ onSessionSelect }: SessionManagementProps) {
   const t = useTranslations("bourseSessions.management");
   const [sessions, setSessions] = useState(mockSessions);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -195,6 +199,17 @@ export default function SessionManagement() {
         return <Badge className="bg-yellow-600">{t("status.scheduled")}</Badge>;
       default:
         return <Badge className="bg-gray-600">{t("status.unknown")}</Badge>;
+    }
+  };
+
+  const handleRowClick = (sessionId: string, event: React.MouseEvent) => {
+    // Ne pas déclencher si on clique sur les boutons d'action
+    if ((event.target as HTMLElement).closest('button')) {
+      return;
+    }
+    
+    if (onSessionSelect) {
+      onSessionSelect(sessionId);
     }
   };
 
@@ -334,7 +349,11 @@ export default function SessionManagement() {
           </TableHeader>
           <TableBody>
             {sortedSessions.map((session) => (
-              <TableRow key={session.id}>
+              <TableRow 
+                key={session.id} 
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={(e) => handleRowClick(session.id, e)}
+              >
                 <TableCell className="font-medium">{session.name}</TableCell>
                 <TableCell>{format(session.date, "dd/MM/yyyy")}</TableCell>
                 <TableCell>{getStatusBadge(session.status)}</TableCell>
@@ -347,7 +366,8 @@ export default function SessionManagement() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setCurrentSession(session);
                         setIsEditOpen(true);
                       }}
@@ -360,6 +380,7 @@ export default function SessionManagement() {
                           variant="outline"
                           size="icon"
                           className="text-red-500"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

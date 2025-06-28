@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -91,10 +91,23 @@ const mockOrders = [
   },
 ];
 
-export default function SessionOrders() {
+interface SessionOrdersProps {
+  selectedSessionId?: string | null;
+}
+
+export default function SessionOrders({ selectedSessionId }: SessionOrdersProps) {
   const t = useTranslations("bourseSessions.orders");
   const [orders, setOrders] = useState(mockOrders);
-  const [selectedSession, setSelectedSession] = useState<string>("1"); // Session actuelle par défaut
+  const [selectedSession, setSelectedSession] = useState<string>(
+    selectedSessionId || "1" // Session actuelle par défaut
+  );
+
+  // Mettre à jour la session sélectionnée si la prop change
+  useEffect(() => {
+    if (selectedSessionId) {
+      setSelectedSession(selectedSessionId);
+    }
+  }, [selectedSessionId]);
 
   const sessionOrders = orders.filter((order) => order.sessionId === selectedSession);
 
@@ -139,7 +152,7 @@ export default function SessionOrders() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <div className="w-64">
-          <Label htmlFor="session-select">Selectionner une session</Label>
+          <Label htmlFor="session-select" className="text-sm font-medium mb-2">Selectionner une session</Label>
           <Select
             onValueChange={setSelectedSession}
             value={selectedSession}
@@ -150,7 +163,7 @@ export default function SessionOrders() {
             <SelectContent>
               {mockSessions.map((session) => (
                 <SelectItem key={session.id} value={session.id}>
-                  {session.name} ({format(session.date, "dd/MM/yyyy")})
+                  {session.name} 
                 </SelectItem>
               ))}
             </SelectContent>
