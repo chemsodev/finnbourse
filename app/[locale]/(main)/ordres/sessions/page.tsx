@@ -59,7 +59,7 @@ export default function BourseSessionsPage() {
               {t("description")}
             </div>
           </div>
-          <Link href="/ordres/execution">
+          <Link href={activeTab === "orders" ? "/ordres/sessions" : "/ordres/execution"}>
             <Button type="button" variant="outline" className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit">
             <ArrowLeft className="w-5" /> <div>{tForm("retour")}</div>
             </Button>
@@ -69,20 +69,6 @@ export default function BourseSessionsPage() {
 
       <div className="border border-gray-100 rounded-md p-4 mt-10">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="flex w-full border-b bg-transparent p-0 h-auto mb-10">
-            <TabsTrigger 
-              value="management" 
-              className="flex-1 text-md data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent px-4 py-2"
-            >
-              {t("tabs.management")}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="orders" 
-              className="flex-1 text-md data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:text-primary bg-transparent px-4 py-2"
-            >
-              {t("tabs.orders")}
-            </TabsTrigger>
-          </TabsList>
           <TabsContent value="management" className="mt-6">
             <SessionManagement onSessionSelect={handleSessionSelect} />
           </TabsContent>

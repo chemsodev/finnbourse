@@ -25,16 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown } from "lucide-react";
@@ -116,14 +106,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   );
   const [sortField, setSortField] = useState<SortField>('createdat');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [showActionColumn, setShowActionColumn] = useState(false);
-  const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [responseForm, setResponseForm] = useState({
-    reliquat: "",
-    quantite: "",
-    prix: "",
-  });
 
   // Mettre à jour la session sélectionnée si la prop change
   useEffect(() => {
@@ -221,31 +203,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     );
   };
 
-  const handleActionClick = () => {
-    setShowActionColumn(!showActionColumn);
-  };
-
-  const handleResponseClick = (order: any) => {
-    setSelectedOrder(order);
-    setResponseForm({
-      reliquat: "",
-      quantite: "",
-      prix: "",
-    });
-    setIsResponseDialogOpen(true);
-  };
-
-  const handleResponseSubmit = () => {
-    // Ici vous pouvez traiter la soumission du formulaire
-    console.log("Réponse soumise:", {
-      orderId: selectedOrder?.id,
-      sessionId: selectedSession,
-      sessionName: mockSessions.find(s => s.id === selectedSession)?.name,
-      ...responseForm
-    });
-    setIsResponseDialogOpen(false);
-  };
-
   const getStatusBadge = (status: number) => {
     switch (status) {
       case 0:
@@ -295,12 +252,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                 </SelectContent>
               </Select>
             </div>
-            <Button 
-              className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-              onClick={handleActionClick}
-            >
-              Action
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -371,15 +322,12 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                   </div>
                 </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
-                {showActionColumn && (
-                  <TableHead className="text-right">Réponse</TableHead>
-                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {sortedOrders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={showActionColumn ? 9 : 8} className="text-center py-4">
+                  <TableCell colSpan={8} className="text-center py-4">
                     Aucun ordre trouve pour cette session
                   </TableCell>
                 </TableRow>
@@ -420,17 +368,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                         Retirer
                       </Button>
                     </TableCell>
-                    {showActionColumn && (
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleResponseClick(order)}
-                        >
-                          Réponse
-                        </Button>
-                      </TableCell>
-                    )}
                   </TableRow>
                 ))
               )}
@@ -438,64 +375,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           </Table>
         </CardContent>
       </Card>
-
-      {/* Dialog de réponse */}
-      <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Réponse à l'ordre</DialogTitle>
-            <DialogDescription>
-              Session: {mockSessions.find(s => s.id === selectedSession)?.name} (ID: {selectedSession})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="reliquat" className="text-right">
-                Reliquat
-              </Label>
-              <Input
-                id="reliquat"
-                value={responseForm.reliquat}
-                onChange={(e) =>
-                  setResponseForm({ ...responseForm, reliquat: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="quantite" className="text-right">
-                Quantité
-              </Label>
-              <Input
-                id="quantite"
-                value={responseForm.quantite}
-                onChange={(e) =>
-                  setResponseForm({ ...responseForm, quantite: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="prix" className="text-right">
-                Prix
-              </Label>
-              <Input
-                id="prix"
-                value={responseForm.prix}
-                onChange={(e) =>
-                  setResponseForm({ ...responseForm, prix: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit" onClick={handleResponseSubmit}>
-              Soumettre
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
