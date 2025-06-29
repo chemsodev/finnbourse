@@ -28,6 +28,8 @@ import {
   Eye,
   Search,
   FileDown,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,12 +37,86 @@ import { getOstAnnouncements, deleteOstAnnouncement } from "@/lib/ost-service";
 import type { OstAnnouncement } from "@/lib/interfaces";
 import { useTranslations } from "next-intl";
 
+type SortField = 'titre' | 'typeOst' | 'periode' | 'statut';
+type SortDirection = 'asc' | 'desc';
+
 export function ListeOperationsSurTitres() {
   const t = useTranslations("OperationsSurTitres");
   const router = useRouter();
   const [announcements, setAnnouncements] = useState<OstAnnouncement[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [sortField, setSortField] = useState<SortField>('titre');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ChevronDown className="ml-2 h-4 w-4" />
+    );
+  };
+
+  const sortAnnouncements = (data: OstAnnouncement[]) => {
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'titre':
+          aValue = a.titrePrincipal;
+          bValue = b.titrePrincipal;
+          break;
+        case 'typeOst':
+          aValue = a.typeOst;
+          bValue = b.typeOst;
+          break;
+        case 'periode':
+          aValue = new Date(a.dateDebut);
+          bValue = new Date(b.dateDebut);
+          break;
+        case 'statut':
+          const now = new Date();
+          const aStart = new Date(a.dateDebut);
+          const aEnd = new Date(a.dateFin);
+          const bStart = new Date(b.dateDebut);
+          const bEnd = new Date(b.dateFin);
+          
+          const getStatusValue = (start: Date, end: Date) => {
+            if (now < start) return 0; // à venir
+            if (now > end) return 2; // terminé
+            return 1; // en cours
+          };
+          
+          aValue = getStatusValue(aStart, aEnd);
+          bValue = getStatusValue(bStart, bEnd);
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -93,6 +169,8 @@ export function ListeOperationsSurTitres() {
         .includes(searchTerm.toLowerCase()) ||
       announcement.typeOst.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const sortedAnnouncements = sortAnnouncements(filteredAnnouncements);
 
   const getStatusBadge = (dateDebut: Date, dateFin: Date) => {
     const now = new Date();
@@ -150,7 +228,7 @@ export function ListeOperationsSurTitres() {
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        ) : filteredAnnouncements.length === 0 ? (
+        ) : sortedAnnouncements.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-gray-500">{t("aucuneAnnonce")}</p>
           </div>
@@ -159,15 +237,47 @@ export function ListeOperationsSurTitres() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("titre")}</TableHead>
-                  <TableHead>{t("typeOst")}</TableHead>
-                  <TableHead>{t("periode")}</TableHead>
-                  <TableHead>{t("statut")}</TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('titre')}
+                  >
+                    <div className="flex items-center">
+                      {t("titre")}
+                      {getSortIcon('titre')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('typeOst')}
+                  >
+                    <div className="flex items-center">
+                      {t("typeOst")}
+                      {getSortIcon('typeOst')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('periode')}
+                  >
+                    <div className="flex items-center">
+                      {t("periode")}
+                      {getSortIcon('periode')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer"
+                    onClick={() => handleSort('statut')}
+                  >
+                    <div className="flex items-center">
+                      {t("statut")}
+                      {getSortIcon('statut')}
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAnnouncements?.map((announcement) => (
+                {sortedAnnouncements?.map((announcement) => (
                   <TableRow key={announcement.id}>
                     <TableCell className="font-medium">
                       {announcement.titrePrincipal}

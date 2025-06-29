@@ -10,7 +10,7 @@ import {
 import { useTranslations } from "next-intl";
 
 const Commissiontooltip = () => {
-  const t = useTranslations("FormPassationOrdre");
+  const t = useTranslations("FormPassationOrdreObligation");
 
   return (
     <TooltipProvider>

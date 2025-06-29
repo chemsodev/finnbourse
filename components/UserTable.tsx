@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Pencil, Plus, Trash2, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -80,6 +80,9 @@ interface UserTableProps {
   }[];
 }
 
+type SortField = 'fullName' | 'position' | 'matricule' | 'role' | 'type' | 'status' | 'organization' | 'email' | 'phone';
+type SortDirection = 'asc' | 'desc';
+
 export function UserTable({
   users,
   onUsersChange,
@@ -91,6 +94,7 @@ export function UserTable({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isToggleStatusDialogOpen, setIsToggleStatusDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<GenericUser | null>(null);
   const [showAddPassword, setShowAddPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
@@ -98,6 +102,12 @@ export function UserTable({
   const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
     null
   );
+  const [newUser, setNewUser] = useState<Omit<GenericUser, "id">>(
+    getInitialUserState()
+  );
+  const [editUser, setEditUser] = useState<GenericUser | null>(null);
+  const [sortField, setSortField] = useState<SortField>('fullName');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Get the appropriate roles based on user type
   const getRolesByType = () => {
@@ -164,10 +174,84 @@ export function UserTable({
     };
   };
 
-  const [newUser, setNewUser] = useState<Omit<GenericUser, "id">>(
-    getInitialUserState()
-  );
-  const [editUser, setEditUser] = useState<GenericUser | null>(null);
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ChevronDown className="ml-2 h-4 w-4" />
+    );
+  };
+
+  const sortUsers = (data: GenericUser[]) => {
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'fullName':
+          aValue = a.fullName;
+          bValue = b.fullName;
+          break;
+        case 'position':
+          aValue = a.position;
+          bValue = b.position;
+          break;
+        case 'matricule':
+          aValue = a.matricule || '';
+          bValue = b.matricule || '';
+          break;
+        case 'role':
+          aValue = (a.roles || []).map((roleId) => getRoleLabel(roleId)).join(", ");
+          bValue = (b.roles || []).map((roleId) => getRoleLabel(roleId)).join(", ");
+          break;
+        case 'type':
+          aValue = a.type === "admin" ? t("admin") : t("member");
+          bValue = b.type === "admin" ? t("admin") : t("member");
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'organization':
+          aValue = a.organization || '';
+          bValue = b.organization || '';
+          break;
+        case 'email':
+          aValue = a.email || '';
+          bValue = b.email || '';
+          break;
+        case 'phone':
+          aValue = a.phone || '';
+          bValue = b.phone || '';
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const sortedUsers = sortUsers(users);
 
   // Handler for adding a new user
   const handleAddUser = () => {
@@ -531,31 +615,95 @@ export function UserTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="whitespace-nowrap">
-                {t("fullName")}
+              <TableHead 
+                className="whitespace-nowrap cursor-pointer"
+                onClick={() => handleSort('fullName')}
+              >
+                <div className="flex items-center">
+                  {t("fullName")}
+                  {getSortIcon('fullName')}
+                </div>
               </TableHead>
-              <TableHead className="whitespace-nowrap">
-                {t("position")}
+              <TableHead 
+                className="whitespace-nowrap cursor-pointer"
+                onClick={() => handleSort('position')}
+              >
+                <div className="flex items-center">
+                  {t("position")}
+                  {getSortIcon('position')}
+                </div>
               </TableHead>
 
               {userType === "agency" || userType === "iob" ? (
-                <TableHead className="whitespace-nowrap">
-                  {t("matricule")}
+                <TableHead 
+                  className="whitespace-nowrap cursor-pointer"
+                  onClick={() => handleSort('matricule')}
+                >
+                  <div className="flex items-center">
+                    {t("matricule")}
+                    {getSortIcon('matricule')}
+                  </div>
                 </TableHead>
               ) : null}
 
-              <TableHead className="whitespace-nowrap">{t("role")}</TableHead>
+              <TableHead 
+                className="whitespace-nowrap cursor-pointer"
+                onClick={() => handleSort('role')}
+              >
+                <div className="flex items-center">
+                  {t("role")}
+                  {getSortIcon('role')}
+                </div>
+              </TableHead>
 
               {userType === "agency" && (
-                <TableHead className="whitespace-nowrap">{t("type")}</TableHead>
+                <TableHead 
+                  className="whitespace-nowrap cursor-pointer"
+                  onClick={() => handleSort('type')}
+                >
+                  <div className="flex items-center">
+                    {t("type")}
+                    {getSortIcon('type')}
+                  </div>
+                </TableHead>
               )}
 
-              <TableHead className="whitespace-nowrap">{t("status")}</TableHead>
-              <TableHead className="whitespace-nowrap">
-                {t("organization")}
+              <TableHead 
+                className="whitespace-nowrap cursor-pointer"
+                onClick={() => handleSort('status')}
+              >
+                <div className="flex items-center">
+                  {t("status")}
+                  {getSortIcon('status')}
+                </div>
               </TableHead>
-              <TableHead className="whitespace-nowrap">{t("email")}</TableHead>
-              <TableHead className="whitespace-nowrap">{t("phone")}</TableHead>
+              <TableHead 
+                className="whitespace-nowrap cursor-pointer"
+                onClick={() => handleSort('organization')}
+              >
+                <div className="flex items-center">
+                  {t("organization")}
+                  {getSortIcon('organization')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="whitespace-nowrap cursor-pointer"
+                onClick={() => handleSort('email')}
+              >
+                <div className="flex items-center">
+                  {t("email")}
+                  {getSortIcon('email')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="whitespace-nowrap cursor-pointer"
+                onClick={() => handleSort('phone')}
+              >
+                <div className="flex items-center">
+                  {t("phone")}
+                  {getSortIcon('phone')}
+                </div>
+              </TableHead>
 
               {/* Render custom column headers */}
               {customColumns.map((column) => (
@@ -570,7 +718,7 @@ export function UserTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length === 0 ? (
+            {sortedUsers.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={
@@ -585,7 +733,7 @@ export function UserTable({
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              sortedUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="whitespace-nowrap">
                     {user.fullName}

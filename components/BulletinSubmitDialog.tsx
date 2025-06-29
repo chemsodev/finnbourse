@@ -61,11 +61,12 @@ const BulletinSubmitDialog = ({
   setIsDialogOpen?: (open: boolean) => void;
   page?: string;
 }) => {
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const session = useSession();
   const { toast } = useToast();
 
-  const t = useTranslations("FormPassationOrdre");
+  const t = useTranslations("FormPassationOrdreObligation");
 
   const [dialogPage, setDialogPage] = useState(1);
 
@@ -121,7 +122,7 @@ const BulletinSubmitDialog = ({
   };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    setSubmitting(true);
+    setIsSubmitting(true);
     if (
       !bulletinDeSouscriptionSigneFiles ||
       bulletinDeSouscriptionSigneFiles.length === 0
@@ -186,7 +187,7 @@ const BulletinSubmitDialog = ({
         ),
       });
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -302,11 +303,11 @@ const BulletinSubmitDialog = ({
                     </button>
                     <Button
                       type="submit"
-                      disabled={submitting}
+                      disabled={isSubmitting}
                       className="w-full flex gap-2"
                     >
                       {t("valider")}
-                      {submitting && <Loader2 className="animate-spin" />}
+                      {isSubmitting && <Loader2 className="animate-spin" />}
                     </Button>
                   </div>
                 </form>

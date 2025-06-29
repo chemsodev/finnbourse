@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -31,6 +32,7 @@ export default function EmissionDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   const locale = params?.locale as string;
+  const t = useTranslations("FormPassationOrdreObligation");
 
   const [emission, setEmission] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -229,7 +231,7 @@ export default function EmissionDetailPage() {
           onClick={() => router.push(`/${locale}/emissions`)}
           className="flex items-center"
         >
-          <ChevronLeft className="mr-2 h-4 w-4" /> Retour
+          <ChevronLeft className="mr-2 h-4 w-4" /> {t("retour")}
         </Button>
         <div className="flex gap-4">
           <Button

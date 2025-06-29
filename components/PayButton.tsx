@@ -23,7 +23,7 @@ const PayButton: React.FC<PayButtonProps> = ({
 }) => {
   const session = useSession();
   const { toast } = useToast();
-  const t = useTranslations("FormPassationOrdre");
+  const t = useTranslations("FormPassationOrdreObligation");
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 
   const handleTermsChange = (value: boolean) => {
