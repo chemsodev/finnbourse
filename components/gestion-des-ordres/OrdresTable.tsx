@@ -123,6 +123,7 @@ export default function OrdresTable({
     quantite: "",
     prix: "",
   });
+  const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
 
   // Sort function
   const sortData = (data: Order[], field: SortField, direction: SortDirection) => {
@@ -213,11 +214,22 @@ export default function OrdresTable({
   // Handle response click
   const handleResponseClick = (order: Order) => {
     setSelectedOrder(order);
-    setResponseForm({
-      reliquat: "",
-      quantite: "",
-      prix: "",
-    });
+    
+    // Si l'ordre a déjà une réponse, pré-remplir le formulaire
+    if (ordersWithResponses[order.id]) {
+      setResponseForm({
+        reliquat: "Valeur précédente", // Ici vous pourriez récupérer les vraies valeurs
+        quantite: "Valeur précédente",
+        prix: "Valeur précédente",
+      });
+    } else {
+      setResponseForm({
+        reliquat: "",
+        quantite: "",
+        prix: "",
+      });
+    }
+    
     setIsResponseDialogOpen(true);
   };
 
@@ -228,6 +240,12 @@ export default function OrdresTable({
       orderId: selectedOrder?.id,
       ...responseForm
     });
+    
+    // Ajouter l'ordre à la liste des ordres avec réponses soumises
+    if (selectedOrder?.id) {
+      setOrdersWithResponses({ ...ordersWithResponses, [selectedOrder.id]: true });
+    }
+    
     setIsResponseDialogOpen(false);
   };
 
@@ -520,11 +538,19 @@ export default function OrdresTable({
               <TableCell>{order.quantity}</TableCell>
               <TableCell>
                 <div
-                  className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${getStatusBgColor(
-                    Number(order.orderstatus)
-                  )}`}
+                  className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${
+                    pageType === "orderExecution"
+                      ? ordersWithResponses[order.id]
+                        ? "bg-green-600" // Terminée
+                        : "bg-blue-600"  // Planifiée
+                      : getStatusBgColor(Number(order.orderstatus))
+                  }`}
                 >
-                  {order?.orderstatus === 0 && order?.payedWithCard
+                  {pageType === "orderExecution"
+                    ? ordersWithResponses[order.id]
+                      ? "Terminée"
+                      : "Planifiée"
+                    : order?.orderstatus === 0 && order?.payedWithCard
                     ? "Brouillon payé"
                     : order?.orderstatus === 0 && !order?.payedWithCard
                     ? tStatus("Draft")
@@ -572,7 +598,7 @@ export default function OrdresTable({
                     size="sm"
                     onClick={() => handleResponseClick(order)}
                   >
-                    Réponse
+                    {ordersWithResponses[order.id] ? "Modifier" : "Réponse"}
                   </Button>
                 </TableCell>
               )}
@@ -585,7 +611,12 @@ export default function OrdresTable({
       <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Réponse à l'ordre</DialogTitle>
+            <DialogTitle>
+              {selectedOrder && ordersWithResponses[selectedOrder.id] 
+                ? "Modifier la réponse à l'ordre" 
+                : "Réponse à l'ordre"
+              }
+            </DialogTitle>
             <DialogDescription>
               Ordre ID: {selectedOrder?.id}
             </DialogDescription>
