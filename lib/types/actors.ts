@@ -5,35 +5,37 @@
 export interface IOB {
   id?: string;
   code: string;
-  name: string;
-  address: string;
-  postal_code: string;
-  city: string;
-  country: string;
-  phone: string;
+  short_libel: string;
+  long_libel: string;
+  correspondent: string;
   email: string;
-  status: "ACTIVE" | "INACTIVE";
-  agreement_number?: string;
-  agreement_date?: string;
-  surveillance_authority?: string;
-  financialInstitutionId: string;
+  fax?: string;
+  phone: string;
+  address: string;
+  order?: string;
+  financialInstitution?: {
+    id: string;
+    institutionName: string;
+    taxIdentificationNumber: string;
+    agreementNumber: string;
+    legalForm: string;
+    establishmentDate: string;
+    fullAddress: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface IOBCreateRequest {
   code: string;
-  name: string;
-  address: string;
-  postal_code: string;
-  city: string;
-  country: string;
-  phone: string;
+  short_libel: string;
+  long_libel: string;
+  correspondent: string;
   email: string;
-  status: "ACTIVE" | "INACTIVE";
-  agreement_number?: string;
-  agreement_date?: string;
-  surveillance_authority?: string;
+  fax?: string;
+  phone: string;
+  address: string;
+  order?: string;
   financialInstitutionId: string;
 }
 
@@ -155,12 +157,7 @@ export interface ClientUser {
   updatedAt?: string;
 }
 
-// Status options
-export const ACTOR_STATUS_OPTIONS = [
-  { value: "ACTIVE", label: "Active" },
-  { value: "INACTIVE", label: "Inactive" },
-] as const;
-
+// Status options for users
 export const USER_STATUS_OPTIONS = [
   { value: "actif", label: "Active" },
   { value: "inactif", label: "Inactive" },

@@ -1,5 +1,6 @@
 import DynamicSidebar from "@/components/navigation/DynamicSidebar";
 import DynamicBottomNav from "@/components/navigation/DynamicBottomNav";
+import TokenValidator from "@/components/TokenValidator";
 import { getServerSession } from "next-auth/next";
 import auth from "@/auth";
 import { signOut } from "next-auth/react";
@@ -17,12 +18,14 @@ export default async function MainLayout({
     return <LogOutAgent />;
   }
   return (
-    <div className={`flex`}>
-      <DynamicSidebar />
-      <div className="p-4 overflow-scroll h-screen md:w-5/6 mb-12 md:mb-0">
-        {children}
+    <TokenValidator>
+      <div className={`flex`}>
+        <DynamicSidebar />
+        <div className="p-4 overflow-scroll h-screen md:w-5/6 mb-12 md:mb-0">
+          {children}
+        </div>
+        <DynamicBottomNav />
       </div>
-      <DynamicBottomNav />
-    </div>
+    </TokenValidator>
   );
 }

@@ -25,8 +25,33 @@ export class IOBService {
    */
   static async getOne(id: string, token?: string): Promise<IOB> {
     try {
-      const response = await actorAPI.iob.getOne(id, token);
-      return response.data || response;
+      // First try using the actorAPI
+      try {
+        const response = await actorAPI.iob.getOne(id, token);
+        return response.data || response;
+      } catch (apiError) {
+        console.warn(
+          "Error using actorAPI for IOB fetch, trying direct fetch:",
+          apiError
+        );
+
+        // If the actorAPI fails, try a direct fetch with the proxy
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/iob/${id}`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch IOB: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     } catch (error) {
       console.error("Error fetching IOB:", error);
       throw new Error("Failed to fetch IOB data");
@@ -69,18 +94,15 @@ export class IOBService {
    */
   static transformFormDataToAPI(formData: any): IOBCreateRequest {
     return {
-      code: formData.code,
-      name: formData.name,
-      address: formData.address,
-      postal_code: formData.postal_code,
-      city: formData.city,
-      country: formData.country,
-      phone: formData.phone,
+      code: formData.codeIob || formData.code,
+      short_libel: formData.libelleCourt || formData.short_libel,
+      long_libel: formData.libelleLong || formData.long_libel,
+      correspondent: formData.correspondant || formData.correspondent,
       email: formData.email,
-      status: formData.status,
-      agreement_number: formData.agreement_number,
-      agreement_date: formData.agreement_date,
-      surveillance_authority: formData.surveillance_authority,
+      fax: formData.fax,
+      phone: formData.telephone || formData.phone,
+      address: formData.addresse || formData.address,
+      order: formData.ordreDeTu || formData.order,
       financialInstitutionId: formData.financialInstitutionId,
     };
   }
@@ -90,19 +112,16 @@ export class IOBService {
    */
   static transformAPIDataToForm(apiData: IOB): any {
     return {
-      code: apiData.code,
-      name: apiData.name,
-      address: apiData.address,
-      postal_code: apiData.postal_code,
-      city: apiData.city,
-      country: apiData.country,
-      phone: apiData.phone,
+      codeIob: apiData.code,
+      libelleCourt: apiData.short_libel,
+      libelleLong: apiData.long_libel,
+      correspondant: apiData.correspondent,
       email: apiData.email,
-      status: apiData.status,
-      agreement_number: apiData.agreement_number,
-      agreement_date: apiData.agreement_date,
-      surveillance_authority: apiData.surveillance_authority,
-      financialInstitutionId: apiData.financialInstitutionId,
+      fax: apiData.fax,
+      telephone: apiData.phone,
+      addresse: apiData.address,
+      ordreDeTu: apiData.order,
+      financialInstitutionId: apiData.financialInstitution?.id,
     };
   }
 }

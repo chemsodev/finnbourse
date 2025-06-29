@@ -1,5 +1,5 @@
 // Contains role definitions for different user types in the system
-// Based on the documentation in dco.md
+// Updated to match backend API specifications
 
 export type RoleType = {
   id: string;
@@ -7,7 +7,7 @@ export type RoleType = {
   description: string;
 };
 
-// Client roles
+// Client roles (keeping existing ones as they weren't specified in the update)
 export const CLIENT_ROLES: RoleType[] = [
   {
     id: "client_order_creator",
@@ -31,108 +31,120 @@ export const CLIENT_ROLES: RoleType[] = [
   },
 ];
 
-// Agency roles
+// Agency roles - Updated to match backend specifications
 export const AGENCY_ROLES: RoleType[] = [
   {
-    id: "agency_order_declarer",
-    label: "Déclarateur d'ordre",
-    description:
-      "Peut déclarer/créer un ordre pour le client (équivalent création + validations côté client).",
+    id: "agence_client_manager_1",
+    label: "First Level Client Manager",
+    description: "First level client manager for agence.",
   },
   {
-    id: "agency_first_approver",
-    label: "Premier validateur",
-    description:
-      "Premier validateur (vérifie la disponibilité des comptes, montants, etc.).",
+    id: "agence_client_manager_2",
+    label: "Second Level Client Manager",
+    description: "Second level client manager for agence.",
   },
   {
-    id: "agency_final_approver",
-    label: "Validateur final",
-    description: "Deuxième validateur avant envoi au TCC.",
+    id: "order_initializer_agence",
+    label: "Order Initializer",
+    description: "Order initializer for agence.",
   },
   {
-    id: "agency_viewer",
-    label: "Observateur",
-    description: "Peut uniquement consulter les ordres (lecture seule).",
+    id: "order_validator_agence_1",
+    label: "First Level Order Validator",
+    description: "First level order validator for agence.",
   },
   {
-    id: "agency_user_admin",
-    label: "Administrateur utilisateurs",
-    description:
-      "Peut créer et gérer les utilisateurs de l'agence (création, suppression, assignation de rôles).",
+    id: "order_validator_agence_2",
+    label: "Second Level Order Validator",
+    description: "Second level order validator for agence.",
   },
   {
-    id: "agency_client_admin",
-    label: "Administrateur clients",
-    description:
-      "Peut créer et gérer les clients de l'agence et assigner/modifier les rôles des utilisateurs clients.",
+    id: "observateur_agence",
+    label: "Agence Observer",
+    description: "Agence observer (read-only access).",
+  },
+  {
+    id: "agence_admin",
+    label: "Agence Administrator",
+    description: "Agence administrator.",
   },
 ];
 
-// TCC roles
-export const TCC_ROLES: RoleType[] = [
-  {
-    id: "tcc_super_admin",
-    label: "Super Administrateur",
-    description: "Dispose de tous les droits (super administrateur).",
-  },
-  {
-    id: "tcc_first_approver",
-    label: "Premier validateur",
-    description:
-      "Peut valider en première instance les ordres reçus de l'agence.",
-  },
-  {
-    id: "tcc_final_approver",
-    label: "Validateur final",
-    description: "Peut effectuer la validation finale des ordres de l'agence.",
-  },
-  {
-    id: "tcc_viewer",
-    label: "Observateur",
-    description: "Peut uniquement consulter les ordres (lecture seule).",
-  },
-  {
-    id: "tcc_external_client_creator",
-    label: "Créateur clients externes",
-    description: "Peut créer des clients pour les agences externes.",
-  },
-  {
-    id: "tcc_external_order_creator",
-    label: "Créateur ordres externes",
-    description: "Peut créer des ordres pour les agences externes.",
-  },
-  {
-    id: "tcc_external_IOB_operator",
-    label: "Opérateur IOB externe",
-    description: "Possède tous les droits IOB, mais pour les agences externes.",
-  },
-];
-
-// IOB roles
+// IOB roles - Updated to match backend specifications
 export const IOB_ROLES: RoleType[] = [
   {
-    id: "iob_user_admin",
-    label: "Administrateur utilisateurs",
-    description: "Peut gérer les utilisateurs IOB et leurs rôles.",
+    id: "order_submiter",
+    label: "Order Submitter",
+    description: "Can submit orders to the IOB system.",
   },
   {
-    id: "iob_order_executor",
-    label: "Exécuteur d'ordres",
-    description:
-      "Peut imprimer les listes d'ordres et exécuter les ordres à la bourse.",
+    id: "order_validator_iob_1",
+    label: "First Level Order Validator",
+    description: "First level order validator for IOB.",
   },
   {
-    id: "iob_result_submitter",
-    label: "Soumetteur de résultats",
-    description:
-      "Peut insérer les résultats d'exécution des ordres pour transmission au TCC.",
+    id: "order_validator_iob_2",
+    label: "Second Level Order Validator",
+    description: "Second level order validator for IOB.",
   },
   {
-    id: "iob_viewer",
-    label: "Observateur",
-    description:
-      "Peut uniquement consulter les ordres et leurs états (lecture seule).",
+    id: "observateur_iob",
+    label: "IOB Observer",
+    description: "Can only view orders and their status (read-only access).",
+  },
+  {
+    id: "iob_admin",
+    label: "IOB Administrator",
+    description: "Can manage IOB users and their roles.",
+  },
+];
+
+// TCC roles - Updated to match backend specifications
+export const TCC_ROLES: RoleType[] = [
+  {
+    id: "client_account_manager_1",
+    label: "First Level Client Account Manager",
+    description: "First level client account manager.",
+  },
+  {
+    id: "client_account_manager_2",
+    label: "Second Level Client Account Manager",
+    description: "Second level client account manager.",
+  },
+  {
+    id: "order_validator_tcc_1",
+    label: "First Level Order Validator",
+    description: "First level order validator for TCC.",
+  },
+  {
+    id: "order_validator_tcc_2",
+    label: "Second Level Order Validator",
+    description: "Second level order validator for TCC.",
+  },
+  {
+    id: "order_extern_initializer",
+    label: "External Order Initializer",
+    description: "External order initializer.",
+  },
+  {
+    id: "client_account_extern_manager",
+    label: "External Client Account Manager",
+    description: "External client account manager.",
+  },
+  {
+    id: "observateur_tcc",
+    label: "TCC Observer",
+    description: "TCC observer (read-only access).",
+  },
+  {
+    id: "tcc_admin",
+    label: "TCC Administrator",
+    description: "TCC administrator.",
+  },
+  {
+    id: "finbourse_super_admin",
+    label: "System Super Administrator",
+    description: "System super administrator with full access.",
   },
 ];
 

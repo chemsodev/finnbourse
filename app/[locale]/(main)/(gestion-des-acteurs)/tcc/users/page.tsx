@@ -218,11 +218,13 @@ export default function TCCUsersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>Full Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Position</TableHead>
+                  <TableHead>Roles</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Created Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -232,9 +234,31 @@ export default function TCCUsersPage() {
                     <TableCell className="font-medium">
                       {user.firstname} {user.lastname}
                     </TableCell>
-                    <TableCell>{user.email}</TableCell>{" "}
-                    <TableCell>{user.telephone}</TableCell>
+                    <TableCell>{user.email || "N/A"}</TableCell>
+                    <TableCell>{user.telephone || "N/A"}</TableCell>
                     <TableCell>{(user as any).positionTcc || "N/A"}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {(user as any).roles &&
+                        Array.isArray((user as any).roles) ? (
+                          (user as any).roles.map(
+                            (role: string, index: number) => (
+                              <Badge
+                                key={index}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {role}
+                              </Badge>
+                            )
+                          )
+                        ) : (
+                          <span className="text-gray-400 text-sm">
+                            No roles
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -243,6 +267,11 @@ export default function TCCUsersPage() {
                       >
                         {user.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500">
+                      {(user as any).createdAt
+                        ? new Date((user as any).createdAt).toLocaleDateString()
+                        : "N/A"}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">

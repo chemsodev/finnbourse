@@ -15,6 +15,14 @@ import {
   Mail,
   Printer,
   MapPin,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Eye,
+  EyeOff,
+  User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "next/navigation";
@@ -38,38 +46,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
+import { IOB, IOBUser } from "@/lib/types/actors";
+import { useIOB } from "@/hooks/useIOB";
+import { getRoleById } from "@/lib/roles";
 
-// Bank/IOB data interface
-interface BankData {
-  id: number;
-  codeBank: string;
-  shortName: string;
-  longName: string;
-  correspondent: string;
-  address: string;
-  phone: string;
-  email?: string;
-  fax?: string;
-  telephone1?: string;
-  telephone2?: string;
-  telephone3?: string;
-  ordreDeTu?: string;
-}
-
-// IOB user interface
-interface IOBUser {
-  id: number;
-  fullname: string;
-  position: string;
-  matricule: string;
-  role: string;
-  type: string;
-  status: "active" | "inactive";
-  organisation: string;
-  password: string;
-  email?: string;
-  phone?: string;
+export interface ExtendedIOBUser extends IOBUser {
+  id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  telephone: string;
+  status: "actif" | "inactif";
+  posteIob?: string;
+  matriculeIob?: string;
+  role: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function ViewIOBPage() {
@@ -78,194 +77,119 @@ export default function ViewIOBPage() {
   const params = useParams();
   const t = useTranslations("IOBPage");
   const [isLoading, setIsLoading] = useState(true);
-  const [iob, setIOB] = useState<BankData | null>(null);
-  const [users, setUsers] = useState<IOBUser[]>([]);
-  const [userToToggleStatus, setUserToToggleStatus] = useState<number | null>(
+  const [iob, setIOB] = useState<IOB | null>(null);
+  const [financialInstitution, setFinancialInstitution] = useState<any | null>(
+    null
+  );
+  const [users, setUsers] = useState<ExtendedIOBUser[]>([]);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
     null
   );
   const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
+  const [passwordVisibility, setPasswordVisibility] = useState<
+    Record<string, boolean>
+  >({});
+  const [viewUserDialog, setViewUserDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<ExtendedIOBUser | null>(
+    null
+  );
+  const { getIOB } = useIOB();
 
-  useEffect(() => {
-    const fetchIOBData = async () => {
-      try {
-        // Convert ID to number for proper comparison
-        const iobId =
-          typeof params.id === "string"
-            ? parseInt(params.id, 10)
-            : Array.isArray(params.id)
-            ? parseInt(params.id[0], 10)
-            : 0;
+  // Function to fetch and refresh IOB data
+  const fetchIOBData = async () => {
+    try {
+      if (!params.id || typeof params.id !== "string") {
+        throw new Error("Invalid IOB ID");
+      }
 
-        // Mock bank data - in a real app, this would come from an API call
-        const bankData: BankData[] = [
-          {
-            id: 1,
-            codeBank: "91001",
-            shortName: "SGA",
-            longName: "Société Générale Algérie",
-            correspondent: "Mohammed Ali",
-            address: "123 Rue des Banques, ALGER",
-            phone: "021-123-456",
-            email: "contact@sga.dz",
-            fax: "021-111-222",
-            telephone1: "021-333-444",
-            telephone2: "021-555-666",
-            telephone3: "021-777-888",
-            ordreDeTu: "1",
-          },
-          {
-            id: 2,
-            codeBank: "91002",
-            shortName: "Inv Mart",
-            longName: "Invest Market",
-            correspondent: "Sarah Benali",
-            address: "45 Boulevard des Finances, ALGER",
-            phone: "021-987-654",
-            email: "contact@invmart.dz",
-            fax: "021-875-421",
-          },
-          {
-            id: 3,
-            codeBank: "91003",
-            shortName: "Tell",
-            longName: "Tell Market",
-            correspondent: "Karim Hadj",
-            address: "78 Avenue de l'Investissement, ALGER",
-            phone: "021-741-852",
-            email: "info@tellmarket.dz",
-          },
-          {
-            id: 4,
-            codeBank: "91004",
-            shortName: "CNEP",
-            longName: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
-            correspondent: "Ahmed Messaoudi",
-            address: "15 Rue de l'Épargne, ALGER",
-            phone: "021-159-753",
-            email: "contact@cnep.dz",
-          },
-          {
-            id: 5,
-            codeBank: "91005",
-            shortName: "BNA",
-            longName: "BANQUE NATIONALE D'ALGERIE",
-            correspondent: "Leila Khalfi",
-            address: "32 Avenue de la Nation, ALGER",
-            phone: "021-456-789",
-            email: "service@bna.dz",
-          },
-          {
-            id: 6,
-            codeBank: "91006",
-            shortName: "CPA",
-            longName: "Crédit Populair d'Algérie",
-            correspondent: "Omar Boudiaf",
-            address: "50 Boulevard des Martyrs, ALGER",
-            phone: "021-852-963",
-            email: "info@cpa.dz",
-          },
-        ];
+      const iobId = params.id;
 
-        // Find IOB in the mock data
-        const foundIOB = bankData.find((bank) => bank.id === iobId);
-
-        if (!foundIOB) {
-          toast({
-            title: "Erreur",
-            description: t("iobNotFound"),
-            variant: "destructive",
-          });
-          router.push("/iob");
-          return;
-        }
-        setIOB(foundIOB);
-
-        // Mock IOB users data - in a real app, this would come from an API call
-        const mockIOBUsers: IOBUser[] = [
-          {
-            id: 1,
-            fullname: "John Doe",
-            position: "DG",
-            matricule: "IOB001",
-            role: "Valideur 2",
-            type: "admin",
-            status: "active",
-            organisation: foundIOB.shortName,
-            password: "Password123",
-            email: `john.doe@${foundIOB.shortName.toLowerCase()}.dz`,
-            phone: "+213 555-123-456",
-          },
-          {
-            id: 2,
-            fullname: "Maria García",
-            position: "Analyste",
-            matricule: "IOB002",
-            role: "Valideur 1",
-            type: "user",
-            status: "active",
-            organisation: foundIOB.shortName,
-            password: "SecurePass456",
-            email: `maria.garcia@${foundIOB.shortName.toLowerCase()}.dz`,
-            phone: "+213 555-789-012",
-          },
-          {
-            id: 3,
-            fullname: "Ahmed Hassan",
-            position: "Directeur",
-            matricule: "IOB003",
-            role: "Initiateur",
-            type: "user",
-            status: "inactive",
-            organisation: foundIOB.shortName,
-            password: "StrongPwd789",
-            email: `ahmed.hassan@${foundIOB.shortName.toLowerCase()}.dz`,
-            phone: "+213 555-345-678",
-          },
-        ];
-
-        setUsers(mockIOBUsers);
-      } catch (error) {
-        console.error("Error fetching IOB data:", error);
+      // Load IOB data from API
+      const { actorAPI } = await import("@/app/actions/actorAPI");
+      const iobData = await actorAPI.iob.getOne(iobId);
+      if (!iobData) {
         toast({
-          title: "Erreur",
-          description: "Erreur lors du chargement des données de l'IOB",
+          title: t("error"),
+          description: t("iobNotFound"),
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
+        router.push("/iob");
+        return;
       }
-    };
 
+      console.log("IOB Data:", iobData);
+      setIOB(iobData);
+
+      // Extract financial institution data
+      if (iobData.financialInstitution) {
+        setFinancialInstitution(iobData.financialInstitution);
+      }
+
+      // Users are now included in the IOB response
+      if (iobData.users && Array.isArray(iobData.users)) {
+        setUsers(iobData.users);
+      }
+    } catch (error) {
+      console.error("Error fetching IOB data:", error);
+      toast({
+        title: t("error"),
+        description: t("errorLoadingData"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchIOBData();
   }, [params.id, router, toast, t]);
 
-  const handleToggleStatus = (userId: number) => {
+  const handleToggleStatus = async (userId: string) => {
     setUserToToggleStatus(userId);
     setStatusConfirmDialog(true);
   };
 
-  const confirmToggleStatus = () => {
-    if (!userToToggleStatus) return;
+  const confirmToggleStatus = async () => {
+    if (!userToToggleStatus || !iob?.id) return;
 
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userToToggleStatus
-          ? {
-              ...user,
-              status: user.status === "active" ? "inactive" : "active",
-            }
-          : user
-      )
-    );
+    try {
+      setIsLoading(true);
 
-    toast({
-      title: "Statut mis à jour",
-      description: "Le statut de l'utilisateur a été mis à jour avec succès",
-    });
+      // Find the user to toggle
+      const userToUpdate = users.find((user) => user.id === userToToggleStatus);
+      if (!userToUpdate) return;
 
-    // Reset dialog state
-    setStatusConfirmDialog(false);
-    setUserToToggleStatus(null);
+      // Prepare updated user data
+      const updatedStatus =
+        userToUpdate.status === "actif" ? "inactif" : "actif";
+
+      // Update user via API
+      const { actorAPI } = await import("@/app/actions/actorAPI");
+      await actorAPI.iob.updateUser(iob.id, userToToggleStatus, {
+        ...userToUpdate,
+        status: updatedStatus,
+      });
+
+      // Refresh IOB data to get updated users
+      await fetchIOBData();
+
+      toast({
+        title: t("success"),
+        description: t("userUpdatedSuccessfully"),
+      });
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      toast({
+        title: t("error"),
+        description: t("failedToUpdateUser"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setStatusConfirmDialog(false);
+      setUserToToggleStatus(null);
+    }
   };
 
   const cancelToggleStatus = () => {
@@ -273,27 +197,51 @@ export default function ViewIOBPage() {
     setUserToToggleStatus(null);
   };
 
+  // Toggle password visibility for a user
+  const togglePasswordVisibility = (userId: string) => {
+    setPasswordVisibility((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
+
+  // Handle view user details
+  const handleViewUser = (user: ExtendedIOBUser) => {
+    setSelectedUser(user);
+    setViewUserDialog(true);
+  };
+
   if (isLoading) return <Loading className="min-h-[400px]" />;
   if (!iob) return <div>{t("iobNotFound")}</div>;
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex items-center mb-8 bg-slate-100 p-4 rounded-md">
+      <div className="flex items-center justify-between mb-8 bg-slate-100 p-4 rounded-md">
+        <div className="flex items-center">
+          <Button
+            onClick={() => router.push("/iob")}
+            variant="outline"
+            className="mr-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {t("backToList")}
+          </Button>
+          <h1 className="text-3xl font-bold">{t("detailsIob")}</h1>
+          {iob.code && (
+            <p className="text-lg text-primary ml-4">
+              {t("bankCode")}: <span className="font-semibold">{iob.code}</span>
+            </p>
+          )}
+        </div>
+
         <Button
-          onClick={() => router.push("/iob")}
-          variant="outline"
-          className="mr-4"
+          onClick={() => router.push(`/iob/form/${iob.id}`)}
+          variant="default"
+          className="bg-primary hover:bg-primary/90"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          {t("backToList")}
+          <Edit className="h-4 w-4 mr-2" />
+          {t("editIOB")}
         </Button>
-        <h1 className="text-3xl font-bold">{t("detailsIob")}</h1>
-        {iob.codeBank && (
-          <p className="text-lg text-primary ml-4">
-            {t("bankCode")}:{" "}
-            <span className="font-semibold">{iob.codeBank}</span>
-          </p>
-        )}
       </div>
 
       <Tabs defaultValue="info" className="space-y-4">
@@ -314,73 +262,89 @@ export default function ViewIOBPage() {
               <CardTitle>{t("generalInformation")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">
-                      {t("bankDetails")}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="font-semibold">{t("bankCode")}</p>
-                        <p>{iob.codeBank}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">{t("shortName")}</p>
-                        <p>{iob.shortName}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">{t("longName")}</p>
-                        <p>{iob.longName}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold">{t("ordreDeTu")}</p>
-                        <p>{iob.ordreDeTu || "-"}</p>
-                      </div>
+              <div className="space-y-6">
+                {/* Main Information */}
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    {t("bankDetails")}
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="font-semibold">{t("bankCode")}</p>
+                      <p className="font-medium text-primary">{iob.code}</p>
                     </div>
+                    <div>
+                      <p className="font-semibold">{t("shortLabel")}</p>
+                      <p>{iob.short_libel}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">{t("longLabel")}</p>
+                      <p>{iob.long_libel}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">{t("correspondent")}</p>
+                      <p>{iob.correspondent}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">{t("order")}</p>
+                      <p>{iob.order || "-"}</p>
+                    </div>
+                    {financialInstitution && (
+                      <div className="col-span-2">
+                        <p className="font-semibold">
+                          {t("financialInstitution")}
+                        </p>
+                        <p>{financialInstitution.institutionName}</p>
+                      </div>
+                    )}
                   </div>
+                </div>
 
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">
-                      {t("contactInfo")}
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                        <div>
-                          <p className="font-semibold">{t("address")}</p>
-                          <p>{iob.address}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                        <div>
-                          <p className="font-semibold">{t("mainPhone")}</p>
-                          <p>{iob.phone}</p>
-                        </div>
-                      </div>
-                      {iob.email && (
-                        <div className="flex items-center">
-                          <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                          <div>
-                            <p className="font-semibold">{t("email")}</p>
-                            <p>{iob.email}</p>
-                          </div>
-                        </div>
-                      )}
+                {/* Location & Contact */}
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Location & Contact
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="font-semibold">Address</p>
+                      <p>{iob.address}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Phone</p>
+                      <p>{iob.phone || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Fax</p>
+                      <p>{iob.fax || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Email</p>
+                      <p>{iob.email || "-"}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">
-                      {t("correspondent")}
-                    </h3>
-                    <div className="p-4 border rounded-md">
-                      <p className="font-medium">{iob.correspondent}</p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        {t("contactPerson")}
+                {/* Dates */}
+                <div>
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                    Dates
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="font-semibold">Created At</p>
+                      <p>
+                        {iob.createdAt
+                          ? new Date(iob.createdAt).toLocaleString()
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Last Updated</p>
+                      <p>
+                        {iob.updatedAt
+                          ? new Date(iob.updatedAt).toLocaleString()
+                          : "-"}
                       </p>
                     </div>
                   </div>
@@ -392,8 +356,12 @@ export default function ViewIOBPage() {
 
         <TabsContent value="users">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t("associatedUsers")}</CardTitle>
+              <Button onClick={() => router.push(`/iob/form/${iob.id}`)}>
+                <Users className="h-4 w-4 mr-2" />
+                Edit Users
+              </Button>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <Table>
@@ -409,22 +377,17 @@ export default function ViewIOBPage() {
                       {t("matricule")}
                     </TableHead>
                     <TableHead className="whitespace-nowrap">
-                      {t("role")}
-                    </TableHead>
-                    <TableHead className="whitespace-nowrap">
-                      {t("type")}
-                    </TableHead>
-                    <TableHead className="whitespace-nowrap">
-                      {t("organisation")}
-                    </TableHead>
-                    <TableHead className="whitespace-nowrap">
                       {t("email")}
                     </TableHead>
                     <TableHead className="whitespace-nowrap">
                       {t("phone")}
                     </TableHead>
+                    <TableHead className="whitespace-nowrap">Roles</TableHead>
                     <TableHead className="whitespace-nowrap">
                       {t("status")}
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      {t("actions")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -432,7 +395,7 @@ export default function ViewIOBPage() {
                   {users.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={9}
+                        colSpan={8}
                         className="text-center py-4 text-muted-foreground"
                       >
                         {t("noUsers")}
@@ -442,53 +405,78 @@ export default function ViewIOBPage() {
                     users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="whitespace-nowrap">
-                          {user.fullname}
+                          {`${user.firstname || ""} ${user.lastname || ""}`}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.position}
+                          {user.posteIob || "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.matricule}
+                          {user.matriculeIob || "-"}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          {user.role}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          {user.type}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          {user.organisation}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap max-w-[150px] truncate">
                           {user.email || "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.phone || "-"}
+                          {user.telephone || "-"}
+                        </TableCell>
+                        <TableCell className="max-w-[200px]">
+                          <div className="flex flex-wrap gap-1">
+                            {user.role && user.role.length > 0 ? (
+                              user.role.map((roleId, index) => {
+                                const roleInfo = getRoleById(roleId);
+                                return (
+                                  <Badge
+                                    key={index}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {roleInfo?.label || roleId}
+                                  </Badge>
+                                );
+                              })
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <Badge
+                            variant={
+                              user.status === "actif" ? "outline" : "secondary"
+                            }
+                            className={
+                              user.status === "actif"
+                                ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                            }
+                          >
+                            {user.status === "actif"
+                              ? t("active")
+                              : t("inactive")}
+                          </Badge>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           <div className="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewUser(user)}
+                              className="h-7 w-7 p-0"
+                              title="View details"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
                             <Switch
-                              checked={user.status === "active"}
+                              checked={user.status === "actif"}
                               onCheckedChange={() =>
                                 handleToggleStatus(user.id)
                               }
                               className={
-                                user.status === "active"
+                                user.status === "actif"
                                   ? "bg-green-500 data-[state=checked]:bg-green-500"
                                   : "bg-red-500 data-[state=unchecked]:bg-red-500"
                               }
                             />
-                            <span
-                              className={
-                                user.status === "active"
-                                  ? "text-green-600 text-sm font-medium"
-                                  : "text-red-600 text-sm"
-                              }
-                            >
-                              {user.status === "active"
-                                ? t("active")
-                                : t("inactive")}
-                            </span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -501,24 +489,166 @@ export default function ViewIOBPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Status Change Confirmation Dialog */}
+      {/* User Details Dialog */}
+      <Dialog open={viewUserDialog} onOpenChange={setViewUserDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Full Name
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.firstname} {selectedUser.lastname}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-base">{selectedUser.email || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Position
+                    </p>
+                    <p className="text-base">{selectedUser.posteIob || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Matricule
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.matriculeIob || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Phone</p>
+                    <p className="text-base">{selectedUser.telephone || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Status</p>
+                    <p className="text-base">
+                      <Badge
+                        variant={
+                          selectedUser.status === "actif"
+                            ? "outline"
+                            : "secondary"
+                        }
+                        className={
+                          selectedUser.status === "actif"
+                            ? "bg-green-100 text-green-800"
+                            : ""
+                        }
+                      >
+                        {selectedUser.status === "actif"
+                          ? "Active"
+                          : "Inactive"}
+                      </Badge>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Roles & Permissions */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Roles & Permissions
+                </h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Roles</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedUser.role && selectedUser.role.length > 0 ? (
+                        selectedUser.role.map((roleId, index) => {
+                          const roleInfo = getRoleById(roleId);
+                          return (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-sm"
+                            >
+                              {roleInfo?.label || roleId}
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <span className="text-gray-500">No roles assigned</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-3">
+                  Dates
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Created At
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.createdAt
+                        ? new Date(selectedUser.createdAt).toLocaleString()
+                        : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">
+                      Last Updated
+                    </p>
+                    <p className="text-base">
+                      {selectedUser.updatedAt
+                        ? new Date(selectedUser.updatedAt).toLocaleString()
+                        : "-"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Status Change Dialog */}
       <AlertDialog
         open={statusConfirmDialog}
         onOpenChange={setStatusConfirmDialog}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Modifier le statut</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir changer le statut de cet utilisateur ?
+              Are you sure you want to change this user's status? This will
+              affect their ability to access the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={cancelToggleStatus}>
-              Annuler
+              Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmToggleStatus}>
-              Confirmer
+            <AlertDialogAction
+              onClick={confirmToggleStatus}
+              className="bg-primary"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Confirm"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

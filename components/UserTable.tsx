@@ -39,8 +39,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { RoleSelector } from "@/components/RoleSelector";
-import { CLIENT_ROLES, AGENCY_ROLES, TCC_ROLES, IOB_ROLES } from "@/lib/roles";
-import { getRoleDisplayName } from "@/lib/role-utils";
+import {
+  CLIENT_ROLES,
+  AGENCY_ROLES,
+  TCC_ROLES,
+  IOB_ROLES,
+  getRoleById,
+} from "@/lib/roles";
 import { RolesAssignment } from "./RolesAssignment";
 
 // Generic user interface with common fields
@@ -137,7 +142,7 @@ export function UserTable({
 
     // Merge base and custom fields. Base fields take precedence for typing.
     const initialUser = { ...customFields, ...base }; // Spread customFields first, then base
- 
+
     return {
       ...initialUser,
       // Ensure all required fields from GenericUser are present and correctly typed
@@ -284,7 +289,8 @@ export function UserTable({
     if (legacyLabel) return legacyLabel;
 
     // For new role IDs, get the display name
-    return getRoleDisplayName(roleValue) || roleValue;
+    const roleInfo = getRoleById(roleValue);
+    return roleInfo?.label || roleValue;
   };
 
   return (

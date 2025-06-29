@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { MultiStepForm } from "./multi-step-form";
 import { CustodianForm } from "./custodian-form";
-import { RelatedUsersForm } from "./related-users-form";
+import { EnhancedTCCUsersForm } from "./enhanced-users-form-new";
 import {
   CustodianFormValues,
   RelatedUserFormValues,
@@ -215,37 +215,96 @@ export default function FormPage({ params }: FormPageProps) {
   };
   const handleSubmit = async () => {
     try {
-      // At this point, TCC should already be created (in step 1)
-      // We only need to create users if there are any
-      if (formValues.relatedUsers.length > 0 && formValues.tccId) {
-        console.log("Creating users for TCC ID:", formValues.tccId);
+      // Step 2: Handle User Creation
+      const tccId = formValues.tccId;
 
-        // Create users one by one
-        for (const userData of formValues.relatedUsers) {
-          const apiUserData = TCCService.transformUserFormDataToAPI(userData);
-          await TCCService.createUser(apiUserData, formValues.tccId);
+      if (!tccId) {
+        throw new Error("No TCC ID available for user creation");
+      }
+
+      console.log("Step 2: Creating users for TCC ID:", tccId);
+
+      if (formValues.relatedUsers.length > 0) {
+        let successCount = 0;
+        let errorCount = 0;
+
+        // Create each user separately
+        for (let index = 0; index < formValues.relatedUsers.length; index++) {
+          const user = formValues.relatedUsers[index];
+          try {
+            console.log(
+              `Creating user ${index + 1}/${formValues.relatedUsers.length}:`,
+              user.fullName
+            );
+
+            // Transform form data to API format
+            const apiUserData = {
+              firstname: user.fullName.split(" ")[0] || user.fullName,
+              lastname: user.fullName.split(" ").slice(1).join(" ") || "",
+              email:
+                user.email ||
+                `${user.fullName.toLowerCase().replace(/\s+/g, ".")}@tcc.com`,
+              password: user.password || "TempPassword123!",
+              telephone: user.phone || "",
+              positionTcc: user.position,
+              role: user.roles || [],
+              status: (user.status === "active"
+                ? "actif"
+                : user.status === "inactive"
+                ? "inactif"
+                : user.status || "actif") as "actif" | "inactif",
+            };
+
+            console.log(`User ${index + 1} data:`, apiUserData);
+
+            await TCCService.createUser(apiUserData, tccId);
+            successCount++;
+
+            console.log(`User ${index + 1} created successfully`);
+          } catch (userError) {
+            console.error(`Failed to create user ${index + 1}:`, userError);
+            errorCount++;
+          }
         }
 
+        // Show summary toast
+        if (successCount > 0) {
+          toast({
+            title: "Users Created",
+            description: `${successCount} user(s) created successfully${
+              errorCount > 0 ? `, ${errorCount} failed` : ""
+            }`,
+          });
+        }
+
+        if (errorCount > 0 && successCount === 0) {
+          toast({
+            title: "User Creation Failed",
+            description: "Failed to create any users. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.log("No users to create, workflow complete");
         toast({
-          title: "Users Created",
-          description: `Successfully created ${formValues.relatedUsers.length} users for the TCC`,
+          title: "Process Complete",
+          description: isEditMode
+            ? "TCC updated successfully"
+            : "TCC created successfully",
         });
       }
 
-      toast({
-        title: isEditMode ? "TCC Updated" : "TCC Process Complete",
-        description: isEditMode
-          ? "TCC updated successfully"
-          : "TCC and users created successfully",
-      });
-
       // Navigate back to the list page
+      console.log("Redirecting to TCC list...");
       router.push("/tcc");
     } catch (error) {
-      console.error("User creation error:", error);
+      console.error("Error in submit handler:", error);
       toast({
         title: "Error",
-        description: "Failed to create users. TCC was created successfully.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again.",
         variant: "destructive",
       });
     }
@@ -257,10 +316,11 @@ export default function FormPage({ params }: FormPageProps) {
       defaultValues={formValues.custodian}
       onFormChange={handleUpdateCustodian}
     />,
-    <RelatedUsersForm
+    <EnhancedTCCUsersForm
       key="related-users-form"
       defaultValues={{ users: formValues.relatedUsers }}
       onFormChange={handleUpdateRelatedUsers}
+      entityName={formValues.custodian.libelle || "TCC"}
     />,
   ];
 

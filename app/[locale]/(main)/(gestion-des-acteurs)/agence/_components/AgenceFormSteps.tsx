@@ -27,43 +27,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// Mock data for banks dropdown
-const bankOptions = [
-  {
-    value: "BANQUE DE DEVELOPPEMENT LOCAL",
-    label: "BANQUE DE DEVELOPPEMENT LOCAL",
-  },
-  {
-    value: "BANQUE EXTERIEURE D'ALGERIE",
-    label: "BANQUE EXTERIEURE D'ALGERIE",
-  },
-  {
-    value: "BANQUE DE L'AGRICULTURE ET DU DÉVELOPPEMENT RURAL",
-    label: "BANQUE DE L'AGRICULTURE ET DU DÉVELOPPEMENT RURAL",
-  },
-  { value: "CREDIT POPULAIRE D'ALGERIE", label: "CREDIT POPULAIRE D'ALGERIE" },
-  { value: "BANQUE NATIONALE D'ALGERIE", label: "BANQUE NATIONALE D'ALGERIE" },
-  {
-    value: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
-    label: "CAISSE NATIONALE D'EPARGNE ET DE PREVOYANCE",
-  },
-];
+import { useToast } from "@/hooks/use-toast";
+import { actorAPI } from "@/app/actions/actorAPI";
+import { useFinancialInstitutions } from "@/hooks/useFinancialInstitutions";
 
 // Define the form schema for the agency details with only required fields
 const agenceFormSchema = z.object({
-  nomBanque: z.string().min(1, { message: "Nom de la banque is required" }),
-  adresseComplete: z
+  financialInstitutionId: z
     .string()
-    .min(1, { message: "Adresse complète is required" }),
-  codeSwiftBic: z.string().min(1, { message: "Code SWIFT/BIC is required" }),
-  devise: z.string().default("DZD"),
-  agenceCode: z.string().min(1, { message: "Code agence is required" }),
-  directeurNom: z.string().min(1, { message: "Nom du directeur is required" }),
-  directeurEmail: z.string().email({ message: "Email du directeur invalide" }),
-  directeurTelephone: z
-    .string()
-    .min(1, { message: "Téléphone du directeur is required" }),
+    .min(1, { message: "Financial Institution is required" }),
+  address: z.string().min(1, { message: "Address is required" }),
+  code_swift: z.string().min(1, { message: "Code SWIFT/BIC is required" }),
+  currency: z.string().default("DZD"),
+  code: z.string().min(1, { message: "Code agence is required" }),
+  director_name: z.string().min(1, { message: "Director name is required" }),
+  director_email: z.string().email({ message: "Invalid director email" }),
+  director_phone: z.string().min(1, { message: "Director phone is required" }),
 });
 
 type AgenceFormValues = z.infer<typeof agenceFormSchema>;
@@ -80,7 +59,12 @@ export default function AgenceFormSteps({
   onComplete,
 }: AgenceFormStepsProps) {
   const t = useTranslations("AgencyPage");
+  const { toast } = useToast();
+  const { institutions, isLoading: loadingFIs } = useFinancialInstitutions();
+
   const [step, setStep] = useState<1 | 2>(1);
+  const [createdAgenceId, setCreatedAgenceId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [relatedUsers, setRelatedUsers] = useState<RelatedUser[]>(
     // Normally we would fetch this from the API based on the agency ID
     initialData
@@ -112,42 +96,116 @@ export default function AgenceFormSteps({
     resolver: zodResolver(agenceFormSchema),
     defaultValues: initialData
       ? {
-          nomBanque: initialData.nomBanque || "",
-          adresseComplete: initialData.adresseComplete || "",
-          codeSwiftBic: initialData.codeSwiftBic || "",
-          devise: initialData.devise || "DZD",
-          agenceCode: initialData.agenceCode || "",
-          directeurNom: initialData.directeurNom || "",
-          directeurEmail: initialData.directeurEmail || "",
-          directeurTelephone: initialData.directeurTelephone || "",
+          financialInstitutionId: "",
+          address: initialData.adresseComplete || "",
+          code_swift: initialData.codeSwiftBic || "",
+          currency: initialData.devise || "DZD",
+          code: initialData.agenceCode || "",
+          director_name: initialData.directeurNom || "",
+          director_email: initialData.directeurEmail || "",
+          director_phone: initialData.directeurTelephone || "",
         }
       : {
-          nomBanque: "",
-          adresseComplete: "",
-          codeSwiftBic: "",
-          devise: "DZD",
-          agenceCode: "",
-          directeurNom: "",
-          directeurEmail: "",
-          directeurTelephone: "",
+          financialInstitutionId: "",
+          address: "",
+          code_swift: "",
+          currency: "DZD",
+          code: "",
+          director_name: "",
+          director_email: "",
+          director_phone: "",
         },
   });
 
   // Submit handler for the form
   const onSubmit = async (values: AgenceFormValues) => {
     if (step === 1) {
-      // Move to the next step
-      setStep(2);
+      // Validate form data
+      const validation = agenceFormSchema.safeParse(values);
+      if (!validation.success) {
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields correctly.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (mode === "add") {
+        // Create the agence first
+        setIsSubmitting(true);
+        try {
+          console.log("Creating Agency with data:", values);
+          const response = await actorAPI.agence.create(values);
+          const agenceId = response.id || response.data?.id;
+          setCreatedAgenceId(agenceId);
+
+          console.log("Agency created successfully:", response);
+
+          toast({
+            title: "Success",
+            description: "Agency created successfully. Now you can add users.",
+          });
+          // Move to the next step
+          setStep(2);
+        } catch (error) {
+          console.error("Failed to create agence:", error);
+          toast({
+            title: "Error",
+            description: "Failed to create agency. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsSubmitting(false);
+        }
+      } else {
+        // For edit mode, just move to next step
+        setStep(2);
+      }
     } else {
-      // Submit the form with both agency details and related users
-      console.log("Submitting form with values:", {
-        agence: values,
-        relatedUsers,
-      });
+      // Step 2: Handle users
+      if (relatedUsers.length > 0 && createdAgenceId) {
+        setIsSubmitting(true);
+        try {
+          // Create users one by one
+          for (const user of relatedUsers) {
+            const userData = {
+              firstname: user.fullName.split(" ")[0] || user.fullName,
+              lastname: user.fullName.split(" ").slice(1).join(" ") || "",
+              email:
+                user.email ||
+                `${user.fullName
+                  .toLowerCase()
+                  .replace(/\s+/g, ".")}@agency.com`,
+              password: user.password || "TempPassword123!",
+              telephone: user.phone || "",
+              positionAgence: user.position,
+              matriculeAgence: user.matricule,
+              organisationIndividu: user.organization,
+              role: user.roles || [],
+            };
 
-      // In a real app, you would call your API here
+            await actorAPI.agence.createUser(createdAgenceId, userData);
+          }
 
-      // Redirect back to the agency list
+          toast({
+            title: "Success",
+            description: `Agency and ${relatedUsers.length} user(s) created successfully!`,
+          });
+        } catch (error) {
+          console.error("Failed to create users:", error);
+          toast({
+            title: "Warning",
+            description:
+              "Agency created but some users failed to create. You can add them later.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsSubmitting(false);
+        }
+      }
+
+      // Complete the form
       onComplete();
     }
   };
@@ -209,26 +267,24 @@ export default function AgenceFormSteps({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="nomBanque"
+                    name="financialInstitutionId"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel>{t("nomBanque")}</FormLabel>
+                        <FormLabel>{t("financialInstitution")}</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
+                          disabled={loadingFIs}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner une banque" />
+                              <SelectValue placeholder="Select financial institution" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {bankOptions.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}
-                              >
-                                {option.label}
+                            {institutions.map((fi) => (
+                              <SelectItem key={fi.id} value={fi.id}>
+                                {fi.institutionName}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -240,10 +296,10 @@ export default function AgenceFormSteps({
 
                   <FormField
                     control={form.control}
-                    name="adresseComplete"
+                    name="address"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel>{t("adresseComplete")}</FormLabel>
+                        <FormLabel>{t("address")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -254,10 +310,10 @@ export default function AgenceFormSteps({
 
                   <FormField
                     control={form.control}
-                    name="codeSwiftBic"
+                    name="code_swift"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("codeSwiftBic")}</FormLabel>
+                        <FormLabel>{t("swiftCode")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -268,10 +324,10 @@ export default function AgenceFormSteps({
 
                   <FormField
                     control={form.control}
-                    name="agenceCode"
+                    name="code"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("codeAgence")}</FormLabel>
+                        <FormLabel>{t("agencyCode")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -282,10 +338,10 @@ export default function AgenceFormSteps({
 
                   <FormField
                     control={form.control}
-                    name="devise"
+                    name="currency"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("devise")}</FormLabel>
+                        <FormLabel>{t("currency")}</FormLabel>
                         <FormControl>
                           <Input {...field} defaultValue="DZD" readOnly />
                         </FormControl>
@@ -296,15 +352,15 @@ export default function AgenceFormSteps({
 
                   <div className="md:col-span-2">
                     <h3 className="text-lg font-medium mb-4">
-                      {t("directeurAgence")}
+                      {t("directorInfo")}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
-                        name="directeurNom"
+                        name="director_name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t("directeurNom")}</FormLabel>
+                            <FormLabel>{t("directorName")}</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -315,10 +371,10 @@ export default function AgenceFormSteps({
 
                       <FormField
                         control={form.control}
-                        name="directeurTelephone"
+                        name="director_phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t("directeurTelephone")}</FormLabel>
+                            <FormLabel>{t("directorPhone")}</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -329,10 +385,10 @@ export default function AgenceFormSteps({
 
                       <FormField
                         control={form.control}
-                        name="directeurEmail"
+                        name="director_email"
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel>{t("directeurEmail")}</FormLabel>
+                            <FormLabel>{t("directorEmail")}</FormLabel>
                             <FormControl>
                               <Input {...field} type="email" />
                             </FormControl>
@@ -374,12 +430,18 @@ export default function AgenceFormSteps({
             )}
             {step === 1 && (
               <div className="ml-auto">
-                <Button type="submit">{t("next")}</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating..." : t("next")}
+                </Button>
               </div>
             )}
             {step === 2 && (
-              <Button type="submit">
-                {mode === "add" ? t("create") : t("save")}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? "Creating Users..."
+                  : mode === "add"
+                  ? t("complete")
+                  : t("save")}
               </Button>
             )}
           </div>

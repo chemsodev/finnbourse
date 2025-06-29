@@ -7,7 +7,9 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useRestToken } from "@/hooks/useRestToken";
+import { useTokenValidation } from "@/hooks/useTokenValidation";
 import {
   MenuResponse,
   getStoredMenu,
@@ -27,6 +29,98 @@ export function useMenu(): UseMenuReturn {
   const [error, setError] = useState<string | null>(null);
   const { data: session, status } = useSession();
   const { restToken } = useRestToken();
+  const router = useRouter();
+
+  // Use token validation hook - disable backend validation since endpoint doesn't exist yet
+  const { isValid: isTokenValid } = useTokenValidation({
+    redirectOnInvalid: true,
+    enableBackendValidation: false, // Disable backend validation to prevent 404 errors
+    checkInterval: 300000, // Check every 5 minutes (lenient)
+    onTokenInvalid: () => {
+      setError("Session expired. Redirecting to login...");
+      setMenu({ elements: [] });
+      setIsLoading(false);
+    },
+  });
+
+  // Static complete menu for testing/development
+  const getCompleteStaticMenu = (): MenuResponse => ({
+    elements: [
+      { id: "dashboard" },
+      { id: "place-order" },
+      { id: "portfolio" },
+      {
+        id: "orders-dropdown",
+        children: [
+          { id: "premiere-validation" },
+          { id: "validation-finale" },
+          { id: "validation-tcc-premiere" },
+          { id: "validation-tcc-finale" },
+          { id: "execution" },
+          { id: "resultats" },
+        ],
+      },
+      {
+        id: "titles-emissions-dropdown",
+        children: [
+          { id: "emetteurs" },
+          { id: "emissions" },
+          { id: "commissions" },
+          { id: "gestion-titres" },
+        ],
+      },
+      {
+        id: "account-management-dropdown",
+        children: [
+          { id: "compte-espece" },
+          { id: "compte-titre" },
+          { id: "lien-comptes" },
+        ],
+      },
+      {
+        id: "actors-management-dropdown",
+        children: [
+          { id: "iob" },
+          { id: "tcc" },
+          { id: "agence" },
+          { id: "clients" },
+          { id: "utilisateurs" },
+        ],
+      },
+      {
+        id: "operations-dropdown",
+        children: [
+          { id: "annonce-ost" },
+          { id: "paiement-dividendes" },
+          { id: "paiement-droits-garde" },
+          { id: "paiement-coupon" },
+          { id: "remboursement" },
+        ],
+      },
+      { id: "charts-editions" },
+    ],
+  });
+
+  // Function to handle token validation errors
+  const handleTokenError = (errorMessage: string) => {
+    console.error("Token validation failed:", errorMessage);
+
+    // Clear stored menu and session data
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("finnbourse-menu");
+      localStorage.removeItem("restToken");
+    }
+
+    // Set error state
+    setError("Session expired. Redirecting to login...");
+    setMenu({ elements: [] });
+    setIsLoading(false);
+
+    // Redirect to login after a short delay
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
+  };
 
   useEffect(() => {
     const loadMenu = async () => {
@@ -34,14 +128,27 @@ export function useMenu(): UseMenuReturn {
         return; // Still loading session
       }
 
-      // If no session, clear menu and show empty menu
-      if (status === "unauthenticated" || !session || !restToken) {
-        console.log("useMenu: No session or REST token, showing empty menu");
-        if (typeof window !== "undefined") {
-          sessionStorage.removeItem("finnbourse-menu");
-        }
-        setMenu({ elements: [] });
-        setIsLoading(false);
+      // DEVELOPMENT MODE: Use complete static menu
+      // Comment out this block when you want to use dynamic API-based menu again
+      console.log("useMenu: Using complete static menu for testing");
+      setMenu(getCompleteStaticMenu());
+      setIsLoading(false);
+      return;
+
+      // PRODUCTION MODE: Dynamic menu from API (currently disabled for testing)
+      // Uncomment this block when you want to use API-based menu again
+      /*
+      // If no session, redirect to login
+      if (status === "unauthenticated" || !session) {
+        console.log("useMenu: No session, redirecting to login");
+        handleTokenError("No active session");
+        return;
+      }
+
+      // If no REST token, redirect to login
+      if (!restToken) {
+        console.log("useMenu: No REST token, redirecting to login");
+        handleTokenError("No valid REST token");
         return;
       }
 
@@ -63,18 +170,32 @@ export function useMenu(): UseMenuReturn {
           setMenu(fetchedMenu);
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load menu";
-        setError(errorMessage);
-        console.error("useMenu: Error loading menu:", err);
-        setMenu({ elements: [] }); // Show empty menu on error
+        const errorMessage = err instanceof Error ? err.message : "Failed to load menu";
+
+        // Check if error is related to token validation
+        if (errorMessage.includes("401") ||
+            errorMessage.includes("403") ||
+            errorMessage.includes("Unauthorized") ||
+            errorMessage.includes("token") ||
+            errorMessage.includes("expired")) {
+          handleTokenError(errorMessage);
+        } else {
+          // Non-token related error
+          console.error("useMenu: Error loading menu:", err);
+          setError(errorMessage);
+          setMenu({ elements: [] });
+          setIsLoading(false);
+        }
       } finally {
-        setIsLoading(false);
+        if (!error || !error.includes("expired")) {
+          setIsLoading(false);
+        }
       }
+      */
     };
 
     loadMenu();
-  }, [session, status, restToken]);
+  }, [session, status, restToken, router]);
 
   const refreshMenu = async () => {
     if (!session || !restToken) return;
