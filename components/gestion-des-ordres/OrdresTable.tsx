@@ -542,7 +542,7 @@ export default function OrdresTable({
                     pageType === "orderExecution"
                       ? ordersWithResponses[order.id]
                         ? "bg-green-600" // Terminée
-                        : "bg-blue-600"  // Planifiée
+                        : "bg-green-600"  // Actif (au lieu de Planifiée)
                       : pageType === "carnetordres"
                       ? "bg-green-600"  
                       : getStatusBgColor(Number(order.orderstatus))
@@ -551,7 +551,7 @@ export default function OrdresTable({
                   {pageType === "orderExecution"
                     ? ordersWithResponses[order.id]
                       ? "Terminée"
-                      : "Planifiée"
+                      : "Actif"
                     : pageType === "carnetordres"
                     ? "Active"
                     : order?.orderstatus === 0 && order?.payedWithCard
