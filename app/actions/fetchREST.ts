@@ -1,7 +1,7 @@
 /**
  * fetchREST.ts
  * -----------------------
- * REST API fetcher for 192.168.0.213:3000 backend
+ * REST API fetcher for backend
  * Handles authentication, actor management, and other REST endpoints
  * while keeping GraphQL functionality intact for dashboard
  */
@@ -24,6 +24,19 @@ interface RESTResponse<T = any> {
   success?: boolean;
 }
 
+// Get the base URL for API requests, using the proxy for client-side requests
+function getBaseUrl(isClient = false) {
+  // For client-side requests, use the local proxy to avoid CORS issues
+  if (isClient && typeof window !== "undefined") {
+    return "/api/v1";
+  }
+
+  // For server-side requests, use the environment variable or fallback to the direct URL
+  return (
+    process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com/api/v1"
+  );
+}
+
 // Server-side REST API fetcher (for server components)
 export async function fetchREST<T = any>(
   endpoint: string,
@@ -35,16 +48,8 @@ export async function fetchREST<T = any>(
       restToken?: string;
     };
   };
-  if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
-    console.error(
-      "REST API URL is not defined. Please check your environment variables."
-    );
-    throw new Error(
-      "REST API URL is not configured. Check your environment variables."
-    );
-  }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const baseUrl = getBaseUrl();
 
   // Ensure endpoint starts with /
   const apiPath = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
@@ -79,6 +84,18 @@ export async function fetchREST<T = any>(
     console.log(`Making REST API request to: ${url}`);
     const response = await fetch(url, fetchOptions);
 
+    // Check for authentication errors
+    if (response.status === 401 || response.status === 403) {
+      const errorText = await response.text();
+      console.error(
+        `Authentication failed - token may be invalid or expired: ${response.status}`,
+        errorText
+      );
+      throw new Error(
+        `Authentication failed: ${response.status} - Token invalid or expired. ${errorText}`
+      );
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(
@@ -103,11 +120,8 @@ export function clientFetchREST<T = any>(
   endpoint: string,
   options: FetchRESTOptions = {}
 ): Promise<T> {
-  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-  if (!baseUrl) {
-    throw new Error("REST API URL is not configured");
-  }
+  // Use the proxy URL for client-side requests to avoid CORS issues
+  const baseUrl = getBaseUrl(true);
 
   // Try to get token from sessionStorage if not provided in options
   let token = options.token;
@@ -130,6 +144,8 @@ export function clientFetchREST<T = any>(
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
+    // Add credentials to include cookies in the request
+    credentials: "include",
   };
 
   // Debug log for API request
@@ -155,6 +171,55 @@ export function clientFetchREST<T = any>(
 
   return fetch(url, fetchOptions)
     .then((response) => {
+      // Check for authentication errors
+      if (response.status === 401 || response.status === 403) {
+        console.error(
+          "Authentication failed - token may be invalid or expired"
+        );
+
+        // Before immediately redirecting, check if we're in a grace period
+        if (typeof window !== "undefined") {
+          // Check if we recently logged in (grace period)
+          const recentLoginKey = "finnbourse_recent_login";
+          const recentLoginTime = sessionStorage.getItem(recentLoginKey);
+          const isRecentLogin =
+            recentLoginTime && Date.now() - parseInt(recentLoginTime) < 30000; // 30 second grace period
+
+          // Check session state
+          const sessionState =
+            sessionStorage.getItem("finnbourse_session_state") || "clean";
+          const isInGracePeriod =
+            isRecentLogin ||
+            sessionState === "clean" ||
+            sessionState === "logging_in";
+
+          if (isInGracePeriod) {
+            console.log(
+              "⏳ 401/403 during grace period, allowing API call to fail gracefully without redirect"
+            );
+            // Still throw the error but don't redirect during grace period
+            throw new Error(
+              `Authentication failed: ${response.status} - Token not yet established (grace period)`
+            );
+          }
+
+          // Only redirect if we're not in a grace period
+          sessionStorage.removeItem("finnbourse_rest_token");
+          sessionStorage.removeItem("finnbourse-menu");
+          localStorage.removeItem("restToken");
+
+          // Set error state to prevent cascade of redirects
+          sessionStorage.setItem("finnbourse_session_state", "error");
+
+          // Redirect to login page
+          window.location.href = "/login";
+        }
+
+        throw new Error(
+          `Authentication failed: ${response.status} - Token invalid or expired`
+        );
+      }
+
       if (!response.ok) {
         throw new Error(`REST API request failed: ${response.status}`);
       }
@@ -165,6 +230,17 @@ export function clientFetchREST<T = any>(
     })
     .catch((error) => {
       console.error("Error in clientFetchREST:", error);
+
+      // Handle network errors that might indicate token issues
+      if (
+        error.message.includes("Authentication failed") ||
+        error.message.includes("401") ||
+        error.message.includes("403")
+      ) {
+        // Token-related errors are already handled above
+        throw error;
+      }
+
       throw error;
     });
 }

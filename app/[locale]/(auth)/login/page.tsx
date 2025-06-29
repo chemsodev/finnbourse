@@ -31,6 +31,9 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useToast } from "@/hooks/use-toast";
+import ExpiredTokenHandler from "@/components/ExpiredTokenHandler";
+import { markRecentLogin } from "@/lib/utils/loginTracker";
+import { setSessionState, clearSessionState } from "@/lib/utils/sessionState";
 
 export default function Login() {
   const t = useTranslations("Login");
@@ -40,16 +43,30 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const tokenExpired = searchParams.get("tokenExpired");
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const expired = searchParams.get("expired");
 
   useEffect(() => {
-    if (tokenExpired) {
+    // Clear any previous session state when landing on login
+    clearSessionState();
+
+    // Show expired token message if needed
+    if (tokenExpired || expired) {
+      setSessionState("expired");
       toast({
         title: t("sessionExpired"),
         description: t("pleaseLoginAgain"),
         variant: "destructive",
       });
+
+      // Clear the expired parameter from URL to prevent getting stuck
+      if (expired) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("expired");
+        window.history.replaceState({}, "", url.toString());
+      }
     }
-  }, [tokenExpired, toast, t]);
+  }, [tokenExpired, expired, toast, t]);
   const formSchema = z.object({
     email: z.string().email({ message: t("invalidEmail") }),
     password: z
@@ -68,6 +85,8 @@ export default function Login() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
+      setSessionState("logging_in");
+
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
@@ -85,17 +104,33 @@ export default function Login() {
         } else {
           setError(result.error);
         }
+        setSessionState("error");
         setLoading(false);
       } else {
-        // Login successful, add a brief delay to allow session/token initialization
-        // Small delay to ensure session is established before redirect
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Login successful, set grace period and mark recent login
+        setSessionState("clean");
+
+        try {
+          await fetch("/api/set-login-grace", { method: "POST" });
+        } catch (error) {
+          console.log("Warning: Could not set grace period cookie:", error);
+        }
+
+        markRecentLogin();
+
+        console.log("✅ Login successful, redirecting to:", callbackUrl);
+
+        // Longer delay to ensure session is established before redirect
+        await new Promise((resolve) => setTimeout(resolve, 1500));
 
         setLoading(false);
-        router.push("/");
+
+        // Use the callback URL if provided, otherwise go to root
+        router.push(callbackUrl);
       }
     } catch (error) {
       console.error("Form submission error", error);
+      setSessionState("error");
       setLoading(false);
       toast({
         variant: "destructive",
@@ -108,6 +143,7 @@ export default function Login() {
 
   return (
     <>
+      <ExpiredTokenHandler />
       <FloatingShapes />
 
       <div className="bg-primary h-screen w-screen flex justify-center items-center">

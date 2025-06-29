@@ -126,19 +126,59 @@ export const actorAPI = {
   // IOB operations
   iob: {
     getAll: async (token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST("/iob", {
-        method: "GET",
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST("/iob", {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in iob.getAll:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/iob`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch IOBs: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     },
 
     getOne: async (iobId: string, token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST(`/iob/${iobId}`, {
-        method: "GET",
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST(`/iob/${iobId}`, {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in iob.getOne:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/iob/${iobId}`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch IOB: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     },
 
     create: async (data: any, token?: string) => {
@@ -175,6 +215,14 @@ export const actorAPI = {
       });
     },
 
+    getUsers: async (iobId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/iob/${iobId}/users`, {
+        method: "GET",
+        token: restToken || undefined,
+      });
+    },
+
     updateUser: async (
       iobId: string,
       userId: string,
@@ -185,6 +233,14 @@ export const actorAPI = {
       return clientFetchREST(`/iob/${iobId}/users/${userId}`, {
         method: "PUT",
         body: userData,
+        token: restToken || undefined,
+      });
+    },
+
+    deleteUser: async (iobId: string, userId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/iob/${iobId}/users/${userId}`, {
+        method: "DELETE",
         token: restToken || undefined,
       });
     },

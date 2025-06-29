@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
+import jwt from "jsonwebtoken";
 
 const publicPages = [
   "/login",
@@ -14,6 +15,37 @@ const publicPages = [
 ];
 
 const intlMiddleware = createMiddleware(routing);
+
+// Function to check if token is expired
+function isTokenExpired(token: any): boolean {
+  try {
+    if (token?.accessToken) {
+      const decoded = jwt.decode(token.accessToken) as any;
+      if (decoded?.exp) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        const expiryTime = decoded.exp;
+        const timeUntilExpiry = expiryTime - currentTime;
+
+        console.log("🕐 Token expiry check:", {
+          currentTime,
+          expiryTime,
+          timeUntilExpiry: `${timeUntilExpiry}s`,
+          isExpired: currentTime >= expiryTime - 30,
+        });
+
+        // Add a small buffer (30 seconds) to prevent edge cases
+        return currentTime >= expiryTime - 30;
+      }
+      console.log("⚠️ No exp field in token");
+    } else {
+      console.log("⚠️ No accessToken in token object");
+    }
+    return false;
+  } catch (error) {
+    console.error("Error checking token expiry:", error);
+    return true; // Assume expired if we can't decode
+  }
+}
 
 export default async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -113,7 +145,29 @@ export default async function middleware(req: NextRequest) {
     });
 
     if (!token) {
-      console.log("❌ No token found, redirecting to login");
+      console.log("❌ No token found, checking for redirect loop prevention");
+
+      // Check if we're trying to access root and just came from login
+      const referer = req.headers.get("referer");
+      const isFromLogin =
+        referer &&
+        (referer.includes("/login") || referer.includes("/fr/login"));
+      const isRootPath =
+        pathname === "/" ||
+        pathname === "/fr" ||
+        pathname === "/en" ||
+        pathname === "/ar";
+
+      // Also check for recent login grace period
+      const recentLoginCookie = req.cookies.get("recent_login_grace");
+
+      if ((isFromLogin && isRootPath) || recentLoginCookie) {
+        console.log(
+          "⚠️ Just logged in and accessing root or in grace period, allowing access"
+        );
+        // Allow access for now to prevent redirect loops immediately after login
+        return intlResponse;
+      }
 
       // Get the locale from the pathname or use default
       const locale =
@@ -130,6 +184,45 @@ export default async function middleware(req: NextRequest) {
       }
 
       console.log("🔄 Redirecting to:", loginUrl.toString());
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check if token is expired, but be more lenient to avoid redirect loops
+    if (isTokenExpired(token)) {
+      console.log("❌ Token is expired, checking for redirect loop prevention");
+
+      // Check if we just came from a login page to prevent immediate redirect loops
+      const referer = req.headers.get("referer");
+      const isFromLogin =
+        referer &&
+        (referer.includes("/login") || referer.includes("/fr/login"));
+
+      // Also check for recent login grace period
+      const recentLoginCookie = req.cookies.get("recent_login_grace");
+
+      // Check if we're already on the login page to prevent loops
+      const isAlreadyOnLogin = pathname.includes("/login");
+
+      if (isFromLogin || recentLoginCookie || isAlreadyOnLogin) {
+        console.log(
+          "⚠️ Just came from login, in grace period, or already on login - allowing access to prevent redirect loop"
+        );
+        // Allow access for now, the client will handle token refresh/logout
+        return intlResponse;
+      }
+
+      // Get the locale from the pathname or use default
+      const locale =
+        pathname.match(/^\/(fr|en|ar)/)?.[1] || routing.defaultLocale;
+      const loginUrl = new URL(`/${locale}/login`, req.url);
+
+      // Add a query parameter to indicate token expiry for cleanup
+      loginUrl.searchParams.set("expired", "true");
+
+      console.log(
+        "🔄 Redirecting to login due to expired token:",
+        loginUrl.toString()
+      );
       return NextResponse.redirect(loginUrl);
     }
 

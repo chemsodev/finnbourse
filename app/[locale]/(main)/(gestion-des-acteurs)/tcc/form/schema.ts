@@ -50,26 +50,28 @@ export const custodianFormSchema = z.object({
 // Schema for related users (Step 2)
 export const relatedUserSchema = z.object({
   id: z.string().optional(), // Only present when editing an existing user
-  firstname: z.string().min(1, "First name is required"),
-  lastname: z.string().min(1, "Last name is required"),
-  email: z.string().email("Valid email is required"),
+  firstname: z.string().min(1, "First name is required").optional(),
+  lastname: z.string().min(1, "Last name is required").optional(),
+  email: z.string().email("Valid email is required").optional(),
   password: z
     .string()
     .min(6, "Password must be at least 6 characters")
     .optional(),
-  telephone: z.string().min(1, "Phone number is required"),
-  status: z.enum(["actif", "inactif"], {
+  telephone: z.string().optional(),
+  status: z.enum(["actif", "inactif", "active", "inactive"], {
     required_error: "Status is required",
   }),
-  positionTcc: z.string().min(1, "Position is required"),
-  role: z.array(z.string()).min(1, "At least one role is required"),
+  positionTcc: z.string().optional(),
+  role: z.array(z.string()).optional(),
 
-  // Legacy fields for backward compatibility
-  fullName: z.string().optional(),
-  position: z.string().optional(),
-  roles: z.array(z.string()).optional(),
-  type: z.string().optional(),
+  // Enhanced fields for the new form
+  fullName: z.string().min(2, "Full name is required"),
+  position: z.string().min(2, "Position is required"),
+  roles: z.array(z.string()).default([]),
+  type: z.string().min(1, "Type is required"),
   organization: z.string().optional(),
+  phone: z.string().optional(),
+  matricule: z.string().optional(),
 });
 
 export const relatedUsersFormSchema = z.object({
