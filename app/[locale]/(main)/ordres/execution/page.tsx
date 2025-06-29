@@ -1,16 +1,20 @@
+"use client";
+
 import MyMarquee from "@/components/MyMarquee";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import Link from "next/link"; 
 import { CalendarClock } from "lucide-react";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
-import { getServerSession } from "next-auth/next";
-import auth from "@/auth";
+import { useSession } from "next-auth/react";
 import { ExportButton } from "@/components/ExportButton";
 import type { Order } from "@/lib/interfaces";
 import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { mockOrders, filterOrdersByMarketType } from "@/lib/mockData";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 // Helper function to determine if an order is from primary or secondary market
 const isPrimaryMarketOrder = (securitytype: string) => {
@@ -28,24 +32,18 @@ const isSecondaryMarketOrder = (securitytype: string) => {
   );
 };
 
-const page = async (props: {
-  searchParams?: Promise<{
-    searchquery?: string;
-    page?: string;
-    state?: string;
-    marketType?: string;
-  }>;
-}) => {
-  const session = await getServerSession(auth);
-  const userRole = (session as any)?.user?.roleid;
-  const searchParams = await props.searchParams;
-  const currentPage = Number(searchParams?.page) || 0;
-  const searchquery = searchParams?.searchquery || "";
-  const state = searchParams?.state || "99";
-  const marketType = searchParams?.marketType || "all";
+const page = () => {
+  const session = useSession();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams?.get("page")) || 0;
+  const searchquery = searchParams?.get("searchquery") || "";
+  const state = searchParams?.get("state") || "99";
+  const marketType = searchParams?.get("marketType") || "all";
+  const userRole = (session.data as any)?.user?.roleid;
 
-  const t = await getTranslations("mesOrdres");
-  const tStatus = await getTranslations("status");
+  const t = useTranslations("mesOrdres");
+  const tStatus = useTranslations("status");
+  const [showActionColumn, setShowActionColumn] = useState(false);
   
   // Use mock data instead of GraphQL
   const data = mockOrders;
@@ -106,6 +104,10 @@ const page = async (props: {
     createdat: order.createdat,
   }));
 
+  const handleActionToggle = () => {
+    setShowActionColumn(!showActionColumn);
+  };
+
   return (
     <div className="motion-preset-focus motion-duration-2000">
       <div className="mt-3">
@@ -125,7 +127,7 @@ const page = async (props: {
             <TabSearch />
           </div>
           <div className="flex gap-4 flex-shrink-0">
-            {/*<PDFDropdownMenu />*/}
+            <PDFDropdownMenu />
             <Link
               href="/ordres/sessions"
               className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
@@ -133,7 +135,7 @@ const page = async (props: {
               <CalendarClock size={20} />
               Sessions de Bourse
             </Link>
-            {/*<ExportButton data={exportData} />*/}
+            <ExportButton data={exportData} />
           </div>
         </div>
         <div className="my-8">
@@ -146,10 +148,20 @@ const page = async (props: {
             userRole={userRole?.toString() || "1"}
             userType="iob"
             activeTab="all"
+            showActionColumn={showActionColumn}
+            onActionToggle={handleActionToggle}
           />
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
           <MyPagination />
+          <div className="flex justify-end">
+            <Button 
+              className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
+              onClick={handleActionToggle}
+            >
+              Action
+            </Button>
+          </div>
         </div>
       </div>
     </div>

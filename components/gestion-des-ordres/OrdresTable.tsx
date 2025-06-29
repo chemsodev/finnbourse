@@ -38,6 +38,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -78,6 +88,8 @@ interface OrdresTableProps {
   userRole: string;
   userType: "agence" | "tcc" | "iob";
   activeTab: string;
+  showActionColumn?: boolean;
+  onActionToggle?: () => void;
 }
 
 type SortField = 'id' | 'titre' | 'investisseur' | 'iob' | 'sens' | 'type' | 'quantity' | 'statut' | 'date';
@@ -92,6 +104,8 @@ export default function OrdresTable({
   userRole,
   userType,
   activeTab,
+  showActionColumn = false,
+  onActionToggle,
 }: OrdresTableProps) {
   const session = useSession();
   const t = useTranslations("mesOrdres");
@@ -102,6 +116,13 @@ export default function OrdresTable({
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [responseForm, setResponseForm] = useState({
+    reliquat: "",
+    quantite: "",
+    prix: "",
+  });
 
   // Sort function
   const sortData = (data: Order[], field: SortField, direction: SortDirection) => {
@@ -189,6 +210,27 @@ export default function OrdresTable({
     return <ChevronsUpDown className="ml-1 h-4 w-4 text-gray-400" />;
   };
 
+  // Handle response click
+  const handleResponseClick = (order: Order) => {
+    setSelectedOrder(order);
+    setResponseForm({
+      reliquat: "",
+      quantite: "",
+      prix: "",
+    });
+    setIsResponseDialogOpen(true);
+  };
+
+  // Handle response submit
+  const handleResponseSubmit = () => {
+    // Ici vous pouvez traiter la soumission du formulaire
+    console.log("Réponse soumise:", {
+      orderId: selectedOrder?.id,
+      ...responseForm
+    });
+    setIsResponseDialogOpen(false);
+  };
+
   // Filter data based on pageType and userRole
   const filterOrdersByPageAndRole = (orders: Order[]) => {
     // Each page shows orders in a specific status
@@ -214,22 +256,8 @@ export default function OrdresTable({
         // For regular orders page, filter by secondary market
         return filterOrdersByMarketType(orders, "secondaire");
       case "dashboard":
-        return orders.slice(0, 4); // Show only 4 orders for dashboard
+        return orders.slice(0, 4);
       default:
-        // Default fallback - filter by user type
-        if (userType === "agence") {
-          return orders.filter(
-            (order) => order.orderstatus >= 0 && order.orderstatus <= 3
-          );
-        } else if (userType === "tcc") {
-          return orders.filter(
-            (order) => order.orderstatus >= 3 && order.orderstatus <= 5
-          );
-        } else if (userType === "iob") {
-          return orders.filter(
-            (order) => order.orderstatus >= 5 && order.orderstatus <= 7
-          );
-        }
         return orders;
     }
   };
@@ -335,6 +363,7 @@ export default function OrdresTable({
   }
 
   return (
+    <div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -435,6 +464,9 @@ export default function OrdresTable({
             </div>
           </TableHead>
             {pageType !== "dashboard" && <TableHead></TableHead>}
+            {pageType === "orderExecution" && showActionColumn && (
+              <TableHead className="text-right">Réponse</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -533,9 +565,79 @@ export default function OrdresTable({
                 />
                 </TableCell>
               )}
+              {pageType === "orderExecution" && showActionColumn && (
+                <TableCell className="text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleResponseClick(order)}
+                  >
+                    Réponse
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Dialog de réponse */}
+      <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Réponse à l'ordre</DialogTitle>
+            <DialogDescription>
+              Ordre ID: {selectedOrder?.id}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="reliquat" className="text-right">
+                Reliquat
+              </Label>
+              <Input
+                id="reliquat"
+                value={responseForm.reliquat}
+                onChange={(e) =>
+                  setResponseForm({ ...responseForm, reliquat: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="quantite" className="text-right">
+                Quantité
+              </Label>
+              <Input
+                id="quantite"
+                value={responseForm.quantite}
+                onChange={(e) =>
+                  setResponseForm({ ...responseForm, quantite: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="prix" className="text-right">
+                Prix
+              </Label>
+              <Input
+                id="prix"
+                value={responseForm.prix}
+                onChange={(e) =>
+                  setResponseForm({ ...responseForm, prix: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={handleResponseSubmit}>
+              Soumettre
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
