@@ -79,7 +79,7 @@ const FormPassationOrdreMarchePrimaire = ({
     null
   );
   const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
-  const t = useTranslations("FormPassationOrdre");
+  const t = useTranslations("FormPassationOrdreObligation");
 
   // Map the type parameter to the correct backend filter value
   let stockType: "action" | "obligation" | "sukuk" | "participatif" = "action";

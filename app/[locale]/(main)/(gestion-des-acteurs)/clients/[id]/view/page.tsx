@@ -42,6 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
 
 export interface ExtendedClientUser extends ClientUser {
   email?: string;
@@ -53,6 +54,7 @@ export default function ViewClientPage() {
   const router = useRouter();
   const { toast } = useToast();
   const params = useParams();
+  const t = useTranslations("FormPassationOrdreObligation");
   const [isLoading, setIsLoading] = useState(true);
   const [client, setClient] = useState<Client | null>(null);
   const [users, setUsers] = useState<ExtendedClientUser[]>([]);
@@ -155,12 +157,12 @@ export default function ViewClientPage() {
     <div className="container mx-auto py-8">
       <div className="flex items-center mb-8 bg-slate-100 p-4 rounded-md">
         <Button
-          onClick={() => router.push("/clients")}
           variant="outline"
+          onClick={() => router.back()}
           className="mr-4"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Retour
+          {t("retour")}
         </Button>
         <h1 className="text-3xl font-bold">Détails du Client</h1>
         {client.clientCode && (

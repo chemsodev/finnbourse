@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, Edit, Trash2, Search } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Search, ChevronUp, ChevronDown } from "lucide-react";
 import type { Commission } from "@/lib/interfaces";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,6 +36,9 @@ interface CommissionListProps {
   onDelete: (id: string) => void;
 }
 
+type SortField = 'code' | 'name' | 'securityType' | 'feeRule' | 'market' | 'commission' | 'commissionSGBV' | 'vat' | 'type';
+type SortDirection = 'asc' | 'desc';
+
 export default function CommissionList({
   commissions,
   onEdit,
@@ -47,6 +50,85 @@ export default function CommissionList({
   const [commissionToDelete, setCommissionToDelete] = useState<string | null>(
     null
   );
+  const [sortField, setSortField] = useState<SortField>('code');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronDown className="ml-2 h-4 w-4 opacity-50" />;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ChevronDown className="ml-2 h-4 w-4" />
+    );
+  };
+
+  const sortCommissions = (data: Commission[]) => {
+    return [...data].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'code':
+          aValue = a.code;
+          bValue = b.code;
+          break;
+        case 'name':
+          aValue = a.libelle;
+          bValue = b.libelle;
+          break;
+        case 'securityType':
+          aValue = a.titreType;
+          bValue = b.titreType;
+          break;
+        case 'feeRule':
+          aValue = a.loiDeFrais;
+          bValue = b.loiDeFrais;
+          break;
+        case 'market':
+          aValue = a.marche;
+          bValue = b.marche;
+          break;
+        case 'commission':
+          aValue = a.commissionValue;
+          bValue = b.commissionValue;
+          break;
+        case 'commissionSGBV':
+          aValue = a.commissionSGBV || 0;
+          bValue = b.commissionSGBV || 0;
+          break;
+        case 'vat':
+          aValue = a.tva;
+          bValue = b.tva;
+          break;
+        case 'type':
+          aValue = a.commissionType;
+          bValue = b.commissionType;
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
 
   const filteredCommissions = commissions.filter(
     (commission) =>
@@ -57,6 +139,8 @@ export default function CommissionList({
       (commission.titreType &&
         commission.titreType.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const sortedCommissions = sortCommissions(filteredCommissions);
 
   const handleDeleteClick = (id: string) => {
     setCommissionToDelete(id);
@@ -99,20 +183,92 @@ export default function CommissionList({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("code")}</TableHead>
-              <TableHead>{t("name")}</TableHead>
-              <TableHead>{t("securityType")}</TableHead>
-              <TableHead>{t("feeRule")}</TableHead>
-              <TableHead>{t("market")}</TableHead>
-              <TableHead>{t("commission")}</TableHead>
-              <TableHead>{t("commissionSGBV")}</TableHead>
-              <TableHead>{t("vat")}</TableHead>
-              <TableHead>{t("type")}</TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('code')}
+              >
+                <div className="flex items-center">
+                  {t("code")}
+                  {getSortIcon('code')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center">
+                  {t("name")}
+                  {getSortIcon('name')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('securityType')}
+              >
+                <div className="flex items-center">
+                  {t("securityType")}
+                  {getSortIcon('securityType')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('feeRule')}
+              >
+                <div className="flex items-center">
+                  {t("feeRule")}
+                  {getSortIcon('feeRule')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('market')}
+              >
+                <div className="flex items-center">
+                  {t("market")}
+                  {getSortIcon('market')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('commission')}
+              >
+                <div className="flex items-center">
+                  {t("commission")}
+                  {getSortIcon('commission')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('commissionSGBV')}
+              >
+                <div className="flex items-center">
+                  {t("commissionSGBV")}
+                  {getSortIcon('commissionSGBV')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('vat')}
+              >
+                <div className="flex items-center">
+                  {t("vat")}
+                  {getSortIcon('vat')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('type')}
+              >
+                <div className="flex items-center">
+                  {t("type")}
+                  {getSortIcon('type')}
+                </div>
+              </TableHead>
               <TableHead className="text-right">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCommissions.length === 0 ? (
+            {sortedCommissions.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={10}
@@ -122,7 +278,7 @@ export default function CommissionList({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCommissions?.map((commission) => (
+              sortedCommissions?.map((commission) => (
                 <TableRow key={commission.id}>
                   <TableCell className="font-medium">
                     {commission.code}

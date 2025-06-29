@@ -801,7 +801,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
           <div className="flex items-center gap-4">
             <Button size="sm" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Retour
+              {t("retour")}
             </Button>
             <h1 className="text-3xl font-bold tracking-tight text-secondary dark:text-gray-400">
               Modifier Client
