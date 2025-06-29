@@ -481,10 +481,10 @@ export default function OrdresTable({
               {getSortIcon('date')}
             </div>
           </TableHead>
-            {pageType !== "dashboard" && <TableHead></TableHead>}
             {pageType === "orderExecution" && showActionColumn && (
               <TableHead className="text-right">Réponse</TableHead>
             )}
+            {pageType !== "dashboard" && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -543,6 +543,8 @@ export default function OrdresTable({
                       ? ordersWithResponses[order.id]
                         ? "bg-green-600" // Terminée
                         : "bg-blue-600"  // Planifiée
+                      : pageType === "carnetordres"
+                      ? "bg-green-600"  
                       : getStatusBgColor(Number(order.orderstatus))
                   }`}
                 >
@@ -550,6 +552,8 @@ export default function OrdresTable({
                     ? ordersWithResponses[order.id]
                       ? "Terminée"
                       : "Planifiée"
+                    : pageType === "carnetordres"
+                    ? "Active"
                     : order?.orderstatus === 0 && order?.payedWithCard
                     ? "Brouillon payé"
                     : order?.orderstatus === 0 && !order?.payedWithCard
@@ -582,26 +586,26 @@ export default function OrdresTable({
                 <TableCell className="text-xs">
                   {new Date(order.createdat).toLocaleDateString()}
                 </TableCell>
-              {pageType !== "dashboard" && (
-                <TableCell>
-                <OrdreDrawer 
-                  titreId={order.id} 
-                  orderData={order}
-                  isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
-                />
-                </TableCell>
-              )}
-              {pageType === "orderExecution" && showActionColumn && (
-                <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleResponseClick(order)}
-                  >
-                    {ordersWithResponses[order.id] ? "Modifier" : "Réponse"}
-                  </Button>
-                </TableCell>
-              )}
+                {pageType === "orderExecution" && showActionColumn && (
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleResponseClick(order)}
+                    >
+                      {ordersWithResponses[order.id] ? "Modifier" : "Réponse"}
+                    </Button>
+                  </TableCell>
+                )}
+                {pageType !== "dashboard" && (
+                  <TableCell>
+                  <OrdreDrawer 
+                    titreId={order.id} 
+                    orderData={order}
+                    isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
+                  />
+                  </TableCell>
+                )}
             </TableRow>
           ))}
         </TableBody>
