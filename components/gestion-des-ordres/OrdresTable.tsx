@@ -90,6 +90,7 @@ interface OrdresTableProps {
   activeTab: string;
   showActionColumn?: boolean;
   onActionToggle?: () => void;
+  showResponseButton?: boolean;
 }
 
 type SortField = 'id' | 'titre' | 'investisseur' | 'iob' | 'sens' | 'type' | 'quantity' | 'statut' | 'date';
@@ -106,6 +107,7 @@ export default function OrdresTable({
   activeTab,
   showActionColumn = false,
   onActionToggle,
+  showResponseButton = true,
 }: OrdresTableProps) {
   const session = useSession();
   const t = useTranslations("mesOrdres");
@@ -486,7 +488,7 @@ export default function OrdresTable({
               {getSortIcon('date')}
             </div>
           </TableHead>
-            {pageType === "orderExecution" && showActionColumn && (
+            {pageType === "orderExecution" && showActionColumn && showResponseButton && (
               <TableHead className="text-right">Réponse</TableHead>
             )}
             {pageType !== "dashboard" && <TableHead></TableHead>}
@@ -597,7 +599,7 @@ export default function OrdresTable({
                     return `${day}/${month}/${year}`;
                   })()}
                 </TableCell>
-                {pageType === "orderExecution" && showActionColumn && (
+                {pageType === "orderExecution" && showActionColumn && showResponseButton && (
                   <TableCell className="text-right">
                     <Button
                       variant="outline"

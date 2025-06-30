@@ -322,6 +322,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
               userType="iob"
               activeTab="all"
               showActionColumn={showActionColumn}
+              showResponseButton={false}
             />
           </CardContent>
         </Card>
