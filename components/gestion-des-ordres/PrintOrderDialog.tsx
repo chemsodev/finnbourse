@@ -114,7 +114,7 @@ export default function PrintOrderDialog({
       case "opv":
         return t("opv");
       case "titresparticipatifsmp":
-      case "titresparticipatifsms":
+      case "titresparticipatif":
         return t("titre_participatif");
       case "empruntobligataire":
         return t("emprunt_obligataire");

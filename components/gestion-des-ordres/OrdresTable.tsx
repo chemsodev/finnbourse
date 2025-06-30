@@ -224,7 +224,6 @@ export default function OrdresTable({
   // Handle response click
   const handleResponseClick = (order: Order) => {
     setSelectedOrder(order);
-    // Si l'ordre a déjà une réponse, pré-remplir le formulaire avec les anciennes valeurs
     if (ordersWithResponses[order.id] && responsesData[order.id]) {
       setResponseForm({
         reliquat: responsesData[order.id].reliquat,
@@ -317,8 +316,9 @@ export default function OrdresTable({
           filteredData = filterOrdersByMarketType(filteredData, marketType);
         }
 
-        // Apply page-specific filters
-        filteredData = filterOrdersByPageAndRole(filteredData);
+        if (!injectedData) {
+          filteredData = filterOrdersByPageAndRole(filteredData);
+        }
 
         // Calculate total count
         setCount(filteredData.length);
@@ -457,15 +457,6 @@ export default function OrdresTable({
                 {getSortIcon('type')}
               </div>
             </TableHead>
-            <TableHead 
-              className="cursor-pointer"
-              onClick={() => handleSort('quantity')}
-            >
-              <div className="flex items-center">
-                {t("quantity")}
-                {getSortIcon('quantity')}
-              </div>
-            </TableHead>
             <TableHead>
               {pageType === "carnetordres" ? (
                 <OrderStateFilter />
@@ -549,7 +540,6 @@ export default function OrdresTable({
                   ? t("emprunt_obligataire")
                   : order.securitytype}
               </TableCell>
-              <TableCell>{order.quantity}</TableCell>
               <TableCell>
                 <div
                   className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${

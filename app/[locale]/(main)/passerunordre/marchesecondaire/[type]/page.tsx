@@ -68,7 +68,7 @@ const SecondaryMarketPage = ({ params }: { params: { type: string } }) => {
               : type === "sukuk" || type === "sukukms"
               ? t("sukuk")
               : type === "titresparticipatifs" ||
-                type === "titresparticipatifsms"
+                type === "titresparticipatif"
               ? t("titresParticipatifs")
               : ""}
           </span>

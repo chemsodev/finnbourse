@@ -54,7 +54,7 @@ export const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
       return `/passerunordre/marchesecondaire/${type}/${titreId}`;
     } else if (type === "sukukmp" || type === "titresparticipatifsmp") {
       return `/passerunordre/marcheprimaire/${type}/${titreId}`;
-    } else if (type === "sukukms" || type === "titresparticipatifsms") {
+    } else if (type === "sukukms" || type === "titresparticipatif") {
       return `/passerunordre/marchesecondaire/${type}/${titreId}`;
     }
     return "/";
@@ -341,7 +341,7 @@ export const TitreDrawer = ({ titreId, type }: TitreDrawerProps) => {
               {isBond ||
               type === "sukukms" ||
               type === "sukukmp" ||
-              type === "titresparticipatifsms" ||
+              type === "titresparticipatif" ||
               type === "titresparticipatifsmp" ? (
                 <>
                   <div className="flex justify-between">

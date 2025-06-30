@@ -122,7 +122,7 @@ const page = async (props: {
                           case "sukukms":
                             return t("sukuk");
                           case "titresparticipatifsmp":
-                          case "titresparticipatifsms":
+                          case "titresparticipatif":
                             return t("titresParticipatifs");
                           case "action":
                           case "stock":

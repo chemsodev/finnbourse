@@ -24,7 +24,7 @@ const secondaryMarketSecurityTypes = [
   "action",
   "obligation",
   "sukukms",
-  "titresparticipatifsms",
+  "titresparticipatif",
 ];
 
 // Primary market security types

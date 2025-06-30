@@ -123,7 +123,7 @@ export function TitresTable({ type }: TitresTableProps) {
     ...(type !== "action" &&
     type !== "obligation" &&
     type !== "sukukms" &&
-    type !== "titresparticipatifsms"
+    type !== "titresparticipatif"
       ? [
           {
             accessorKey: "emissionDate",
@@ -320,7 +320,7 @@ export function TitresTable({ type }: TitresTableProps) {
           typeToFilter = "sukuk";
         } else if (
           type === "titresparticipatifsmp" ||
-          type === "titresparticipatifsms" ||
+          type === "titresparticipatif" ||
           type === "titresparticipatifs" ||
           type === "participatif"
         ) {

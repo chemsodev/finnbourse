@@ -46,7 +46,7 @@ const SecondaryMarketStockPage = ({
           ? t("action")
           : type === "sukukms"
           ? t("Sukuk")
-          : type === "titresparticipatifsms"
+          : type === "titresparticipatif"
           ? t("TitresParticipatifs")
           : t("obligation")}
       </div>

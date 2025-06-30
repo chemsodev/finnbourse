@@ -20,7 +20,7 @@ const isPrimaryMarketOrder = (securitytype: string) => {
 };
 
 const isSecondaryMarketOrder = (securitytype: string) => {
-  return ["action", "obligation", "sukukms", "titresparticipatifsms"].includes(
+  return ["action", "obligation", "sukukms", "titresparticipatif"].includes(
     securitytype
   );
 };

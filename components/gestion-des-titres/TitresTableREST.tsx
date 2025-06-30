@@ -69,7 +69,7 @@ export function TitresTableREST({ type }: TitresTableProps) {
     stockType = "sukuk";
   } else if (
     type === "titresparticipatifsmp" ||
-    type === "titresparticipatifsms" ||
+    type === "titresparticipatif" ||
     type === "titresparticipatifs"
   ) {
     stockType = "participatif";
@@ -128,7 +128,7 @@ export function TitresTableREST({ type }: TitresTableProps) {
     ...(type !== "action" &&
     type !== "obligation" &&
     type !== "sukukms" &&
-    type !== "titresparticipatifsms"
+    type !== "titresparticipatif"
       ? [
           {
             accessorKey: "emissionDate",

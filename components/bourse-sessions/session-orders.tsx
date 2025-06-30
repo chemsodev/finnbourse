@@ -330,6 +330,38 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   }
 
   // Pour toutes les autres sessions, on passe le contenu filtré (sortedOrders)
+  // Si le tableau est vide, on ajoute une ligne d'exemple factice pour la démo
+  const displayOrders = sortedOrders.length > 0 ? sortedOrders : [
+    {
+      id: 'EXEMPLE-VIDE',
+      securityissuer: 'Exemple Société',
+      securitytype: 'action',
+      securityid: 'EX-000',
+      securityquantity: 1000,
+      quantity: 10,
+      orderdate: new Date().toISOString(),
+      orderstatus: 5,
+      investorid: 'INV-EX',
+      negotiatorid: 'NEG-EX',
+      validity: '30',
+      duration: 5,
+      createdat: new Date().toISOString(),
+      payedWithCard: false,
+      visaCosob: 'VISA-EX',
+      isinCode: 'DZ0000000EX',
+      emissionDate: new Date().toISOString(),
+      mst: '1000 DA',
+      orderdirection: 1,
+      priceInstruction: 'au mieux',
+      timeInstruction: 'à durée limitée',
+      validityDate: new Date().toISOString(),
+      totalShares: 10000,
+      grossAmount: '10000 DA',
+      commission: '1 %',
+      netAmount: '10100 DA',
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <Card>
@@ -375,7 +407,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                 activeTab="all"
                 showActionColumn={false}
                 showResponseButton={false}
-                data={sortedOrders}
+                data={displayOrders}
               />
             );
           })()}
