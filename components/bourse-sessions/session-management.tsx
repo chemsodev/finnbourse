@@ -51,31 +51,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useTranslations } from "next-intl";
 
-// Mock data for demonstration
-const mockSessions = [
+export const mockSessions = [
   {
-    id: "1",
-    name: "Session Matinale",
+    id: "3",
+    name: "Session 003",
+    date: new Date("2025-05-02"),
+    status: "scheduled",
+    ordersCount: 0,
+    processedCount: 0,
+  },
+  {
+    id: "2",
+    name: "session 002",
     date: new Date("2025-05-01"),
     status: "active",
     ordersCount: 12,
     processedCount: 8,
   },
   {
-    id: "2",
-    name: "Session Après-midi",
+    id: "1",
+    name: "session 001",
     date: new Date("2025-05-01"),
     status: "completed",
     ordersCount: 15,
     processedCount: 15,
-  },
-  {
-    id: "3",
-    name: "Session Spéciale",
-    date: new Date("2025-05-02"),
-    status: "scheduled",
-    ordersCount: 0,
-    processedCount: 0,
   },
 ];
 
@@ -97,8 +96,8 @@ export default function SessionManagement({ onSessionSelect }: SessionManagement
     date: new Date(),
     status: "scheduled",
   });
-  const [sortField, setSortField] = useState<SortField>('name');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -308,15 +307,6 @@ export default function SessionManagement({ onSessionSelect }: SessionManagement
               </TableHead>
               <TableHead 
                 className="cursor-pointer"
-                onClick={() => handleSort('date')}
-              >
-                <div className="flex items-center">
-                  {t("tableHeaders.date")}
-                  {getSortIcon('date')}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer"
                 onClick={() => handleSort('status')}
               >
                 <div className="flex items-center">
@@ -342,6 +332,15 @@ export default function SessionManagement({ onSessionSelect }: SessionManagement
                   {getSortIcon('processed')}
                 </div>
               </TableHead>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('date')}
+              >
+                <div className="flex items-center">
+                  {t("tableHeaders.date")}
+                  {getSortIcon('date')}
+                </div>
+              </TableHead>
               <TableHead className="text-right">
                 {t("tableHeaders.actions")}
               </TableHead>
@@ -355,12 +354,12 @@ export default function SessionManagement({ onSessionSelect }: SessionManagement
                 onClick={(e) => handleRowClick(session.id, e)}
               >
                 <TableCell className="font-medium">{session.name}</TableCell>
-                <TableCell>{format(session.date, "dd/MM/yyyy")}</TableCell>
                 <TableCell>{getStatusBadge(session.status)}</TableCell>
                 <TableCell>{session.ordersCount}</TableCell>
                 <TableCell>
                   {session.processedCount}/{session.ordersCount}
                 </TableCell>
+                <TableCell>{format(session.date, "dd/MM/yyyy")}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
@@ -399,7 +398,6 @@ export default function SessionManagement({ onSessionSelect }: SessionManagement
                             {t("cancelButton")}
                           </AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-red-500 hover:bg-red-600"
                             onClick={() => handleDeleteSession(session.id)}
                           >
                             {t("deleteButton")}

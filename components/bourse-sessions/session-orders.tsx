@@ -40,13 +40,7 @@ import {
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-
-// Mock data for demonstration - adapted to match Order interface
-const mockSessions = [
-  { id: "1", name: "Session Matinale", date: new Date("2025-05-01"), status: "active" },
-  { id: "2", name: "Session Apres-midi", date: new Date("2025-05-01"), status: "scheduled" },
-  { id: "3", name: "Session Speciale", date: new Date("2025-05-02"), status: "completed" },
-];
+import { mockSessions } from "./session-management";
 
 interface SessionOrdersProps {
   selectedSessionId?: string | null;
@@ -68,6 +62,10 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [loading, setLoading] = useState(true);
   const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
+
+  const STATUS_SATISFIED = 8; 
+  const STATUS_UNSATISFIED = 9; 
+  const STATUS_PLANNED = 2;
 
   // Mettre à jour la session sélectionnée si la prop change
   useEffect(() => {
@@ -196,14 +194,13 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   const filterOrdersByPageAndRole = (orders: Order[], sessionStatus: string) => {
     switch (sessionStatus) {
       case "active":
-        // For active sessions, show orders with status 5 (same as carnet d'ordres)
         return orders.filter((order) => order.orderstatus === 5);
       case "scheduled":
-        // For scheduled sessions, show orders with status 2-4 (in progress)
-        return orders.filter((order) => order.orderstatus >= 2 && order.orderstatus <= 4);
+        return orders.filter((order) => order.orderstatus === STATUS_PLANNED);
       case "completed":
-        // For completed sessions, show orders with status 6-7 (awaiting approval/ongoing)
-        return orders.filter((order) => order.orderstatus >= 6 && order.orderstatus <= 7);
+        return orders.filter((order) =>
+          order.orderstatus === STATUS_SATISFIED || order.orderstatus === STATUS_UNSATISFIED
+        );
       default:
         return [];
     }
@@ -276,7 +273,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
 
   const selectedSessionData = mockSessions.find(s => s.id === selectedSession);
 
-  // Si la session est active, on affiche OrdresTable comme dans /ordres/execution
   if (selectedSessionData?.status === "active") {
     // On récupère les mêmes paramètres que dans /ordres/execution
     const currentPage = Number(searchParams?.get("page")) || 0;
@@ -292,7 +288,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
             <div>
               <CardTitle>Ordres de la Session</CardTitle>
               <CardDescription>
-                Ordres assignés à la session: {selectedSessionData?.name} ({selectedSessionData?.status})
+                Ordres assignés à la session: {selectedSessionData?.name}
               </CardDescription>
             </div>
             <div className="flex items-center gap-4">
@@ -307,7 +303,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                   <SelectContent>
                     {mockSessions.map((session) => (
                       <SelectItem key={session.id} value={session.id}>
-                        {session.name} ({session.status})
+                        {session.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -355,7 +351,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                 <SelectContent>
                   {mockSessions.map((session) => (
                     <SelectItem key={session.id} value={session.id}>
-                      {session.name} ({session.status})
+                      {session.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -383,24 +379,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                   <div className="flex items-center">
                     {t("titre")}
                     {getSortIcon('titre')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('investisseur')}
-                >
-                  <div className="flex items-center">
-                    {t("investisseur")}
-                    {getSortIcon('investisseur')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('iob')}
-                >
-                  <div className="flex items-center">
-                    IOB
-                    {getSortIcon('iob')}
                   </div>
                 </TableHead>
                 <TableHead 
@@ -448,7 +426,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                     {getSortIcon('date')}
                   </div>
                 </TableHead>
-                <TableHead className="text-right">Réponse</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -482,8 +459,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{order?.investorid || "N/A"}</TableCell>
-                    <TableCell>{order?.negotiatorid || "N/A"}</TableCell>
                     <TableCell
                       className={`${
                         order.orderdirection === 1 ? "text-green-500" : "text-red-600"
@@ -543,22 +518,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                     </TableCell>
                     <TableCell className="text-xs">
                       {new Date(order.createdat).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {selectedSessionData?.status === "active" ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                          onClick={() => {
-                            // Simulate response handling
-                            setOrdersWithResponses({ ...ordersWithResponses, [order.id]: !ordersWithResponses[order.id] });
-                          }}
-                      >
-                          {ordersWithResponses[order.id] ? "Modifier" : "Réponse"}
-                      </Button>
-                      ) : (
-                        <span className="text-gray-400 text-xs">-</span>
-                      )}
                     </TableCell>
                     <TableCell>
                       <OrdreDrawer 
