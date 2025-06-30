@@ -273,14 +273,13 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
 
   const selectedSessionData = mockSessions.find(s => s.id === selectedSession);
 
-  if (selectedSessionData?.status === "active") {
+  if (selectedSessionData?.status === "active" && selectedSessionData?.id === "2") {
     // On récupère les mêmes paramètres que dans /ordres/execution
     const currentPage = Number(searchParams?.get("page")) || 0;
     const searchquery = searchParams?.get("searchquery") || "";
     const state = searchParams?.get("state") || "99";
     const marketType = searchParams?.get("marketType") || "all";
     const userRole = (session.data as any)?.user?.roleid;
-    const showActionColumn = true;
     return (
       <div className="space-y-6">
         <Card>
@@ -330,6 +329,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     );
   }
 
+  // Pour toutes les autres sessions, on passe le contenu filtré (sortedOrders)
   return (
     <div className="space-y-6">
       <Card>
@@ -361,177 +361,24 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead 
-                  className="font-bold uppercase cursor-pointer"
-                  onClick={() => handleSort('id')}
-                >
-                  <div className="flex items-center">
-                    ID
-                    {getSortIcon('id')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('titre')}
-                >
-                  <div className="flex items-center">
-                    {t("titre")}
-                    {getSortIcon('titre')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('sens')}
-                >
-                  <div className="flex items-center">
-                    {t("sens")}
-                    {getSortIcon('sens')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('type')}
-                >
-                  <div className="flex items-center">
-                    {t("type")}
-                    {getSortIcon('type')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('quantity')}
-                >
-                  <div className="flex items-center">
-                    {t("quantity")}
-                    {getSortIcon('quantity')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('statut')}
-                >
-                  <div className="flex items-center">
-                    {t("statut")}
-                    {getSortIcon('statut')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('date')}
-                >
-                  <div className="flex items-center">
-                    {t("date")}
-                    {getSortIcon('date')}
-                  </div>
-                </TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedOrders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={11} className="text-center py-4">
-                    {selectedSessionData?.status === "active" 
-                      ? "Aucun ordre trouvé pour cette session active"
-                      : selectedSessionData?.status === "scheduled"
-                      ? "Aucun ordre en cours pour cette session planifiée"
-                      : "Aucun ordre en attente pour cette session terminée"
-                    }
-                  </TableCell>
-                </TableRow>
-              ) : (
-                sortedOrders.map((order: Order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-bold overflow-x-scroll w-60">
-                      {order?.id
-                        ? order.id.split("-").slice(0, 2).join("-")
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <div className="font-medium capitalize">
-                          {order?.securityissuer || "N/A"}
-                        </div>
-                        <div className="font-medium text-xs uppercase text-gray-400">
-                          {order?.securityid || "N/A"}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell
-                      className={`${
-                        order.orderdirection === 1 ? "text-green-500" : "text-red-600"
-                      }`}
-                    >
-                      {order.orderdirection === 1 ? t("achat") : t("vente")}
-                    </TableCell>
-                    <TableCell>
-                      {order.securitytype === "action"
-                        ? t("action")
-                        : order.securitytype === "obligation"
-                        ? t("obligation")
-                        : order.securitytype === "sukuk"
-                        ? t("sukuk")
-                        : order.securitytype === "opv"
-                        ? t("opv")
-                        : order.securitytype === "titresparticipatifs"
-                        ? t("titre_participatif")
-                        : order.securitytype === "empruntobligataire"
-                        ? t("emprunt_obligataire")
-                        : order.securitytype}
-                    </TableCell>
-                    <TableCell>{order.quantity}</TableCell>
-                    <TableCell>
-                      <div
-                        className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${
-                          selectedSessionData?.status === "active"
-                            ? ordersWithResponses[order.id]
-                              ? "bg-green-600" // Terminée
-                              : "bg-green-600"  // Actif (même que carnet d'ordres)
-                            : selectedSessionData?.status === "scheduled"
-                            ? getStatusBgColor(Number(order.orderstatus))
-                            : getStatusBgColor(Number(order.orderstatus))
-                        }`}
-                      >
-                        {selectedSessionData?.status === "active"
-                          ? ordersWithResponses[order.id]
-                            ? "Terminée"
-                            : "Actif"
-                          : selectedSessionData?.status === "scheduled"
-                          ? order?.orderstatus === 2
-                            ? tStatus("In_Progress")
-                            : order?.orderstatus === 3
-                            ? tStatus("Validated")
-                            : order?.orderstatus === 4
-                            ? tStatus("Being_Processed")
-                            : "Unknown"
-                          : selectedSessionData?.status === "completed"
-                          ? order?.orderstatus === 6
-                            ? tStatus("Awaiting_Approval")
-                            : order?.orderstatus === 7
-                            ? tStatus("Ongoing")
-                            : "Unknown"
-                          : "Unknown"
-                        }
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {new Date(order.createdat).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <OrdreDrawer 
-                        titreId={order.id} 
-                        orderData={order}
-                        isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          {(() => {
+            const userRole = (session.data as any)?.user?.roleid;
+            return (
+              <OrdresTable
+                searchquery={""}
+                skip={0}
+                state={"99"}
+                marketType={"all"}
+                pageType="orderExecution"
+                userRole={userRole?.toString() || "1"}
+                userType="iob"
+                activeTab="all"
+                showActionColumn={false}
+                showResponseButton={false}
+                data={sortedOrders}
+              />
+            );
+          })()}
         </CardContent>
       </Card>
     </div>

@@ -91,6 +91,7 @@ interface OrdresTableProps {
   showActionColumn?: boolean;
   onActionToggle?: () => void;
   showResponseButton?: boolean;
+  data?: Order[];
 }
 
 type SortField = 'id' | 'titre' | 'investisseur' | 'iob' | 'sens' | 'type' | 'quantity' | 'statut' | 'date';
@@ -108,11 +109,12 @@ export default function OrdresTable({
   showActionColumn = false,
   onActionToggle,
   showResponseButton = true,
+  data: injectedData,
 }: OrdresTableProps) {
   const session = useSession();
   const t = useTranslations("mesOrdres");
   const tStatus = useTranslations("status");
-  const [data, setData] = useState<Order[]>([]);
+  const [data, setData] = useState<Order[]>(injectedData ?? []);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -288,15 +290,12 @@ export default function OrdresTable({
   };
 
   useEffect(() => {
-    // Simulate API loading
     setLoading(true);
     setError(null);
 
-    // Add a small delay to simulate network request
     const timer = setTimeout(() => {
       try {
-        // Apply filters in sequence
-        let filteredData = [...mockOrders];
+        let filteredData = injectedData ? [...injectedData] : [...mockOrders];
 
         // Apply search filter
         if (searchquery) {
@@ -329,10 +328,10 @@ export default function OrdresTable({
       } finally {
         setLoading(false);
       }
-    }, 500); // 500ms delay to simulate network
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchquery, skip, state, marketType, pageType, userRole]);
+  }, [searchquery, skip, state, marketType, pageType, userRole, injectedData]);
 
   // Separate effect for sorting to avoid loading state
   useEffect(() => {
