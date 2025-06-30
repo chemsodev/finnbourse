@@ -321,7 +321,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
               userRole={userRole?.toString() || "1"}
               userType="iob"
               activeTab="all"
-              showActionColumn={showActionColumn}
+              showActionColumn={false}
               showResponseButton={false}
             />
           </CardContent>

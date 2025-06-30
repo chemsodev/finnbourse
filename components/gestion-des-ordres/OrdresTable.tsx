@@ -392,118 +392,121 @@ export default function OrdresTable({
       <Table>
         <TableHeader>
           <TableRow>
-          {pageType !== "dashboard" && (
-            <TableHead 
-              className="font-bold uppercase cursor-pointer"
-              onClick={() => handleSort('id')}
-            >
-              <div className="flex items-center">
-                ID
-                {getSortIcon('id')}
-              </div>
-            </TableHead>
-          )}
-          <TableHead 
-            className="cursor-pointer"
-            onClick={() => handleSort('titre')}
-          >
-            <div className="flex items-center">
-              {t("titre")}
-              {getSortIcon('titre')}
-            </div>
-          </TableHead>
-          {pageType === "carnetordres" && (
-            <TableHead 
-              className="cursor-pointer"
-              onClick={() => handleSort('investisseur')}
-            >
-              <div className="flex items-center">
-                {t("investisseur")}
-                {getSortIcon('investisseur')}
-              </div>
-            </TableHead>
-          )}
-          {pageType === "carnetordres" && (
-            <TableHead 
-              className="cursor-pointer"
-              onClick={() => handleSort('iob')}
-            >
-              <div className="flex items-center">
-                IOB
-                {getSortIcon('iob')}
-              </div>
-            </TableHead>
-          )}
-          <TableHead 
-            className="cursor-pointer"
-            onClick={() => handleSort('sens')}
-          >
-            <div className="flex items-center">
-              {t("sens")}
-              {getSortIcon('sens')}
-            </div>
-          </TableHead>
-          <TableHead 
-            className="cursor-pointer"
-            onClick={() => handleSort('type')}
-          >
-            <div className="flex items-center">
-              {t("type")}
-              {getSortIcon('type')}
-            </div>
-          </TableHead>
-          <TableHead 
-            className="cursor-pointer"
-            onClick={() => handleSort('quantity')}
-          >
-            <div className="flex items-center">
-              {t("quantity")}
-              {getSortIcon('quantity')}
-            </div>
-          </TableHead>
-          <TableHead>
-            {pageType === "carnetordres" ? (
-              <OrderStateFilter />
-            ) : (
-              <div 
-                className="flex items-center cursor-pointer"
-                onClick={() => handleSort('statut')}
+            <TableHead></TableHead>
+            {pageType !== "dashboard" && (
+              <TableHead 
+                className="font-bold uppercase cursor-pointer"
+                onClick={() => handleSort('id')}
               >
-                {t("statut")}
-                {getSortIcon('statut')}
-              </div>
-            )}
-            </TableHead>
-            {pageType === "carnetordres" && (
-              <TableHead>
-                <MarketTypeFilter />
+                <div className="flex items-center">
+                  ID
+                  {getSortIcon('id')}
+                </div>
               </TableHead>
             )}
-          <TableHead 
-            className="cursor-pointer"
-            onClick={() => handleSort('date')}
-          >
-            <div className="flex items-center">
-              {t("date")}
-              {getSortIcon('date')}
-            </div>
-          </TableHead>
-            {pageType === "orderExecution" && showActionColumn && showResponseButton && (
-              <TableHead className="text-right">Réponse</TableHead>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('titre')}
+            >
+              <div className="flex items-center">
+                {t("titre")}
+                {getSortIcon('titre')}
+              </div>
+            </TableHead>
+            {pageType === "carnetordres" && (
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('investisseur')}
+              >
+                <div className="flex items-center">
+                  {t("investisseur")}
+                  {getSortIcon('investisseur')}
+                </div>
+              </TableHead>
+            )}
+            {pageType === "carnetordres" && (
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort('iob')}
+              >
+                <div className="flex items-center">
+                  IOB
+                  {getSortIcon('iob')}
+                </div>
+              </TableHead>
+            )}
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('sens')}
+            >
+              <div className="flex items-center">
+                {t("sens")}
+                {getSortIcon('sens')}
+              </div>
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('type')}
+            >
+              <div className="flex items-center">
+                {t("type")}
+                {getSortIcon('type')}
+              </div>
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('quantity')}
+            >
+              <div className="flex items-center">
+                {t("quantity")}
+                {getSortIcon('quantity')}
+              </div>
+            </TableHead>
+            <TableHead>
+              {pageType === "carnetordres" ? (
+                <OrderStateFilter />
+              ) : (
+                <div 
+                  className="flex items-center cursor-pointer"
+                  onClick={() => handleSort('statut')}
+                >
+                  {t("statut")}
+                  {getSortIcon('statut')}
+                </div>
+              )}
+              </TableHead>
+              {pageType === "carnetordres" && (
+                <TableHead>
+                  <MarketTypeFilter />
+                </TableHead>
+              )}
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('date')}
+            >
+              <div className="flex items-center">
+                {t("date")}
+                {getSortIcon('date')}
+              </div>
+            </TableHead>
+            {pageType !== "dashboard" && <TableHead>Transaction</TableHead>}
+            {showActionColumn && (
+              <TableHead>Réponse</TableHead>
             )}
             {pageType !== "dashboard" && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-        {data.map((order: Order) => (
+        {data.map((order: Order, idx) => (
             <TableRow key={order.id}>
-            {pageType !== "dashboard" && (
-                  <TableCell className="font-bold overflow-x-scroll w-60">
-                    {order?.id
-                      ? order.id.split("-").slice(0, 2).join("-")
-                      : "N/A"}
-                  </TableCell>
-            )}
+              <TableCell>{skip + idx + 1}</TableCell>
+              {pageType !== "dashboard" && (
+                <TableCell className="font-bold overflow-x-scroll w-60">
+                  {order?.id
+                    ? order.id.split("-").slice(0, 2).join("-")
+                    : "N/A"}
+                </TableCell>
+              )}
               <TableCell>
                 <div className="flex flex-col">
                   <div className="font-medium capitalize">
@@ -599,24 +602,25 @@ export default function OrdresTable({
                     return `${day}/${month}/${year}`;
                   })()}
                 </TableCell>
-                {pageType === "orderExecution" && showActionColumn && showResponseButton && (
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleResponseClick(order)}
-                    >
-                      {ordersWithResponses[order.id] ? "Modifier" : "Réponse"}
+                {pageType !== "dashboard" && (
+                  <TableCell>
+                    {'sessionsCount' in order ? (order as any).sessionsCount : 0}
+                  </TableCell>
+                )}
+                {showActionColumn && (
+                  <TableCell>
+                    <Button size="sm" variant="outline" onClick={() => handleResponseClick(order)}>
+                      Réponse
                     </Button>
                   </TableCell>
                 )}
                 {pageType !== "dashboard" && (
                   <TableCell>
-                  <OrdreDrawer 
-                    titreId={order.id} 
-                    orderData={order}
-                    isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
-                  />
+                    <OrdreDrawer 
+                      titreId={order.id} 
+                      orderData={order}
+                      isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
+                    />
                   </TableCell>
                 )}
             </TableRow>

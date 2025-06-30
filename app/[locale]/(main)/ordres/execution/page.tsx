@@ -125,6 +125,7 @@ const page = () => {
   const handleActionConfirm = () => {
     setShowActionColumn(true);
     setIsConfirmDialogOpen(false);
+    console.log('Action confirmée : OK cliqué dans le popup de confirmation');
   };
 
   return (
@@ -178,6 +179,7 @@ const page = () => {
             activeTab="all"
             showActionColumn={showActionColumn}
             onActionToggle={handleActionToggle}
+            showResponseButton={true}
           />
         </div>
         <div className="flex justify-between items-center">
