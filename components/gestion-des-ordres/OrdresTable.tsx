@@ -114,8 +114,8 @@ export default function OrdresTable({
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [sortField, setSortField] = useState<SortField | null>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [responseForm, setResponseForm] = useState({
@@ -151,8 +151,8 @@ export default function OrdresTable({
           bValue = b.negotiatorid || '';
           break;
         case 'sens':
-          aValue = a.orderdirection;
-          bValue = b.orderdirection;
+          aValue = a.orderdirection === 1 ? t("achat") : t("vente");
+          bValue = b.orderdirection === 1 ? t("achat") : t("vente");
           break;
         case 'type':
           aValue = a.securitytype || '';
@@ -172,6 +172,11 @@ export default function OrdresTable({
           break;
         default:
           return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
       }
 
       if (direction === 'asc') {
@@ -541,8 +546,8 @@ export default function OrdresTable({
                   className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${
                     pageType === "orderExecution"
                       ? ordersWithResponses[order.id]
-                        ? "bg-green-600" // Terminée
-                        : "bg-green-600"  // Actif (au lieu de Planifiée)
+                        ? "bg-green-600"
+                        : "bg-green-600"
                       : pageType === "carnetordres"
                       ? "bg-green-600"  
                       : getStatusBgColor(Number(order.orderstatus))
@@ -551,7 +556,7 @@ export default function OrdresTable({
                   {pageType === "orderExecution"
                     ? ordersWithResponses[order.id]
                       ? "Terminée"
-                      : "Actif"
+                      : "En cours"
                     : pageType === "carnetordres"
                     ? "Active"
                     : order?.orderstatus === 0 && order?.payedWithCard
@@ -584,7 +589,13 @@ export default function OrdresTable({
                 </div>
               </TableCell>
                 <TableCell className="text-xs">
-                  {new Date(order.createdat).toLocaleDateString()}
+                  {(() => {
+                    const d = new Date(order.createdat);
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const year = d.getFullYear();
+                    return `${day}/${month}/${year}`;
+                  })()}
                 </TableCell>
                 {pageType === "orderExecution" && showActionColumn && (
                   <TableCell className="text-right">
