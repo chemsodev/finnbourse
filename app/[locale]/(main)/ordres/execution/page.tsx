@@ -32,6 +32,8 @@ const isSecondaryMarketOrder = (securitytype: string) => {
   );
 };
 
+const sessionName = "Session 003"; // À remplacer par une variable dynamique si besoin
+
 const page = () => {
   const session = useSession();
   const searchParams = useSearchParams();
@@ -114,8 +116,14 @@ const page = () => {
         <MyMarquee />
       </div>
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
-        <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
-          Carnet d'Ordres
+        <div className="flex items-center justify-between w-full pr-8">
+          <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
+            Carnet d'Ordres
+          </div>
+          <div className="text-lg font-semibold uppercase tracking-wide flex items-center gap-2 text-primary bg-primary/10 px-6 py-2 rounded shadow-sm border border-primary/20">
+            <CalendarClock className="w-5 h-5 text-primary" />
+            <span>{sessionName}</span>
+          </div>
         </div>
         <div className="text-xs text-gray-500 md:w-[50%] text-center md:ltr:text-left md:rtl:text-right">
           Gestion et suivi des ordres de bourse

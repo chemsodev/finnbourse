@@ -37,6 +37,9 @@ import {
   filterOrdersByMarketType,
   paginateOrders,
 } from "@/lib/mockData";
+import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
+import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 // Mock data for demonstration - adapted to match Order interface
 const mockSessions = [
@@ -55,6 +58,8 @@ type SortDirection = 'asc' | 'desc' | null;
 export default function SessionOrders({ selectedSessionId }: SessionOrdersProps) {
   const t = useTranslations("mesOrdres");
   const tStatus = useTranslations("status");
+  const session = useSession();
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedSession, setSelectedSession] = useState<string>(
     selectedSessionId || "1"
@@ -271,6 +276,63 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
 
   const selectedSessionData = mockSessions.find(s => s.id === selectedSession);
 
+  // Si la session est active, on affiche OrdresTable comme dans /ordres/execution
+  if (selectedSessionData?.status === "active") {
+    // On récupère les mêmes paramètres que dans /ordres/execution
+    const currentPage = Number(searchParams?.get("page")) || 0;
+    const searchquery = searchParams?.get("searchquery") || "";
+    const state = searchParams?.get("state") || "99";
+    const marketType = searchParams?.get("marketType") || "all";
+    const userRole = (session.data as any)?.user?.roleid;
+    const showActionColumn = true;
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Ordres de la Session</CardTitle>
+              <CardDescription>
+                Ordres assignés à la session: {selectedSessionData?.name} ({selectedSessionData?.status})
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-64">
+                <Select
+                  onValueChange={setSelectedSession}
+                  value={selectedSession}
+                >
+                  <SelectTrigger id="session-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSessions.map((session) => (
+                      <SelectItem key={session.id} value={session.id}>
+                        {session.name} ({session.status})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <OrdresTable
+              searchquery={searchquery}
+              skip={currentPage}
+              state={state}
+              marketType={marketType}
+              pageType="orderExecution"
+              userRole={userRole?.toString() || "1"}
+              userType="iob"
+              activeTab="all"
+              showActionColumn={showActionColumn}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -484,16 +546,16 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                     </TableCell>
                     <TableCell className="text-right">
                       {selectedSessionData?.status === "active" ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
+                      <Button
+                        variant="outline"
+                        size="sm"
                           onClick={() => {
                             // Simulate response handling
                             setOrdersWithResponses({ ...ordersWithResponses, [order.id]: !ordersWithResponses[order.id] });
                           }}
-                        >
+                      >
                           {ordersWithResponses[order.id] ? "Modifier" : "Réponse"}
-                        </Button>
+                      </Button>
                       ) : (
                         <span className="text-gray-400 text-xs">-</span>
                       )}
