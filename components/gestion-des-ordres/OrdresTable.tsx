@@ -128,6 +128,7 @@ export default function OrdresTable({
     prix: "",
   });
   const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
+  const [responsesData, setResponsesData] = useState<Record<string, { reliquat: string; quantite: string; prix: string }>>({});
 
   // Sort function
   const sortData = (data: Order[], field: SortField, direction: SortDirection) => {
@@ -223,13 +224,12 @@ export default function OrdresTable({
   // Handle response click
   const handleResponseClick = (order: Order) => {
     setSelectedOrder(order);
-    
-    // Si l'ordre a déjà une réponse, pré-remplir le formulaire
-    if (ordersWithResponses[order.id]) {
+    // Si l'ordre a déjà une réponse, pré-remplir le formulaire avec les anciennes valeurs
+    if (ordersWithResponses[order.id] && responsesData[order.id]) {
       setResponseForm({
-        reliquat: "Valeur précédente", // Ici vous pourriez récupérer les vraies valeurs
-        quantite: "Valeur précédente",
-        prix: "Valeur précédente",
+        reliquat: responsesData[order.id].reliquat,
+        quantite: responsesData[order.id].quantite,
+        prix: responsesData[order.id].prix,
       });
     } else {
       setResponseForm({
@@ -238,7 +238,6 @@ export default function OrdresTable({
         prix: "",
       });
     }
-    
     setIsResponseDialogOpen(true);
   };
 
@@ -249,12 +248,18 @@ export default function OrdresTable({
       orderId: selectedOrder?.id,
       ...responseForm
     });
-    
     // Ajouter l'ordre à la liste des ordres avec réponses soumises
     if (selectedOrder?.id) {
       setOrdersWithResponses({ ...ordersWithResponses, [selectedOrder.id]: true });
+      setResponsesData({
+        ...responsesData,
+        [selectedOrder.id]: {
+          reliquat: responseForm.reliquat,
+          quantite: responseForm.quantite,
+          prix: responseForm.prix,
+        },
+      });
     }
-    
     setIsResponseDialogOpen(false);
   };
 
@@ -609,7 +614,7 @@ export default function OrdresTable({
                 {showActionColumn && (
                   <TableCell>
                     <Button size="sm" variant="outline" onClick={() => handleResponseClick(order)}>
-                      Réponse
+                      {ordersWithResponses[order.id] ? 'Modifier' : 'Réponse'}
                     </Button>
                   </TableCell>
                 )}
