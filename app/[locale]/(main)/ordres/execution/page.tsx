@@ -15,6 +15,16 @@ import { mockOrders, filterOrdersByMarketType } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 // Helper function to determine if an order is from primary or secondary market
 const isPrimaryMarketOrder = (securitytype: string) => {
@@ -47,6 +57,7 @@ const page = () => {
   const t = useTranslations("mesOrdres");
   const tStatus = useTranslations("status");
   const [showActionColumn, setShowActionColumn] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   
   // Use mock data instead of GraphQL
   const data = mockOrders;
@@ -111,6 +122,11 @@ const page = () => {
     setShowActionColumn(!showActionColumn);
   };
 
+  const handleActionConfirm = () => {
+    setShowActionColumn(true);
+    setIsConfirmDialogOpen(false);
+  };
+
   return (
     <div className="motion-preset-focus motion-duration-2000">
       <div className="mt-3">
@@ -167,12 +183,26 @@ const page = () => {
         <div className="flex justify-between items-center">
           <MyPagination />
           <div className="flex justify-end">
-            <Button 
+            <Button
               className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-              onClick={handleActionToggle}
+              onClick={() => setIsConfirmDialogOpen(true)}
             >
               Action
             </Button>
+            <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Êtes-vous sûr de vouloir fermer la session ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                  Tout nouvel ordre sera redirigé vers la session suivante. 
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleActionConfirm}>Oui</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>
