@@ -67,6 +67,10 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   const STATUS_UNSATISFIED = 9; 
   const STATUS_PLANNED = 2;
 
+  // Ajout état pour le tri
+  const [sortFieldTerminee, setSortFieldTerminee] = useState<string | null>(null);
+  const [sortDirectionTerminee, setSortDirectionTerminee] = useState<'asc' | 'desc' | null>(null);
+
   // Mettre à jour la session sélectionnée si la prop change
   useEffect(() => {
     if (selectedSessionId) {
@@ -361,6 +365,146 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
       netAmount: '10100 DA',
     }
   ];
+
+  // Ajoute l'index et les champs calculés à chaque ligne pour le tri spécial
+  type TermineeRow = typeof displayOrders[0] & { idx: number, statut: string, transaction: number, reliquat: number };
+  const displayOrdersWithIdx: TermineeRow[] = displayOrders.map((o, idx) => ({
+    ...o,
+    idx,
+    statut: idx % 2 === 0 ? 'Satisfait' : 'Non satisfait',
+    transaction: idx % 2 === 0 ? 1 : 0,
+    reliquat: idx % 2 !== 0 ? 80 : 0
+  }));
+  const sortDataTerminee = (data: TermineeRow[], field: string | null, direction: 'asc' | 'desc' | null) => {
+    if (!field || !direction) return data;
+    return [...data].sort((a, b) => {
+      let aValue: any = 0;
+      let bValue: any = 0;
+      switch (field) {
+        case 'idx': aValue = a.idx; bValue = b.idx; break;
+        case 'id': aValue = a.id; bValue = b.id; break;
+        case 'securityissuer': aValue = a.securityissuer; bValue = b.securityissuer; break;
+        case 'orderdirection': aValue = a.orderdirection; bValue = b.orderdirection; break;
+        case 'quantity': aValue = a.quantity; bValue = b.quantity; break;
+        case 'statut': aValue = a.statut; bValue = b.statut; break;
+        case 'transaction': aValue = a.transaction; bValue = b.transaction; break;
+        case 'reliquat': aValue = a.reliquat; bValue = b.reliquat; break;
+        default: return 0;
+      }
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+      if (direction === 'asc') return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+    });
+  };
+  const sortedDisplayOrders: TermineeRow[] = sortDataTerminee(displayOrdersWithIdx, sortFieldTerminee, sortDirectionTerminee);
+
+  // Gestion du clic sur l'en-tête
+  const handleSortTerminee = (field: string) => {
+    if (sortFieldTerminee === field) {
+      if (sortDirectionTerminee === 'asc') setSortDirectionTerminee('desc');
+      else if (sortDirectionTerminee === 'desc') { setSortDirectionTerminee(null); setSortFieldTerminee(null); }
+      else setSortDirectionTerminee('asc');
+    } else {
+      setSortFieldTerminee(field);
+      setSortDirectionTerminee('asc');
+    }
+  };
+
+  // Icône de tri
+  const getSortIconTerminee = (field: string) => {
+    if (sortFieldTerminee !== field) return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
+    if (sortDirectionTerminee === 'asc') return <ChevronUp className="inline ml-1 h-4 w-4 text-blue-600" />;
+    if (sortDirectionTerminee === 'desc') return <ChevronDown className="inline ml-1 h-4 w-4 text-blue-600" />;
+    return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
+  };
+
+  // Bloc pour session terminée (status 'completed')
+  if (selectedSessionData?.status === "completed") {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Ordres de la Session</CardTitle>
+              <CardDescription>
+                Ordres assignés à la session: {selectedSessionData?.name} (Terminée)
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-64">
+                <Select
+                  onValueChange={setSelectedSession}
+                  value={selectedSession}
+                >
+                  <SelectTrigger id="session-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSessions.map((session) => (
+                      <SelectItem key={session.id} value={session.id}>
+                        {session.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('idx')}></TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('id')}>ID {getSortIconTerminee('id')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('securityissuer')}>Titre {getSortIconTerminee('securityissuer')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('orderdirection')}>Sens {getSortIconTerminee('orderdirection')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('quantity')}>Volume {getSortIconTerminee('quantity')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('statut')}>Statut {getSortIconTerminee('statut')}</TableHead>
+                  <TableHead colSpan={3} className="p-0 align-middle">
+                    <div className="flex flex-col items-center justify-center w-full h-full">
+                      <div className="font-bold uppercase text-xs  w-full text-center">Allocation</div>
+                      <div className="flex flex-row w-full pt-1">
+                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('transaction'); }}>Transaction {getSortIconTerminee('transaction')}</span>
+                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('quantity'); }}>Volume {getSortIconTerminee('quantity')}</span>
+                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('reliquat'); }}>Reliquat {getSortIconTerminee('reliquat')}</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedDisplayOrders.map((order, idx) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="px-4 py-2 text-center align-middle">{idx + 1}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle" title={order.id}>{order.id?.split("-")[0]}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.securityissuer}</TableCell>
+                    <TableCell className={`px-4 py-2 text-center align-middle ${order.orderdirection === 1 ? 'text-green-600' : 'text-red-600'}`}>{order.orderdirection === 1 ? 'Achat' : 'Vente'}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.quantity}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${order.statut === 'Satisfait' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{order.statut}</span>
+                    </TableCell>
+                    {/* Allocation sous-colonnes */}
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.transaction}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.quantity}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.reliquat}</TableCell>
+                    <TableCell className="px-4 py-2 text-right align-middle">
+                      <OrdreDrawer
+                        titreId={order.id}
+                        orderData={order}
+                        isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
