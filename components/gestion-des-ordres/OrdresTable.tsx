@@ -129,6 +129,10 @@ export default function OrdresTable({
   });
   const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
   const [responsesData, setResponsesData] = useState<Record<string, { reliquat: string; quantite: string; prix: string }>>({});
+  const [responseVersion, setResponseVersion] = useState(0);
+
+  // Ajout pour message contextuel
+  const attenteReponse = showActionColumn === true;
 
   // Sort function
   const sortData = (data: Order[], field: SortField, direction: SortDirection) => {
@@ -249,15 +253,20 @@ export default function OrdresTable({
     });
     // Ajouter l'ordre à la liste des ordres avec réponses soumises
     if (selectedOrder?.id) {
-      setOrdersWithResponses({ ...ordersWithResponses, [selectedOrder.id]: true });
-      setResponsesData({
-        ...responsesData,
-        [selectedOrder.id]: {
+      setOrdersWithResponses(prev => {
+        const updated = { ...prev, [selectedOrder.id!]: true };
+        // Incrémente la version pour forcer le re-render
+        setResponseVersion(v => v + 1);
+        return updated;
+      });
+      setResponsesData(prev => ({
+        ...prev,
+        [selectedOrder.id!]: {
           reliquat: responseForm.reliquat,
           quantite: responseForm.quantite,
           prix: responseForm.prix,
         },
-      });
+      }));
     }
     setIsResponseDialogOpen(false);
   };
@@ -484,7 +493,7 @@ export default function OrdresTable({
                 {getSortIcon('date')}
               </div>
             </TableHead>
-            {pageType !== "dashboard" && <TableHead>Transaction</TableHead>}
+            {pageType !== "dashboard" && <TableHead>Trans</TableHead>}
             {showActionColumn && (
               <TableHead>Réponse</TableHead>
             )}
@@ -604,7 +613,7 @@ export default function OrdresTable({
                 {showActionColumn && (
                   <TableCell>
                     <Button size="sm" variant="outline" onClick={() => handleResponseClick(order)}>
-                      {ordersWithResponses[order.id] ? 'Modifier' : 'Réponse'}
+                      {ordersWithResponses[order.id] ? 'Modifier Résultat' : 'Résultat'}
                     </Button>
                   </TableCell>
                 )}

@@ -42,7 +42,7 @@ const isSecondaryMarketOrder = (securitytype: string) => {
   );
 };
 
-const sessionName = "Session 003"; 
+const sessionName = "Session 002"; 
 const sessionDate = "01-06-2024"; 
 
 const page = () => {
@@ -151,20 +151,27 @@ const page = () => {
         </div>
       </div>
       <div className="border border-gray-100 rounded-md p-4 mt-10">
-        <div className="flex justify-between w-full gap-4">
-          <div className="w-[30%]">
-            <TabSearch />
+        <div className="mb-4">
+          <div className="text-sm text-center font-medium text-gray-700 px-2 pb-1">
+            {showActionColumn
+              ? "Les ordres sont en attente de réponse..."
+              : "Les ordres sont en cours d'arrivage..."}
           </div>
-          <div className="flex gap-4 flex-shrink-0">
-            <PDFDropdownMenu />
-            <Link
-              href="/ordres/sessions"
-              className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-            >
-              <CalendarClock size={20} />
-              Sessions de Bourse
-            </Link>
-            <ExportButton data={exportData} />
+          <div className="flex justify-between w-full gap-4 items-center mt-2">
+            <div className="w-[30%]">
+              <TabSearch />
+            </div>
+            <div className="flex gap-4 flex-shrink-0">
+              <PDFDropdownMenu />
+              <Link
+                href="/ordres/sessions"
+                className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
+              >
+                <CalendarClock size={20} />
+                Sessions de Bourse
+              </Link>
+              <ExportButton data={exportData} />
+            </div>
           </div>
         </div>
         <div className="my-8">
