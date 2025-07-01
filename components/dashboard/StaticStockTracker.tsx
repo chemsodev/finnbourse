@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CarnetOrdre from "./CarnetOrdre";
 
 // Mock data for stocks
 const mockStocks = [
@@ -119,6 +120,7 @@ export function StaticStockTracker() {
   const [stockOneData, setStockOneData] = useState<any[]>(mockStocks[0].marketmetadata.cours);
   const [stockTwoData, setStockTwoData] = useState<any[]>(mockStocks[1].marketmetadata.cours);
   const [compareMode, setCompareMode] = useState(true);
+  const [view, setView] = useState<'graphe comparatif' | 'carnet'>('graphe comparatif');
 
   const mergeData = useCallback((data1: any[], data2: any[]) => {
     const dateMap = new Map();
@@ -238,314 +240,325 @@ export function StaticStockTracker() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-            <div className="grid flex-1 gap-1 font-bold text-xl capitalize">
-              {t("title")}
-            </div>
-          </div>
-        </div>
 
-      {/* Main Content - Side by Side Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart Section - Takes 2/3 of the space */}
-        <div className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                {t("graph")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1">
-          {!stockOneData || !stockTwoData ? (
-            <div className="h-60 border rounded-md flex justify-center text-center items-center shadow-inner">
-              {t("noData")}
-            </div>
-          ) : (
-            <div className="pr-2 pt-4 sm:pr-6 sm:pt-6 animate-fade-in">
-              <ChartContainer
-                config={chartConfig}
-                    className="aspect-auto h-[400px] w-full"
-              >
-                <AreaChart data={mergedData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                    tickFormatter={(value) => {
-                      const date = new Date(value);
-                      return date.toLocaleDateString("fr-DZ", {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                      });
-                    }}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickCount={3}
-                    domain={["dataMin", "auto"]}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value) => {
-                          return new Date(value).toLocaleDateString("fr-DZ", {
-                            year: "numeric",
-                            month: "numeric",
-                            day: "numeric",
-                          });
-                        }}
-                        indicator="dot"
-                      />
-                    }
-                  />
-                  <Area
-                    dataKey="stockOne"
-                    type="natural"
-                    fill="url(#fillStockOne)"
-                    stroke={chartConfig.stockOne.color}
-                    strokeWidth={4}
-                  />
-                  {compareMode && (
+      {/* Switch Buttons */}
+      <div className="flex mb-4">
+        <button
+          className={`px-4 py-2 rounded ${view === "graphe comparatif" ? "bg-primary text-white" : "bg-gray-200"}`}
+          onClick={() => setView("graphe comparatif")}
+        >
+          graphe comparatife
+        </button>
+        <button
+          className={`px-4 py-2 rounded ${view === "carnet" ? "bg-primary text-white" : "bg-gray-200"}`}
+          onClick={() => setView("carnet")}
+        >
+          Carnet d'ordre
+        </button>
+      </div>
+
+      {view === 'graphe comparatif' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Chart Section - Takes 2/3 of the space */}
+          <div className="lg:col-span-2">
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  {t("graphe comparatif")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1">
+            {!stockOneData || !stockTwoData ? (
+              <div className="h-60 border rounded-md flex justify-center text-center items-center shadow-inner">
+                {t("noData")}
+              </div>
+            ) : (
+              <div className="pr-2 pt-4 sm:pr-6 sm:pt-6 animate-fade-in">
+                <ChartContainer
+                  config={chartConfig}
+                      className="aspect-auto h-[400px] w-full"
+                >
+                  <AreaChart data={mergedData}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return date.toLocaleDateString("fr-DZ", {
+                          year: "numeric",
+                          month: "numeric",
+                          day: "numeric",
+                        });
+                      }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickCount={3}
+                      domain={["dataMin", "auto"]}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(value) => {
+                            return new Date(value).toLocaleDateString("fr-DZ", {
+                              year: "numeric",
+                              month: "numeric",
+                              day: "numeric",
+                            });
+                          }}
+                          indicator="dot"
+                        />
+                      }
+                    />
                     <Area
-                      dataKey="stockTwo"
+                      dataKey="stockOne"
                       type="natural"
-                      fill="url(#fillStockTwo)"
-                      stroke={chartConfig.stockTwo.color}
+                      fill="url(#fillStockOne)"
+                      stroke={chartConfig.stockOne.color}
                       strokeWidth={4}
                     />
-                  )}
-                  <ChartLegend content={<ChartLegendContent />} />
-                </AreaChart>
-              </ChartContainer>
-            </div>
-          )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Actions Section - Takes 1/3 of the space */}
-        <div className="lg:col-span-1">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">
-                {t("stocks")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1">
-          <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col">
-                  <div className="space-y-4 flex-1">
-                    <FormField
-                      control={form.control}
-                      name="firstAction"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("stockOne")}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={t("selectStock")} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {mockStocks?.map((t: any) => (
-                                <SelectItem key={t.id} value={t.id}>{t.issuer}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="secondAction"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("stockTwo")}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={t("selectStock")} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {mockStocks?.map((t: any) => (
-                                <SelectItem key={t.id} value={t.id}>
-                                  {t.issuer}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            {t("stockToCompare")}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Separator className="my-4" />
-
-                    <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="fromDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>{t("startPeriod")}</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    " pl-3 text-left font-normal",
-                                    !fromDate && "text-muted-foreground"
-                                  )}
-                                >
-                                  {fromDate ? (
-                                    format(
-                                      fromDate,
-                                      locale === "ar" ? "dd/MM/yyyy" : "PPP",
-                                      {
-                                        locale:
-                                          locale === "fr"
-                                            ? fr
-                                            : locale === "en"
-                                            ? enUS
-                                            : ar,
-                                      }
-                                    )
-                                  ) : (
-                                    <span>{t("pickADate")}</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                defaultMonth={fromDate}
-                                selected={fromDate}
-                                onSelect={setFromDate}
-                                numberOfMonths={1}
-                                captionLayout="dropdown-buttons"
-                                fromYear={1950}
-                                toYear={2050}
-                                locale={
-                                  locale === "fr"
-                                    ? fr
-                                    : locale === "en"
-                                    ? enUS
-                                    : ar
-                                }
-                              />
-                            </PopoverContent>
-                          </Popover>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="toDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>{t("endPeriod")}</FormLabel>
-
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    " pl-3 text-left font-normal",
-                                    !toDate && "text-muted-foreground"
-                                  )}
-                                >
-                                  {toDate ? (
-                                    format(
-                                      toDate,
-                                      locale === "ar" ? "dd/MM/yyyy" : "PPP",
-                                      {
-                                        locale:
-                                          locale === "fr"
-                                            ? fr
-                                            : locale === "en"
-                                            ? enUS
-                                            : ar,
-                                      }
-                                    )
-                                  ) : (
-                                    <span>{t("pickADate")}</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                defaultMonth={toDate}
-                                selected={toDate}
-                                onSelect={setToDate}
-                                numberOfMonths={1}
-                                captionLayout="dropdown-buttons"
-                                fromYear={1950}
-                                toYear={2050}
-                                locale={
-                                  locale === "fr"
-                                    ? fr
-                                    : locale === "en"
-                                    ? enUS
-                                    : ar
-                                }
-                              />
-                            </PopoverContent>
-                          </Popover>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                </div>
+                    {compareMode && (
+                      <Area
+                        dataKey="stockTwo"
+                        type="natural"
+                        fill="url(#fillStockTwo)"
+                        stroke={chartConfig.stockTwo.color}
+                        strokeWidth={4}
+                      />
+                    )}
+                    <ChartLegend content={<ChartLegendContent />} />
+                  </AreaChart>
+                </ChartContainer>
               </div>
+            )}
+              </CardContent>
+            </Card>
+          </div>
 
-                  <Button type="submit" disabled={loading} className="w-full mt-auto">
-                {loading ? "chargement..." : "Voir"}
-              </Button>
-            </form>
-          </Form>
-            </CardContent>
-          </Card>
+          {/* Actions Section - Takes 1/3 of the space */}
+          <div className="lg:col-span-1">
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  {t("stocks")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1">
+            <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col">
+                    <div className="space-y-4 flex-1">
+                      <FormField
+                        control={form.control}
+                        name="firstAction"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("stockOne")}</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t("selectStock")} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {mockStocks?.map((t: any) => (
+                                  <SelectItem key={t.id} value={t.id}>{t.issuer}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="secondAction"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("stockTwo")}</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t("selectStock")} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {mockStocks?.map((t: any) => (
+                                  <SelectItem key={t.id} value={t.id}>
+                                    {t.issuer}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              {t("stockToCompare")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Separator className="my-4" />
+
+                      <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="fromDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>{t("startPeriod")}</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      " pl-3 text-left font-normal",
+                                      !fromDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {fromDate ? (
+                                      format(
+                                        fromDate,
+                                        locale === "ar" ? "dd/MM/yyyy" : "PPP",
+                                        {
+                                          locale:
+                                            locale === "fr"
+                                              ? fr
+                                              : locale === "en"
+                                              ? enUS
+                                              : ar,
+                                        }
+                                      )
+                                    ) : (
+                                      <span>{t("pickADate")}</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  defaultMonth={fromDate}
+                                  selected={fromDate}
+                                  onSelect={setFromDate}
+                                  numberOfMonths={1}
+                                  captionLayout="dropdown-buttons"
+                                  fromYear={1950}
+                                  toYear={2050}
+                                  locale={
+                                    locale === "fr"
+                                      ? fr
+                                      : locale === "en"
+                                      ? enUS
+                                      : ar
+                                  }
+                                />
+                              </PopoverContent>
+                            </Popover>
+
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="toDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>{t("endPeriod")}</FormLabel>
+
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      " pl-3 text-left font-normal",
+                                      !toDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {toDate ? (
+                                      format(
+                                        toDate,
+                                        locale === "ar" ? "dd/MM/yyyy" : "PPP",
+                                        {
+                                          locale:
+                                            locale === "fr"
+                                              ? fr
+                                              : locale === "en"
+                                              ? enUS
+                                              : ar,
+                                        }
+                                      )
+                                    ) : (
+                                      <span>{t("pickADate")}</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  defaultMonth={toDate}
+                                  selected={toDate}
+                                  onSelect={setToDate}
+                                  numberOfMonths={1}
+                                  captionLayout="dropdown-buttons"
+                                  fromYear={1950}
+                                  toYear={2050}
+                                  locale={
+                                    locale === "fr"
+                                      ? fr
+                                      : locale === "en"
+                                      ? enUS
+                                      : ar
+                                  }
+                                />
+                              </PopoverContent>
+                            </Popover>
+
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                  </div>
+                </div>
+
+                    <Button type="submit" disabled={loading} className="w-full mt-auto">
+                  {loading ? "chargement..." : "Voir"}
+                </Button>
+              </form>
+            </Form>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      ) : (
+        <CarnetOrdre />
+      )}
     </div>
   );
 }

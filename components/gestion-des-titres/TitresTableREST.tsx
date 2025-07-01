@@ -44,9 +44,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface TitresTableProps {
   type: string;
+  basePath: string;
 }
 
-export function TitresTableREST({ type }: TitresTableProps) {
+export function TitresTableREST({ type, basePath }: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -236,14 +237,14 @@ export function TitresTableREST({ type }: TitresTableProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
+                  href={(('link' in stock && (stock as any).link) || ('url' in stock && (stock as any).url) ? `${('link' in stock && (stock as any).link) || (stock as any).url}/${type}/${stock.id}` : `${basePath}/${type}/${stock.id}`)}
                 >
                   {t("voirDetails")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
+                  href={(('link' in stock && (stock as any).link) || ('url' in stock && (stock as any).url) ? `${('link' in stock && (stock as any).link) || (stock as any).url}/${type}/${stock.id}` : `${basePath}/${type}/${stock.id}`)}
                 >
                   {t("passerOrdre")}
                 </Link>
