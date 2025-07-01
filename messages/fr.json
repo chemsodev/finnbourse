@@ -2802,5 +2802,24 @@
   "roles": {
     "assignRoles": "Attribuer les rôles",
     "selectAppropriateRoles": "Sélectionnez les rôles appropriés pour cet utilisateur"
+  },
+  "GestionDesTitres": {
+    "title": "Gestion des Titres",
+    "primaryMarket": "Marché Primaire",
+    "secondaryMarket": "Marché Secondaire",
+    "infoDialogue": {
+      "primaryMarket": {
+        "description": "Le marché primaire est l’endroit où de nouveaux titres sont émis pour la première fois. En investissant dans ce marché, vous :",
+        "li1P": "Accédez aux nouvelles émissions directement auprès de l’émetteur.",
+        "li2P": "Contribuez au financement des entreprises ou de l’État.",
+        "li3P": "Bénéficiez de droits préférentiels dans certaines souscriptions."
+      },
+      "secondaryMarket": {
+        "description": "Le marché secondaire est l’endroit où les titres déjà émis sont échangés entre investisseurs. En y participant, vous :",
+        "li1S": "Achetez et vendez des titres existants avec d’autres investisseurs.",
+        "li2S": "Contribuez à la liquidité des actifs financiers.",
+        "li3S": "Profitez des fluctuations de prix pour maximiser vos gains."
+      }
+    }
   }
 }

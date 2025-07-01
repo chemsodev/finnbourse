@@ -375,9 +375,16 @@
     "marche_secondaire": "Secondary Market",
     "copierID": "Copy ID",
     "voirDetails": "View Details",
+    "modifier": "Edit",
     "passerOrdre": "Place Order",
     "filterTitres": "Filter securities...",
-    "statut": "Status"
+    "statut": "Status",
+    "precedent": "Previous",
+    "suivant": "Next",
+    "de": "From",
+    "lignesSelectionnees": "Selected Lines",
+    "aucunResultat": "No results found",
+    "valeurActuelle": "Current Value"
   },
   "TitreDrawer": {
     "repayementMethod": "Repayment Method",
@@ -2832,5 +2839,111 @@
   "roles": {
     "assignRoles": "Assign Roles",
     "selectAppropriateRoles": "Select appropriate roles for this user"
+  },
+  "GestionDesTitres": {
+    "title": "Securities Management",
+    "primaryMarket": {
+      "title": "Primary Market",
+      "types": {
+        "ipo": {
+          "title": "IPO",
+          "description": "Initial Public Offerings (IPO) represent an opportunity for investors to buy shares of a company going public for the first time. When a company decides to go public, it issues new shares that are offered to the public through an IPO. This process allows the company to raise funds to finance its projects, while offering investors the chance to acquire shares before they are available on the secondary market. Participating in an IPO can offer opportunities to buy at an attractive price, often in anticipation of the company's future growth."
+        },
+        "bondIssue": {
+          "title": "Bond Issue",
+          "description": "A bond issue is a type of financial instrument where investors lend money to companies or governments in exchange for regular interest payments and the repayment of the principal at maturity. Bonds are debt securities issued to finance projects or operations. They generally offer a fixed return, making them attractive to investors seeking predictable income and a certain level of security. Bond issues can vary in terms of duration, interest rate, and risk, depending on the issuer and market conditions."
+        },
+        "participativeTitles": {
+          "title": "Participative Titles",
+          "description": "Participative Titles are financial instruments that allow investors to acquire shares in private or public companies. They offer a combination of return and risk, as holders of participative titles can benefit from the company's performance but are also exposed to the risks associated with the company's activity. These titles are often used by companies to raise funds while sharing profits with investors."
+        },
+        "sukuk": {
+          "title": "Sukuk",
+          "description": "Sukuk are Islamic debt securities that comply with the principles of Islamic finance, including the prohibition of interest (riba). They are issued by companies or governments and are based on tangible assets. Investors in Sukuk share the profits and losses associated with the underlying asset, which distinguishes them from traditional bonds. Sukuk are often used to finance infrastructure projects or other large-scale investments."
+        }
+      }
+    },
+    "secondaryMarket": {
+      "title": "Secondary Market",
+      "types": {
+        "stock": "Stock",
+        "bond": "Bond",
+        "participativeTitles": "Participative Titles",
+        "sukuk": "Sukuk"
+      }
+    },
+    "infoDialogue": {
+      "primaryMarket": {
+        "description": "TThe primary market is where new securities are issued for the first time. By buying in this market, you:",
+        "li1P": "Access new issues directly from the issuer.",
+        "li2P": "Contribute to the company or government's fundraising.",
+        "li3P": "Benefit from preferential rights in certain subscriptions."
+      },
+      "secondaryMarket": {
+        "description": "The secondary market is where already issued securities are traded between investors. By participating in this market, you:",
+        "li1S": "Buy and sell existing securities with other investors.",
+        "li2S": "Contribute to the liquidity of financial assets.",
+        "li3S": "Take advantage of price fluctuations to maximize your gains."
+      }
+    },
+    "actions": {
+      "back": "Back"
+    },
+    "CreateTitre": {
+      "ajouterUnTitre": "Add Security",
+      "error": {
+        "title": "Error",
+        "description": "An error occurred. Please try again.",
+        "fetchError": "Failed to load companies"
+      },
+      "success": {
+        "title": "Success",
+        "description": "Security created successfully"
+      },
+      "form": {
+        "issuer": "Issuer",
+        "selectIssuer": "Select an issuer",
+        "searchIssuer": "Search issuer...",
+        "noIssuersFound": "No issuers found",
+        "name": "Security Name",
+        "isinCode": "ISIN Code",
+        "code": "Code",
+        "faceValue": "Face Value",
+        "quantity": "Quantity",
+        "marketListing": "Market Listing",
+        "selectMarket": "Select market",
+        "primaryMarket": "Primary Market",
+        "secondaryMarket": "Secondary Market",
+        "status": "Status",
+        "selectStatus": "Select status",
+        "active": "Active",
+        "suspended": "Suspended",
+        "expired": "Expired",
+        "datesSection": "Dates",
+        "emissionDate": "Emission Date",
+        "closingDate": "Closing Date",
+        "enjoymentDate": "Enjoyment Date",
+        "pickDate": "Pick a date",
+        "stockPriceSection": "Stock Price",
+        "price": "Price",
+        "priceDate": "Price Date",
+        "gap": "Gap",
+        "optionalSection": "Optional Fields",
+        "dividendRate": "Dividend Rate",
+        "commission": "Commission",
+        "shareClass": "Share Class",
+        "votingRights": "Voting Rights",
+        "selectOption": "Select option",
+        "yes": "Yes",
+        "no": "No",
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "submitting": "Submitting...",
+        "institutionsSection": "Institutions",
+        "institutionName": "Institution Name",
+        "institutionPlaceholder": "Enter institution name",
+        "addInstitution": "Add Institution"
+      }
+    }
   }
 }
