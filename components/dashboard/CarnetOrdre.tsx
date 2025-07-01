@@ -91,7 +91,7 @@ export default function CarnetOrdre() {
   }, [sortField, sortDirection]);
 
   return (
-    <div className="overflow-x-auto rounded border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded border border-gray-200 bg-white" style={{ height: 315 }}>
       <Table>
         <TableHeader>
           <TableRow>
