@@ -74,6 +74,7 @@ const page = () => {
               </div>
             </Link>
           </div>
+
           <div className="w-52 h-52 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2">
             <div className="block group-hover:hidden h-5"></div>
             <div className="hidden group-hover:flex ltr:justify-end w-full mr-8">
@@ -126,41 +127,9 @@ const page = () => {
                 </svg>
               </div>
             </Link>
-          </div>
-          <div className="w-52 h-52 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2">
-            <div className="block group-hover:hidden h-5"></div>
-            <div className="hidden group-hover:flex ltr:justify-end w-full mr-8">
-              <InfoDialog title={t("titreParticipatif")} text={[t("tpDesc")]} />
-            </div>
-            <Link
-              href="/passerunordre/marchesecondaire/titresparticipatif"
-              className="flex flex-col gap-3 w-full h-36 "
-            >
-              <div className="font-bold text-lg text-primary group-hover:text-white  text-center">
-                {t("titreParticipatif")}
-              </div>
-              <div className="flex justify-center">
-                <FaRegHandshake className="w-20 h-20 fill-current text-primary group-hover:text-white" />
-              </div>
-            </Link>
-          </div>
-          <div className="w-52 h-52 rounded-md bg-gray-100 shadow-inner flex justify-center items-center group hover:bg-primary hover:text-white hover:drop-shadow-md flex-col  cursor-pointer gap-2">
-            <div className="block group-hover:hidden h-5"></div>
-            <div className="hidden group-hover:flex ltr:justify-end w-full mr-8">
-              <InfoDialog title={t("sukuk")} text={[t("sukukDesc")]} />
-            </div>
-            <Link
-              href="/passerunordre/marchesecondaire/sukukms"
-              className="flex flex-col gap-3 w-full h-36 "
-            >
-              <div className="font-bold text-lg text-primary group-hover:text-white  text-center">
-                {t("sukuk")}
-              </div>
-              <div className="flex justify-center">
-                <MdOutlineMosque className="w-20 h-20 fill-current text-primary group-hover:text-white" />
-              </div>
-            </Link>
-          </div>
+          </div> 
+
+
         </div>
       </div>
       <div className="flex justify-center">

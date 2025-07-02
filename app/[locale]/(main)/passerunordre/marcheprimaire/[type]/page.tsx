@@ -66,11 +66,6 @@ const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
               ? t("opv")
               : type === "empruntobligataire"
               ? t("empruntObligataire")
-              : type === "sukuk" || type === "sukukmp"
-              ? t("sukuk")
-              : type === "titresparticipatifs" ||
-                type === "titresparticipatifsmp"
-              ? t("titresParticipatifs")
               : ""}
           </span>
         </div>
