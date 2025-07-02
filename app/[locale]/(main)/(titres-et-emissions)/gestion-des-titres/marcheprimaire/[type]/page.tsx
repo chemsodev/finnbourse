@@ -8,8 +8,6 @@ import { ArrowLeft } from "lucide-react";
 import MyMarquee from "@/components/MyMarquee";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
-import AjoutTitre from "@/components/AjoutTitre";
-import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
 import Link from "next/link";
 import { MarketTable } from "@/components/titres/MarketTable";
 import { StockType } from "@/types/gestionTitres";
@@ -88,7 +86,7 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
         <div className="text-xs text-gray-500">{t("explMP")}</div>
       </div>
 
-      <div className="flex items-baseline gap-4 justify-end w-full">
+      <div className="flex justify-end mb-4 w-full">
         <CreateTitre type={type} />
       </div>
 

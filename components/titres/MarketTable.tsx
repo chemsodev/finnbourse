@@ -27,7 +27,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
+  // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
@@ -40,6 +40,8 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 
 import { Stock, StockType } from "@/types/gestionTitres";
+import { TitreFormValues } from "./titreSchemaValidation";
+import { EditTitre } from "./EditTitre";
 
 interface MarketTableProps {
   type: StockType;
@@ -88,6 +90,8 @@ export function MarketTable({ type }: MarketTableProps) {
   const [rowSelection, setRowSelection] = React.useState<
     TableState["rowSelection"]
   >({});
+  const [editingTitre, setEditingTitre] =
+    React.useState<TitreFormValues | null>(null);
 
   const stockType = mapToStockType(type);
   const { stocks, loading, error } = useStocksREST(stockType);
@@ -103,6 +107,53 @@ export function MarketTable({ type }: MarketTableProps) {
       });
     }
   }, [stocks, error, toast]);
+
+  const handleEditClick = React.useCallback(
+    (stock: Stock) => {
+      const defaultValues: TitreFormValues = {
+        id: stock.id,
+        type: type,
+        name: stock.name || "",
+        code: stock.code || "",
+        issuer:
+          typeof stock.issuer === "object"
+            ? stock.issuer.code ?? ""
+            : stock.issuer ?? "",
+        isinCode: "",
+        faceValue: 0,
+        quantity: 1,
+        emissionDate: stock.emissionDate
+          ? new Date(stock.emissionDate)
+          : new Date(),
+        closingDate: stock.closingDate
+          ? new Date(stock.closingDate)
+          : new Date(),
+        enjoymentDate: stock.enjoymentDate
+          ? new Date(stock.enjoymentDate)
+          : new Date(),
+        marketListing: "primary",
+        status: ["activated", "suspended", "expired"].includes(
+          stock.status as string
+        )
+          ? (stock.status as "activated" | "suspended" | "expired")
+          : "activated",
+        stockPrice: {
+          price: stock.stockPrices?.[0]?.price || 0,
+          date: new Date(),
+          gap: 0,
+        },
+        // Add other required fields with default values as needed
+        dividendRate: undefined,
+        commission: undefined,
+        shareClass: "",
+        votingRights: false,
+        institutions: [],
+      };
+
+      setEditingTitre(defaultValues);
+    },
+    [type]
+  );
 
   const columns = React.useMemo<ColumnDef<Stock>[]>(() => {
     const cols: ColumnDef<Stock>[] = [
@@ -223,12 +274,15 @@ export function MarketTable({ type }: MarketTableProps) {
                     {t("voirDetails")}
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                {/* <DropdownMenuItem asChild>
                   <Link
                     href={`/gestion-des-titres/marcheprimaire/${type}/${stock.id}/edit`}
                   >
                     {t("modifier")}
                   </Link>
+                </DropdownMenuItem> */}
+                <DropdownMenuItem onClick={() => handleEditClick(stock)}>
+                  {t("modifier")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -238,7 +292,7 @@ export function MarketTable({ type }: MarketTableProps) {
     );
 
     return cols;
-  }, [t, type]);
+  }, [t, type, handleEditClick]);
 
   const table = useReactTable({
     data,
@@ -365,6 +419,18 @@ export function MarketTable({ type }: MarketTableProps) {
           </Button>
         </div>
       </div>
+      {editingTitre && (
+        <EditTitre
+          type={type}
+          open={!!editingTitre}
+          onOpenChange={(open) => !open && setEditingTitre(null)}
+          defaultValues={editingTitre}
+          onSuccess={() => {
+            // Refresh data or update local state after successful edit
+            setEditingTitre(null);
+          }}
+        />
+      )}
     </div>
   );
 }
