@@ -1,8 +1,6 @@
 import MyMarquee from "@/components/MyMarquee";
 import TopBarDash from "@/components/navigation/TopBarDash";
 import { getTranslations } from "next-intl/server";
-import FormattedDate from "@/components/FormattedDate";
-import DashItem3 from "@/components/dashboard/DashItem3";
 import DashItem2 from "@/components/dashboard/DashItem2";
 import DynamicSidebar from "@/components/navigation/DynamicSidebar";
 import DynamicBottomNav from "@/components/navigation/DynamicBottomNav";
@@ -12,8 +10,8 @@ import { getServerSession } from "next-auth/next";
 import { Session } from "next-auth";
 import LogOutAgent from "@/components/LogOutAgent";
 import { StaticStockTracker } from "@/components/dashboard/StaticStockTracker";
-import { BadgePercent, Database, LineChart, Users } from "lucide-react";
-import IPOAnnouncement from "@/components/dashboard/IPOAnnouncement";
+import StaticDashNews from "@/components/dashboard/StaticDashNews";
+import TitreTable from "@/components/dashboard/TitreTable";
 
 export default async function Home() {
   const t = await getTranslations("HomePage");
@@ -52,14 +50,17 @@ export default async function Home() {
           <div className="mt-8 w-full">
             <DashItem2 />
           </div>
-          <div className="mt-8 w-full">
-            <MyPortfolio />
+          <div className="mt-8 w-full grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3">
+              <TitreTable />
+            </div>
+            <div className="lg:col-span-1">
+              <MyPortfolio />
+            </div>
+            <div className="lg:col-span-1">
+              <StaticDashNews />
+            </div>
           </div>
-        </div>
-        <div>          
-        </div>{" "}
-        <div className="mt-8 w-full">
-          <DashItem3 />
         </div>
       </div>
       <DynamicBottomNav />

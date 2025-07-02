@@ -250,15 +250,23 @@ export function StaticStockTracker() {
     <div className="w-full space-y-6">
 
       {/* Switch Buttons */}
-      <div className="flex mb-4">
+      <div className="inline-flex shadow border border-gray-200">
         <button
-          className={`px-4 py-2 rounded  text-[0.9vw] ${view === "graphe comparatif" ? "bg-primary text-white" : "bg-gray-200"}`}
+          className={`px-4 py-1 text-[0.8vw] font-medium focus:z-10 ${
+            view === "graphe comparatif"
+              ? "bg-primary text-white"
+              : "bg-gray-200 text-gray-700"
+          } rounded-l`}
           onClick={() => setView("graphe comparatif")}
         >
-          graphe comparatife
+          graphe comparatif
         </button>
         <button
-          className={`px-4 py-2 rounded  text-[0.9vw] ${view === "carnet" ? "bg-primary text-white" : "bg-gray-200"}`}
+          className={`px-4 py-1 text-[0.8vw] font-medium focus:z-10 ${
+            view === "carnet"
+              ? "bg-primary text-white"
+              : "bg-gray-200 text-gray-700"
+          } rounded-r`}
           onClick={() => setView("carnet")}
         >
           Carnet d'ordre
