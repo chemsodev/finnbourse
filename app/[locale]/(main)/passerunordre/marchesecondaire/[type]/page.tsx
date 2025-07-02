@@ -75,7 +75,7 @@ const SecondaryMarketPage = ({ params }: { params: { type: string } }) => {
         <AjoutTitre type={type} />
       </div>
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <TitresTableREST type={type} basePath="/passerunordre/marchesecondaire" />
+        <TitresTableREST type={type} />
       </div>
     </>
   );

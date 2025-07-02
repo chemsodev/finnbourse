@@ -78,7 +78,7 @@ const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
         </div>
       )}{" "}
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <TitresTableREST type={type} basePath="/passerunordre/marcheprimaire" />
+        <TitresTableREST type={type} />
       </div>
     </div>
   );

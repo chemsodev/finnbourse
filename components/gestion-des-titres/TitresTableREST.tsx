@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, ChevronUp, ChevronsUpDown, Info, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Info, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,46 +44,9 @@ import { useToast } from "@/hooks/use-toast";
 
 interface TitresTableProps {
   type: string;
-  basePath: string;
 }
 
-// Exemples de titres mock
-const mockStocks = [
-  {
-    id: "1",
-    issuer: { name: "Credit Populaire D'Algérie" },
-    code: "CPA",
-    status: "active",
-    stockPrices: [{ price: 100 }, { price: 105 }],
-    type: "obligation",
-  },
-  {
-    id: "2",
-    issuer: { name: "Saidal" },
-    code: "SAID",
-    status: "suspended",
-    stockPrices: [{ price: 200 }, { price: 210 }],
-    type: "obligation",
-  },
-  {
-    id: "3",
-    issuer: { name: "Alliance Assurances" },
-    code: "ALLI",
-    status: "active",
-    stockPrices: [{ price: 300 }, { price: 320 }],
-    type: "sukuk",
-  },
-  {
-    id: "4",
-    issuer: { name: "Al Baraka" },
-    code: "ALBK",
-    status: "active",
-    stockPrices: [{ price: 400 }, { price: 420 }],
-    type: "titre participatif",
-  },
-];
-
-export function TitresTableREST({ type, basePath }: TitresTableProps) {
+export function TitresTableREST({ type }: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -106,7 +69,7 @@ export function TitresTableREST({ type, basePath }: TitresTableProps) {
     stockType = "sukuk";
   } else if (
     type === "titresparticipatifsmp" ||
-    type === "titresparticipatif" ||
+    type === "titresparticipatifsms" ||
     type === "titresparticipatifs"
   ) {
     stockType = "participatif";
@@ -151,39 +114,21 @@ export function TitresTableREST({ type, basePath }: TitresTableProps) {
       },
     },
     {
-      accessorKey: "id",
-      header: t("id"),
+      accessorKey: "code",
+      header: t("code"),
       cell: ({ row }) => {
         const stock = row.original as any;
         return (
           <div className="uppercase text-gray-500 font-semibold text-xs">
-            {stock.id || "N/A"}
+            {stock.code || "N/A"}
           </div>
-        );
-      },
-    },
-    {
-      accessorKey: "type",
-      header: "Type",
-      cell: ({ row }) => {
-        const stock = row.original as any;
-        // Affiche le type de la ligne si présent, sinon fallback sur stockType
-        const typeLabel = stock.type || (
-          stockType === "sukuk" ? "sukuk"
-          : stockType === "participatif" ? "titre participatif"
-          : stockType === "obligation" ? "obligation"
-          : stockType === "action" ? "action"
-          : ""
-        );
-        return (
-          <div className="capitalize text-xs font-semibold text-gray-700">{typeLabel}</div>
         );
       },
     },
     ...(type !== "action" &&
     type !== "obligation" &&
     type !== "sukukms" &&
-    type !== "titresparticipatif"
+    type !== "titresparticipatifsms"
       ? [
           {
             accessorKey: "emissionDate",
@@ -291,14 +236,14 @@ export function TitresTableREST({ type, basePath }: TitresTableProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link
-                  href={(('link' in stock && (stock as any).link) || ('url' in stock && (stock as any).url) ? `${('link' in stock && (stock as any).link) || (stock as any).url}/${type}/${stock.id}` : `${basePath}/${type}/${stock.id}`)}
+                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
                 >
                   {t("voirDetails")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href={(('link' in stock && (stock as any).link) || ('url' in stock && (stock as any).url) ? `${('link' in stock && (stock as any).link) || (stock as any).url}/${type}/${stock.id}` : `${basePath}/${type}/${stock.id}`)}
+                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
                 >
                   {t("passerOrdre")}
                 </Link>
@@ -341,53 +286,15 @@ export function TitresTableREST({ type, basePath }: TitresTableProps) {
     }
   }, [stocks, error, toast, stockType]);
 
-  const getTableData = (): Stock[] => {
-    if (data && Array.isArray(data) && data.length > 0) {
+  const getTableData = () => {
+    if (data && Array.isArray(data)) {
       return data;
     }
-    // Si pas de données API, retourne les exemples (castés en Stock[])
-    return mockStocks as unknown as Stock[];
+    return [];
   };
-
-  // Tri manuel comme dans session-orders
-  const [sortField, setSortField] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
-
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      if (sortDirection === 'asc') setSortDirection('desc');
-      else if (sortDirection === 'desc') { setSortDirection(null); setSortField(null); }
-      else setSortDirection('asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const getSortIcon = (field: string) => {
-    if (sortField !== field) return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
-    if (sortDirection === 'asc') return <ChevronUp className="inline ml-1 h-4 w-4 text-blue-600" />;
-    if (sortDirection === 'desc') return <ChevronDown className="inline ml-1 h-4 w-4 text-blue-600" />;
-    return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
-  };
-
-  const sortedData = [...getTableData()].sort((a, b) => {
-    if (!sortField || !sortDirection) return 0;
-    let aValue: any = (a as any)[sortField];
-    let bValue: any = (b as any)[sortField];
-    if (sortField === 'stockPrices') {
-      aValue = Array.isArray(aValue) && aValue.length > 0 ? aValue[aValue.length - 1].price : 0;
-      bValue = Array.isArray(bValue) && bValue.length > 0 ? bValue[bValue.length - 1].price : 0;
-    } else {
-      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
-      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
-    }
-    if (sortDirection === 'asc') return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-    return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-  });
 
   const table = useReactTable({
-    data: sortedData,
+    data: getTableData(),
     columns: columns(t),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -474,62 +381,47 @@ export function TitresTableREST({ type, basePath }: TitresTableProps) {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="cursor-pointer" onClick={() => handleSort('id')}>ID{getSortIcon('id')}</TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort('issuer')}>{t('titre')}{getSortIcon('issuer')}</TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort('type')}>Type{getSortIcon('type')}</TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort('stockPrices')}>Prix{getSortIcon('stockPrices')}</TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>{t('statut')}{getSortIcon('status')}</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
-            {sortedData.length ? (
-              sortedData.map((stock, idx) => {
-                const s = stock as any;
-                return (
-                  <TableRow key={s.id}>
-                    <TableCell>
-                      <div className="uppercase text-gray-500 font-semibold text-xs">
-                        {s.id || 'N/A'}
-                      </div>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
-                    <TableCell>
-                      <div className="capitalize flex flex-col gap-1">
-                        <div className="font-semibold">
-                          {typeof s.issuer === 'object' ? s.issuer?.name : s.issuer || s.name || 'N/A'}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="capitalize text-xs font-semibold text-gray-700">
-                        {s.type || (stockType === 'sukuk' ? 'sukuk' : stockType === 'participatif' ? 'titre participatif' : stockType === 'obligation' ? 'obligation' : stockType === 'action' ? 'action' : '')}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="capitalize text-xs font-semibold text-gray-700">
-                        {Array.isArray(s.stockPrices) && s.stockPrices.length > 0
-                          ? s.stockPrices[s.stockPrices.length - 1].price
-                          : 'NC'}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="capitalize">
-                        {s.status === 'active' || s.status === 'activated'
-                          ? t('actif')
-                          : s.status === 'suspended'
-                          ? t('suspendu')
-                          : s.status === 'moved_to_secondary'
-                          ? t('marche_secondaire')
-                          : s.status || 'NC'}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+                  ))}
+                </TableRow>
+              ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  {t('aucunResultat')}
+                <TableCell
+                  colSpan={columns(t).length}
+                  className="h-24 text-center"
+                >
+                  {t("aucunResultat")}
                 </TableCell>
               </TableRow>
             )}
