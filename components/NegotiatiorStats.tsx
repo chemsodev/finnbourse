@@ -15,45 +15,32 @@ const NegotiatiorStats = () => {
   const nbMessages = 7;
 
   return (
-    <div className="flex flex-row gap-4 justify-between">
+    <div className="flex flex-row gap-2 justify-between">
       <Link
         href="/ordres"
-        className="bg-primary transition-all duration-300 rounded-md h-20 flex-1 text-white flex gap-4 justify-start ltr:pl-4 rtl:pr-4 py-3 items-center"
+        className="bg-gray-200 transition-all duration-300 rounded flex-1 text-gray-900 flex gap-2 justify-start ltr:pl-4 rtl:pr-4 py-2.5 items-center border border-gray-200 shadow hover:shadow-md"
       >
-        <div className="bg-white/20 w-12 h-12 rounded-full flex justify-center items-center">
-          <MdDoneOutline size={24} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-sm font-medium">{t("ordresExecute")}</div>
-          <div className="text-xl font-semibold">
-            {validatedOrderCounter}
-          </div>
+        <div className="flex flex-row items-center justify-between w-full">
+          <div className="text-[0.9vw]">Nouvelle Demande</div>
+          <span className="text-[1vw] font-semibold flex flex-col justify-end pr-4">{validatedOrderCounter}</span>
         </div>
       </Link>
       <Link
         href="/ordres?state=1"
-        className="bg-primary transition-all duration-300 rounded-md h-20 flex-1 text-white flex gap-4 justify-start ltr:pl-4 rtl:pr-4 py-3 items-center"
+        className="bg-gray-200 transition-all duration-300 rounded flex-1 text-gray-900 flex gap-2 justify-start ltr:pl-4 rtl:pr-4 py-2.5 items-center border border-gray-200 shadow hover:shadow-md"
       >
-        <div className="bg-white/20 w-12 h-12 rounded-full flex justify-center items-center">
-          <IoReloadSharp size={24} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-sm font-medium">{t("ordresEnAttente")}</div>
-          <div className="text-xl font-semibold">
-            <OrderCounter />
-          </div>
+        <div className="flex flex-row items-center justify-between w-full">
+          <div className="text-[0.9vw]">Clients</div>
+          <span className="text-[1vw] font-semibold flex flex-col justify-end pr-4"><OrderCounter /></span>
         </div>
       </Link>
       <Link
         href="/serviceclients"
-        className="bg-primary transition-all duration-300 rounded-md h-20 flex-1 text-white flex gap-4 justify-start ltr:pl-4 rtl:pr-4 py-3 items-center"
+        className="bg-gray-200 transition-all duration-300 rounded flex-1 text-gray-900 flex gap-2 justify-start ltr:pl-4 rtl:pr-4 py-2.5 items-center border border-gray-200 shadow hover:shadow-md"
       >
-        <div className="bg-white/20 w-12 h-12 rounded-full flex justify-center items-center">
-          <TbMessages size={24} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-sm font-medium">{t("messages")}</div>
-          <div className="text-xl font-semibold">{nbMessages}</div>
+        <div className="flex flex-row items-center justify-between w-full">
+          <div className="text-[0.9vw]">Message Clients</div>
+          <span className="text-[1vw] font-semibold flex flex-col justify-end pr-4">{nbMessages}</span>
         </div>
       </Link>
     </div>

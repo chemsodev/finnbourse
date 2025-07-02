@@ -252,13 +252,13 @@ export function StaticStockTracker() {
       {/* Switch Buttons */}
       <div className="flex mb-4">
         <button
-          className={`px-4 py-2 rounded ${view === "graphe comparatif" ? "bg-primary text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded  text-[0.9vw] ${view === "graphe comparatif" ? "bg-primary text-white" : "bg-gray-200"}`}
           onClick={() => setView("graphe comparatif")}
         >
           graphe comparatife
         </button>
         <button
-          className={`px-4 py-2 rounded ${view === "carnet" ? "bg-primary text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded  text-[0.9vw] ${view === "carnet" ? "bg-primary text-white" : "bg-gray-200"}`}
           onClick={() => setView("carnet")}
         >
           Carnet d'ordre
