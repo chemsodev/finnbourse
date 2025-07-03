@@ -10,11 +10,15 @@ import { AiOutlineInfoCircle } from "react-icons/ai";
 
 interface InfoDialogProps {
   title: string;
-
-  text: string[];
+  description: string;
+  listItems?: string[];
 }
 
-const InfoDialog = ({ title, text }: InfoDialogProps) => {
+const InfoDialog = ({
+  title,
+  description,
+  listItems = [],
+}: InfoDialogProps) => {
   return (
     <Dialog>
       <DialogTrigger>
@@ -23,20 +27,22 @@ const InfoDialog = ({ title, text }: InfoDialogProps) => {
           className="text-primary group-hover:text-white"
         />
       </DialogTrigger>
-      <DialogContent className=" bg-primary border-none text-white">
+      <DialogContent className="bg-primary border-none text-white">
         <DialogHeader>
-          <DialogTitle className="font-bold  text-secondary group-hover:text-white text-center text-2xl">
+          <DialogTitle className="font-bold text-secondary group-hover:text-white text-center text-2xl">
             {title}
           </DialogTitle>
           <DialogDescription>
             <div className="mt-8 ltr:text-left rtl:text-right text-lg text-white">
-              {text[0]}
+              {description}
             </div>
-            <ul className=" list-disc ml-6 my-4 ltr:text-left rtl:text-right text-lg text-white">
-              {text[1] && <li>{text[1]} </li>}
-              {text[2] && <li>{text[2]} </li>}
-              {text[3] && <li>{text[3]} </li>}
-            </ul>
+            {listItems.length > 0 && (
+              <ul className="list-disc ml-6 my-4 ltr:text-left rtl:text-right text-lg text-white">
+                {listItems.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            )}
           </DialogDescription>
         </DialogHeader>
       </DialogContent>
