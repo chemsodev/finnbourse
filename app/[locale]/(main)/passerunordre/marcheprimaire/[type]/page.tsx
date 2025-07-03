@@ -12,6 +12,7 @@ import React, { useEffect } from "react";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
 import FormPassationOrdreMarchePrimaire from "@/components/passation-ordre/FormPassationOrdreMarchePrimaire";
+import { TitresTableREST as TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
 
 const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
   const { type } = params;
@@ -78,7 +79,11 @@ const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
         </div>
       )}{" "}
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <TitresTableREST type={type} />
+        {type === "empruntobligataire" ? (
+          <TitresTableObligation type={type} />
+        ) : (
+          <TitresTableREST type={type} />
+        )}
       </div>
     </div>
   );

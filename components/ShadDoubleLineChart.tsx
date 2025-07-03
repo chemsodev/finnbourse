@@ -1,47 +1,54 @@
-"use client";
+"use client"
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import type { DotProps } from "recharts"
 
-import { TrendingUp } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-];
+  { month: "January", clients: 186, visitors: 280 },
+  { month: "February", clients: 305, visitors: 420 },
+  { month: "March", clients: 237, visitors: 350 },
+  { month: "April", clients: 473, visitors: 580 },
+  { month: "May", clients: 209, visitors: 320 },
+  { month: "June", clients: 214, visitors: 290 },
+  { month: "July", clients: 390, visitors: 480 },
+  { month: "August", clients: 180, visitors: 250 },
+  { month: "September", clients: 520, visitors: 650 },
+  { month: "October", clients: 290, visitors: 380 },
+  { month: "November", clients: 450, visitors: 560 },
+  { month: "December", clients: 320, visitors: 410 },
+]
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  clients: {
+    label: "Clients",
     color: "hsl(var(--chart-1))",
   },
-  mobile: {
-    label: "Mobile",
+  visitors: {
+    label: "Visitors",
     color: "hsl(var(--chart-2))",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
+
+const PointedDot = ({ cx, cy, stroke }: DotProps) => {
+  if (typeof cx !== "number" || typeof cy !== "number" || Number.isNaN(cx) || Number.isNaN(cy)) {
+    return null
+  }
+
+  const width = 6
+  const height = 16
+
+  return (
+    <svg x={cx - width / 2} y={cy - height / 2} width={width} height={height}>
+      <polygon points={`${width / 2},0 0,${height} ${width},${height}`} fill={stroke} />
+    </svg>
+  )
+}
 
 export function ShadDoubleLineChart() {
   return (
     <div>
       <ChartContainer config={chartConfig} className="max-h-60 w-full">
-        <AreaChart
+        <LineChart
           accessibilityLayer
           data={chartData}
           margin={{
@@ -58,50 +65,10 @@ export function ShadDoubleLineChart() {
             tickFormatter={(value) => value.slice(0, 3)}
           />
           <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-          <defs>
-            <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="5%"
-                stopColor="var(--color-desktop)"
-                stopOpacity={0.8}
-              />
-              <stop
-                offset="95%"
-                stopColor="var(--color-desktop)"
-                stopOpacity={0.1}
-              />
-            </linearGradient>
-            <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="5%"
-                stopColor="var(--color-mobile)"
-                stopOpacity={0.8}
-              />
-              <stop
-                offset="95%"
-                stopColor="var(--color-mobile)"
-                stopOpacity={0.1}
-              />
-            </linearGradient>
-          </defs>
-          <Area
-            dataKey="mobile"
-            type="natural"
-            fill="url(#fillMobile)"
-            fillOpacity={0.4}
-            stroke="var(--color-mobile)"
-            stackId="a"
-          />
-          <Area
-            dataKey="desktop"
-            type="natural"
-            fill="url(#fillDesktop)"
-            fillOpacity={0.4}
-            stroke="var(--color-desktop)"
-            stackId="a"
-          />
-        </AreaChart>
+          <Line dataKey="clients" type="linear" stroke="var(--color-clients)" strokeWidth={2} dot={<PointedDot />} />
+          <Line dataKey="visitors" type="linear" stroke="var(--color-visitors)" strokeWidth={2} dot={<PointedDot />} />
+        </LineChart>
       </ChartContainer>
     </div>
-  );
+  )
 }

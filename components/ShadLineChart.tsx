@@ -1,37 +1,49 @@
-"use client";
+"use client"
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import type { DotProps } from "recharts"
 
-import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 const chartData = [
   { month: "January", desktop: 186 },
   { month: "February", desktop: 305 },
   { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
+  { month: "April", desktop: 473 },
   { month: "May", desktop: 209 },
   { month: "June", desktop: 214 },
-];
+  { month: "July", desktop: 390 },
+  { month: "August", desktop: 180 },
+  { month: "September", desktop: 520 },
+  { month: "October", desktop: 290 },
+  { month: "November", desktop: 450 },
+  { month: "December", desktop: 320 },
+]
 
 const chartConfig = {
   desktop: {
     label: "Desktop",
     color: "hsl(var(--chart-1))",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
+
+// Recharts passes cx & cy for every point. During first render or when
+// a point is outside the visible area they can be null / undefined.
+// Guard against that to avoid "NaN for the x attribute" warnings.
+
+const PointedDot = ({ cx, cy, stroke }: DotProps) => {
+  // Bail out if coordinates aren’t valid numbers
+  if (typeof cx !== "number" || typeof cy !== "number" || Number.isNaN(cx) || Number.isNaN(cy)) {
+    return null
+  }
+
+  const width = 6
+  const height = 16
+
+  return (
+    <svg x={cx - width / 2} y={cy - height / 2} width={width} height={height}>
+      <polygon points={`${width / 2},0 0,${height} ${width},${height}`} fill={stroke || "var(--color-desktop)"} />
+    </svg>
+  )
+}
 
 export function ShadLineChart() {
   return (
@@ -53,19 +65,10 @@ export function ShadLineChart() {
             tickMargin={8}
             tickFormatter={(value) => value.slice(0, 3)}
           />
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
-          <Line
-            dataKey="desktop"
-            type="natural"
-            stroke="var(--color-desktop)"
-            strokeWidth={2}
-            dot={false}
-          />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+          <Line dataKey="desktop" type="linear" stroke="var(--color-desktop)" strokeWidth={2} dot={<PointedDot />} />
         </LineChart>
       </ChartContainer>
     </div>
-  );
+  )
 }

@@ -1,13 +1,8 @@
-"use client";
+"use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 const chartData = [
   { month: "January", desktop: 186 },
   { month: "February", desktop: 305 },
@@ -15,14 +10,14 @@ const chartData = [
   { month: "April", desktop: 73 },
   { month: "May", desktop: 209 },
   { month: "June", desktop: 214 },
-];
+]
 
 const chartConfig = {
   desktop: {
     label: "Desktop",
     color: "hsl(var(--chart-1))",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export function ShadAreaChart() {
   return (
@@ -44,13 +39,10 @@ export function ShadAreaChart() {
             tickMargin={8}
             tickFormatter={(value) => value.slice(0, 3)}
           />
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent indicator="line" />}
-          />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
           <Area
             dataKey="desktop"
-            type="natural"
+            type="linear"
             fill="var(--color-desktop)"
             fillOpacity={0.4}
             stroke="var(--color-desktop)"
@@ -58,5 +50,5 @@ export function ShadAreaChart() {
         </AreaChart>
       </ChartContainer>
     </div>
-  );
+  )
 }

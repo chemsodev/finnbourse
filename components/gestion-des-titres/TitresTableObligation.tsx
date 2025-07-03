@@ -46,6 +46,40 @@ interface TitresTableProps {
   type: string;
 }
 
+// Exemples de titres obligations mock
+const mockStocks = [
+  {
+    id: "OBL-001",
+    code: "OBL1",
+    type: "obligation",
+    issuer: { name: "Banque Nationale" },
+    status: "active",
+    stockPrices: [{ price: 100 }, { price: 105 }],
+    emissionDate: "2023-01-01",
+    closingDate: "2023-12-31",
+  },
+  {
+    id: "OBL-002",
+    code: "OBL2",
+    type: "obligation",
+    issuer: { name: "Société Générale" },
+    status: "suspended",
+    stockPrices: [{ price: 200 }, { price: 210 }],
+    emissionDate: "2023-02-01",
+    closingDate: "2023-11-30",
+  },
+  {
+    id: "OBL-003",
+    code: "OBL3",
+    type: "obligation",
+    issuer: { name: "Crédit Populaire" },
+    status: "active",
+    stockPrices: [{ price: 300 }, { price: 320 }],
+    emissionDate: "2023-03-01",
+    closingDate: "2023-10-31",
+  },
+];
+
 export function TitresTableREST({ type }: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -122,6 +156,16 @@ export function TitresTableREST({ type }: TitresTableProps) {
           <div className="uppercase text-gray-500 font-semibold text-xs">
             {stock.code || "N/A"}
           </div>
+        );
+      },
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => {
+        const stock = row.original as any;
+        return (
+          <div className="capitalize text-xs font-semibold text-gray-700">{stock.type || ''}</div>
         );
       },
     },
@@ -258,7 +302,7 @@ export function TitresTableREST({ type }: TitresTableProps) {
   // Update data when stocks change
   useEffect(() => {
     if (stocks && Array.isArray(stocks)) {
-      console.log("📊 Raw stocks data:", stocks);
+      console.log("Raw stocks data:", stocks);
 
       // Check if we have the expected properties
       if (stocks.length > 0) {
@@ -287,15 +331,15 @@ export function TitresTableREST({ type }: TitresTableProps) {
   }, [stocks, error, toast, stockType]);
 
   const getTableData = () => {
-    if (data && Array.isArray(data)) {
+    if (data && Array.isArray(data) && data.length > 0) {
       return data;
     }
-    return [];
+    return mockStocks;
   };
 
   const table = useReactTable({
-    data: getTableData(),
-    columns: columns(t),
+    data: getTableData() as any[],
+    columns: columns(t) as ColumnDef<any>[],
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
