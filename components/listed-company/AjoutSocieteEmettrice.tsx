@@ -24,26 +24,18 @@ import { Button } from "../ui/button";
 import { useTranslations } from "next-intl";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
-// Removed GraphQL dependencies - now using REST API
-// import { CREATE_LISTED_COMPANY } from "@/graphql/mutations";
-// Removed GraphQL dependencies - now using REST API
-// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+import { IssuerService } from "@/lib/services/issuerService";
 import { useRouter } from "@/i18n/routing";
 
 // Define the schema for form validation
 const formSchema = z.object({
-  nom: z.string().min(1, "Nom est obligatoire"),
-  secteurActivite: z.string().min(1, "Secteur d'activité est obligatoire"),
-  siteOfficiel: z.string().url("URL invalide"),
-  contactNom: z.string().min(1, "Nom du contact est obligatoire"),
-  contactPrenom: z.string().min(1, "Prénom du contact est obligatoire"),
-  contactFonction: z.string().min(1, "Fonction du contact est obligatoire"),
-  email: z.string().email("Email invalide"),
-  phone: z.string().min(1, "Téléphone est obligatoire"),
-  mobile: z.string().min(1, "Mobile est obligatoire"),
-  adresse: z.string().min(1, "Adresse est obligatoire"),
-  notice: z.string().min(1, "Notice est obligatoire"),
+  name: z.string().min(1, "Nom est obligatoire"),
+  activitySector: z.string().min(1, "Secteur d'activité est obligatoire"),
+  website: z.string().url("URL invalide"),
   capital: z.string().min(1, "Capital est obligatoire"),
+  email: z.string().email("Email invalide"),
+  address: z.string().min(1, "Adresse est obligatoire"),
+  tel: z.string().min(1, "Téléphone est obligatoire"),
 });
 
 type Company = {
@@ -86,42 +78,21 @@ const AjoutSocieteEmettrice = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      // TODO: Replace with REST API call
-      // await fetchGraphQLClient<{ id: string }>(CREATE_LISTED_COMPANY, {
-      //   nom: values.nom,
-      //   secteuractivite: values.secteurActivite,
-      //   siteofficiel: values.siteOfficiel || null,
-      //   contactNom: values.contactNom,
-      //   contactPrenom: values.contactPrenom,
-      //   contactFonction: values.contactFonction,
-      //   phone: values.phone,
-      //   mobile: values.mobile,
-      //   email: values.email,
-      //   address: values.adresse,
-      //   capitalisationboursiere: values.capital,
-      //   notice: values.notice,
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await IssuerService.create(values);
       toast({
         variant: "success",
         title: t("success"),
         description: t("LaSocieteAEteAjouteeAvecSucces"),
       });
-
       form.reset();
       window.location.reload();
       setOpen(false);
     } catch (error) {
-      console.error("Mutation error:", error);
-
+      console.error("API error:", error);
       toast({
         variant: "destructive",
         title: t("error"),
-        description:
-          error instanceof Error ? error.message : "An error occurred",
+        description: error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
       setLoading(false);
@@ -149,7 +120,7 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="nom"
+                    name="name"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("nom")}</FormLabel>
@@ -168,7 +139,7 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="secteurActivite"
+                    name="activitySector"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("secteurActivite")}</FormLabel>
@@ -190,7 +161,7 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="siteOfficiel"
+                    name="website"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t("siteOfficiel")}</FormLabel>
@@ -231,99 +202,6 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="notice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("notice")}</FormLabel>
-                        <FormControl>
-                          <textarea
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder={t("enterNotice")}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm leading-6">
-                  <span className="bg-white px-6 font-semibold text-primary">
-                    {t("contact")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="contactNom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactNom")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLeNomDuContact")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="contactPrenom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactPrenom")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLePrenomDuContact")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="contactFonction"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactFonction")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLaFonctionDuContact")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -346,32 +224,13 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="phone"
+                    name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("telephone")}</FormLabel>
+                        <FormLabel>{t("adresse")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="+213........."
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="mobile"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("mobile")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="+213........."
+                            placeholder={t("entrerLadresse")}
                             type="text"
                             {...field}
                           />
@@ -387,13 +246,13 @@ const AjoutSocieteEmettrice = () => {
                 <div className="col-span-6">
                   <FormField
                     control={form.control}
-                    name="adresse"
+                    name="tel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("adresse")}</FormLabel>
+                        <FormLabel>{t("telephone")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t("entrerLadresse")}
+                            placeholder="+213........."
                             type="text"
                             {...field}
                           />
