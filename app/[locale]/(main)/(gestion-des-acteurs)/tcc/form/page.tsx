@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { MultiStepForm } from "./multi-step-form";
 import { CustodianForm } from "./custodian-form";
-import { EnhancedTCCUsersForm } from "./enhanced-users-form-new";
+import { EnhancedTCCUsersForm } from "./enhanced-users-form";
 import {
   CustodianFormValues,
   RelatedUserFormValues,
@@ -52,6 +52,14 @@ export default function FormPage({ params }: FormPageProps) {
         // Transform TCC data to form format
         const transformedData = TCCService.transformAPIDataToForm(currentTCC);
 
+        if (
+          !transformedData.financialInstitutionId &&
+          currentTCC.financialInstitutionId
+        ) {
+          transformedData.financialInstitutionId =
+            currentTCC.financialInstitutionId;
+        }
+
         setFormValues((prev) => ({
           ...prev,
           custodian: {
@@ -70,7 +78,11 @@ export default function FormPage({ params }: FormPageProps) {
       }
     } catch (error) {
       console.error("Failed to load TCC data:", error);
-      // Don't show error toast for this as it's not critical
+      toast({
+        title: "Error",
+        description: "Failed to load TCC data",
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingData(false);
     }
@@ -108,40 +120,7 @@ export default function FormPage({ params }: FormPageProps) {
     tccId: undefined, // Will be set after TCC creation
   });
 
-  const isEditMode = !!params.id && params.id !== "new";
-
-  // Load existing TCC data if in edit mode
-  useEffect(() => {
-    if (isEditMode && params.id) {
-      loadExistingTCC();
-    }
-  }, [isEditMode, params.id]);
-  const loadExistingTCC = async () => {
-    try {
-      const currentTCC = await fetchTCC();
-
-      if (currentTCC) {
-        console.log("🔍 Loading TCC data into form:", currentTCC);
-        const formData = TCCService.transformAPIDataToForm(currentTCC);
-        setFormValues((prev) => ({
-          ...prev,
-          custodian: {
-            ...prev.custodian,
-            ...formData,
-          },
-        }));
-      } else {
-        console.log("🔍 No existing TCC found, form will be for creation");
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load TCC data",
-        variant: "destructive",
-      });
-      console.error("Failed to load TCC data:", error);
-    }
-  };
+  const isEditMode = !!formValues.tccId || hasTCC();
 
   const handleUpdateCustodian = (custodianValues: CustodianFormValues) => {
     setFormValues((prev) => ({
@@ -318,9 +297,9 @@ export default function FormPage({ params }: FormPageProps) {
     />,
     <EnhancedTCCUsersForm
       key="related-users-form"
-      defaultValues={{ users: formValues.relatedUsers }}
-      onFormChange={handleUpdateRelatedUsers}
-      entityName={formValues.custodian.libelle || "TCC"}
+      users={formValues.relatedUsers}
+      onUsersChange={handleUpdateRelatedUsers}
+      tccId={formValues.tccId}
     />,
   ];
 

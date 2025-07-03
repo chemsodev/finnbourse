@@ -78,18 +78,6 @@ export class IOBService {
   }
 
   /**
-   * Delete an IOB
-   */
-  static async delete(id: string, token?: string): Promise<void> {
-    try {
-      await actorAPI.iob.delete(id, token);
-    } catch (error) {
-      console.error("Error deleting IOB:", error);
-      throw new Error("Failed to delete IOB");
-    }
-  }
-
-  /**
    * Transform form data to API format
    */
   static transformFormDataToAPI(formData: any): IOBCreateRequest {

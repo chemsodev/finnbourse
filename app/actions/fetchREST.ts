@@ -6,9 +6,8 @@
  * while keeping GraphQL functionality intact for dashboard
  */
 
-import { getServerSession } from "next-auth/next";
-import auth from "@/auth";
-import { Session } from "next-auth";
+// Client-side implementation only
+// Server components should use their own session handling
 
 interface FetchRESTOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -32,87 +31,17 @@ function getBaseUrl(isClient = false) {
   }
 
   // For server-side requests, use the environment variable or fallback to the direct URL
-  return (
-    process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com/api/v1"
-  );
+  return "https://kh.finnetude.com/api/v1";
 }
 
-// Server-side REST API fetcher (for server components)
+// Client-side only REST API fetcher
 export async function fetchREST<T = any>(
   endpoint: string,
   options: FetchRESTOptions = {}
 ): Promise<T> {
-  const session = (await getServerSession(auth)) as Session & {
-    user?: {
-      token?: string;
-      restToken?: string;
-    };
-  };
-
-  const baseUrl = getBaseUrl();
-
-  // Ensure endpoint starts with /
-  const apiPath = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-  const url = `${baseUrl}${apiPath}`;
-
-  try {
-    // Use REST token if available, otherwise fall back to main token
-    const authToken =
-      session?.user?.restToken || session?.user?.token || options.token || "";
-
-    const fetchOptions: RequestInit = {
-      method: options.method || "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authToken && { Authorization: `Bearer ${authToken}` }),
-        ...options.headers,
-      },
-    };
-
-    if (
-      options.body &&
-      (options.method === "POST" ||
-        options.method === "PUT" ||
-        options.method === "PATCH")
-    ) {
-      fetchOptions.body =
-        typeof options.body === "string"
-          ? options.body
-          : JSON.stringify(options.body);
-    }
-
-    console.log(`Making REST API request to: ${url}`);
-    const response = await fetch(url, fetchOptions);
-
-    // Check for authentication errors
-    if (response.status === 401 || response.status === 403) {
-      const errorText = await response.text();
-      console.error(
-        `Authentication failed - token may be invalid or expired: ${response.status}`,
-        errorText
-      );
-      throw new Error(
-        `Authentication failed: ${response.status} - Token invalid or expired. ${errorText}`
-      );
-    }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(
-        `REST API request failed with status: ${response.status}`,
-        errorText
-      );
-      throw new Error(
-        `REST API request failed: ${response.status} - ${errorText}`
-      );
-    }
-
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.error("Error in fetchREST:", error);
-    throw error;
-  }
+  // We're redirecting all requests to clientFetchREST
+  // to avoid server-side code execution in client components
+  return clientFetchREST(endpoint, options);
 }
 
 // Client-side REST API fetcher (for client components)
@@ -170,7 +99,7 @@ export function clientFetchREST<T = any>(
   }
 
   return fetch(url, fetchOptions)
-    .then((response) => {
+    .then(async (response) => {
       // Check for authentication errors
       if (response.status === 401 || response.status === 403) {
         console.error(
@@ -221,7 +150,25 @@ export function clientFetchREST<T = any>(
       }
 
       if (!response.ok) {
-        throw new Error(`REST API request failed: ${response.status}`);
+        // Try to parse the error response body
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          // If parsing fails, create a basic error object
+          errorData = {
+            message: `Request failed with status ${response.status}`,
+          };
+        }
+
+        // Create an error object that preserves the response data
+        const error = new Error(`REST API request failed: ${response.status}`);
+        (error as any).response = {
+          status: response.status,
+          statusText: response.statusText,
+          data: errorData,
+        };
+        throw error;
       }
       return response.json();
     })

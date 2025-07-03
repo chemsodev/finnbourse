@@ -83,18 +83,6 @@ export class TCCService {
   }
 
   /**
-   * Delete a TCC user
-   */
-  static async deleteUser(userId: string, token?: string): Promise<void> {
-    try {
-      await actorAPI.tcc.deleteUser(userId, token);
-    } catch (error) {
-      console.error("Error deleting TCC user:", error);
-      throw new Error("Failed to delete TCC user");
-    }
-  }
-
-  /**
    * Create a TCC user
    */
   static async createUser(
