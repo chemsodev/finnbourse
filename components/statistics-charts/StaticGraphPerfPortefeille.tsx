@@ -92,7 +92,7 @@ export default function StaticGraphPerfPortefeille() {
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             <Line
-              type="monotone"
+              type="linear"
               dataKey="portfolioValue"
               stroke="#22c55e"
               strokeWidth={3}
@@ -101,7 +101,7 @@ export default function StaticGraphPerfPortefeille() {
               activeDot={{ r: 6 }}
             />
             <Line
-              type="monotone"
+              type="linear"
               dataKey="benchmark"
               stroke="#94a3b8"
               strokeWidth={2}

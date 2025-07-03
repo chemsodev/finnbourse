@@ -335,7 +335,7 @@ export function StaticStockTracker() {
                         />
                         <Area
                           dataKey="stockOne"
-                          type="natural"
+                          type="linear"
                           fill="url(#fillStockOne)"
                           stroke={chartConfig.stockOne.color}
                           strokeWidth={4}
@@ -343,7 +343,7 @@ export function StaticStockTracker() {
                         {compareMode && (
                           <Area
                             dataKey="stockTwo"
-                            type="natural"
+                            type="linear"
                             fill="url(#fillStockTwo)"
                             stroke={chartConfig.stockTwo.color}
                             strokeWidth={4}

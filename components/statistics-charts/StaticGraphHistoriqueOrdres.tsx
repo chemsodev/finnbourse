@@ -59,7 +59,7 @@ export default function StaticGraphHistoriqueOrdres() {
             />
             <Legend />
             <Line
-              type="monotone"
+              type="linear"
               dataKey="confirmedOrders"
               stroke="#22c55e"
               strokeWidth={2}
@@ -67,7 +67,7 @@ export default function StaticGraphHistoriqueOrdres() {
               dot={{ fill: "#22c55e" }}
             />
             <Line
-              type="monotone"
+              type="linear"
               dataKey="rejectedOrders"
               stroke="#ef4444"
               strokeWidth={2}

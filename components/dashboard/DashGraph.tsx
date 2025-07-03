@@ -10,7 +10,7 @@ import { Session } from "next-auth";
 import dynamic from "next/dynamic";
 
 const StockComparison = dynamic(
-  () => import("./StockComparison").then((mod) => mod.StockComparison),
+  () => import("./StockComparison").then((mod) => mod.default),
   { ssr: false }
 );
 
