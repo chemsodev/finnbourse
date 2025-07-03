@@ -21,27 +21,19 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
-// Removed GraphQL dependencies - now using REST API
-// import { UPDATE_LISTED_COMPANY } from "@/graphql/mutations";
-// Removed GraphQL dependencies - now using REST API
-// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+import { useState, useEffect } from "react";
+import { IssuerService } from "@/lib/services/issuerService";
 
-// Définition du schéma de validation
+// Nouveau schéma de validation
 const formSchema = z.object({
   id: z.string(),
-  nom: z.string().min(1, "Nom est obligatoire"),
-  secteurActivite: z.string().min(1, "Secteur d'activité est obligatoire"),
-  siteOfficiel: z.string().url("URL invalide"),
-  contactNom: z.string().min(1, "Nom du contact est obligatoire"),
-  contactPrenom: z.string().min(1, "Prénom du contact est obligatoire"),
-  contactFonction: z.string().min(1, "Fonction du contact est obligatoire"),
-  email: z.string().email("Email invalide"),
-  phone: z.string().min(1, "Téléphone est obligatoire"),
-  mobile: z.string().min(1, "Mobile est obligatoire"),
-  adresse: z.string().min(1, "Adresse est obligatoire"),
+  name: z.string().min(1, "Nom est obligatoire"),
+  activitySector: z.string().min(1, "Secteur d'activité est obligatoire"),
+  website: z.string().url("URL invalide"),
   capital: z.string().min(1, "Capital est obligatoire"),
-  notice: z.string().optional(),
+  email: z.string().email("Email invalide"),
+  address: z.string().min(1, "Adresse est obligatoire"),
+  tel: z.string().min(1, "Téléphone est obligatoire"),
 });
 
 type Company = {
@@ -130,64 +122,62 @@ const EditCompanyDialog = ({
     return "";
   };
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  type FormData = z.infer<typeof formSchema>;
+  
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: company.id,
-      nom: company.nom,
-      secteurActivite: company.secteuractivite,
-      siteOfficiel: company.siteofficiel,
-      contactNom: getContactValue("nom"),
-      contactPrenom: getContactValue("prenom"),
-      contactFonction: getContactValue("fonction"),
-      email: getContactValue("email"),
-      phone: getContactValue("phone"),
-      mobile: getContactValue("mobile"),
-      adresse: getContactValue("address"),
+      name: company.nom,
+      activitySector: company.secteuractivite,
+      website: company.siteofficiel,
       capital: company.capitalisationboursiere,
-      notice: getNoticeValue(),
+      email: getContactValue("email"),
+      address: getContactValue("address"),
+      tel: getContactValue("phone"),
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  // Reset form when company prop changes
+  useEffect(() => {
+    form.reset({
+      id: company.id,
+      name: company.nom,
+      activitySector: company.secteuractivite,
+      website: company.siteofficiel,
+      capital: company.capitalisationboursiere,
+      email: getContactValue("email"),
+      address: getContactValue("address"),
+      tel: getContactValue("phone"),
+    });
+  }, [company, form]);
+
+  const onSubmit = async (values: FormData) => {
     setLoading(true);
     try {
-      // TODO: Replace with REST API call
-      // await fetchGraphQLClient<{ id: string }>(UPDATE_LISTED_COMPANY, {
-      //   id: values.id,
-      //   nom: values.nom,
-      //   secteuractivite: values.secteurActivite,
-      //   siteofficiel: values.siteOfficiel || null,
-      //   contactNom: values.contactNom,
-      //   contactPrenom: values.contactPrenom,
-      //   contactFonction: values.contactFonction,
-      //   phone: values.phone,
-      //   mobile: values.mobile,
-      //   email: values.email,
-      //   address: values.adresse,
-      //   capitalisationboursiere: values.capital,
-      //   notice: values.notice || "",
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      // Mapping des champs du formulaire vers l'API
+      await IssuerService.update(values.id, {
+        name: values.name,
+        website: values.website,
+        activitySector: values.activitySector,
+        capital: values.capital,
+        email: values.email,
+        address: values.address,
+        tel: values.tel,
+      });
       toast({
         variant: "success",
         title: t("success"),
         description: t("companyUpdatedSuccessfully"),
       });
-
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error("Mutation error:", error);
-
+      console.error("API error:", error);
       toast({
         variant: "destructive",
         title: t("error"),
-        description:
-          error instanceof Error ? error.message : "Une erreur est survenue",
+        description: error instanceof Error ? error.message : "Une erreur est survenue",
       });
     } finally {
       setLoading(false);
@@ -211,7 +201,7 @@ const EditCompanyDialog = ({
               <div className="col-span-6">
                 <FormField
                   control={form.control}
-                  name="nom"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("name")}</FormLabel>
@@ -230,7 +220,7 @@ const EditCompanyDialog = ({
               <div className="col-span-6">
                 <FormField
                   control={form.control}
-                  name="secteurActivite"
+                  name="activitySector"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("sector")}</FormLabel>
@@ -249,7 +239,7 @@ const EditCompanyDialog = ({
               <div className="col-span-6">
                 <FormField
                   control={form.control}
-                  name="siteOfficiel"
+                  name="website"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("website")}</FormLabel>
@@ -287,63 +277,6 @@ const EditCompanyDialog = ({
               <div className="col-span-6">
                 <FormField
                   control={form.control}
-                  name="contactNom"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("contactNom")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterContactNom")}
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="contactPrenom"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("contactPrenom")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterContactPrenom")}
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="contactFonction"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("contactFonction")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterContactFonction")}
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
@@ -363,45 +296,7 @@ const EditCompanyDialog = ({
               <div className="col-span-6">
                 <FormField
                   control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("phone")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterPhone")}
-                          type="tel"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="mobile"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("mobile")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterMobile")}
-                          type="tel"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-12">
-                <FormField
-                  control={form.control}
-                  name="adresse"
+                  name="address"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("address")}</FormLabel>
@@ -417,17 +312,17 @@ const EditCompanyDialog = ({
                   )}
                 />
               </div>
-              <div className="col-span-12">
+              <div className="col-span-6">
                 <FormField
                   control={form.control}
-                  name="notice"
+                  name="tel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("notice")}</FormLabel>
+                      <FormLabel>{t("phone")}</FormLabel>
                       <FormControl>
-                        <textarea
-                          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          placeholder={t("enterNotice")}
+                        <Input
+                          placeholder={t("enterPhone")}
+                          type="tel"
                           {...field}
                         />
                       </FormControl>
