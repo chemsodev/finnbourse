@@ -23,8 +23,8 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { IssuerService } from "@/lib/services/issuerService";
+import { Building2 } from "lucide-react";
 
-// Nouveau schéma de validation
 const formSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Nom est obligatoire"),
@@ -77,7 +77,6 @@ const EditCompanyDialog = ({
   const { toast } = useToast();
   const t = useTranslations("EditCompany");
 
-  // Helper function to extract contact field values safely
   const getContactValue = (field: string): string => {
     if (!company.contact) return "";
 
@@ -100,7 +99,6 @@ const EditCompanyDialog = ({
     return "";
   };
 
-  // Helper function to extract notice value safely
   const getNoticeValue = (): string => {
     if (!company.extrafields) return "";
 
@@ -155,7 +153,6 @@ const EditCompanyDialog = ({
   const onSubmit = async (values: FormData) => {
     setLoading(true);
     try {
-      // Mapping des champs du formulaire vers l'API
       await IssuerService.update(values.id, {
         name: values.name,
         website: values.website,
@@ -186,155 +183,187 @@ const EditCompanyDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-primary">
-            {t("editCompany")}
-          </DialogTitle>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader className="space-y-4">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Building2 className="h-6 w-6 text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-primary">
+              {t("editCompany")}
+            </DialogTitle>
+          </div>
+          <p className="text-sm text-muted-foreground text-center">
+            Modifiez les informations de la société émettrice
+          </p>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-8 pt-10"
+            className="space-y-6 pt-6"
           >
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("name")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterName")}
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="activitySector"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("sector")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterSector")}
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("website")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterWebsite")}
-                          type="url"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="capital"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("capital")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterCapital")}
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("email")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterEmail")}
-                          type="email"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("address")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterAddress")}
-                          type="text"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-6">
-                <FormField
-                  control={form.control}
-                  name="tel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("phone")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("enterPhone")}
-                          type="tel"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("name")} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("enterName")}
+                        type="text"
+                        className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="activitySector"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("sector")} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("enterSector")}
+                        type="text"
+                        className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("website")} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("enterWebsite")}
+                        type="url"
+                        className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="capital"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("capital")} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("enterCapital")}
+                        type="text"
+                        className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("email")} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("enterEmail")}
+                        type="email"
+                        className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("phone")} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("enterPhone")}
+                        type="tel"
+                        className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <Button type="submit" className="w-full mt-6" disabled={loading}>
-              {loading ? <>{t("loading")}...</> : t("save")}
-            </Button>
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    {t("address")} <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("enterAddress")}
+                      type="text"
+                      className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="pt-4">
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>{t("loading")}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-5 h-5" />
+                    <span>{t("save")}</span>
+                  </div>
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>

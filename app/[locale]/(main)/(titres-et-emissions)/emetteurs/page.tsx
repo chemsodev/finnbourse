@@ -81,20 +81,38 @@ export default function CompaniesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Utilisation du hook dynamique
   const { issuers, isLoading, fetchIssuers } = useIssuer();
 
-  // Chargement initial
   useEffect(() => {
     fetchIssuers().catch((e) => setError("Erreur lors du chargement des émetteurs"));
-    // eslint-disable-next-line
+  
   }, []);
 
-  // Filtrage dynamique sur les données API
-  const filteredCompanies = issuers.filter((company) =>
-    company.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.activitySector?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCompanies = issuers
+    .filter((company) =>
+      company.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.activitySector?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      
+      if (a.updatedAt && b.updatedAt) {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+      
+      if (a.id && b.id) {
+        const idA = parseInt(a.id);
+        const idB = parseInt(b.id);
+        if (!isNaN(idA) && !isNaN(idB)) {
+          return idB - idA; 
+        }
+        return b.id.localeCompare(a.id);
+      }
+      
+      return (a.name || "").localeCompare(b.name || "");
+    });
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -168,6 +186,9 @@ export default function CompaniesPage() {
 
           {!isLoading && !error && (
             <div className="overflow-x-auto">
+              <div className="text-sm text-muted-foreground mb-2">
+                {t("sortedByCreationDate") || "Triés par date de création (plus récent en premier)"}
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -178,7 +199,7 @@ export default function CompaniesPage() {
                     <TableHead>{t("tel")}</TableHead>
                     <TableHead>{t("address")}</TableHead>
                     <TableHead>{t("website")}</TableHead>
-                    <TableHead>{t("actions")}</TableHead>
+                    <TableHead className="text-right">{t("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
