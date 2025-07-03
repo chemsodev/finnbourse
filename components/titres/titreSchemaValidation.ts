@@ -19,7 +19,8 @@ export const PaymentScheduleItemSchema = z.object({
 
 export const TitreSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "Name is required"),
+  // name: z.string().min(1, "Name is required"),
+  name: z.string().optional(),
   issuer: z.string().min(1, "Issuer ID is required"),
   isinCode: z.string().min(1, "ISIN code is required"),
   code: z.string().min(1, "Code is required"),

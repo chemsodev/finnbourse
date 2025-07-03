@@ -342,15 +342,20 @@
   "Titres": {
     "back": "Back",
     "titresParticipatifs": "Titres Participatifs",
-    "sukuk": "Sukuk",
     "marcheSecondaire": "Secondary Market",
     "actions": "Stocks",
     "obligations": "Bonds",
     "expl": "Explore opportunities on the secondary market and adjust your strategies.",
     "marchePrimaire": "Primary Market",
+    "marchesecondaire": "Secondary Market",
     "opv": "IPO",
     "empruntObligataire": "Bond Issue",
-    "explMP": "Explore opportunities on the primary market and adjust your strategies."
+    "explMP": "Explore opportunities on the primary market and adjust your strategies.",
+    "explMS": "Explore opportunities on the secondary market and adjust your strategies.",
+    "stock": "Stocks",
+    "bond": "Bonds",
+    "participativeTitles": "Participative Titles",
+    "sukuk": "Sukuk"
   },
   "TitresTable": {
     "logo": "Logo",
@@ -2866,10 +2871,22 @@
     "secondaryMarket": {
       "title": "Secondary Market",
       "types": {
-        "stock": "Stock",
-        "bond": "Bond",
-        "participativeTitles": "Participative Titles",
-        "sukuk": "Sukuk"
+        "stock": {
+          "title": "Stocks",
+          "description": "Stocks represent ownership shares in a company. When you buy stocks on the secondary market, you're purchasing shares from other investors rather than directly from the company. The secondary market provides liquidity, allowing investors to buy and sell stocks at current market prices. Stock prices fluctuate based on company performance, market conditions, and investor sentiment, offering opportunities for capital gains and dividends."
+        },
+        "bond": {
+          "title": "Bonds",
+          "description": "Bonds in the secondary market are previously issued debt securities that are traded between investors. Unlike the primary market where bonds are issued, the secondary market allows investors to buy and sell existing bonds before their maturity date. Bond prices in the secondary market fluctuate with interest rates and credit ratings, providing opportunities for investors to trade based on market conditions and yield expectations."
+        },
+        "participativeTitles": {
+          "title": "Participative Titles",
+          "description": "Participative titles in the secondary market are investment instruments that represent a share in a company's capital or profits. These titles can be traded among investors, offering flexibility and liquidity. The secondary market enables investors to adjust their portfolios by buying or selling participative titles based on their investment strategies and market outlook, while companies benefit from continued investor interest."
+        },
+        "sukuk": {
+          "title": "Sukuk",
+          "description": "Sukuk in the secondary market are Sharia-compliant investment certificates that have been previously issued. These Islamic financial instruments are traded among investors, providing liquidity while maintaining compliance with Islamic principles. The secondary market for Sukuk allows investors to manage their portfolios according to changing financial needs and market conditions, with prices reflecting the underlying asset's performance and market demand."
+        }
       }
     },
     "infoDialogue": {
@@ -2939,6 +2956,62 @@
         "cancel": "Cancel",
         "submit": "Submit",
         "submitting": "Submitting...",
+        "institutionsSection": "Institutions",
+        "institutionName": "Institution Name",
+        "institutionPlaceholder": "Enter institution name",
+        "addInstitution": "Add Institution"
+      }
+    },
+    "EditTitre": {
+      "editTitre": "Edit Security",
+      "error": {
+        "title": "Error",
+        "description": "An error occurred while updating. Please try again.",
+        "fetchError": "Failed to load security data"
+      },
+      "success": {
+        "title": "Success",
+        "description": "Security updated successfully"
+      },
+      "form": {
+        "issuer": "Issuer",
+        "selectIssuer": "Select an issuer",
+        "searchIssuer": "Search issuer...",
+        "noIssuersFound": "No issuers found",
+        "name": "Security Name",
+        "isinCode": "ISIN Code",
+        "code": "Code",
+        "faceValue": "Face Value",
+        "quantity": "Quantity",
+        "marketListing": "Market Listing",
+        "selectMarket": "Select market",
+        "primaryMarket": "Primary Market",
+        "secondaryMarket": "Secondary Market",
+        "status": "Status",
+        "selectStatus": "Select status",
+        "active": "Active",
+        "suspended": "Suspended",
+        "expired": "Expired",
+        "datesSection": "Dates",
+        "emissionDate": "Emission Date",
+        "closingDate": "Closing Date",
+        "enjoymentDate": "Enjoyment Date",
+        "pickDate": "Pick a date",
+        "stockPriceSection": "Stock Price",
+        "price": "Price",
+        "priceDate": "Price Date",
+        "gap": "Gap",
+        "optionalSection": "Optional Fields",
+        "dividendRate": "Dividend Rate",
+        "commission": "Commission",
+        "shareClass": "Share Class",
+        "votingRights": "Voting Rights",
+        "selectOption": "Select option",
+        "yes": "Yes",
+        "no": "No",
+        "cancel": "Cancel",
+        "update": "Update",
+        "submitting": "Updating...",
         "institutionsSection": "Institutions",
         "institutionName": "Institution Name",
         "institutionPlaceholder": "Enter institution name",

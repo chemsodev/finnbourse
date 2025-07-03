@@ -2,6 +2,7 @@ import MyMarquee from "@/components/MyMarquee";
 import { getTranslations } from "next-intl/server";
 import {
   BondIcon,
+  BondIcon2,
   OPVIcon,
   ParticipatifIcon,
   SukukIcon,
@@ -29,7 +30,7 @@ export default async function PrimaryMarketPage() {
       title: t("types.bondIssue.title"),
       description: t("types.bondIssue.description"),
       href: "/gestion-des-titres/marcheprimaire/empruntobligataire",
-      Icon: BondIcon,
+      Icon: BondIcon2,
     },
     {
       title: t("types.participativeTitles.title"),

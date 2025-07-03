@@ -2805,20 +2805,175 @@
   },
   "GestionDesTitres": {
     "title": "Gestion des Titres",
-    "primaryMarket": "Marché Primaire",
-    "secondaryMarket": "Marché Secondaire",
+    "primaryMarket": {
+      "title": "Marché Primaire",
+      "types": {
+        "ipo": {
+          "title": "Introduction en Bourse",
+          "description": "Les introductions en bourse (IPO) représentent une opportunité pour les investisseurs d'acheter des actions d'une société qui entre en bourse pour la première fois. Lorsqu'une entreprise décide de s'introduire en bourse, elle émet de nouvelles actions offertes au public via une IPO. Ce processus permet à l'entreprise de lever des fonds pour financer ses projets, tout en offrant aux investisseurs la chance d'acquérir des actions avant qu'elles ne soient disponibles sur le marché secondaire. Participer à une IPO peut offrir des opportunités d'achat à un prix attractif, souvent en anticipation de la croissance future de l'entreprise."
+        },
+        "bondIssue": {
+          "title": "Émission d'Obligations",
+          "description": "Une émission d'obligations est un type d'instrument financier où les investisseurs prêtent de l'argent à des entreprises ou des gouvernements en échange de paiements d'intérêts réguliers et du remboursement du principal à l'échéance. Les obligations sont des titres de créance émis pour financer des projets ou des opérations. Elles offrent généralement un rendement fixe, ce qui les rend attrayantes pour les investisseurs recherchant un revenu prévisible et un certain niveau de sécurité. Les émissions d'obligations peuvent varier en termes de durée, de taux d'intérêt et de risque, selon l'émetteur et les conditions du marché."
+        },
+        "participativeTitles": {
+          "title": "Titres Participatifs",
+          "description": "Les titres participatifs sont des instruments financiers qui permettent aux investisseurs d'acquérir des parts dans des sociétés privées ou publiques. Ils offrent une combinaison de rendement et de risque, car les détenteurs de titres participatifs peuvent bénéficier de la performance de l'entreprise mais sont également exposés aux risques associés à son activité. Ces titres sont souvent utilisés par les entreprises pour lever des fonds tout en partageant les bénéfices avec les investisseurs."
+        },
+        "sukuk": {
+          "title": "Sukuk",
+          "description": "Les Sukuk sont des titres de créance islamiques conformes aux principes de la finance islamique, y compris l'interdiction de l'intérêt (riba). Ils sont émis par des entreprises ou des gouvernements et sont basés sur des actifs tangibles. Les investisseurs dans les Sukuk partagent les profits et pertes associés à l'actif sous-jacent, ce qui les distingue des obligations traditionnelles. Les Sukuk sont souvent utilisés pour financer des projets d'infrastructure ou d'autres investissements à grande échelle."
+        }
+      }
+    },
+    "secondaryMarket": {
+      "title": "Marché Secondaire",
+      "types": {
+        "stock": {
+          "title": "Actions",
+          "description": "Les actions représentent des parts de propriété dans une entreprise. Lorsque vous achetez des actions sur le marché secondaire, vous achetez des actions à d'autres investisseurs plutôt qu'à l'entreprise elle-même. Le marché secondaire fournit de la liquidité, permettant aux investisseurs d'acheter et de vendre des actions aux prix actuels du marché. Les cours des actions fluctuent en fonction de la performance de l'entreprise, des conditions du marché et du sentiment des investisseurs, offrant des opportunités de plus-values et de dividendes."
+        },
+        "bond": {
+          "title": "Obligations",
+          "description": "Les obligations sur le marché secondaire sont des titres de créance déjà émis qui sont négociés entre investisseurs. Contrairement au marché primaire où les obligations sont émises, le marché secondaire permet aux investisseurs d'acheter et de vendre des obligations existantes avant leur date d'échéance. Les prix des obligations sur le marché secondaire fluctuent avec les taux d'intérêt et les notations de crédit, offrant aux investisseurs des opportunités de négociation basées sur les conditions du marché et les attentes de rendement."
+        },
+        "participativeTitles": {
+          "title": "Titres Participatifs",
+          "description": "Les titres participatifs sur le marché secondaire sont des instruments d'investissement qui représentent une part dans le capital ou les bénéfices d'une entreprise. Ces titres peuvent être échangés entre investisseurs, offrant flexibilité et liquidité. Le marché secondaire permet aux investisseurs d'ajuster leurs portefeuilles en achetant ou vendant des titres participatifs selon leurs stratégies d'investissement et les perspectives du marché, tandis que les entreprises bénéficient d'un intérêt continu des investisseurs."
+        },
+        "sukuk": {
+          "title": "Sukuk",
+          "description": "Les Sukuk sur le marché secondaire sont des certificats d'investissement conformes à la charia qui ont été précédemment émis. Ces instruments financiers islamiques sont négociés entre investisseurs, fournissant de la liquidité tout en respectant les principes islamiques. Le marché secondaire pour les Sukuk permet aux investisseurs de gérer leurs portefeuilles selon leurs besoins financiers changeants et les conditions du marché, avec des prix reflétant la performance de l'actif sous-jacent et la demande du marché."
+        }
+      }
+    },
     "infoDialogue": {
       "primaryMarket": {
-        "description": "Le marché primaire est l’endroit où de nouveaux titres sont émis pour la première fois. En investissant dans ce marché, vous :",
-        "li1P": "Accédez aux nouvelles émissions directement auprès de l’émetteur.",
-        "li2P": "Contribuez au financement des entreprises ou de l’État.",
+        "description": "Le marché primaire est où les nouveaux titres sont émis pour la première fois. En achetant sur ce marché, vous :",
+        "li1P": "Accédez aux nouvelles émissions directement auprès de l'émetteur.",
+        "li2P": "Contribuez au financement de l'entreprise ou du gouvernement.",
         "li3P": "Bénéficiez de droits préférentiels dans certaines souscriptions."
       },
       "secondaryMarket": {
-        "description": "Le marché secondaire est l’endroit où les titres déjà émis sont échangés entre investisseurs. En y participant, vous :",
-        "li1S": "Achetez et vendez des titres existants avec d’autres investisseurs.",
+        "description": "Le marché secondaire est où les titres déjà émis sont négociés entre investisseurs. En participant à ce marché, vous :",
+        "li1S": "Achetez et vendez des titres existants avec d'autres investisseurs.",
         "li2S": "Contribuez à la liquidité des actifs financiers.",
         "li3S": "Profitez des fluctuations de prix pour maximiser vos gains."
+      }
+    },
+    "actions": {
+      "back": "Retour"
+    },
+    "CreateTitre": {
+      "ajouterUnTitre": "Ajouter un Titre",
+      "error": {
+        "title": "Erreur",
+        "description": "Une erreur s'est produite. Veuillez réessayer.",
+        "fetchError": "Échec du chargement des entreprises"
+      },
+      "success": {
+        "title": "Succès",
+        "description": "Titre créé avec succès"
+      },
+      "form": {
+        "issuer": "Émetteur",
+        "selectIssuer": "Sélectionner un émetteur",
+        "searchIssuer": "Rechercher un émetteur...",
+        "noIssuersFound": "Aucun émetteur trouvé",
+        "name": "Nom du Titre",
+        "isinCode": "Code ISIN",
+        "code": "Code",
+        "faceValue": "Valeur Nominale",
+        "quantity": "Quantité",
+        "marketListing": "Cotation en Bourse",
+        "selectMarket": "Sélectionner un marché",
+        "primaryMarket": "Marché Primaire",
+        "secondaryMarket": "Marché Secondaire",
+        "status": "Statut",
+        "selectStatus": "Sélectionner un statut",
+        "active": "Actif",
+        "suspended": "Suspendu",
+        "expired": "Expiré",
+        "datesSection": "Dates",
+        "emissionDate": "Date d'Émission",
+        "closingDate": "Date de Clôture",
+        "enjoymentDate": "Date de Jouissance",
+        "pickDate": "Choisir une date",
+        "stockPriceSection": "Cours Boursier",
+        "price": "Prix",
+        "priceDate": "Date du Prix",
+        "gap": "Écart",
+        "optionalSection": "Champs Optionnels",
+        "dividendRate": "Taux de Dividende",
+        "commission": "Commission",
+        "shareClass": "Classe d'Actions",
+        "votingRights": "Droits de Vote",
+        "selectOption": "Sélectionner une option",
+        "yes": "Oui",
+        "no": "Non",
+        "cancel": "Annuler",
+        "submit": "Soumettre",
+        "submitting": "Soumission en cours...",
+        "institutionsSection": "Institutions",
+        "institutionName": "Nom de l'Institution",
+        "institutionPlaceholder": "Entrer le nom de l'institution",
+        "addInstitution": "Ajouter une Institution"
+      }
+    },
+    "EditTitre": {
+      "editTitre": "Modifier le Titre",
+      "error": {
+        "title": "Erreur",
+        "description": "Une erreur s'est produite lors de la mise à jour. Veuillez réessayer.",
+        "fetchError": "Échec du chargement des données du titre"
+      },
+      "success": {
+        "title": "Succès",
+        "description": "Titre mis à jour avec succès"
+      },
+      "form": {
+        "issuer": "Émetteur",
+        "selectIssuer": "Sélectionner un émetteur",
+        "searchIssuer": "Rechercher un émetteur...",
+        "noIssuersFound": "Aucun émetteur trouvé",
+        "name": "Nom du Titre",
+        "isinCode": "Code ISIN",
+        "code": "Code",
+        "faceValue": "Valeur Nominale",
+        "quantity": "Quantité",
+        "marketListing": "Cotation en Bourse",
+        "selectMarket": "Sélectionner un marché",
+        "primaryMarket": "Marché Primaire",
+        "secondaryMarket": "Marché Secondaire",
+        "status": "Statut",
+        "selectStatus": "Sélectionner un statut",
+        "active": "Actif",
+        "suspended": "Suspendu",
+        "expired": "Expiré",
+        "datesSection": "Dates",
+        "emissionDate": "Date d'Émission",
+        "closingDate": "Date de Clôture",
+        "enjoymentDate": "Date de Jouissance",
+        "pickDate": "Choisir une date",
+        "stockPriceSection": "Cours Boursier",
+        "price": "Prix",
+        "priceDate": "Date du Prix",
+        "gap": "Écart",
+        "optionalSection": "Champs Optionnels",
+        "dividendRate": "Taux de Dividende",
+        "commission": "Commission",
+        "shareClass": "Classe d'Actions",
+        "votingRights": "Droits de Vote",
+        "selectOption": "Sélectionner une option",
+        "yes": "Oui",
+        "no": "Non",
+        "cancel": "Annuler",
+        "update": "Mettre à jour",
+        "submitting": "Mise à jour en cours...",
+        "institutionsSection": "Institutions",
+        "institutionName": "Nom de l'Institution",
+        "institutionPlaceholder": "Entrer le nom de l'institution",
+        "addInstitution": "Ajouter une Institution"
       }
     }
   }
