@@ -30,96 +30,17 @@ import { useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Order } from "@/lib/interfaces";
 import OrdreDrawer from "@/components/gestion-des-ordres/OrdreDrawer";
-
-// Mock data for demonstration - adapted to match Order interface
-const mockSessions = [
-  { id: "1", name: "Session Matinale", date: new Date("2025-05-01") },
-  { id: "2", name: "Session Apres-midi", date: new Date("2025-05-01") },
-  { id: "3", name: "Session Speciale", date: new Date("2025-05-02") },
-];
-
-const mockOrders: Order[] = [
-  {
-    id: "ord-123",
-    securityissuer: "Sonatrach",
-    securityid: "STH",
-    securitytype: "action",
-    securityquantity: 100,
-    quantity: 100,
-    orderdate: "2025-05-01",
-    orderstatus: 2,
-    orderdirection: 1,
-    investorid: "Ahmed Benali",
-    negotiatorid: "Karim Hadj",
-    validity: "2025-05-01",
-    duration: 1,
-    createdat: "2025-05-01T09:30:00",
-    payedWithCard: false,
-    visaCosob: "VC001",
-    isinCode: "DZ0000001234",
-    emissionDate: "2025-01-01",
-  },
-  {
-    id: "ord-124",
-    securityissuer: "Air Algerie",
-    securityid: "ALG",
-    securitytype: "obligation",
-    securityquantity: 50,
-    quantity: 50,
-    orderdate: "2025-05-01",
-    orderstatus: 3,
-    orderdirection: 2,
-    investorid: "Fatima Zahra",
-    negotiatorid: "Karim Hadj",
-    validity: "2025-05-01",
-    duration: 1,
-    createdat: "2025-05-01T10:15:00",
-    payedWithCard: false,
-    visaCosob: "VC002",
-    isinCode: "DZ0000005678",
-    emissionDate: "2025-01-01",
-  },
-  {
-    id: "ord-125",
-    securityissuer: "Djezzy",
-    securityid: "DJZ",
-    securitytype: "action",
-    securityquantity: 75,
-    quantity: 75,
-    orderdate: "2025-05-01",
-    orderstatus: 4,
-    orderdirection: 1,
-    investorid: "Mohamed Amine",
-    negotiatorid: "Samira Bouzid",
-    validity: "2025-05-01",
-    duration: 1,
-    createdat: "2025-05-01T11:00:00",
-    payedWithCard: false,
-    visaCosob: "VC003",
-    isinCode: "DZ0000009012",
-    emissionDate: "2025-01-01",
-  },
-  {
-    id: "ord-126",
-    securityissuer: "Cevital",
-    securityid: "CVT",
-    securitytype: "action",
-    securityquantity: 200,
-    quantity: 200,
-    orderdate: "2025-05-01",
-    orderstatus: 2,
-    orderdirection: 1,
-    investorid: "Yacine Kaci",
-    negotiatorid: "Samira Bouzid",
-    validity: "2025-05-01",
-    duration: 1,
-    createdat: "2025-05-01T14:30:00",
-    payedWithCard: false,
-    visaCosob: "VC004",
-    isinCode: "DZ0000003456",
-    emissionDate: "2025-01-01",
-  },
-];
+import {
+  mockOrders,
+  filterOrdersBySearchQuery,
+  filterOrdersByStatus,
+  filterOrdersByMarketType,
+  paginateOrders,
+} from "@/lib/mockData";
+import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
+import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { mockSessions } from "./session-management";
 
 interface SessionOrdersProps {
   selectedSessionId?: string | null;
@@ -131,12 +52,24 @@ type SortDirection = 'asc' | 'desc' | null;
 export default function SessionOrders({ selectedSessionId }: SessionOrdersProps) {
   const t = useTranslations("mesOrdres");
   const tStatus = useTranslations("status");
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const session = useSession();
+  const searchParams = useSearchParams();
+  const [orders, setOrders] = useState<Order[]>([]);
   const [selectedSession, setSelectedSession] = useState<string>(
     selectedSessionId || "1"
   );
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [loading, setLoading] = useState(true);
+  const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
+
+  const STATUS_SATISFIED = 8; 
+  const STATUS_UNSATISFIED = 9; 
+  const STATUS_PLANNED = 2;
+
+  // Ajout état pour le tri
+  const [sortFieldTerminee, setSortFieldTerminee] = useState<string | null>(null);
+  const [sortDirectionTerminee, setSortDirectionTerminee] = useState<'asc' | 'desc' | null>(null);
 
   // Mettre à jour la session sélectionnée si la prop change
   useEffect(() => {
@@ -144,15 +77,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
       setSelectedSession(selectedSessionId);
     }
   }, [selectedSessionId]);
-
-  // Filter orders for the selected session
-  const sessionOrders = orders.filter((order) => {
-    // For now, we'll simulate session assignment based on order ID
-    // In real implementation, this would be based on sessionId field
-    return selectedSession === "1" ? order.id.includes("123") || order.id.includes("124") || order.id.includes("125") :
-           selectedSession === "2" ? order.id.includes("126") :
-           selectedSession === "3" ? false : false;
-  });
 
   // Sort function - same as OrdresTable
   const sortData = (data: Order[], field: SortField | null, direction: SortDirection) => {
@@ -270,7 +194,317 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     }
   };
 
-  const sortedOrders = sortData(sessionOrders, sortField, sortDirection);
+  // Filter orders for the selected session - different logic based on session status
+  const filterOrdersByPageAndRole = (orders: Order[], sessionStatus: string) => {
+    switch (sessionStatus) {
+      case "active":
+        return orders.filter((order) => order.orderstatus === 5);
+      case "scheduled":
+        return orders.filter((order) => order.orderstatus === STATUS_PLANNED);
+      case "completed":
+        return orders.filter((order) =>
+          order.orderstatus === STATUS_SATISFIED || order.orderstatus === STATUS_UNSATISFIED
+        );
+      default:
+        return [];
+    }
+  };
+
+  useEffect(() => {
+    // Simulate API loading
+    setLoading(true);
+
+    // Add a small delay to simulate network request
+    const timer = setTimeout(() => {
+      try {
+        // Apply filters in sequence
+        let filteredData = [...mockOrders];
+
+        // Get session data
+        const selectedSessionData = mockSessions.find(s => s.id === selectedSession);
+        
+        if (selectedSessionData) {
+          // Apply page-specific filters based on session status
+          filteredData = filterOrdersByPageAndRole(filteredData, selectedSessionData.status);
+          
+          // In real implementation, this would filter by sessionId
+          // For now, simulate session assignment based on order ID
+          filteredData = filteredData.filter((order) => {
+            if (selectedSession === "1") {
+              return order.id.includes("123") || order.id.includes("124") || order.id.includes("125") || 
+                     order.id.includes("456") || order.id.includes("789") || order.id.includes("012");
+            } else if (selectedSession === "2") {
+              return order.id.includes("126") || order.id.includes("345") || order.id.includes("678");
+            } else if (selectedSession === "3") {
+              return order.id.includes("999") || order.id.includes("888") || order.id.includes("777");
+            }
+            return false;
+          });
+        } else {
+          filteredData = [];
+        }
+
+        setOrders(filteredData);
+      } catch (error) {
+        console.error("Error processing orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [selectedSession]);
+
+  // Separate effect for sorting
+  useEffect(() => {
+    if (!loading && orders.length > 0) {
+      let sortedData = [...orders];
+      
+      // Apply sorting
+      if (sortField && sortDirection) {
+        sortedData = sortData(sortedData, sortField, sortDirection);
+      }
+      
+      setOrders(sortedData);
+    }
+  }, [sortField, sortDirection, loading]);
+
+  const sortedOrders = orders;
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  const selectedSessionData = mockSessions.find(s => s.id === selectedSession);
+
+  if (selectedSessionData?.status === "active" && selectedSessionData?.id === "2") {
+    // On récupère les mêmes paramètres que dans /ordres/execution
+    const currentPage = Number(searchParams?.get("page")) || 0;
+    const searchquery = searchParams?.get("searchquery") || "";
+    const state = searchParams?.get("state") || "99";
+    const marketType = searchParams?.get("marketType") || "all";
+    const userRole = (session.data as any)?.user?.roleid;
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Ordres de la Session</CardTitle>
+              <CardDescription>
+                Ordres assignés à la session: {selectedSessionData?.name}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-64">
+                <Select
+                  onValueChange={setSelectedSession}
+                  value={selectedSession}
+                >
+                  <SelectTrigger id="session-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSessions.map((session) => (
+                      <SelectItem key={session.id} value={session.id}>
+                        {session.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <OrdresTable
+              searchquery={searchquery}
+              skip={currentPage}
+              state={state}
+              marketType={marketType}
+              pageType="orderExecution"
+              userRole={userRole?.toString() || "1"}
+              userType="iob"
+              activeTab="all"
+              showActionColumn={false}
+              showResponseButton={false}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Pour toutes les autres sessions, on passe le contenu filtré (sortedOrders)
+  // Si le tableau est vide, on ajoute une ligne d'exemple factice pour la démo
+  const displayOrders = sortedOrders.length > 0 ? sortedOrders : [
+    {
+      id: 'EXEMPLE-VIDE',
+      securityissuer: 'Exemple Société',
+      securitytype: 'action',
+      securityid: 'EX-000',
+      securityquantity: 1000,
+      quantity: 10,
+      orderdate: new Date().toISOString(),
+      orderstatus: 5,
+      investorid: 'INV-EX',
+      negotiatorid: 'NEG-EX',
+      validity: '30',
+      duration: 5,
+      createdat: new Date().toISOString(),
+      payedWithCard: false,
+      visaCosob: 'VISA-EX',
+      isinCode: 'DZ0000000EX',
+      emissionDate: new Date().toISOString(),
+      mst: '1000 DA',
+      orderdirection: 1,
+      priceInstruction: 'au mieux',
+      timeInstruction: 'à durée limitée',
+      validityDate: new Date().toISOString(),
+      totalShares: 10000,
+      grossAmount: '10000 DA',
+      commission: '1 %',
+      netAmount: '10100 DA',
+    }
+  ];
+
+  // Ajoute l'index et les champs calculés à chaque ligne pour le tri spécial
+  type TermineeRow = typeof displayOrders[0] & { idx: number, statut: string, transaction: number, reliquat: number };
+  const displayOrdersWithIdx: TermineeRow[] = displayOrders.map((o, idx) => ({
+    ...o,
+    idx,
+    statut: idx % 2 === 0 ? 'Satisfait' : 'Non satisfait',
+    transaction: idx % 2 === 0 ? 1 : 0,
+    reliquat: idx % 2 !== 0 ? 80 : 0
+  }));
+  const sortDataTerminee = (data: TermineeRow[], field: string | null, direction: 'asc' | 'desc' | null) => {
+    if (!field || !direction) return data;
+    return [...data].sort((a, b) => {
+      let aValue: any = 0;
+      let bValue: any = 0;
+      switch (field) {
+        case 'idx': aValue = a.idx; bValue = b.idx; break;
+        case 'id': aValue = a.id; bValue = b.id; break;
+        case 'securityissuer': aValue = a.securityissuer; bValue = b.securityissuer; break;
+        case 'orderdirection': aValue = a.orderdirection; bValue = b.orderdirection; break;
+        case 'quantity': aValue = a.quantity; bValue = b.quantity; break;
+        case 'statut': aValue = a.statut; bValue = b.statut; break;
+        case 'transaction': aValue = a.transaction; bValue = b.transaction; break;
+        case 'reliquat': aValue = a.reliquat; bValue = b.reliquat; break;
+        default: return 0;
+      }
+      if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+      if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+      if (direction === 'asc') return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+    });
+  };
+  const sortedDisplayOrders: TermineeRow[] = sortDataTerminee(displayOrdersWithIdx, sortFieldTerminee, sortDirectionTerminee);
+
+  // Gestion du clic sur l'en-tête
+  const handleSortTerminee = (field: string) => {
+    if (sortFieldTerminee === field) {
+      if (sortDirectionTerminee === 'asc') setSortDirectionTerminee('desc');
+      else if (sortDirectionTerminee === 'desc') { setSortDirectionTerminee(null); setSortFieldTerminee(null); }
+      else setSortDirectionTerminee('asc');
+    } else {
+      setSortFieldTerminee(field);
+      setSortDirectionTerminee('asc');
+    }
+  };
+
+  // Icône de tri
+  const getSortIconTerminee = (field: string) => {
+    if (sortFieldTerminee !== field) return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
+    if (sortDirectionTerminee === 'asc') return <ChevronUp className="inline ml-1 h-4 w-4 text-blue-600" />;
+    if (sortDirectionTerminee === 'desc') return <ChevronDown className="inline ml-1 h-4 w-4 text-blue-600" />;
+    return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
+  };
+
+  // Bloc pour session terminée (status 'completed')
+  if (selectedSessionData?.status === "completed") {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Ordres de la Session</CardTitle>
+              <CardDescription>
+                Ordres assignés à la session: {selectedSessionData?.name} (Terminée)
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-64">
+                <Select
+                  onValueChange={setSelectedSession}
+                  value={selectedSession}
+                >
+                  <SelectTrigger id="session-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSessions.map((session) => (
+                      <SelectItem key={session.id} value={session.id}>
+                        {session.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('idx')}></TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('id')}>ID {getSortIconTerminee('id')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('securityissuer')}>Titre {getSortIconTerminee('securityissuer')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('orderdirection')}>Sens {getSortIconTerminee('orderdirection')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('quantity')}>Volume {getSortIconTerminee('quantity')}</TableHead>
+                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('statut')}>Statut {getSortIconTerminee('statut')}</TableHead>
+                  <TableHead colSpan={3} className="p-0 align-middle">
+                    <div className="flex flex-col items-center justify-center w-full h-full">
+                      <div className="font-bold uppercase text-xs  w-full text-center">Allocation</div>
+                      <div className="flex flex-row w-full pt-1">
+                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('transaction'); }}>Transaction {getSortIconTerminee('transaction')}</span>
+                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('quantity'); }}>Volume {getSortIconTerminee('quantity')}</span>
+                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('reliquat'); }}>Reliquat {getSortIconTerminee('reliquat')}</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedDisplayOrders.map((order, idx) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="px-4 py-2 text-center align-middle">{idx + 1}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle" title={order.id}>{order.id?.split("-")[0]}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.securityissuer}</TableCell>
+                    <TableCell className={`px-4 py-2 text-center align-middle ${order.orderdirection === 1 ? 'text-green-600' : 'text-red-600'}`}>{order.orderdirection === 1 ? 'Achat' : 'Vente'}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.quantity}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${order.statut === 'Satisfait' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{order.statut}</span>
+                    </TableCell>
+                    {/* Allocation sous-colonnes */}
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.transaction}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.quantity}</TableCell>
+                    <TableCell className="px-4 py-2 text-center align-middle">{order.reliquat}</TableCell>
+                    <TableCell className="px-4 py-2 text-right align-middle">
+                      <OrdreDrawer
+                        titreId={order.id}
+                        orderData={order}
+                        isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -279,7 +513,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           <div>
             <CardTitle>Ordres de la Session</CardTitle>
             <CardDescription>
-              Ordres assignés à la session: {mockSessions.find(s => s.id === selectedSession)?.name}
+              Ordres assignés à la session: {selectedSessionData?.name} ({selectedSessionData?.status})
             </CardDescription>
           </div>
           <div className="flex items-center gap-4">
@@ -294,7 +528,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                 <SelectContent>
                   {mockSessions.map((session) => (
                     <SelectItem key={session.id} value={session.id}>
-                      {session.name} 
+                      {session.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -303,171 +537,24 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead 
-                  className="font-bold uppercase cursor-pointer"
-                  onClick={() => handleSort('id')}
-                >
-                  <div className="flex items-center">
-                    ID
-                    {getSortIcon('id')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('titre')}
-                >
-                  <div className="flex items-center">
-                    {t("titre")}
-                    {getSortIcon('titre')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('sens')}
-                >
-                  <div className="flex items-center">
-                    {t("sens")}
-                    {getSortIcon('sens')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('type')}
-                >
-                  <div className="flex items-center">
-                    {t("type")}
-                    {getSortIcon('type')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('quantity')}
-                >
-                  <div className="flex items-center">
-                    {t("quantity")}
-                    {getSortIcon('quantity')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('statut')}
-                >
-                  <div className="flex items-center">
-                    {t("statut")}
-                    {getSortIcon('statut')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleSort('date')}
-                >
-                  <div className="flex items-center">
-                    {t("date")}
-                    {getSortIcon('date')}
-                  </div>
-                </TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedOrders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={10} className="text-center py-4">
-                    Aucun ordre trouvé pour cette session
-                  </TableCell>
-                </TableRow>
-              ) : (
-                sortedOrders.map((order: Order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-bold overflow-x-scroll w-60">
-                      {order?.id
-                        ? order.id.split("-").slice(0, 2).join("-")
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <div className="font-medium capitalize">
-                          {order?.securityissuer || "N/A"}
-                        </div>
-                        <div className="font-medium text-xs uppercase text-gray-400">
-                          {order?.securityid || "N/A"}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell
-                      className={`${
-                        order.orderdirection === 1 ? "text-green-500" : "text-red-600"
-                      }`}
-                    >
-                      {order.orderdirection === 1 ? t("achat") : t("vente")}
-                    </TableCell>
-                    <TableCell>
-                      {order.securitytype === "action"
-                        ? t("action")
-                        : order.securitytype === "obligation"
-                        ? t("obligation")
-                        : order.securitytype === "sukuk"
-                        ? t("sukuk")
-                        : order.securitytype === "opv"
-                        ? t("opv")
-                        : order.securitytype === "titresparticipatifs"
-                        ? t("titre_participatif")
-                        : order.securitytype === "empruntobligataire"
-                        ? t("emprunt_obligataire")
-                        : order.securitytype}
-                    </TableCell>
-                    <TableCell>{order.quantity}</TableCell>
-                    <TableCell>
-                      <div
-                        className={`w-fit py-0.5 px-2 rounded-full text-xs text-center text-white ${getStatusBgColor(Number(order.orderstatus))}`}
-                      >
-                        {order?.orderstatus === 0 && order?.payedWithCard
-                          ? "Brouillon payé"
-                          : order?.orderstatus === 0 && !order?.payedWithCard
-                          ? tStatus("Draft")
-                          : order?.orderstatus === 1
-                          ? tStatus("Pending")
-                          : order?.orderstatus === 2
-                          ? tStatus("In_Progress")
-                          : order?.orderstatus === 3
-                          ? tStatus("Validated")
-                          : order?.orderstatus === 4
-                          ? tStatus("Being_Processed")
-                          : order?.orderstatus === 5
-                          ? tStatus("Completed")
-                          : order?.orderstatus === 6
-                          ? tStatus("Awaiting_Approval")
-                          : order?.orderstatus === 7
-                          ? tStatus("Ongoing")
-                          : order?.orderstatus === 8
-                          ? tStatus("Partially_Validated")
-                          : order?.orderstatus === 9
-                          ? tStatus("Expired")
-                          : order?.orderstatus === 10
-                          ? tStatus("Rejected")
-                          : order?.orderstatus === 11
-                          ? tStatus("Cancelled")
-                          : "Unknown"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {new Date(order.createdat).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <OrdreDrawer 
-                        titreId={order.id} 
-                        orderData={order}
-                        isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          {(() => {
+            const userRole = (session.data as any)?.user?.roleid;
+            return (
+              <OrdresTable
+                searchquery={""}
+                skip={0}
+                state={"99"}
+                marketType={"all"}
+                pageType="orderExecution"
+                userRole={userRole?.toString() || "1"}
+                userType="iob"
+                activeTab="all"
+                showActionColumn={false}
+                showResponseButton={false}
+                data={displayOrders}
+              />
+            );
+          })()}
         </CardContent>
       </Card>
     </div>

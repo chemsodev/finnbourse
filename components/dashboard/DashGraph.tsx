@@ -9,9 +9,8 @@ import { getTranslations } from "next-intl/server";
 import { Session } from "next-auth";
 import dynamic from "next/dynamic";
 
-// Import the StockComparison component dynamically with client-side rendering only
 const StockComparison = dynamic(
-  () => import("./StockComparison").then((mod) => mod.StockComparison),
+  () => import("./StockComparison").then((mod) => mod.default),
   { ssr: false }
 );
 

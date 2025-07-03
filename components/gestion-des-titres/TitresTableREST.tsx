@@ -97,7 +97,7 @@ export function TitresTableREST({ type }: TitresTableProps) {
         </Button>
       ),
       cell: ({ row }) => {
-        const stock = row.original as any; // Cast to any to avoid TypeScript errors
+        const stock = row.original as any;
         const issuer = stock.issuer;
         const issuerName = typeof issuer === "object" ? issuer?.name : issuer;
 

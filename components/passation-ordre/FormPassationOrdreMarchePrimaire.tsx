@@ -3,6 +3,15 @@ import { useRouter } from "@/i18n/routing";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import {
   Form,
   FormControl,
@@ -13,19 +22,32 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowRight,
   Check,
   CheckIcon,
   ChevronDown,
   CircleAlert,
+  ChevronLeft,
+  ChevronRight,
+  Search,
 } from "lucide-react";
 import {
+  calculateTotalValue,
   cn,
   formatPrice,
   getNextMonthDate,
   preventNonNumericInput,
   updateTotalAmount,
+  calculateGrossAmount,
 } from "@/lib/utils";
 import {
   Popover,
@@ -41,37 +63,41 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "../ui/separator";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatNumber } from "@/lib/utils";
-import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
+import Commissiontooltip from "../Commissiontooltip";
+import { fr, ar, enUS } from "date-fns/locale";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import { useSession } from "next-auth/react";
-import CouponTable from "../CouponTable";
+import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
 import { useStockREST, useStocksREST } from "@/hooks/useStockREST";
 import { Stock } from "@/lib/services/stockService";
+import { useClientsList } from "@/hooks/useClientsList";
 
 const FormPassationOrdreMarchePrimaire = ({
   titreId,
   type,
 }: {
-  titreId?: string;
+  titreId: string;
   type: string;
 }) => {
   const session = useSession();
   const userId = (session.data?.user as any)?.id;
   const negotiatorId = (session.data?.user as any)?.negotiatorId;
+  const restToken = (session.data?.user as any)?.restToken;
+  const locale = useLocale().toLowerCase();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [titre, setTitre] = useState("");
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [grossAmount, setGrossAmount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [createdOrdreId, setCreatedOrdreId] = useState<string | null>(null);
@@ -79,65 +105,60 @@ const FormPassationOrdreMarchePrimaire = ({
     null
   );
   const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
+  const [clientOpen, setClientOpen] = useState(false);
+
+  // Form condition states
+  const [conditionDuree, setConditionDuree] = useState("deJour");
+  const [conditionPrix, setConditionPrix] = useState("prixMarche");
+  const [conditionQuantite, setConditionQuantite] = useState("toutOuRien");
+
   const t = useTranslations("FormPassationOrdreObligation");
 
-  // Map the type parameter to the correct backend filter value
-  let stockType: "action" | "obligation" | "sukuk" | "participatif" = "action";
-  if (type === "opv") {
-    stockType = "action";
-  } else if (type === "empruntobligataire") {
-    stockType = "obligation";
-  } else if (type === "sukukmp") {
-    stockType = "sukuk";
-  } else if (type === "titresparticipatifsmp") {
-    stockType = "participatif";
-  } else {
-    stockType = type as any;
-  }
-
   // Use REST hooks for fetching data
-  const { stocks: securityData, loading: stocksLoading } =
+  const stockType = "action";
+  const { stocks: stockData, loading: stocksLoading } =
     useStocksREST(stockType);
-  const { stock: data, loading: stockLoading } = useStockREST(
-    titreId || "",
-    stockType
+  const { stock: data, loading } = useStockREST(titreId, stockType);
+  const {
+    clients,
+    loading: clientsLoading,
+    error: clientsError,
+  } = useClientsList();
+
+  // Pagination pour le tableau des clients
+  const [currentPage, setCurrentPage] = useState(0);
+  const rowsPerPage = 10;
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredClients = clients.filter(
+    (client) =>
+      (client.client_code &&
+        client.client_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.name &&
+        client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.email &&
+        client.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  const totalPages = Math.ceil(filteredClients.length / rowsPerPage);
+  const paginatedClients = filteredClients.slice(
+    currentPage * rowsPerPage,
+    (currentPage + 1) * rowsPerPage
   );
 
-  const router = useRouter();
-  const handleGoBack = () => {
-    router.back();
-  };
-
-  const formSchema = z.object({
-    issuer: z.string().optional(),
-    quantite: z
-      .number()
-      .int()
-      .min(1)
-      .max(data?.quantity || 1, {
-        message: `La quantité ne peut pas dépasser ${data?.quantity || 1}.`,
-      }),
-    selectedTitreId: z.string(),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      selectedTitreId: "",
-      quantite: 1,
-    },
-  });
-
-  // Initialize form with data when available
+  // Initialize form and stock data when data is loaded
   useEffect(() => {
-    if (data && securityData?.length > 0) {
-      const selectedTitre = securityData.find((t: any) => t.id === titreId);
+    if (data && stockData?.length > 0) {
+      const selectedTitre = stockData.find((t: any) => t.id === titreId);
 
       if (selectedTitre) {
         setTitre(selectedTitre.name || selectedTitre.issuer?.name || "");
         setSelectedPrice(selectedTitre.faceValue || selectedTitre.facevalue);
         setSelectedTitreName(selectedTitre.name || "");
         form.setValue("selectedTitreId", selectedTitre.id);
+        form.setValue(
+          "coursLimite",
+          Number(selectedTitre.faceValue || selectedTitre.facevalue)
+        );
 
         // Extract issuer data if available
         if (selectedTitre.issuer) {
@@ -147,179 +168,322 @@ const FormPassationOrdreMarchePrimaire = ({
         }
 
         setTotalAmount(
-          updateTotalAmount(
+          calculateTotalValue(
             selectedTitre.faceValue || selectedTitre.facevalue,
+            form.getValues("quantite"),
+            "action"
+          )
+        );
+        setGrossAmount(
+          calculateGrossAmount(
+            Number(selectedTitre.faceValue || selectedTitre.facevalue),
             form.getValues("quantite")
           )
         );
       }
     }
-  }, [data, securityData, titreId]);
+  }, [data, stockData, titreId]);
+
+  const router = useRouter();
+  const handleGoBack = () => {
+    router.back();
+  };
+  const formSchema = z
+    .object({
+      buyTransaction: z.boolean(),
+      issuer: z.string().optional(),
+      quantite: z
+        .number()
+        .int()
+        .min(1)
+        .max(data?.quantity || 1, {
+          message: `La quantité ne peut pas dépasser ${data?.quantity || 1}.`,
+        }), // Conditions de Durée
+      conditionDuree: z.enum(["deJour", "dateDefinie", "sansStipulation"]),
+      validite: z.date().optional(),
+      // Conditions de Prix
+      conditionPrix: z.enum(["prixLimite", "prixMarche"]),
+      coursLimite: z.number().optional(),
+      // Conditions Quantitatives
+      conditionQuantite: z.enum(["toutOuRien", "quantiteMinimale"]),
+      quantiteMinimale: z.number().int().min(1).optional(),
+      selectedTitreId: z.string(),
+      selectedClientId: z
+        .string()
+        .min(1, { message: "Veuillez sélectionner un client" }),
+    })
+    .refine(
+      (data) => {
+        // Validation conditionnelle pour date de validité
+        if (data.conditionDuree === "dateDefinie") {
+          return data.validite !== undefined;
+        }
+        return true;
+      },
+      {
+        message: "La date de validité est requise pour une durée définie",
+        path: ["validite"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validation conditionnelle pour cours limite
+        if (data.conditionPrix === "prixLimite") {
+          return data.coursLimite !== undefined && data.coursLimite > 0;
+        }
+        return true;
+      },
+      {
+        message: "Le cours limite est requis pour un ordre à prix limite",
+        path: ["coursLimite"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validation conditionnelle pour quantité minimale
+        if (data.conditionQuantite === "quantiteMinimale") {
+          return (
+            data.quantiteMinimale !== undefined &&
+            data.quantiteMinimale > 0 &&
+            data.quantiteMinimale <= data.quantite
+          );
+        }
+        return true;
+      },
+      {
+        message:
+          "La quantité minimale est requise et doit être inférieure ou égale à la quantité totale",
+        path: ["quantiteMinimale"],
+      }
+    );
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      selectedTitreId: "",
+      selectedClientId: "",
+      buyTransaction: true,
+      quantite: 1,
+      conditionDuree: "deJour",
+      conditionPrix: "prixMarche",
+      conditionQuantite: "toutOuRien",
+      validite: getNextMonthDate(),
+      coursLimite: 0,
+      quantiteMinimale: 1,
+    },
+  });
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === "quantite" && selectedPrice) {
+      if (name === "quantite" && Number(selectedPrice)) {
         const quantity = value.quantite as number;
-        setTotalAmount(Number(selectedPrice) * quantity);
+        setTotalAmount(
+          calculateTotalValue(Number(selectedPrice), quantity, "action")
+        );
+        setGrossAmount(calculateGrossAmount(Number(selectedPrice), quantity));
       }
     });
     return () => subscription.unsubscribe();
   }, [form, selectedPrice]);
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (formData: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
-
     try {
-      // Create order using REST API
-      const response = await fetch("/api/orders", {
+      // Create order using REST API with the correct format
+      const menuOrderBase =
+        process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
+      const response = await fetch(`${menuOrderBase}/api/v1/order/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${restToken}`,
         },
         body: JSON.stringify({
-          securityid: data.selectedTitreId,
-          investorid: userId,
-          negotiatorid: negotiatorId || "",
-          securitytype: stockType,
-          quantity: data.quantite,
-          orderstatus: 0,
-          securityissuer: selectedTitreName,
+          stock_id: formData.selectedTitreId,
+          client_id: formData.selectedClientId,
+          quantity: formData.quantite,
+          price:
+            formData.conditionPrix === "prixLimite"
+              ? formData.coursLimite
+              : selectedPrice,
+          market_type: "S", // Secondary market
+          operation_type: formData.buyTransaction ? "A" : "V", // A for Achat (buy), V for Vente (sell)
+          conditionDuree: formData.conditionDuree,
+          conditionPrix: formData.conditionPrix,
+          conditionQuantite: formData.conditionQuantite,
+          minQuantity:
+            formData.conditionQuantite === "quantiteMinimale"
+              ? formData.quantiteMinimale
+              : undefined,
+          validity:
+            formData.conditionDuree === "dateDefinie"
+              ? formData.validite
+              : undefined,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create order");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create order");
       }
 
       const result = await response.json();
-      setCreatedOrdreId(result.id);
+      setCreatedOrdreId(result.id || result.order_id);
       setIsDialogOpen(true);
 
       toast({
-        title: "Success",
-        description: "Order submitted successfully",
+        variant: "success",
+        action: (
+          <div className="w-full flex gap-6 items-center">
+            <CheckIcon size={40} />
+            <span className="first-letter:capitalize text-xs">
+              {t("ordrePasse")}
+            </span>
+          </div>
+        ),
       });
-    } catch (error) {
-      console.error("Error submitting order:", error);
+    } catch (error: any) {
+      console.error("Form submission error", error);
       toast({
-        title: "Error",
-        description: "Failed to submit order",
         variant: "destructive",
+        action: (
+          <div className="w-full flex gap-6 items-center">
+            <CircleAlert size={40} />
+            <span className="first-letter:capitalize text-xs">
+              {error.message || t("erreur")}
+            </span>
+          </div>
+        ),
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+  const setTransactionType = (type: boolean) => {
+    form.setValue("buyTransaction", type);
+  };
 
-  if (stockLoading || stocksLoading) {
+  const isAchatSelected = form.watch("buyTransaction");
+  const watchedConditionDuree = form.watch("conditionDuree");
+  const watchedConditionPrix = form.watch("conditionPrix");
+  const watchedConditionQuantite = form.watch("conditionQuantite");
+
+  // Trouver le client sélectionné
+  const selectedClient = clients.find(
+    (c) => c.id === form.watch("selectedClientId")
+  );
+
+  if (loading || stocksLoading || clientsLoading || !data) {
     return <PasserUnOrdreSkeleton />;
   }
 
-  // Si aucun titre sélectionné, afficher le dropdown de sélection
-  if (!form.watch("selectedTitreId")) {
+  // Afficher la sélection du client si aucun client n'est sélectionné
+  if (!form.watch("selectedClientId")) {
     return (
       <div className="flex flex-col items-center justify-center w-full">
+        {/* Bouton de retour aligné à gauche */}
         <div className="w-full flex justify-start mb-2">
           <Button
             type="button"
             variant="outline"
             className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
-            onClick={handleGoBack}
+            onClick={() => router.back()}
           >
-            <ArrowRight className="w-5" /> <div>{t("annuler")}</div>
+            <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
           </Button>
         </div>
         <h2 className="text-2xl font-bold mb-4">
-          {t("selectTitre") || "Sélectionner un titre"}
+          {t("selectClient") || "Sélectionner un client"}
         </h2>
-        <div className="w-full max-w-2xl">
-          <Form {...form}>
-            <FormField
-              control={form.control}
-              name="selectedTitreId"
-              render={({ field }) => (
-                <FormItem className="flex justify-between text-xl items-baseline">
-                  <FormControl className="w-full">
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-full justify-between rounded-md mb-6 h-14"
-                        >
-                          <div className="flex gap-4 items-center">
-                            <div className="text-xl text-primary font-semibold">
-                              {titre ||
-                                t("selectTitre") ||
-                                "Sélectionnez un titre"}
-                            </div>
-                          </div>
-                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-96 p-0">
-                        <Command>
-                          <CommandInput
-                            placeholder={
-                              t("searchTitre") || "Rechercher un titre..."
-                            }
-                          />
-                          <CommandList>
-                            <CommandEmpty>{t("noTitle")}</CommandEmpty>
-                            <CommandGroup>
-                              {securityData &&
-                                securityData?.map((t: any) => (
-                                  <CommandItem
-                                    key={t.id}
-                                    value={t.name || t.issuer?.name}
-                                    onSelect={() => {
-                                      setTitre(t.name || t.issuer?.name || "");
-                                      setSelectedTitreName(t.name || "");
-                                      setSelectedPrice(
-                                        t.faceValue || t.facevalue
-                                      );
-                                      field.onChange(t.id);
-                                      setTotalAmount(
-                                        (t.faceValue || t.facevalue) *
-                                          form.getValues("quantite")
-                                      );
-                                      setOpen(false);
-                                      if (t.issuer) {
-                                        setExtraFieldsData({
-                                          notice: t.issuer.website || "",
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        field.value === t.id
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {t.name || t.issuer?.name || t.id}
-                                  </CommandItem>
-                                ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </Form>
+        {/* Champ de recherche */}
+        <div className="relative mb-4 w-full max-w-2xl">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher un client..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(0);
+            }}
+            className="pl-8"
+          />
+        </div>
+        <div className="overflow-x-auto border rounded-lg w-full max-w-2xl">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Code</TableHead>
+                <TableHead className="text-center">Nom</TableHead>
+                <TableHead className="text-center">Email</TableHead>
+                <TableHead className="text-center">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedClients.map((client) => (
+                <TableRow
+                  key={client.id}
+                  className={
+                    form.watch("selectedClientId") === client.id
+                      ? "bg-blue-100"
+                      : "hover:bg-gray-100"
+                  }
+                >
+                  <TableCell className="text-center">
+                    {client.client_code}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {client.name || client.agency_name}
+                  </TableCell>
+                  <TableCell className="text-center">{client.email}</TableCell>
+                  <TableCell className="text-center">
+                    <Button
+                      type="button"
+                      variant={
+                        form.watch("selectedClientId") === client.id
+                          ? "default"
+                          : "outline"
+                      }
+                      onClick={() =>
+                        form.setValue("selectedClientId", client.id)
+                      }
+                    >
+                      {form.watch("selectedClientId") === client.id
+                        ? "Sélectionné"
+                        : "Choisir"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        {/* Pagination */}
+        <div className="flex justify-center items-center gap-4 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <span>
+            {currentPage + 1} / {totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={currentPage >= totalPages - 1}
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
+            }
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Si un titre est sélectionné, afficher le formulaire harmonisé
   return (
     <>
       <BulletinSubmitDialog
@@ -328,74 +492,60 @@ const FormPassationOrdreMarchePrimaire = ({
         setIsDialogOpen={setIsDialogOpen}
       />
       <div className="flex flex-col justify-center items-center w-full">
-        {/* Bouton Retour aligné à gauche */}
+        {/* Bouton pour fermer le formulaire et revenir à la sélection du client, aligné à gauche */}
         <div className="w-full flex justify-start mb-2">
           <Button
             type="button"
             variant="outline"
             className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
-            onClick={() => form.setValue("selectedTitreId", "")}
+            onClick={() => form.setValue("selectedClientId", "")}
           >
-            <ArrowRight className="w-5" /> <div>{t("retour") || "Retour"}</div>
+            <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
           </Button>
         </div>
-        {/* Bloc titre sélectionné */}
-        <div className="w-[100%] flex items-center justify-between rounded-md mb-6 h-14 border px-4 bg-muted">
-          <div className="flex gap-4 items-center">
-            {titre && <div className="w-10 h-10 bg-primary rounded-md"></div>}
-            <div className="text-xl text-primary font-semibold">
-              {titre || t("aucunTitre") || "Aucun titre sélectionné"}
-            </div>
-          </div>
-          <div className="flex items-center">
-            {titre && (
-              <div>
-                {formatPrice(Number(selectedPrice) || 0)} {t("currency")}
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Titre avec le code du client sélectionné */}
+        <h2 className="text-2xl font-bold mb-6">
+          {selectedClient?.client_code && selectedClient?.name
+            ? `${selectedClient.client_code} - ${selectedClient.name}`
+            : selectedClient?.client_code || selectedClient?.name}
+        </h2>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="w-full max-w-2xl"
           >
-            {/* Quantité */}
             <FormField
               control={form.control}
-              name="quantite"
+              name="selectedTitreId"
               render={({ field }) => (
-                <FormItem className="text-xl items-baseline">
-                  <div className="flex justify-between ">
-                    <FormLabel className="text-gray-400 capitalize text-lg">
-                      {t("quantite")}
-                    </FormLabel>
-                    <FormControl className="w-40">
-                      <Input
-                        placeholder="Quantité"
-                        type="number"
-                        min="0"
-                        {...field}
-                        onChange={(e) => {
-                          const value = Math.max(
-                            1,
-                            Math.min(
-                              data?.quantity || 1,
-                              parseInt(e.target.value) || 0
-                            )
-                          );
-                          field.onChange(value);
-                        }}
-                        onKeyDown={preventNonNumericInput}
-                      />
-                    </FormControl>
-                  </div>
+                <FormItem className="flex justify-between text-xl items-baseline">
+                  <FormControl className="w-40">
+                    <div className="w-[100%] flex items-center justify-between rounded-md mb-6 h-14 border px-4 bg-muted">
+                      <div className="flex gap-4 items-center">
+                        {titre && (
+                          <div className="w-10 h-10 bg-primary rounded-md"></div>
+                        )}
+                        <div className="text-xl text-primary font-semibold">
+                          {titre || "Aucun titre sélectionné"}
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        {titre && (
+                          <div>
+                            {formatPrice(Number(selectedPrice) || 0)}
+                            {t("currency")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {/* Détails du titre */}
-            <div className="p-10 border rounded-md shadow flex flex-col gap-10 mt-6">
+
+            {/*debut form */}
+            <div className="p-10 border rounded-md shadow flex flex-col gap-10">
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("visaCOSOB")}
@@ -407,7 +557,113 @@ const FormPassationOrdreMarchePrimaire = ({
                 <div className="text-lg font-semibold">
                   {data?.isinCode || data?.isincode || "N/A"}
                 </div>
-              </div>
+              </div>{" "}
+              {/* quantity */}
+              <FormField
+                control={form.control}
+                name="quantite"
+                render={({ field }) => {
+                  return (
+                    <FormItem className="text-xl items-baseline">
+                      <div className="flex justify-between ">
+                        <FormLabel className="text-gray-400 capitalize text-lg">
+                          {t("quantite")}
+                        </FormLabel>
+                        <FormControl className="w-40">
+                          <Input
+                            placeholder="Quantité"
+                            type="number"
+                            min="0"
+                            {...field}
+                            onChange={(e) => {
+                              const value = Math.max(
+                                1,
+                                Math.min(
+                                  data?.quantity || 1,
+                                  parseInt(e.target.value) || 0
+                                )
+                              );
+                              field.onChange(value);
+                            }}
+                            onKeyDown={preventNonNumericInput}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              
+              {/* Date de validité - only show when date definie is selected */}
+              {watchedConditionDuree === "dateDefinie" && (
+                <FormField
+                  control={form.control}
+                  name="validite"
+                  render={({ field }) => (
+                    <FormItem className="text-xl items-baseline">
+                      <div className="flex justify-between w-full">
+                        <FormLabel className="text-gray-400 capitalize text-lg w-full">
+                          {t("dv")}
+                        </FormLabel>
+                        <FormControl>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "min-w-60 justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? (
+                                  format(field.value, "dd MMMM yyyy", {
+                                    locale: fr,
+                                  })
+                                ) : (
+                                  <span>{t("pickDate")}</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) => {
+                                  // Limit to max 30 days from today
+                                  const maxDate = new Date();
+                                  maxDate.setDate(maxDate.getDate() + 30);
+                                  if (date && date <= maxDate) {
+                                    field.onChange(date);
+                                  }
+                                }}
+                                captionLayout="dropdown-buttons"
+                                fromDate={new Date()}
+                                toDate={(() => {
+                                  const maxDate = new Date();
+                                  maxDate.setDate(maxDate.getDate() + 30);
+                                  return maxDate;
+                                })()}
+                                locale={
+                                  locale === "fr"
+                                    ? fr
+                                    : locale === "en"
+                                    ? enUS
+                                    : ar
+                                }
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              
+              {/* date emission */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("dateEmission")}
@@ -417,21 +673,30 @@ const FormPassationOrdreMarchePrimaire = ({
                     formatDate(data?.emissionDate || data?.emissiondate)}
                 </div>
               </div>
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">{t("nbTitres")}</div>
-                <div className="text-lg font-semibold">
-                  {data?.quantity && formatNumber(data?.quantity)}
-                </div>
-              </div>
+              {/* nb action */}
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
-                  {t("commission")}
+                  {t("nbActions")}
                 </div>
                 <div className="text-lg font-semibold">
-                  {t("pasDeCommission")}
+                  {(data?.quantity && formatNumber(data?.quantity)) || "N/A"}
                 </div>
               </div>
+              {/* montant brut */}
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-500">{t("montantBrut")}:</div>
+                <div className="font-semibold text-lg flex gap-1">
+                  <span>{formatPrice(grossAmount || 0)}</span>
+                  <span> {t("currency")}</span>
+                </div>
+              </div>
+              {/* commission */}
+              <div className="flex justify-between items-baseline">
+                <div className=" text-gray-500">{t("commission")}:</div>
+                <div className="font-semibold text-lg">0,9 %</div>
+              </div>
               <Separator />
+              {/* montant total net */}
               <div className="flex justify-between items-baseline">
                 <div className="text-gray-400 capitalize text-lg ">
                   {t("mtt")}
@@ -442,16 +707,8 @@ const FormPassationOrdreMarchePrimaire = ({
                 </div>
               </div>
             </div>
-            {/* CouponTable si applicable */}
-            {type !== "opv" && data?.couponschedule && (
-              <div className="px-10 py-4 border rounded-md shadow flex flex-col gap-10 mt-6">
-                <CouponTable
-                  couponschedule={data.couponschedule}
-                  facevalue={data.facevalue || data.faceValue}
-                />
-              </div>
-            )}
-            {/* Notice émetteur */}
+
+            {/* buttons */}
             <div className="flex justify-between gap-6 mt-4">
               {extraFieldsData?.notice && (
                 <Link
@@ -473,11 +730,16 @@ const FormPassationOrdreMarchePrimaire = ({
                 </Link>
               )}
             </div>
-            {/*<div className="flex justify-between gap-6 mt-4">
+            <div className="flex justify-between gap-6 mt-4">
               <Button onClick={handleGoBack} type="reset" variant="outline">
                 {t("annuler")}
               </Button>
-              <Button type="submit" className="w-full group gap-2" disabled={isSubmitting}>
+
+              <Button
+                type="submit"
+                className="w-full group gap-2"
+                disabled={isSubmitting}
+              >
                 {t("suivant")}
                 {isSubmitting ? (
                   <svg
@@ -500,7 +762,7 @@ const FormPassationOrdreMarchePrimaire = ({
                   <ArrowRight className="hidden group-hover:block text-white " />
                 )}
               </Button>
-            </div>*/}
+            </div>
           </form>
         </Form>
       </div>

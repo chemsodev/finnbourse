@@ -37,6 +37,8 @@ export interface TCCUser {
   status: "actif" | "inactif";
   positionTcc: string;
   role: string[];
+  matricule: string;
+  organisation: string;
   createdAt?: string;
   updatedAt?: string;
 }

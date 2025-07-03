@@ -29,28 +29,6 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
-import { clientFetchGraphQL } from "@/app/actions/fetchGraphQL";
-
-// Updated GraphQL queries that match the backend schema
-const GET_SECURITIES_QUERY = `
-  query ListSecurities {
-    listStocks {
-      id
-      name
-      code
-      issuer
-    }
-  }
-`;
-
-const GET_SECURITY_HISTORY_QUERY = `
-  query GetSecurityHistory($securityId: String!) {
-    getSecurityHistory(securityId: $securityId) {
-      date
-      price
-    }
-  }
-`;
 
 interface Security {
   id: string;
@@ -79,28 +57,7 @@ export function StockComparison() {
 
   // Fetch available securities
   useEffect(() => {
-    const fetchSecurities = async () => {
-      try {
-        const result = await clientFetchGraphQL<{ listStocks: Security[] }>(
-          GET_SECURITIES_QUERY
-        );
-        if (result?.listStocks && result.listStocks.length > 0) {
-          setSecurities(result.listStocks);
-        } else {
-          // Fallback to mock data if API returns empty result
-          generateMockSecurities();
-        }
-      } catch (error) {
-        console.error("Error fetching securities:", error);
-        // Fallback to mock data if API fails
-        generateMockSecurities();
-      }
-    };
-
-    // Initialize with mock data immediately for better UX
     generateMockSecurities();
-    // Then try to fetch real data
-    fetchSecurities();
   }, []);
 
   // Generate mock securities for testing
@@ -122,102 +79,6 @@ export function StockComparison() {
       },
       { id: "stock5", name: "SAIDAL", code: "SAI", issuer: "SAIDAL" },
     ]);
-  };
-
-  // Function to fetch security history data
-  const fetchSecurityData = async () => {
-    if (!security1 || !fromDate || !toDate) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Create a map to store combined data
-      const combinedData = new Map();
-
-      // Try to fetch data for security 1
-      try {
-        const security1Result = await clientFetchGraphQL<{
-          getSecurityHistory: SecurityHistoryPoint[];
-        }>(GET_SECURITY_HISTORY_QUERY, {
-          securityId: security1,
-        });
-
-        const security1Code =
-          securities.find((s) => s.id === security1)?.code || "Security 1";
-
-        if (security1Result?.getSecurityHistory?.length > 0) {
-          // Process real data if available
-          security1Result.getSecurityHistory.forEach((item) => {
-            const itemDate = new Date(item.date);
-            if (itemDate >= fromDate && itemDate <= toDate) {
-              combinedData.set(item.date, {
-                date: format(itemDate, "yyyy-MM-dd"),
-                [security1Code]: item.price,
-              });
-            }
-          });
-        } else {
-          throw new Error("No history data available");
-        }
-      } catch (error) {
-        // Generate mock data for security 1
-        generateMockDataForSecurity(security1, combinedData);
-      }
-
-      // If security 2 is selected, try to fetch its data
-      if (security2) {
-        try {
-          const security2Result = await clientFetchGraphQL<{
-            getSecurityHistory: SecurityHistoryPoint[];
-          }>(GET_SECURITY_HISTORY_QUERY, {
-            securityId: security2,
-          });
-
-          const security2Code =
-            securities.find((s) => s.id === security2)?.code || "Security 2";
-
-          if (security2Result?.getSecurityHistory?.length > 0) {
-            // Process real data if available
-            security2Result.getSecurityHistory.forEach((item) => {
-              const itemDate = new Date(item.date);
-              if (itemDate >= fromDate && itemDate <= toDate) {
-                const existing = combinedData.get(item.date) || {
-                  date: format(itemDate, "yyyy-MM-dd"),
-                };
-                combinedData.set(item.date, {
-                  ...existing,
-                  [security2Code]: item.price,
-                });
-              }
-            });
-          } else {
-            throw new Error("No history data available");
-          }
-        } catch (error) {
-          // Generate mock data for security 2
-          generateMockDataForSecurity(security2, combinedData, true);
-        }
-      }
-
-      // Convert map to array and sort by date
-      let chartDataArray = Array.from(combinedData.values()).sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-
-      // If we have no data points (API failure), generate complete mock data
-      if (chartDataArray.length === 0) {
-        chartDataArray = generateFullMockData();
-      }
-
-      setChartData(chartDataArray);
-    } catch (error) {
-      console.error("Error fetching security data:", error);
-      // Use mock data as fallback
-      setChartData(generateFullMockData());
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Generate mock data for a specific security
@@ -314,6 +175,33 @@ export function StockComparison() {
     return mockData;
   }, [fromDate, toDate, security1, security2, securities]);
 
+  // Function to fetch security history data
+  const fetchSecurityData = async () => {
+    if (!security1 || !fromDate || !toDate) {
+      return;
+    }
+    setLoading(true);
+    try {
+      // Always use mock data
+      const combinedData = new Map();
+      generateMockDataForSecurity(security1, combinedData);
+      if (security2) {
+        generateMockDataForSecurity(security2, combinedData, true);
+      }
+      let chartDataArray = Array.from(combinedData.values()).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      if (chartDataArray.length === 0) {
+        chartDataArray = generateFullMockData();
+      }
+      setChartData(chartDataArray);
+    } catch (error) {
+      setChartData(generateFullMockData());
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Memoize the chart lines to prevent unnecessary re-renders
   const chartLines = useMemo(() => {
     if (!chartData.length) return [];
@@ -323,7 +211,7 @@ export function StockComparison() {
       .map((key, index) => (
         <Line
           key={key}
-          type="monotone"
+          type="linear"
           dataKey={key}
           stroke={index === 0 ? "#8884d8" : "#82ca9d"}
           activeDot={{ r: 8 }}

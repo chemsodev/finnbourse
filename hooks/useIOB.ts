@@ -61,27 +61,6 @@ export function useIOB() {
     }
   };
 
-  const deleteIOB = async (id: string) => {
-    setIsLoading(true);
-    try {
-      await IOBService.delete(id, restToken || undefined);
-      await fetchIOBs(); // Refresh the list
-      toast({
-        title: "Success",
-        description: "IOB deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete IOB",
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const getIOB = async (id: string) => {
     try {
       return await IOBService.getOne(id, restToken || undefined);
@@ -100,7 +79,6 @@ export function useIOB() {
     isLoading,
     fetchIOBs,
     createOrUpdateIOB,
-    deleteIOB,
     getIOB,
   };
 }

@@ -127,7 +127,7 @@ export function StockTracker() {
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Area
-                type="monotone"
+                type="linear"
                 dataKey="stockOne"
                 stroke="var(--color-stockOne)"
                 fill="var(--color-stockOne)"
@@ -135,7 +135,7 @@ export function StockTracker() {
               />
               {compareMode && (
                 <Area
-                  type="monotone"
+                  type="linear"
                   dataKey="stockTwo"
                   stroke="var(--color-stockTwo)"
                   fill="var(--color-stockTwo)"

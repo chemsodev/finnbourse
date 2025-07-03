@@ -15,6 +15,16 @@ import { mockOrders, filterOrdersByMarketType } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 // Helper function to determine if an order is from primary or secondary market
 const isPrimaryMarketOrder = (securitytype: string) => {
@@ -27,10 +37,13 @@ const isPrimaryMarketOrder = (securitytype: string) => {
 };
 
 const isSecondaryMarketOrder = (securitytype: string) => {
-  return ["action", "obligation", "sukukms", "titresparticipatifsms"].includes(
+  return ["action", "obligation", "sukukms", "titresparticipatif"].includes(
     securitytype
   );
 };
+
+const sessionName = "Session 002"; 
+const sessionDate = "01-06-2024"; 
 
 const page = () => {
   const session = useSession();
@@ -44,6 +57,7 @@ const page = () => {
   const t = useTranslations("mesOrdres");
   const tStatus = useTranslations("status");
   const [showActionColumn, setShowActionColumn] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   
   // Use mock data instead of GraphQL
   const data = mockOrders;
@@ -108,34 +122,56 @@ const page = () => {
     setShowActionColumn(!showActionColumn);
   };
 
+  const handleActionConfirm = () => {
+    setShowActionColumn(true);
+    setIsConfirmDialogOpen(false);
+    console.log('Action confirmée : OK cliqué dans le popup de confirmation');
+  };
+
   return (
     <div className="motion-preset-focus motion-duration-2000">
       <div className="mt-3">
         <MyMarquee />
       </div>
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
-        <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
-          Carnet d'Ordres
+        <div className="flex items-center justify-between w-full pr-8">
+          <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
+            Carnet d'Ordres
+          </div>
+          <div className="text-lg font-semibold uppercase tracking-wide flex flex-col items-end text-primary bg-primary/10 px-6 py-2 rounded shadow-sm border border-primary/20 min-w-[180px]">
+            <div className="flex items-center gap-2 w-full justify-center">
+              <CalendarClock className="w-5 h-5 text-primary" />
+              <span>{sessionName}</span>
+            </div>
+            <span className="text-xs text-gray-500 font-normal w-full flex justify-center text-center mt-1">{sessionDate}</span>
+          </div>
         </div>
         <div className="text-xs text-gray-500 md:w-[50%] text-center md:ltr:text-left md:rtl:text-right">
           Gestion et suivi des ordres de bourse
         </div>
       </div>
       <div className="border border-gray-100 rounded-md p-4 mt-10">
-        <div className="flex justify-between w-full gap-4">
-          <div className="w-[30%]">
-            <TabSearch />
+        <div className="mb-4">
+          <div className="text-sm text-center font-medium text-gray-700 px-2 pb-1">
+            {showActionColumn
+              ? "Les ordres sont en attente de réponse..."
+              : "Les ordres sont en cours d'arrivage..."}
           </div>
-          <div className="flex gap-4 flex-shrink-0">
-            <PDFDropdownMenu />
-            <Link
-              href="/ordres/sessions"
-              className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-            >
-              <CalendarClock size={20} />
-              Sessions de Bourse
-            </Link>
-            <ExportButton data={exportData} />
+          <div className="flex justify-between w-full gap-4 items-center mt-2">
+            <div className="w-[30%]">
+              <TabSearch />
+            </div>
+            <div className="flex gap-4 flex-shrink-0">
+              <PDFDropdownMenu />
+              <Link
+                href="/ordres/sessions"
+                className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
+              >
+                <CalendarClock size={20} />
+                Sessions de Bourse
+              </Link>
+              <ExportButton data={exportData} />
+            </div>
           </div>
         </div>
         <div className="my-8">
@@ -150,17 +186,32 @@ const page = () => {
             activeTab="all"
             showActionColumn={showActionColumn}
             onActionToggle={handleActionToggle}
+            showResponseButton={true}
           />
         </div>
         <div className="flex justify-between items-center">
           <MyPagination />
           <div className="flex justify-end">
-            <Button 
+            <Button
               className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-              onClick={handleActionToggle}
+              onClick={() => setIsConfirmDialogOpen(true)}
             >
               Action
             </Button>
+            <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Êtes-vous sûr de vouloir fermer la session ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                  Tout nouvel ordre sera redirigé vers la session suivante. 
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleActionConfirm}>Oui</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

@@ -3,15 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  RefreshCw,
-  Building2,
-  Eye,
-} from "lucide-react";
+import { Plus, Search, Edit, RefreshCw, Building2, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,16 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/hooks/use-toast";
 import { useIOB } from "@/hooks/useIOB";
@@ -51,11 +33,9 @@ export default function IOBPage() {
 
   // State
   const [searchTerm, setSearchTerm] = useState("");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [iobToDelete, setIOBToDelete] = useState<IOB | null>(null);
 
   // API hooks
-  const { iobs, isLoading, fetchIOBs, deleteIOB } = useIOB();
+  const { iobs, isLoading, fetchIOBs } = useIOB();
 
   // Load IOB data on mount
   useEffect(() => {
@@ -98,32 +78,6 @@ export default function IOBPage() {
 
   const handleViewIOB = (iob: IOB) => {
     router.push(`/iob/${iob.id}/view`);
-  };
-
-  const handleDeleteClick = (iob: IOB) => {
-    setIOBToDelete(iob);
-    setShowDeleteDialog(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!iobToDelete) return;
-
-    try {
-      await deleteIOB(iobToDelete.id!);
-      toast({
-        title: t("success"),
-        description: t("successDelete"),
-      });
-      setShowDeleteDialog(false);
-      setIOBToDelete(null);
-      loadIOBData(); // Refresh the list
-    } catch (error) {
-      toast({
-        title: t("error"),
-        description: t("errorDelete"),
-        variant: "destructive",
-      });
-    }
   };
 
   // Show loading state
@@ -319,13 +273,6 @@ export default function IOBPage() {
                               <Edit className="h-4 w-4 mr-2" />
                               {t("edit")}
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteClick(iob)}
-                              className="cursor-pointer text-red-600 focus:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              {t("delete")}
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -337,27 +284,6 @@ export default function IOBPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("delete")} IOB</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteConfirmation")} "{iobToDelete?.short_libel}"?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {t("delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

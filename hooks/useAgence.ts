@@ -64,27 +64,6 @@ export function useAgence() {
     }
   };
 
-  const deleteAgence = async (id: string) => {
-    setIsLoading(true);
-    try {
-      await AgenceService.delete(id, restToken || undefined);
-      await fetchAgences(); // Refresh the list
-      toast({
-        title: "Success",
-        description: "Agence deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete Agence",
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const getAgence = async (id: string) => {
     try {
       return await AgenceService.getOne(id, restToken || undefined);
@@ -103,7 +82,6 @@ export function useAgence() {
     isLoading,
     fetchAgences,
     createOrUpdateAgence,
-    deleteAgence,
     getAgence,
   };
 }

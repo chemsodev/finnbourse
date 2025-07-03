@@ -25,8 +25,33 @@ export class AgenceService {
    */
   static async getOne(id: string, token?: string): Promise<Agence> {
     try {
-      const response = await actorAPI.agence.getOne(id, token);
-      return response.data || response;
+      // First try using the actorAPI
+      try {
+        const response = await actorAPI.agence.getOne(id, token);
+        return response.data || response;
+      } catch (apiError) {
+        console.warn(
+          "Error using actorAPI for Agence fetch, trying direct fetch:",
+          apiError
+        );
+
+        // If the actorAPI fails, try a direct fetch with the proxy
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/agence/${id}`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Agence: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     } catch (error) {
       console.error("Error fetching Agence:", error);
       throw new Error("Failed to fetch Agence data");
@@ -53,34 +78,18 @@ export class AgenceService {
   }
 
   /**
-   * Delete an Agence
-   */
-  static async delete(id: string, token?: string): Promise<void> {
-    try {
-      await actorAPI.agence.delete(id, token);
-    } catch (error) {
-      console.error("Error deleting Agence:", error);
-      throw new Error("Failed to delete Agence");
-    }
-  }
-
-  /**
    * Transform form data to API format
    */
   static transformFormDataToAPI(formData: any): AgenceCreateRequest {
     return {
       code: formData.code,
-      name: formData.name,
       address: formData.address,
-      postal_code: formData.postal_code,
-      city: formData.city,
-      country: formData.country,
-      phone: formData.phone,
-      email: formData.email,
-      status: formData.status,
-      manager_name: formData.manager_name,
-      opening_date: formData.opening_date,
-      parent_iob_id: formData.parent_iob_id,
+      code_swift: formData.code_swift,
+      currency: formData.currency,
+      director_name: formData.director_name,
+      director_email: formData.director_email,
+      director_phone: formData.director_phone,
+      financialInstitutionId: formData.financialInstitutionId,
     };
   }
 
@@ -90,17 +99,35 @@ export class AgenceService {
   static transformAPIDataToForm(apiData: Agence): any {
     return {
       code: apiData.code,
-      name: apiData.name,
       address: apiData.address,
-      postal_code: apiData.postal_code,
-      city: apiData.city,
-      country: apiData.country,
-      phone: apiData.phone,
-      email: apiData.email,
-      status: apiData.status,
-      manager_name: apiData.manager_name,
-      opening_date: apiData.opening_date,
-      parent_iob_id: apiData.parent_iob_id,
+      code_swift: apiData.code_swift,
+      currency: apiData.currency,
+      director_name: apiData.director_name,
+      director_email: apiData.director_email,
+      director_phone: apiData.director_phone,
+      financialInstitutionId: apiData.financialInstitution?.id,
     };
+  }
+
+  /**
+   * Create a user for an Agence
+   */
+  static async createUser(
+    userData: any,
+    agenceId: string,
+    token?: string
+  ): Promise<any> {
+    try {
+      const response = await actorAPI.agence.createUser(
+        agenceId,
+        userData,
+        token
+      );
+      return response.data || response;
+    } catch (error) {
+      console.error("Error creating Agence user:", error);
+      // Re-throw the original error to preserve server error details
+      throw error;
+    }
   }
 }

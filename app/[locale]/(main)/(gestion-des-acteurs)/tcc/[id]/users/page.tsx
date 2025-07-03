@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, Edit, Trash2, RefreshCw, Users } from "lucide-react";
+import { ArrowLeft, Plus, Edit, RefreshCw, Users } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,16 +23,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { TCCService } from "@/lib/services/tccService";
 import { useTCC } from "@/hooks/useTCC";
 import { TCC, TCCUser } from "@/lib/types/tcc";
@@ -40,6 +30,7 @@ import { TCC, TCCUser } from "@/lib/types/tcc";
 interface TCCUsersPageProps {
   params: {
     id: string;
+    locale: string;
   };
 }
 
@@ -53,8 +44,6 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<TCCUser | null>(null);
   const [showUserDialog, setShowUserDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<TCCUser | null>(null);
 
   // API hooks
   const { tcc, fetchTCC } = useTCC();
@@ -100,40 +89,11 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
 
   const handleAddUser = () => {
     // Navigate to add user form with TCC ID
-    router.push(`/tcc/${params.id}/users/add`);
+    router.push(`/${params.locale}/tcc/${params.id}/users/add`);
   };
 
   const handleEditUser = (user: TCCUser) => {
-    router.push(`/tcc/${params.id}/users/${user.id}/edit`);
-  };
-
-  const handleDeleteUser = (user: TCCUser) => {
-    setUserToDelete(user);
-    setShowDeleteDialog(true);
-  };
-  const confirmDeleteUser = async () => {
-    if (!userToDelete) return;
-
-    try {
-      await TCCService.deleteUser(userToDelete.id!);
-
-      // Remove from local state
-      setUsers(users.filter((u) => u.id !== userToDelete.id));
-
-      toast({
-        title: "User Deleted",
-        description: "User has been deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-      });
-    }
-
-    setShowDeleteDialog(false);
-    setUserToDelete(null);
+    router.push(`/${params.locale}/tcc/${params.id}/users/${user.id}/edit`);
   };
 
   const handleViewUser = (user: TCCUser) => {
@@ -333,14 +293,6 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          onClick={() => handleDeleteUser(user)}
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -414,34 +366,6 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete User</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this user? This action cannot be
-              undone.
-              {userToDelete && (
-                <div className="mt-2 font-medium">
-                  {userToDelete.firstname} {userToDelete.lastname} (
-                  {userToDelete.email})
-                </div>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDeleteUser}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete User
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

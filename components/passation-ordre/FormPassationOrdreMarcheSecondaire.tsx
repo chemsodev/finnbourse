@@ -545,7 +545,7 @@ const FormPassationOrdreMarcheSocondaire = ({
             />
 
             {/*debut form */}
-            <div className="p-10 border rounded-md shadow flex flex-col gap-10">
+            <div className="p-10 border rounded-md shadow flex flex-col gap-10 overflow-x-auto">
               <div className="flex justify-between items-baseline">
                 <div className=" text-gray-400 capitalize">
                   {t("visaCOSOB")}

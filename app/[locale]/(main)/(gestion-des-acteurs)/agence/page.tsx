@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Plus,
   Edit,
-  Trash2,
   RefreshCw,
   Building,
   Eye,
@@ -33,16 +32,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -50,20 +39,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAgence } from "@/hooks/useAgence";
 import { Agence } from "@/lib/types/actors";
+import { useTranslations } from "next-intl";
 
 export default function AgencePage() {
   const router = useRouter();
+  const t = useTranslations("AgencyPage");
   const { toast } = useToast();
 
   // API hooks
-  const { agences, isLoading, fetchAgences, deleteAgence } = useAgence();
+  const { agences, isLoading, fetchAgences } = useAgence();
 
   // State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAgence, setSelectedAgence] = useState<Agence | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [agenceToDelete, setAgenceToDelete] = useState<Agence | null>(null);
 
   // Load data on mount
   useEffect(() => {
@@ -105,31 +94,12 @@ export default function AgencePage() {
     setShowViewDialog(true);
   };
 
-  const handleDeleteClick = (agence: Agence) => {
-    setAgenceToDelete(agence);
-    setShowDeleteDialog(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!agenceToDelete) return;
-
-    try {
-      await deleteAgence(agenceToDelete.id!);
-      setShowDeleteDialog(false);
-      setAgenceToDelete(null);
-    } catch (error) {
-      console.error("Failed to delete Agence:", error);
-    }
-  };
-
   // Show loading state
   if (isLoading && agences.length === 0) {
     return (
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Agence Management
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-800">{t("title")}</h1>
           <RefreshCw className="h-6 w-6 animate-spin" />
         </div>
         <Card>
@@ -145,7 +115,7 @@ export default function AgencePage() {
     <div className="container mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Agence Management</h1>
+        <h1 className="text-3xl font-bold text-gray-800">{t("title")}</h1>
         <div className="flex gap-2">
           <Button
             onClick={loadData}
@@ -159,7 +129,7 @@ export default function AgencePage() {
           </Button>
           <Button onClick={handleCreate} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Add Agence
+            {t("add")}
           </Button>
         </div>
       </div>
@@ -169,7 +139,7 @@ export default function AgencePage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search Agences..."
+            placeholder={t("search") + "..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -269,13 +239,6 @@ export default function AgencePage() {
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteClick(agence)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -372,33 +335,6 @@ export default function AgencePage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Agence</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this Agence? This action cannot be
-              undone.
-              {agenceToDelete && (
-                <div className="mt-2 font-medium">
-                  {agenceToDelete.director_name} ({agenceToDelete.code})
-                </div>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete Agence
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

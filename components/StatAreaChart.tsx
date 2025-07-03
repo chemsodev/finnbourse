@@ -99,7 +99,7 @@ export function StatAreaChart() {
           />
           <Area
             dataKey="Saidal"
-            type="natural"
+            type="linear"
             fill="url(#fillSaidal)"
             stroke="var(--color-Saidal)"
             stackId="a"

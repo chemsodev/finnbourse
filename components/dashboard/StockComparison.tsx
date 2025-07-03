@@ -274,7 +274,7 @@ const StockComparison: React.FC = () => {
                 />
                 <Legend />
                 <Line 
-                  type="monotone" 
+                  type="linear" 
                   dataKey="security1" 
                   stroke="#8884d8" 
                   name={getSecurity1Name()}
@@ -282,7 +282,7 @@ const StockComparison: React.FC = () => {
                 />
                 {selectedSecurity2 && (
                   <Line 
-                    type="monotone" 
+                    type="linear" 
                     dataKey="security2" 
                     stroke="#82ca9d" 
                     name={getSecurity2Name()}

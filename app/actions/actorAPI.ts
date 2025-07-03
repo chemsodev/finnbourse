@@ -6,9 +6,6 @@
  */
 
 import { clientFetchREST } from "./fetchREST";
-import { getServerSession } from "next-auth/next";
-import auth from "@/auth";
-import { Session } from "next-auth";
 
 interface SessionUser {
   token?: string;
@@ -16,17 +13,16 @@ interface SessionUser {
   loginSource?: "REST" | "GraphQL";
 }
 
-// Get REST token from session (server-side)
+// Get REST token - client-side only version
 async function getRestToken(): Promise<string | null> {
-  try {
-    const session = (await getServerSession(auth)) as Session & {
-      user?: SessionUser;
-    };
-    return session?.user?.restToken || null;
-  } catch (error) {
-    console.error("Error getting REST token:", error);
+  // We're in a browser context, return null and let component provide token
+  if (typeof window !== "undefined") {
     return null;
   }
+
+  // In server component, we'd get the session but we'll avoid that for now
+  // to prevent the "headers called outside request scope" error
+  return null;
 }
 
 // Client-side function to get REST token from session
@@ -43,11 +39,33 @@ export const actorAPI = {
   // Financial Institution operations
   financialInstitution: {
     getAll: async (token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST("/financial-institution", {
-        method: "GET",
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST("/financial-institution", {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in financialInstitution.getAll:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/financial-institution`, { headers });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch Financial Institutions: ${response.status}`
+          );
+        }
+
+        return await response.json();
+      }
     },
 
     create: async (data: any, token?: string) => {
@@ -101,14 +119,6 @@ export const actorAPI = {
       return clientFetchREST(`/tcc/users/${userId}`, {
         method: "PUT",
         body: userData,
-        token: restToken || undefined,
-      });
-    },
-
-    deleteUser: async (userId: string, token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST(`/tcc/users/${userId}`, {
-        method: "DELETE",
         token: restToken || undefined,
       });
     },
@@ -198,14 +208,6 @@ export const actorAPI = {
       });
     },
 
-    delete: async (iobId: string, token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST(`/iob/${iobId}`, {
-        method: "DELETE",
-        token: restToken || undefined,
-      });
-    },
-
     createUser: async (iobId: string, userData: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST(`/iob/${iobId}/users`, {
@@ -263,42 +265,99 @@ export const actorAPI = {
   // Agence operations
   agence: {
     getAll: async (token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST("/agence", {
-        method: "GET",
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST("/agence", {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in agence.getAll:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/agence`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Agences: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     },
 
     getOne: async (agenceId: string, token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST(`/agence/${agenceId}`, {
-        method: "GET",
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST(`/agence/${agenceId}`, {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in agence.getOne:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/agence/${agenceId}`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Agence: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     },
 
     create: async (data: any, token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST("/agence", {
-        method: "POST",
-        body: data,
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST("/agence", {
+          method: "POST",
+          body: data,
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in agence.create:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/agence`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to create Agence: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     },
+
     update: async (agenceId: string, data: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST(`/agence/${agenceId}`, {
         method: "PUT",
         body: data,
-        token: restToken || undefined,
-      });
-    },
-
-    delete: async (agenceId: string, token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST(`/agence/${agenceId}`, {
-        method: "DELETE",
         token: restToken || undefined,
       });
     },
