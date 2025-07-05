@@ -41,6 +41,7 @@ import { useStocksREST } from "@/hooks/useStockREST";
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
+import { usePathname } from "next/navigation";
 
 interface TitresTableProps {
   type: string;
@@ -92,6 +93,7 @@ export function TitresTableREST({ type }: TitresTableProps) {
   const [data, setData] = React.useState<Stock[]>([]);
   const { data: session } = useSession();
   const { toast } = useToast();
+  const pathname = usePathname();
 
   // Map the type parameter to the correct backend filter value
   let stockType: "action" | "obligation" | "sukuk" | "participatif" = "action";
@@ -280,14 +282,14 @@ export function TitresTableREST({ type }: TitresTableProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
+                  href={`${pathname}/${stock.id}`}
                 >
                   {t("voirDetails")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
+                  href={`${pathname}/${stock.id}`}
                 >
                   {t("passerOrdre")}
                 </Link>
