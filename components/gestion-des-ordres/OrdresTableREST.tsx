@@ -24,7 +24,8 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { List, AlertTriangle, Printer, RefreshCw } from "lucide-react";
+import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare } from "lucide-react";
+import Link from "next/link";
 import { OrderElement } from "@/lib/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import orderService from "@/lib/services/orderService";
@@ -63,6 +64,10 @@ interface OrdresTableRESTProps {
   taskID: string;
   marketType?: string;
   pageType: string;
+  activeTab?: string;
+  activeAction?: string;
+  searchqueryParam?: string;
+  stateParam?: string;
 }
 
 export default function OrdresTableREST({
@@ -70,6 +75,10 @@ export default function OrdresTableREST({
   taskID,
   marketType = "S",
   pageType,
+  activeTab,
+  activeAction,
+  searchqueryParam,
+  stateParam,
 }: OrdresTableRESTProps) {
   const session = useSession();
   const t = useTranslations("mesOrdres");
@@ -551,7 +560,50 @@ export default function OrdresTableREST({
   return (
     <>
       <div className="rounded-md border">
-        <div className="flex justify-end p-2 border-b">
+        <div className="flex justify-between items-center p-2 border-b">
+          {/* Market Type Tabs - Left side */}
+          <div className="flex items-center gap-0">
+            <Button
+              variant={activeTab === "all" ? "default" : "outline"}
+              size="sm"
+              asChild
+              className="rounded-r-none"
+            >
+              <Link
+                href={`/ordres/premiere-validation?${new URLSearchParams({
+                  searchquery: searchqueryParam || "",
+                  page: "0",
+                  action: activeAction || "validation",
+                  tab: "all",
+                  state: stateParam || "99",
+                  marketType: "S",
+                }).toString()}`}
+              >
+                Carnet d'ordres
+              </Link>
+            </Button>
+            <Button
+              variant={activeTab === "souscriptions" ? "default" : "outline"}
+              size="sm"
+              asChild
+              className="rounded-l-none"
+            >
+              <Link
+                href={`/ordres/premiere-validation?${new URLSearchParams({
+                  searchquery: searchqueryParam || "",
+                  page: "0",
+                  action: activeAction || "validation",
+                  tab: "souscriptions",
+                  state: stateParam || "99",
+                  marketType: "P",
+                }).toString()}`}
+              >
+                Souscriptions
+              </Link>
+            </Button>
+          </div>
+
+          {/* Refresh Button - Right side */}
           <Button
             variant="outline"
             size="sm"
