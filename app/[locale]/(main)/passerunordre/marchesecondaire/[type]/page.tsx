@@ -4,7 +4,7 @@ import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmett
 import AjoutTitre from "@/components/AjoutTitre";
 import MyMarquee from "@/components/MyMarquee";
 import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
-import { TitresTableREST as TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
+import { TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -76,10 +76,10 @@ const SecondaryMarketPage = ({ params }: { params: { type: string } }) => {
         <AjoutTitre type={type} />
       </div>
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        {type === "obligation" ? (
-          <TitresTableObligation type={type} />
+        {type === "action" ? (
+          <TitresTableREST type={type} isPrimary={false} />
         ) : (
-          <TitresTableREST type={type} />
+          <TitresTableObligation type={type} isPrimary={false} />
         )}
       </div>
     </>
