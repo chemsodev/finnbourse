@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Edit,
-  Trash2,
   ExternalLink,
   Loader2,
   RefreshCw,
@@ -29,7 +28,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmettrice";
 import EditCompanyDialog from "@/components/listed-company/edit-company-dialog";
-import DeleteCompanyDialog from "@/components/listed-company/delete-company-dialog";
+
 import SearchFilter from "@/components/listed-company/search-filter";
 import { useIssuer } from "@/hooks/useIssuer";
 import {
@@ -77,7 +76,7 @@ export default function CompaniesPage() {
   const t = useTranslations("Companies");
   const [searchTerm, setSearchTerm] = useState("");
   const [editCompany, setEditCompany] = useState<Company | null>(null);
-  const [deleteCompany, setDeleteCompany] = useState<{ id: string; name: string } | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -199,7 +198,7 @@ export default function CompaniesPage() {
                     <TableHead>{t("tel")}</TableHead>
                     <TableHead>{t("address")}</TableHead>
                     <TableHead>{t("website")}</TableHead>
-                    <TableHead className="text-right">{t("actions")}</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -241,18 +240,6 @@ export default function CompaniesPage() {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() =>
-                                setDeleteCompany({
-                                  id: company.id,
-                                  name: company.name,
-                                })
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -274,15 +261,7 @@ export default function CompaniesPage() {
         />
       )}
 
-      {deleteCompany && (
-        <DeleteCompanyDialog
-          companyId={deleteCompany.id}
-          companyName={deleteCompany.name}
-          open={!!deleteCompany}
-          onOpenChange={(open) => !open && setDeleteCompany(null)}
-          onSuccess={handleRefresh}
-        />
-      )}
+
     </div>
   );
 }
