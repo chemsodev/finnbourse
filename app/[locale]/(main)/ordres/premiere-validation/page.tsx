@@ -5,7 +5,7 @@ import MyMarquee from "@/components/MyMarquee";
 import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
 import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, CheckCircle, MessageSquare, Filter, Download, FileText } from "lucide-react";
+import { ArrowLeft, CalendarClock, Filter, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TabSearch from "@/components/TabSearch";
 import MyPagination from "@/components/navigation/MyPagination";
@@ -61,64 +61,16 @@ export default async function PremiereValidationPage({
                   <span>
                     {activeAction === "validation" ? "Premier validation" : "Réponse"}
                   </span>
-                  <span>
-                    {activeTab === "souscriptions"
-                      ? tOrders("souscriptions")
-                      : "Carnet d'ordres"}
-                  </span>
+                  {activeTab === "souscriptions" && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                      {tOrders("marcheprimaire")}
+                    </Badge>
+                  )}
                 </h1>
-                
-                {activeTab === "souscriptions" && (
-                  <Badge variant="secondary" className="mt-2 bg-primary/10 text-primary border-primary/20">
-                    {tOrders("marcheprimaire")}
-                  </Badge>
-                )}
               </div>
             </div>
 
-                          <div className="flex items-center gap-2">
-                {/* Action Tabs */}
-                <Button
-                  variant={activeAction === "validation" ? "default" : "outline"}
-                  size="sm"
-                  asChild
-                  className="flex items-center gap-2"
-                >
-                  <Link
-                    href={`/ordres/premiere-validation?${new URLSearchParams({
-                      searchquery: searchquery || "",
-                      page: "0",
-                      action: "validation",
-                      tab: activeTab,
-                      state: state || "99",
-                      marketType: activeTab === "souscriptions" ? "P" : "S",
-                    }).toString()}`}
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    Validation
-                  </Link>
-                </Button>
-                <Button
-                  variant={activeAction === "reponse" ? "default" : "outline"}
-                  size="sm"
-                  asChild
-                  className="flex items-center gap-2"
-                >
-                  <Link
-                    href={`/ordres/premiere-validation?${new URLSearchParams({
-                      searchquery: searchquery || "",
-                      page: "0",
-                      action: "reponse",
-                      tab: activeTab,
-                      state: state || "99",
-                      marketType: activeTab === "souscriptions" ? "P" : "S",
-                    }).toString()}`}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Réponse
-                  </Link>
-                </Button>
-              </div>
+                          
           </div>
 
           <p className="text-gray-600 text-sm leading-relaxed max-w-3xl">
@@ -129,11 +81,7 @@ export default async function PremiereValidationPage({
         </div>
 
         {/* Main Content Card */}
-        <Card className={`border-0 overflow-hidden ${
-          activeTab === "souscriptions"
-            ? "bg-gradient-to-br from-primary/5 via-white to-primary/5 border-primary/20"
-            : "bg-white"
-        }`}>
+        <Card className="border-0 overflow-hidden bg-white">
           <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -143,15 +91,7 @@ export default async function PremiereValidationPage({
               </div>
 
               <div className="flex items-center gap-3">
-                <PDFDropdownMenu
-                  customTitle={
-                    `${activeAction === "validation" ? "Validation" : "Réponse"} - ${
-                      activeTab === "souscriptions"
-                        ? tOrders("souscriptions")
-                        : "Carnet d'ordres"
-                    }`
-                  }
-                />
+                <PDFDropdownMenu customTitle="Impression" />
               </div>
             </div>
           </CardHeader>

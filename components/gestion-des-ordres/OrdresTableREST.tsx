@@ -26,6 +26,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OrderElement } from "@/lib/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import orderService from "@/lib/services/orderService";
@@ -82,6 +83,9 @@ export default function OrdresTableREST({
 }: OrdresTableRESTProps) {
   const session = useSession();
   const t = useTranslations("mesOrdres");
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<OrderElement[]>([]);
   const [actions, setActions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -566,40 +570,30 @@ export default function OrdresTableREST({
             <Button
               variant={activeTab === "all" ? "default" : "outline"}
               size="sm"
-              asChild
               className="rounded-r-none"
+              onClick={() => {
+                const params = new URLSearchParams(searchParams);
+                params.set("tab", "all");
+                params.set("marketType", "S");
+                params.set("page", "0");
+                router.replace(`${pathname}?${params.toString()}`);
+              }}
             >
-              <Link
-                href={`/ordres/premiere-validation?${new URLSearchParams({
-                  searchquery: searchqueryParam || "",
-                  page: "0",
-                  action: activeAction || "validation",
-                  tab: "all",
-                  state: stateParam || "99",
-                  marketType: "S",
-                }).toString()}`}
-              >
-                Carnet d'ordres
-              </Link>
+              Carnet d'ordres
             </Button>
             <Button
               variant={activeTab === "souscriptions" ? "default" : "outline"}
               size="sm"
-              asChild
               className="rounded-l-none"
+              onClick={() => {
+                const params = new URLSearchParams(searchParams);
+                params.set("tab", "souscriptions");
+                params.set("marketType", "P");
+                params.set("page", "0");
+                router.replace(`${pathname}?${params.toString()}`);
+              }}
             >
-              <Link
-                href={`/ordres/premiere-validation?${new URLSearchParams({
-                  searchquery: searchqueryParam || "",
-                  page: "0",
-                  action: activeAction || "validation",
-                  tab: "souscriptions",
-                  state: stateParam || "99",
-                  marketType: "P",
-                }).toString()}`}
-              >
-                Souscriptions
-              </Link>
+              Souscriptions
             </Button>
           </div>
 
