@@ -42,6 +42,7 @@ import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
 import { usePathname } from "next/navigation";
+import { TitreDetailsModal } from "./TitreDetailsModal";
 
 interface TitresTableProps {
   type: string;
@@ -60,6 +61,8 @@ export function TitresTableREST({ type }: TitresTableProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
   const pathname = usePathname();
+  const [selectedStock, setSelectedStock] = React.useState<Stock | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
 
   // Map the type parameter to the correct backend filter value
   let stockType: "action" | "obligation" | "sukuk" | "participatif" = "action";
@@ -231,17 +234,12 @@ export function TitresTableREST({ type }: TitresTableProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(stock.id)}
+                onClick={() => {
+                  setSelectedStock(stock);
+                  setIsDetailsModalOpen(true);
+                }}
               >
-                {t("copierID")}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`${pathname}/${stock.id}`}
-                >
-                  {t("voirDetails")}
-                </Link>
+                {t("voirDetails")}
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
@@ -454,6 +452,17 @@ export function TitresTableREST({ type }: TitresTableProps) {
           </Button>
         </div>
       </div>
+
+      {/* Modal pour les détails */}
+      <TitreDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedStock(null);
+        }}
+        stock={selectedStock}
+        type={type}
+      />
     </div>
   );
 }
