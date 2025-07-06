@@ -57,7 +57,7 @@ export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const t = useTranslations("titresTable");
+  const t = useTranslations("TitresTable");
   const [data, setData] = React.useState<Stock[]>([]);
   const { data: session } = useSession();
   const { toast } = useToast();
