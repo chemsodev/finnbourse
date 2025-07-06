@@ -8,7 +8,7 @@ import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { useSession } from "next-auth/react";
-import { ExportButton } from "@/components/ExportButton";
+
 import type { Order } from "@/lib/interfaces";
 import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { mockOrders, filterOrdersByMarketType } from "@/lib/mockData";
@@ -70,53 +70,7 @@ const page = () => {
     filteredData = filterOrdersByMarketType(data, "secondaire");
   }
 
-  const exportData = filteredData?.map((order) => ({
-    id: order.id,
-    ordertypes: order.orderdirection === 1 ? "Achat" : "Vente",
-    direction: order.orderdirection === 1 ? "Achat" : "Vente",
-    securityid: order.securityid,
-    securitytype: order.securitytype,
-    securityquantity: order.securityquantity,
-    currentMarketPrice: order.securityquantity,
-    quantity: order.quantity,
-    pricelimitmin: order.mst || "N/A",
-    pricelimitmax: order.mst || "N/A",
-    duration: order.duration,
-    orderdate: order.orderdate,
-    orderstatus:
-      order?.orderstatus === 0 && order?.payedWithCard
-        ? "Brouillon payé"
-        : order?.orderstatus === 0 && !order?.payedWithCard
-        ? tStatus("Draft")
-        : order?.orderstatus === 1
-        ? tStatus("Pending")
-        : order?.orderstatus === 2
-        ? tStatus("In_Progress")
-        : order?.orderstatus === 3
-        ? tStatus("Validated")
-        : order?.orderstatus === 4
-        ? tStatus("Being_Processed")
-        : order?.orderstatus === 5
-        ? tStatus("Completed")
-        : order?.orderstatus === 6
-        ? tStatus("Awaiting_Approval")
-        : order?.orderstatus === 7
-        ? tStatus("Ongoing")
-        : order?.orderstatus === 8
-        ? tStatus("Partially_Validated")
-        : order?.orderstatus === 9
-        ? tStatus("Expired")
-        : order?.orderstatus === 10
-        ? tStatus("Rejected")
-        : order?.orderstatus === 11
-        ? tStatus("Cancelled")
-        : "Unknown",
-    investor: order.investorid,
-    negotiator: order.negotiatorid,
-    securityissuer: order.securityissuer,
-    validity: order.validity,
-    createdat: order.createdat,
-  }));
+
 
   const handleActionToggle = () => {
     setShowActionColumn(!showActionColumn);
@@ -170,7 +124,6 @@ const page = () => {
                 <CalendarClock size={20} />
                 Sessions de Bourse
               </Link>
-              <ExportButton data={exportData} />
             </div>
           </div>
         </div>
