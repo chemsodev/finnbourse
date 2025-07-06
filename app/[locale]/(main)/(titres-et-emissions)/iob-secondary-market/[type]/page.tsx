@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 
@@ -21,8 +20,12 @@ type Props = {
 const SecondaryMarketTypePage = ({ params }: Props) => {
   const { type } = params;
   const t = useTranslations("Titres");
-  const { data: session, status } = useSession();
+
   const { restToken, isLoading } = useRestToken();
+
+  useEffect(() => {
+    console.log("Primary Market Type:", type);
+  }, [type]);
 
   if (status === "loading" || isLoading || !restToken) {
     return (

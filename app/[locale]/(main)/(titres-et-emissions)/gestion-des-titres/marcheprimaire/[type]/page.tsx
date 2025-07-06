@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 
@@ -22,10 +21,7 @@ type Props = {
 const PrimaryMarketTypePage = ({ params }: Props) => {
   const { type } = params;
   const t = useTranslations("Titres");
-  const { data: session, status } = useSession();
   const { restToken, isLoading } = useRestToken();
-
-  const userRole = (session?.user as any)?.roleid;
 
   useEffect(() => {
     console.log("Primary Market Type:", type);
@@ -91,7 +87,7 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
       </div>
 
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <MarketTable type={type as StockType} />
+        <MarketTable type={type as StockType} marketType="primary" />
       </div>
     </div>
   );

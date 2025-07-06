@@ -301,6 +301,12 @@ export const menuItemMap: Record<
     href: "/ordres/resultats",
     translationKey: "resultats",
   },
+  // Order History
+  "historique-des-ordres": {
+    label: "Order History",
+    href: "/order-history",
+    translationKey: "historiqueDesOrdres",
+  },
 
   // Securities & Emissions dropdown and children
   "titles-emissions-dropdown": {
@@ -330,6 +336,11 @@ export const menuItemMap: Record<
     label: "Securities Management",
     href: "/gestion-des-titres",
     translationKey: "gestionTitres",
+  },
+  "iob-secondary-market": {
+    label: "IOB Secondary Market",
+    href: "/iob-secondary-market",
+    translationKey: "iobSecondaryMarket",
   },
   // Account Management dropdown and children
   "account-management-dropdown": {

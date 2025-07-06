@@ -73,19 +73,6 @@ const getMockInstitutions = () => [
   { id: "inst-4", name: "BEA Bank" },
 ];
 
-// Helper function to get type display name
-// const getTypeDisplayName = (type: string) => {
-//   const typeNames: Record<string, string> = {
-//     opv: "Public Offering (OPV)",
-//     empruntobligataire: "Bond Issues",
-//     action: "Stocks",
-//     sukuk: "Sukuk",
-//     participative: "Participative Securities",
-//   };
-
-//   return typeNames[type] || type.charAt(0).toUpperCase() + type.slice(1);
-// };
-
 export default async function TitreDetailsPage({
   params,
 }: {
@@ -118,10 +105,10 @@ export default async function TitreDetailsPage({
     <div className="container mx-auto py-8 motion-preset-focus motion-duration-2000">
       <div className="max-w-4xl mx-auto space-y-6">
         <Link
-          href={`/gestion-des-titres/marcheprimaire/${params.type}`}
+          href={`/iob-secondary-market/${params.type}`}
           className="inline-flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white  md:mt-10"
         >
-          <ArrowLeft className="w-5" /> <div>{t("actions.back")}</div>
+          <ArrowLeft className="w-5" /> <div>{t("back")}</div>
         </Link>
         <TitreDetails
           data={titre}
