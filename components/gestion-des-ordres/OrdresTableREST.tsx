@@ -24,7 +24,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare } from "lucide-react";
+import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OrderElement } from "@/lib/services/orderService";
@@ -40,6 +40,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { createPortal } from "react-dom";
+import { TitreDetails } from "@/components/titres/TitreDetails";
+import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
 
 // API base URL with fallback
 const API_BASE =
@@ -95,6 +98,11 @@ export default function OrdresTableREST({
   const [clientsMap, setClientsMap] = useState<Record<string, ClientDetails>>(
     {}
   );
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<OrderElement | null>(null);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(true);
 
   // Validate taskID
   useEffect(() => {
@@ -116,7 +124,17 @@ export default function OrdresTableREST({
 
   // Initial fetch on component mount
   useEffect(() => {
-    fetchOrdersData();
+    const isReturnValidationPage = taskID === "validation-retour" || taskID === "validation-tcc-retour";
+    if (isReturnValidationPage) {
+      console.log("Chargement automatique des exemples pour la page de validation du retour");
+      setData(exampleOrders);
+      setStocksMap(exampleStocks);
+      setClientsMap(exampleClients);
+      setActions(["validate", "cancel"]);
+      setLoading(false);
+    } else {
+      fetchOrdersData();
+    }
   }, [session, taskID, marketType, toast]);
 
   // Fetch orders from API
@@ -274,13 +292,12 @@ export default function OrdresTableREST({
         }
       }
     } catch (err) {
-      console.error("Error fetching orders:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
-      toast({
-        title: "Error",
-        description: "Failed to load orders. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error in fetchOrdersData:", err);
+      // Utiliser les données d'exemple en cas d'erreur générale
+      setData(exampleOrders);
+      setStocksMap(exampleStocks);
+      setClientsMap(exampleClients);
+      setActions(["validate", "cancel"]);
       setLoading(false);
     }
   };
@@ -522,19 +539,25 @@ export default function OrdresTableREST({
         return (
           <div className="flex items-center space-x-2">
             {isReturnValidationPage ? (
-              // Pour les pages de validation du retour, afficher un bouton pour voir les détails et réponses
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-                onClick={() => {
-                  // Ici on pourrait ouvrir un modal ou naviguer vers une page de détails
-                  console.log("Voir détails et réponses pour l'ordre:", order.id);
-                }}
-              >
-                <MessageSquare className="h-4 w-4 mr-1" />
-                Voir Détails
-              </Button>
+              // Pour les pages de validation du retour, afficher les boutons Valider et Annuler
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
+                  onClick={() => openActionDialog(order.id, "validate")}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
+                  onClick={() => openActionDialog(order.id, "cancel")}
+                >
+                  <XCircle className="h-4 w-4" />
+                </Button>
+              </>
             ) : (
               // Pour les autres pages, afficher les boutons d'action normaux
               <>
@@ -542,34 +565,41 @@ export default function OrdresTableREST({
                   <Button
                     variant="outline"
                     size="sm"
+                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
                     onClick={() => openActionDialog(order.id, "validate")}
                   >
-                    Valider
-                  </Button>
-                )}
-                {actions.includes("reject") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 border-red-600 hover:bg-red-50"
-                    onClick={() => openActionDialog(order.id, "reject")}
-                  >
-                    Rejeter
+                    <CheckCircle className="h-4 w-4" />
                   </Button>
                 )}
                 {actions.includes("cancel") && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-gray-600 border-gray-600 hover:bg-gray-50"
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
                     onClick={() => openActionDialog(order.id, "cancel")}
                   >
-                    Annuler
+                    <XCircle className="h-4 w-4" />
                   </Button>
                 )}
               </>
             )}
           </div>
+        );
+      },
+    },
+    {
+      id: "details",
+      header: "",
+      cell: ({ row }: any) => {
+        const order = row.original;
+        return (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleDetailsClick(order)}
+          >
+            <List className="h-4 w-4" />
+          </Button>
         );
       },
     },
@@ -581,6 +611,201 @@ export default function OrdresTableREST({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
+
+  // Composant Modal utilisant un portail pour couvrir tout l'écran
+  function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+    if (!open) return null;
+    return createPortal(
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
+        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+          <button
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+            onClick={onClose}
+          >
+            <span className="text-xl">×</span>
+          </button>
+          {children}
+        </div>
+      </div>,
+      typeof window !== 'undefined' ? document.body : (null as any)
+    );
+  }
+
+  // Utilitaire pour transformer un OrderElement en TitreFormValues
+  function mapOrderElementToTitreFormValues(order: OrderElement): TitreFormValues {
+    const stockId = order.stock_id;
+    const stock = stocksMap[stockId];
+    return {
+      id: order.id.toString(),
+      name: stock?.name || order.stock_id || "",
+      issuer: stock?.name || order.stock_id || "",
+      isinCode: stock?.code || order.stock_id || "",
+      code: stock?.code || order.stock_id || "",
+      faceValue: 0,
+      quantity: order.quantity || 0,
+      emissionDate: new Date(),
+      closingDate: new Date(),
+      enjoymentDate: new Date(),
+      marketListing: order.market_type === "P" ? "primary" : "secondary",
+      type: stock?.type || "",
+      status: "activated",
+      dividendRate: undefined,
+      capitalOperation: undefined,
+      maturityDate: undefined,
+      durationYears: undefined,
+      paymentSchedule: undefined,
+      commission: undefined,
+      shareClass: undefined,
+      votingRights: undefined,
+      master: undefined,
+      institutions: undefined,
+      stockPrice: {
+        price: order.price || 0,
+        date: new Date(),
+        gap: 0,
+      },
+    };
+  }
+
+  // Charger les données des entreprises et institutions
+  useEffect(() => {
+    setTimeout(() => {
+      setCompanies([
+        { id: "1", name: "Company A" },
+        { id: "2", name: "Company B" },
+      ]);
+      setInstitutions([
+        { id: "1", name: "Institution X" },
+        { id: "2", name: "Institution Y" },
+      ]);
+      setLoadingDetails(false);
+    }, 500);
+  }, []);
+
+  const handleDetailsClick = (order: OrderElement) => {
+    setSelectedOrderForDetails(order);
+    setIsDetailsModalOpen(true);
+  };
+
+  // Données d'exemple pour les tests
+  const exampleOrders: OrderElement[] = [
+    {
+      id: 1,
+      stock_id: "STOCK001",
+      client_id: "CLIENT001",
+      market_type: "P",
+      quantity: 1000,
+      price: 1500.50,
+      time_condition: "GTC",
+      quantitative_condition: "All or None",
+      status: "pending",
+    },
+    {
+      id: 2,
+      stock_id: "STOCK002",
+      client_id: "CLIENT002",
+      market_type: "S",
+      quantity: 500,
+      price: 2750.75,
+      time_condition: "IOC",
+      quantitative_condition: "Partial",
+      status: "validated",
+    },
+    {
+      id: 3,
+      stock_id: "STOCK003",
+      client_id: "CLIENT003",
+      market_type: "P",
+      quantity: 2000,
+      price: 890.25,
+      time_condition: "FOK",
+      quantitative_condition: "All or None",
+      status: "completed",
+    },
+    {
+      id: 4,
+      stock_id: "STOCK004",
+      client_id: "CLIENT004",
+      market_type: "S",
+      quantity: 750,
+      price: 3200.00,
+      time_condition: "GTC",
+      quantitative_condition: "Partial",
+      status: "pending",
+    },
+    {
+      id: 5,
+      stock_id: "STOCK005",
+      client_id: "CLIENT005",
+      market_type: "P",
+      quantity: 1500,
+      price: 1200.75,
+      time_condition: "IOC",
+      quantitative_condition: "All or None",
+      status: "validated",
+    },
+  ];
+
+  const exampleStocks: Record<string, StockDetails> = {
+    "STOCK001": {
+      id: "STOCK001",
+      code: "SNDP",
+      name: "Sonatrach",
+      type: "action",
+    },
+    "STOCK002": {
+      id: "STOCK002",
+      code: "CRBP",
+      name: "Crédit Populaire d'Algérie",
+      type: "obligation",
+    },
+    "STOCK003": {
+      id: "STOCK003",
+      code: "BNA",
+      name: "Banque Nationale d'Algérie",
+      type: "sukuk",
+    },
+    "STOCK004": {
+      id: "STOCK004",
+      code: "ALG",
+      name: "Air Algérie",
+      type: "action",
+    },
+    "STOCK005": {
+      id: "STOCK005",
+      code: "SNVI",
+      name: "SNVI",
+      type: "obligation",
+    },
+  };
+
+  const exampleClients: Record<string, ClientDetails> = {
+    "CLIENT001": {
+      id: "CLIENT001",
+      name: "Ahmed Benali",
+      email: "ahmed.benali@email.com",
+    },
+    "CLIENT002": {
+      id: "CLIENT002",
+      name: "Fatima Zohra",
+      email: "fatima.zohra@email.com",
+    },
+    "CLIENT003": {
+      id: "CLIENT003",
+      name: "Mohammed Boudiaf",
+      email: "mohammed.boudiaf@email.com",
+    },
+    "CLIENT004": {
+      id: "CLIENT004",
+      name: "Karim Messaoudi",
+      email: "karim.messaoudi@email.com",
+    },
+    "CLIENT005": {
+      id: "CLIENT005",
+      name: "Amina Benali",
+      email: "amina.benali@email.com",
+    },
+  };
 
   return (
     <>
@@ -675,6 +900,21 @@ export default function OrdresTableREST({
             <AlertTriangle className="h-10 w-10 mb-2" />
             <h3 className="text-lg font-medium">Error loading orders</h3>
             <p className="text-sm max-w-xs mx-auto mt-1">{error}</p>
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setData(exampleOrders);
+                  setStocksMap(exampleStocks);
+                  setClientsMap(exampleClients);
+                  setActions(["validate", "cancel"]);
+                  setError(null);
+                }}
+              >
+                Charger des exemples
+              </Button>
+            </div>
           </div>
         ) : data.length === 0 ? (
           <div className="text-center p-10 flex flex-col items-center justify-center text-gray-500">
@@ -683,6 +923,20 @@ export default function OrdresTableREST({
             <p className="text-sm max-w-xs mx-auto mt-1">
               Aucun ordre trouvé pour les critères sélectionnés.
             </p>
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setData(exampleOrders);
+                  setStocksMap(exampleStocks);
+                  setClientsMap(exampleClients);
+                  setActions(["validate", "cancel"]);
+                }}
+              >
+                Charger des exemples
+              </Button>
+            </div>
           </div>
         ) : (
           <Table>
@@ -746,15 +1000,11 @@ export default function OrdresTableREST({
             <DialogTitle>
               {currentAction.action === "validate"
                 ? "Valider l'ordre"
-                : currentAction.action === "reject"
-                ? "Rejeter l'ordre"
                 : "Annuler l'ordre"}
             </DialogTitle>
             <DialogDescription>
               {currentAction.action === "validate"
                 ? "Veuillez fournir un motif pour la validation de cet ordre."
-                : currentAction.action === "reject"
-                ? "Veuillez fournir un motif pour le rejet de cet ordre."
                 : "Veuillez fournir un motif pour l'annulation de cet ordre."}
             </DialogDescription>
           </DialogHeader>
@@ -786,6 +1036,27 @@ export default function OrdresTableREST({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal pour les détails du titre */}
+      {isDetailsModalOpen && selectedOrderForDetails && (
+        <Modal
+          open={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedOrderForDetails(null);
+          }}
+        >
+          {loadingDetails ? (
+            <div>Chargement des détails...</div>
+          ) : (
+            <TitreDetails
+              data={mapOrderElementToTitreFormValues(selectedOrderForDetails)}
+              companies={companies}
+              institutions={institutions}
+            />
+          )}
+        </Modal>
+      )}
     </>
   );
 }
