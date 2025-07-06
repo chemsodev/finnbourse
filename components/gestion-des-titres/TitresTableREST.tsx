@@ -260,20 +260,6 @@ export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
 
       console.log(`🔍 Filtered stocks for ${isPrimary ? 'primary' : 'secondary'} market:`, filteredStocks);
 
-      // Check if we have the expected properties
-      if (filteredStocks.length > 0) {
-        const firstStock = filteredStocks[0];
-        console.log("📋 First stock sample:", {
-          id: firstStock.id,
-          name: firstStock.name,
-          code: firstStock.code,
-          issuer: firstStock.issuer,
-          status: firstStock.status,
-          stockPrices: firstStock.stockPrices,
-          isPrimary: firstStock.isPrimary,
-        });
-      }
-
       setData(filteredStocks);
       console.log(`✅ Loaded ${filteredStocks.length} ${stockType} stocks for ${isPrimary ? 'primary' : 'secondary'} market`);
     } else if (error) {
