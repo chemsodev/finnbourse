@@ -281,6 +281,11 @@ export const menuItemMap: Record<
     href: "/ordres/validation-finale",
     translationKey: "validationFinale",
   },
+  "validation-retour": {
+    label: "Return Validation",
+    href: "/ordres/validation-retour",
+    translationKey: "validationRetour",
+  },
   "validation-tcc-premiere": {
     label: "TCC First Validation",
     href: "/ordres/validation-tcc-premiere",
@@ -290,6 +295,11 @@ export const menuItemMap: Record<
     label: "TCC Final Validation",
     href: "/ordres/validation-tcc-finale",
     translationKey: "validationTccFinale",
+  },
+  "validation-tcc-retour": {
+    label: "TCC Return Validation",
+    href: "/ordres/validation-tcc-retour",
+    translationKey: "tccValidationRetour",
   },
   execution: {
     label: "Execution",
@@ -314,7 +324,7 @@ export const menuItemMap: Record<
     icon: "CheckCircle",
     translationKey: "emetteurs",
   },
-  emissions: {
+  /*emissions: {
     label: "Emissions",
     href: "/emissions",
     icon: "BarChart3",
@@ -325,13 +335,13 @@ export const menuItemMap: Record<
     href: "/commissions",
     icon: "HandCoins",
     translationKey: "commissions",
-  },
+  },*/
   "gestion-titres": {
     label: "Securities Management",
     href: "/gestion-des-titres",
     translationKey: "gestionTitres",
   },
-  // Account Management dropdown and children
+  /* Account Management dropdown and children
   "account-management-dropdown": {
     label: "Account Management",
     icon: "Users",
@@ -354,7 +364,7 @@ export const menuItemMap: Record<
     href: "/lien-comptes",
     icon: "Link",
     translationKey: "lienComptes",
-  },
+  },*/
 
   // Actors Management dropdown and children
   "actors-management-dropdown": {

@@ -13,10 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-// Removed GraphQL dependencies - now using REST API
-// import { DELETE_LISTED_COMPANY } from "@/graphql/mutations";
-// Removed GraphQL dependencies - now using REST API
-// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+import { IssuerService } from "@/lib/services/issuerService";
 
 interface DeleteCompanyDialogProps {
   companyId: string;
@@ -40,30 +37,20 @@ const DeleteCompanyDialog = ({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // TODO: Replace with REST API call
-      // await fetchGraphQLClient<boolean>(DELETE_LISTED_COMPANY, {
-      //   id: companyId,
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await IssuerService.delete(companyId);
       toast({
         variant: "success",
         title: t("success"),
         description: t("companyDeletedSuccessfully"),
       });
-
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error("Mutation error:", error);
-
+      console.error("API error:", error);
       toast({
         variant: "destructive",
         title: t("error"),
-        description:
-          error instanceof Error ? error.message : "Une erreur est survenue",
+        description: error instanceof Error ? error.message : "Une erreur est survenue",
       });
     } finally {
       setLoading(false);

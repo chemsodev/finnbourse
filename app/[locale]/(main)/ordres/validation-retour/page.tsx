@@ -15,7 +15,7 @@ import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function ResultsSubmissionPage({
+export default async function ValidationRetourPage({
   searchParams,
 }: {
   searchParams?: {
@@ -57,7 +57,7 @@ export default async function ResultsSubmissionPage({
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                   <span>
-                    Soumission des Résultats
+                    Validation du Retour
                   </span>
                   {activeTab === "souscriptions" && (
                     <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
@@ -68,7 +68,7 @@ export default async function ResultsSubmissionPage({
               </div>
             </div>
 
-            <Link href="/ordres/execution">
+            <Link href="/ordres/validation-tcc-premiere">
               <Button
                 variant="outline"
                 size="sm"
@@ -81,7 +81,7 @@ export default async function ResultsSubmissionPage({
           </div>
 
           <p className="text-gray-600 text-sm leading-relaxed max-w-3xl">
-            {t("resultsSubmissionDescription")}
+            Validez les retours des ordres et consultez les détails des réponses reçues
           </p>
         </div>
 
@@ -106,9 +106,9 @@ export default async function ResultsSubmissionPage({
               <OrdresTableREST
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
-                taskID="resultats"
+                taskID="validation-retour"
                 marketType={activeTab === "souscriptions" ? "P" : marketType}
-                pageType="submitResults"
+                pageType="validationRetour"
                 activeTab={activeTab}
                 searchqueryParam={searchquery}
                 stateParam={state}
@@ -123,4 +123,4 @@ export default async function ResultsSubmissionPage({
       </div>
     </div>
   );
-}
+} 

@@ -170,7 +170,12 @@ export function clientFetchREST<T = any>(
         };
         throw error;
       }
-      return response.json();
+      const text = await response.text();
+      try {
+        return text ? JSON.parse(text) : {};
+      } catch (e) {
+        return text;
+      }
     })
     .then((result) => {
       return result;

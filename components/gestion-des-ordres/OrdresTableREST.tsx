@@ -24,7 +24,9 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { List, AlertTriangle, Printer, RefreshCw } from "lucide-react";
+import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OrderElement } from "@/lib/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import orderService from "@/lib/services/orderService";
@@ -63,6 +65,10 @@ interface OrdresTableRESTProps {
   taskID: string;
   marketType?: string;
   pageType: string;
+  activeTab?: string;
+  activeAction?: string;
+  searchqueryParam?: string;
+  stateParam?: string;
 }
 
 export default function OrdresTableREST({
@@ -70,9 +76,16 @@ export default function OrdresTableREST({
   taskID,
   marketType = "S",
   pageType,
+  activeTab,
+  activeAction,
+  searchqueryParam,
+  stateParam,
 }: OrdresTableRESTProps) {
   const session = useSession();
   const t = useTranslations("mesOrdres");
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<OrderElement[]>([]);
   const [actions, setActions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -504,36 +517,57 @@ export default function OrdresTableREST({
       header: t("actions"),
       cell: ({ row }: any) => {
         const order = row.original;
+        const isReturnValidationPage = pageType === "validationRetour" || pageType === "tccValidationRetour";
+        
         return (
           <div className="flex items-center space-x-2">
-            {actions.includes("validate") && (
+            {isReturnValidationPage ? (
+              // Pour les pages de validation du retour, afficher un bouton pour voir les détails et réponses
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => openActionDialog(order.id, "validate")}
+                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                onClick={() => {
+                  // Ici on pourrait ouvrir un modal ou naviguer vers une page de détails
+                  console.log("Voir détails et réponses pour l'ordre:", order.id);
+                }}
               >
-                Valider
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Voir Détails
               </Button>
-            )}
-            {actions.includes("reject") && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-600 hover:bg-red-50"
-                onClick={() => openActionDialog(order.id, "reject")}
-              >
-                Rejeter
-              </Button>
-            )}
-            {actions.includes("cancel") && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-gray-600 border-gray-600 hover:bg-gray-50"
-                onClick={() => openActionDialog(order.id, "cancel")}
-              >
-                Annuler
-              </Button>
+            ) : (
+              // Pour les autres pages, afficher les boutons d'action normaux
+              <>
+                {actions.includes("validate") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openActionDialog(order.id, "validate")}
+                  >
+                    Valider
+                  </Button>
+                )}
+                {actions.includes("reject") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-600 hover:bg-red-50"
+                    onClick={() => openActionDialog(order.id, "reject")}
+                  >
+                    Rejeter
+                  </Button>
+                )}
+                {actions.includes("cancel") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-gray-600 border-gray-600 hover:bg-gray-50"
+                    onClick={() => openActionDialog(order.id, "cancel")}
+                  >
+                    Annuler
+                  </Button>
+                )}
+              </>
             )}
           </div>
         );
@@ -551,18 +585,69 @@ export default function OrdresTableREST({
   return (
     <>
       <div className="rounded-md border">
-        <div className="flex justify-end p-2 border-b">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchOrdersData()}
-            disabled={loading}
-            className="flex items-center gap-1"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
+        {taskID !== "validation-tcc-retour" && (
+          <div className="flex justify-between items-center p-2 border-b">
+            {/* Market Type Tabs - Left side */}
+            <div className="flex items-center gap-0">
+              <Button
+                variant={activeTab === "all" ? "default" : "outline"}
+                size="sm"
+                className="rounded-r-none"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams);
+                  params.set("tab", "all");
+                  params.set("marketType", "S");
+                  params.set("page", "0");
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+              >
+                Carnet d'ordres
+              </Button>
+              <Button
+                variant={activeTab === "souscriptions" ? "default" : "outline"}
+                size="sm"
+                className="rounded-l-none"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams);
+                  params.set("tab", "souscriptions");
+                  params.set("marketType", "P");
+                  params.set("page", "0");
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+              >
+                Souscriptions
+              </Button>
+            </div>
+
+            {/* Refresh Button - Right side */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchOrdersData()}
+              disabled={loading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        )}
+
+        {taskID === "validation-tcc-retour" && (
+          <div className="flex justify-end items-center p-2 border-b">
+            {/* Refresh Button only for validation-tcc-retour */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchOrdersData()}
+              disabled={loading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        )}
         {loading ? (
           <div className="py-14 w-full flex justify-center">
             <div role="status">

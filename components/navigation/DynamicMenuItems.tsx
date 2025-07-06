@@ -8,7 +8,7 @@
 "use client";
 
 import React from "react";
-import { MenuElement, getMenuItemInfo } from "@/app/actions/menuService";
+import { MenuElement, getMenuItemInfo, menuItemMap } from "@/app/actions/menuService";
 import DynamicNavbarLink from "@/components/navigation/DynamicNavbarLink";
 import DynamicDropdownMenu from "@/components/navigation/DynamicDropdownMenu";
 import { useTranslations } from "next-intl";
@@ -33,45 +33,45 @@ const DynamicMenuItems = ({ elements }: DynamicMenuItemsProps) => {
 
   return (
     <>
-      {elements.map((element) => {
-        const menuInfo = getMenuItemInfo(element.id);
+      {elements
+        .filter((element) => menuItemMap[element.id])
+        .map((element) => {
+          const menuInfo = getMenuItemInfo(element.id);
 
-        // If element has children, render as dropdown
-        if (element.children && element.children.length > 0) {
-          return (
-            <DynamicDropdownMenu
-              key={element.id}
-              id={element.id}
-              label={
-                menuInfo.translationKey
-                  ? t(menuInfo.translationKey as any)
-                  : menuInfo.label
-              }
-              icon={menuInfo.icon}
-              children={element.children}
-            />
-          );
-        }
+          // If element has children, render as dropdown
+          if (element.children && element.children.length > 0) {
+            return (
+              <DynamicDropdownMenu
+                key={element.id}
+                id={element.id}
+                label={
+                  menuInfo.translationKey
+                    ? t(menuInfo.translationKey as any)
+                    : menuInfo.label
+                }
+                icon={menuInfo.icon}
+                children={element.children}
+              />
+            );
+          }
 
-        // If element has no children, render as simple link
-        if (menuInfo.href) {
-          return (
-            <DynamicNavbarLink
-              key={element.id}
-              href={menuInfo.href}
-              icon={menuInfo.icon}
-              label={
-                menuInfo.translationKey
-                  ? t(menuInfo.translationKey as any)
-                  : menuInfo.label
-              }
-            />
-          );
-        }
-
-        // Skip elements without href or children
-        return null;
-      })}
+          // If element has no children, render as simple link
+          if (menuInfo.href) {
+            return (
+              <DynamicNavbarLink
+                key={element.id}
+                href={menuInfo.href}
+                icon={menuInfo.icon}
+                label={
+                  menuInfo.translationKey
+                    ? t(menuInfo.translationKey as any)
+                    : menuInfo.label
+                }
+              />
+            );
+          }
+          return null;
+        })}
     </>
   );
 };

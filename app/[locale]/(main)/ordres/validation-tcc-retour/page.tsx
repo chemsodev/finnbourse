@@ -15,7 +15,7 @@ import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function ResultsSubmissionPage({
+export default async function ValidationRetourPage({
   searchParams,
 }: {
   searchParams?: {
@@ -34,7 +34,7 @@ export default async function ResultsSubmissionPage({
   const searchquery = searchParams?.searchquery || "";
   const state = searchParams?.state || "99";
   const marketType = searchParams?.marketType || "S";
-  const activeTab = searchParams?.tab || "all";
+  const activeTab = "all"; // Force to "all" for validation-tcc-retour page
 
   const t = await getTranslations("orderManagement");
   const tOrders = await getTranslations("mesOrdres");
@@ -57,18 +57,13 @@ export default async function ResultsSubmissionPage({
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                   <span>
-                    Soumission des Résultats
+                    Validation Retour TCC
                   </span>
-                  {activeTab === "souscriptions" && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                      {tOrders("marcheprimaire")}
-                    </Badge>
-                  )}
                 </h1>
               </div>
             </div>
 
-            <Link href="/ordres/execution">
+            <Link href="/ordres/validation-tcc-premiere">
               <Button
                 variant="outline"
                 size="sm"
@@ -81,7 +76,7 @@ export default async function ResultsSubmissionPage({
           </div>
 
           <p className="text-gray-600 text-sm leading-relaxed max-w-3xl">
-            {t("resultsSubmissionDescription")}
+            Validez les retours des ordres et consultez les détails des réponses reçues
           </p>
         </div>
 
@@ -106,9 +101,9 @@ export default async function ResultsSubmissionPage({
               <OrdresTableREST
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
-                taskID="resultats"
-                marketType={activeTab === "souscriptions" ? "P" : marketType}
-                pageType="submitResults"
+                taskID="validation-tcc-retour"
+                marketType={marketType}
+                pageType="validationRetour"
                 activeTab={activeTab}
                 searchqueryParam={searchquery}
                 stateParam={state}
@@ -123,4 +118,4 @@ export default async function ResultsSubmissionPage({
       </div>
     </div>
   );
-}
+} 

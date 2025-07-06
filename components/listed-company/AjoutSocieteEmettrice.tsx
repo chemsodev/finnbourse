@@ -24,26 +24,18 @@ import { Button } from "../ui/button";
 import { useTranslations } from "next-intl";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
-// Removed GraphQL dependencies - now using REST API
-// import { CREATE_LISTED_COMPANY } from "@/graphql/mutations";
-// Removed GraphQL dependencies - now using REST API
-// import { fetchGraphQLClient } from "@/app/actions/clientGraphQL";
+import { IssuerService } from "@/lib/services/issuerService";
 import { useRouter } from "@/i18n/routing";
 
 // Define the schema for form validation
 const formSchema = z.object({
-  nom: z.string().min(1, "Nom est obligatoire"),
-  secteurActivite: z.string().min(1, "Secteur d'activité est obligatoire"),
-  siteOfficiel: z.string().url("URL invalide"),
-  contactNom: z.string().min(1, "Nom du contact est obligatoire"),
-  contactPrenom: z.string().min(1, "Prénom du contact est obligatoire"),
-  contactFonction: z.string().min(1, "Fonction du contact est obligatoire"),
-  email: z.string().email("Email invalide"),
-  phone: z.string().min(1, "Téléphone est obligatoire"),
-  mobile: z.string().min(1, "Mobile est obligatoire"),
-  adresse: z.string().min(1, "Adresse est obligatoire"),
-  notice: z.string().min(1, "Notice est obligatoire"),
+  name: z.string().min(1, "Nom est obligatoire"),
+  activitySector: z.string().min(1, "Secteur d'activité est obligatoire"),
+  website: z.string().url("URL invalide"),
   capital: z.string().min(1, "Capital est obligatoire"),
+  email: z.string().email("Email invalide"),
+  address: z.string().min(1, "Adresse est obligatoire"),
+  tel: z.string().min(1, "Téléphone est obligatoire"),
 });
 
 type Company = {
@@ -86,42 +78,21 @@ const AjoutSocieteEmettrice = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      // TODO: Replace with REST API call
-      // await fetchGraphQLClient<{ id: string }>(CREATE_LISTED_COMPANY, {
-      //   nom: values.nom,
-      //   secteuractivite: values.secteurActivite,
-      //   siteofficiel: values.siteOfficiel || null,
-      //   contactNom: values.contactNom,
-      //   contactPrenom: values.contactPrenom,
-      //   contactFonction: values.contactFonction,
-      //   phone: values.phone,
-      //   mobile: values.mobile,
-      //   email: values.email,
-      //   address: values.adresse,
-      //   capitalisationboursiere: values.capital,
-      //   notice: values.notice,
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await IssuerService.create(values);
       toast({
         variant: "success",
         title: t("success"),
         description: t("LaSocieteAEteAjouteeAvecSucces"),
       });
-
       form.reset();
       window.location.reload();
       setOpen(false);
     } catch (error) {
-      console.error("Mutation error:", error);
-
+      console.error("API error:", error);
       toast({
         variant: "destructive",
         title: t("error"),
-        description:
-          error instanceof Error ? error.message : "An error occurred",
+        description: error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
       setLoading(false);
@@ -135,319 +106,199 @@ const AjoutSocieteEmettrice = () => {
           {t("ajouterUneSocieteEmettrice")} <Building2 size={20} />
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-primary">
-            {t("ajouterUneSocieteEmettrice")}
-          </DialogTitle>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-8 pt-10"
-            >
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="nom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("nom")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLeNom")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="secteurActivite"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("secteurActivite")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLeSecteurDActivite")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader className="space-y-4">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Building2 className="h-6 w-6 text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-primary">
+              {t("ajouterUneSocieteEmettrice")}
+            </DialogTitle>
+          </div>
+          <p className="text-sm text-muted-foreground text-center">
+            Remplissez les informations de la société émettrice
+          </p>
+        </DialogHeader>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 pt-6"
+          >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        {t("nom")} <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("entrerLeNom")}
+                          type="text"
+                          className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="activitySector"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        {t("secteurActivite")} <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("entrerLeSecteurDActivite")}
+                          type="text"
+                          className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="siteOfficiel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("siteOfficiel")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLeSiteOfficiel")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="capital"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("capital")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLeCapital")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        {t("siteOfficiel")} <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("entrerLeSiteOfficiel")}
+                          type="url"
+                          className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="capital"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        {t("capital")} <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("entrerLeCapital")}
+                          type="text"
+                          className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="notice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("notice")}</FormLabel>
-                        <FormControl>
-                          <textarea
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder={t("enterNotice")}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        {t("email")} <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("entrerLemail")}
+                          type="email"
+                          className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        {t("telephone")} <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="+213........."
+                          type="tel"
+                          className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm leading-6">
-                  <span className="bg-white px-6 font-semibold text-primary">
-                    {t("contact")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="contactNom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactNom")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLeNomDuContact")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="contactPrenom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactPrenom")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLePrenomDuContact")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="contactFonction"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactFonction")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLaFonctionDuContact")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("email")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLemail")}
-                            type="email"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("telephone")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="+213........."
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="mobile"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("mobile")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="+213........."
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <FormField
-                    control={form.control}
-                    name="adresse"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("adresse")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("entrerLadresse")}
-                            type="text"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <button
-                disabled={loading}
-                type="submit"
-                className={`rounded-md text-white w-full py-2 shadow-md ${
-                  loading ? "bg-primary/90 cursor-wait" : "bg-primary"
-                }`}
-              >
-                {loading ? (
-                  <div
-                    role="status"
-                    className="flex gap-2 justify-center items-center w-full"
-                  >
-                    {t("submit")}
-                    <svg
-                      aria-hidden="true"
-                      className="w-5 h-5 text-gray-200 animate-spin fill-gray-400"
-                      viewBox="0 0 100 101"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                        fill="currentColor"
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("adresse")} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("entrerLadresse")}
+                        type="text"
+                        className="h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field}
                       />
-                      <path
-                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                        fill="currentFill"
-                      />
-                    </svg>
-                    <span className="sr-only">Chargement...</span>
-                  </div>
-                ) : (
-                  <div className="flex justify-center items-center group gap-2">
-                    {t("submit")}
-                  </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </button>
+              />
+
+              <div className="pt-4">
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>{t("submit")}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-5 h-5" />
+                      <span>{t("submit")}</span>
+                    </div>
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  );
-};
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
-export default AjoutSocieteEmettrice;
+  export default AjoutSocieteEmettrice;
