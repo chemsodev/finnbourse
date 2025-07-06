@@ -583,6 +583,8 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
               data={mapStockToTitreFormValues(selectedStock)}
               companies={companies}
               institutions={institutions}
+              isValidationReturnPage={false}
+              orderResponse={undefined}
             />
           )}
         </Modal>

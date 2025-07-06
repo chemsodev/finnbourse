@@ -1053,6 +1053,12 @@ export default function OrdresTableREST({
               data={mapOrderElementToTitreFormValues(selectedOrderForDetails)}
               companies={companies}
               institutions={institutions}
+              isValidationReturnPage={taskID === "validation-retour" || taskID === "validation-tcc-retour"}
+              orderResponse={{
+                reliquat: selectedOrderForDetails.quantity ? Math.floor(selectedOrderForDetails.quantity * 0.3) : 0,
+                quantiteAcquise: selectedOrderForDetails.quantity ? Math.floor(selectedOrderForDetails.quantity * 0.7) : 0,
+                prix: selectedOrderForDetails.price || 0,
+              }}
             />
           )}
         </Modal>

@@ -471,6 +471,8 @@ export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
               data={mapStockToTitreFormValues(selectedStock)}
               companies={companies}
               institutions={institutions}
+              isValidationReturnPage={false}
+              orderResponse={undefined}
             />
           )}
         </Modal>
