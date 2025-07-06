@@ -27,7 +27,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RolesAssignment } from "@/components/RolesAssignment";
 import { useToast } from "@/hooks/use-toast";
-import { useTCC } from "@/hooks/useTCC";
+import { useTCCUsers } from "@/hooks/useTCC";
 
 // Define the valid TCC role types
 type ValidTCCRole =
@@ -59,8 +59,8 @@ const userSchema = z
     firstname: z.string().min(2, "First name must be at least 2 characters"),
     lastname: z.string().min(2, "Last name must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    telephone: z.string().optional(),
-    positionTcc: z.string().optional(),
+    telephone: z.string().default(""),
+    positionTcc: z.string().default(""),
     role: z
       .array(z.enum(VALID_TCC_ROLES as [ValidTCCRole, ...ValidTCCRole[]]))
       .min(1, "At least one role is required"),
@@ -99,7 +99,7 @@ export default function AddTCCUserPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // API hooks
-  const { addTCCUser } = useTCC();
+  const { createUser } = useTCCUsers();
 
   // Default form values
   const defaultValues: Partial<UserFormValues> = {
@@ -132,15 +132,15 @@ export default function AddTCCUserPage({
       const { confirmPassword, ...userData } = values;
 
       // Call API to add user
-      await addTCCUser(userData);
+      await createUser(userData);
 
       toast({
         title: t("success"),
         description: t("userAddedSuccessfully"),
       });
 
-      // Navigate back to TCC page
-      router.push(`/${params.locale}/tcc`);
+      // Navigate back to users list
+      router.push(`/${params.locale}/tcc/users`);
     } catch (error) {
       console.error("Failed to add user:", error);
       toast({
@@ -367,7 +367,7 @@ export default function AddTCCUserPage({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push(`/${params.locale}/tcc`)}
+                  onClick={() => router.push(`/${params.locale}/tcc/users`)}
                   disabled={isSubmitting}
                 >
                   {t("cancel")}
