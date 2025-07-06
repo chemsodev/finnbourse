@@ -585,51 +585,69 @@ export default function OrdresTableREST({
   return (
     <>
       <div className="rounded-md border">
-        <div className="flex justify-between items-center p-2 border-b">
-          {/* Market Type Tabs - Left side */}
-          <div className="flex items-center gap-0">
+        {taskID !== "validation-retour" && (
+          <div className="flex justify-between items-center p-2 border-b">
+            {/* Market Type Tabs - Left side */}
+            <div className="flex items-center gap-0">
+              <Button
+                variant={activeTab === "all" ? "default" : "outline"}
+                size="sm"
+                className="rounded-r-none"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams);
+                  params.set("tab", "all");
+                  params.set("marketType", "S");
+                  params.set("page", "0");
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+              >
+                Carnet d'ordres
+              </Button>
+              <Button
+                variant={activeTab === "souscriptions" ? "default" : "outline"}
+                size="sm"
+                className="rounded-l-none"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams);
+                  params.set("tab", "souscriptions");
+                  params.set("marketType", "P");
+                  params.set("page", "0");
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+              >
+                Souscriptions
+              </Button>
+            </div>
+
+            {/* Refresh Button - Right side */}
             <Button
-              variant={activeTab === "all" ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              className="rounded-r-none"
-              onClick={() => {
-                const params = new URLSearchParams(searchParams);
-                params.set("tab", "all");
-                params.set("marketType", "S");
-                params.set("page", "0");
-                router.replace(`${pathname}?${params.toString()}`);
-              }}
+              onClick={() => fetchOrdersData()}
+              disabled={loading}
+              className="flex items-center gap-1"
             >
-              Carnet d'ordres
-            </Button>
-            <Button
-              variant={activeTab === "souscriptions" ? "default" : "outline"}
-              size="sm"
-              className="rounded-l-none"
-              onClick={() => {
-                const params = new URLSearchParams(searchParams);
-                params.set("tab", "souscriptions");
-                params.set("marketType", "P");
-                params.set("page", "0");
-                router.replace(`${pathname}?${params.toString()}`);
-              }}
-            >
-              Souscriptions
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
             </Button>
           </div>
+        )}
 
-          {/* Refresh Button - Right side */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchOrdersData()}
-            disabled={loading}
-            className="flex items-center gap-1"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
+        {taskID === "validation-retour" && (
+          <div className="flex justify-end items-center p-2 border-b">
+            {/* Refresh Button only for validation-retour */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchOrdersData()}
+              disabled={loading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        )}
         {loading ? (
           <div className="py-14 w-full flex justify-center">
             <div role="status">
