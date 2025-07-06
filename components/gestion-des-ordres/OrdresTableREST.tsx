@@ -585,7 +585,7 @@ export default function OrdresTableREST({
   return (
     <>
       <div className="rounded-md border">
-        {taskID !== "validation-retour" && (
+        {taskID !== "validation-tcc-retour" && (
           <div className="flex justify-between items-center p-2 border-b">
             {/* Market Type Tabs - Left side */}
             <div className="flex items-center gap-0">
@@ -633,9 +633,9 @@ export default function OrdresTableREST({
           </div>
         )}
 
-        {taskID === "validation-retour" && (
+        {taskID === "validation-tcc-retour" && (
           <div className="flex justify-end items-center p-2 border-b">
-            {/* Refresh Button only for validation-retour */}
+            {/* Refresh Button only for validation-tcc-retour */}
             <Button
               variant="outline"
               size="sm"
