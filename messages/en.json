@@ -2560,7 +2560,10 @@
     "emailAlreadyInUseLocal": "This email is already used by another user in this form",
     "emailAlreadyInUseServer": "Email already in use on server",
     "invalidEmailFormat": "Invalid email format",
-    "failedToCreateUser": "Failed to create user"
+    "failedToCreateUser": "Failed to create user",
+    "position": "Position",
+    "tccRoles": "TCC Roles",
+    "back": "Back"
   },
   "TCCDetailsPage": {
     "accountHolderNotFound": "Account Holder not found",

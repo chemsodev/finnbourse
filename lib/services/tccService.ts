@@ -70,12 +70,18 @@ export class TCCService {
     }
   }
   /**
-   * Get users for a specific TCC
+   * Get users for TCC
    */
-  static async getUsers(tccId?: string, token?: string): Promise<TCCUser[]> {
+  static async getUsers(token?: string): Promise<TCCUser[]> {
     try {
-      const response = await actorAPI.tcc.getUsers(tccId, token);
-      return response.data || response || [];
+      // First get the TCC data which includes users
+      const tcc = await this.getTCC(token);
+
+      if (!tcc || !tcc.users) {
+        return [];
+      }
+
+      return tcc.users;
     } catch (error) {
       console.error("Error fetching TCC users:", error);
       throw new Error("Failed to fetch TCC users");
@@ -87,25 +93,13 @@ export class TCCService {
    */
   static async createUser(
     userData: TCCUserCreateRequest,
-    tccIdOrToken?: string,
     token?: string
   ): Promise<TCCUser> {
     try {
-      // If tccIdOrToken looks like a UUID, it's a tccId, otherwise it's a token
-      const isUUID =
-        tccIdOrToken &&
-        tccIdOrToken.length === 36 &&
-        tccIdOrToken.includes("-");
-      const tccId = isUUID ? tccIdOrToken : undefined;
-      const authToken = isUUID ? token : tccIdOrToken;
+      // Log what's happening for debugging
+      console.log("Creating TCC user with data:", userData);
 
-      // Add tccId to user data if provided
-      const userDataWithTccId = tccId ? { ...userData, tccId } : userData;
-
-      const response = await actorAPI.tcc.createUser(
-        userDataWithTccId,
-        authToken
-      );
+      const response = await actorAPI.tcc.createUser(userData, token);
       return response.data || response;
     } catch (error) {
       console.error("Error creating TCC user:", error);
@@ -159,7 +153,7 @@ export class TCCService {
       code: formData.code,
       libelle: formData.libelle,
       account_type: formData.typeCompte,
-      status: formData.statut === "Actif" ? "ACTIVE" : "INACTIVE",
+      status: formData.statut, // Should already be ACTIVE or INACTIVE
       address: formData.adresse,
       postal_code: formData.codePostal,
       city: formData.ville,
@@ -179,11 +173,17 @@ export class TCCService {
    * Transform API data to form format
    */
   static transformAPIDataToForm(apiData: TCC): any {
-    return {
+    // Log the incoming data for debugging
+    console.log(
+      "TCC API data for transform:",
+      JSON.stringify(apiData, null, 2)
+    );
+
+    const result = {
       code: apiData.code,
       libelle: apiData.libelle,
       typeCompte: apiData.account_type,
-      statut: apiData.status === "ACTIVE" ? "Actif" : "Inactif",
+      statut: apiData.status, // Keep as ACTIVE or INACTIVE as required by the schema
       adresse: apiData.address,
       codePostal: apiData.postal_code,
       ville: apiData.city,
@@ -195,8 +195,11 @@ export class TCCService {
       autoriteSurveillance: apiData.surveillance_authority,
       nomCorrespondant: apiData.name_correspondent,
       codeCorrespondant: apiData.code_correspondent,
-      financialInstitutionId: apiData.financialInstitutionId,
+      financialInstitutionId: apiData.financialInstitutionId || "",
     };
+
+    console.log("Transformed TCC form data:", result);
+    return result;
   }
 
   /**

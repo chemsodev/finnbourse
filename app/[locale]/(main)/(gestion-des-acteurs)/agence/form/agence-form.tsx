@@ -55,6 +55,30 @@ export function AgenceForm({
     onFormChange(data);
   };
 
+  // Reset form when defaultValues change (important for edit mode)
+  useEffect(() => {
+    console.log("Agence form default values changed:", defaultValues);
+    console.log(
+      "Financial Institution ID in defaultValues:",
+      defaultValues?.financialInstitutionId
+    );
+
+    if (defaultValues) {
+      // Reset the form with the new default values
+      console.log("Resetting Agence form with values:", defaultValues);
+      form.reset(defaultValues);
+
+      // Verify form values after reset
+      setTimeout(() => {
+        console.log("Current form values after reset:", form.getValues());
+        console.log(
+          "Current FI value:",
+          form.getValues().financialInstitutionId
+        );
+      }, 100);
+    }
+  }, [defaultValues, form]);
+
   // Watch for changes and propagate to parent component
   useEffect(() => {
     const subscription = form.watch((value) => {

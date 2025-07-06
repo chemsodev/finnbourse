@@ -73,14 +73,27 @@ export default function FormPage({ params }: FormPageProps) {
         const transformedData =
           AgenceService.transformAPIDataToForm(currentAgence);
 
-        setFormValues((prev) => ({
-          ...prev,
-          agence: {
-            ...prev.agence,
-            ...transformedData,
-          },
+        // Ensure financial institution ID is properly set
+        if (currentAgence.financialInstitution?.id) {
+          transformedData.financialInstitutionId =
+            currentAgence.financialInstitution.id;
+        } else if (currentAgence.financialInstitutionId) {
+          transformedData.financialInstitutionId =
+            currentAgence.financialInstitutionId;
+        }
+
+        console.log("Transformed Agence data for form:", transformedData);
+        console.log(
+          "Financial Institution ID:",
+          transformedData.financialInstitutionId
+        );
+
+        // Force a re-render with the new data by creating a new object
+        setFormValues({
+          agence: transformedData,
+          relatedUsers: [], // Keep existing related users if needed
           agenceId: currentAgence.id,
-        }));
+        });
 
         toast({
           title: "Data Loaded",
