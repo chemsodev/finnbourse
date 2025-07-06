@@ -42,14 +42,86 @@ import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
 import { usePathname } from "next/navigation";
-import { TitreDetailsModal } from "./TitreDetailsModal";
+import { TitreDetails } from "@/components/titres/TitreDetails";
+import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
+import { createPortal } from "react-dom";
 
 interface TitresTableProps {
   type: string;
   isPrimary?: boolean;
+} 
+
+// Utilitaire pour transformer un Stock en TitreFormValues
+function mapStockToTitreFormValues(stock: Stock): TitreFormValues {
+  const s = stock as any;
+  return {
+    id: s.id,
+    name: s.name || "",
+    issuer: typeof s.issuer === "object" ? s.issuer.id || "" : s.issuer || "",
+    isinCode: s.isinCode || s.isincode || "",
+    code: s.code || "",
+    faceValue: s.faceValue ?? s.facevalue ?? 0,
+    quantity: s.quantity ?? 0,
+    emissionDate: s.emissionDate
+      ? new Date(s.emissionDate)
+      : s.emissiondate
+      ? new Date(s.emissiondate)
+      : new Date(),
+    closingDate: s.closingDate
+      ? new Date(s.closingDate)
+      : s.closingdate
+      ? new Date(s.closingdate)
+      : new Date(),
+    enjoymentDate: s.enjoymentDate
+      ? new Date(s.enjoymentDate)
+      : s.enjoymentdate
+      ? new Date(s.enjoymentdate)
+      : new Date(),
+    marketListing: "primary",
+    type: s.type || "",
+    status: ["activated", "suspended", "expired"].includes(s.status as string)
+      ? (s.status as "activated" | "suspended" | "expired")
+      : "activated",
+    dividendRate: s.dividendRate,
+    capitalOperation: undefined,
+    maturityDate: s.maturityDate
+      ? new Date(s.maturityDate)
+      : s.maturitydate
+      ? new Date(s.maturitydate)
+      : undefined,
+    durationYears: undefined,
+    paymentSchedule: undefined,
+    commission: s.commission,
+    shareClass: undefined,
+    votingRights: undefined,
+    master: undefined,
+    institutions: undefined,
+    stockPrice: {
+      price: s.price ?? 0,
+      date: new Date(),
+      gap: 0,
+    },
+  };
 }
 
-
+// Composant Modal utilisant un portail pour couvrir tout l'écran
+function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+  if (!open) return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
+      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+        <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+          onClick={onClose}
+        >
+          <span className="text-xl">×</span>
+        </button>
+        {children}
+      </div>
+    </div>,
+    typeof window !== 'undefined' ? document.body : (null as any)
+  );
+}
 
 export function TitresTableObligation({ type, isPrimary = false }: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -66,6 +138,9 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
   const pathname = usePathname();
   const [selectedStock, setSelectedStock] = React.useState<Stock | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(true);
 
   // TitresTableObligation gère les obligations, sukuk et participatif
   let stockType: "obligation" | "sukuk" | "participatif";
@@ -310,6 +385,21 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
     }
   }, [stocks, error, toast, stockType, isPrimary]);
 
+  useEffect(() => {
+    // MOCK: Remplace par tes vrais appels API si besoin
+    setTimeout(() => {
+      setCompanies([
+        { id: "1", name: "Company A" },
+        { id: "2", name: "Company B" },
+      ]);
+      setInstitutions([
+        { id: "1", name: "Institution X" },
+        { id: "2", name: "Institution Y" },
+      ]);
+      setLoadingDetails(false);
+    }, 500);
+  }, []);
+
   const getTableData = () => {
     if (data && Array.isArray(data)) {
       return data;
@@ -478,15 +568,25 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
       </div>
 
       {/* Modal pour les détails */}
-      <TitreDetailsModal
-        isOpen={isDetailsModalOpen}
-        onClose={() => {
-          setIsDetailsModalOpen(false);
-          setSelectedStock(null);
-        }}
-        stock={selectedStock}
-        type={type}
-      />
+      {isDetailsModalOpen && selectedStock && (
+        <Modal
+          open={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedStock(null);
+          }}
+        >
+          {loadingDetails ? (
+            <div>Chargement des détails...</div>
+          ) : (
+            <TitreDetails
+              data={mapStockToTitreFormValues(selectedStock)}
+              companies={companies}
+              institutions={institutions}
+            />
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

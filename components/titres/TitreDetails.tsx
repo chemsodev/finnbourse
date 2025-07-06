@@ -18,12 +18,14 @@ interface TitreDetailsViewProps {
   data: TitreFormValues;
   companies: { id: string; name: string }[];
   institutions: { id: string; name: string }[];
+  withBackdrop?: boolean;
 }
 
 export function TitreDetails({
   data,
   companies,
   institutions,
+  withBackdrop = false,
 }: TitreDetailsViewProps) {
   const t = useTranslations("TitreDetails");
   const locale = useLocale();
@@ -119,7 +121,7 @@ export function TitreDetails({
     return `${rate.toFixed(2)}%`;
   };
 
-  return (
+  const content = (
     <div className="max-w-6xl mx-auto space-y-6 p-4">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border">
@@ -311,4 +313,15 @@ export function TitreDetails({
       )}
     </div>
   );
+
+  if (withBackdrop) {
+    return (
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
+        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+          {content}
+        </div>
+      </div>
+    );
+  }
+  return content;
 }
