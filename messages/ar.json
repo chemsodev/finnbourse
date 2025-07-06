@@ -27,6 +27,8 @@
     "validationFinale": "التحقق النهائي",
     "validationTccPremiere": "التحقق الأول TCC",
     "validationTccFinale": "التحقق النهائي TCC",
+    "validationRetour": "التحقق من العودة",
+    "tccValidationRetour": "التحقق من العودة TCC",
     "iob": "وسيط بورصة",
     "titresEtEmissions": "الأوراق المالية والإصدارات",
     "emetteurs": "المُصدرون",

@@ -32,6 +32,8 @@
     "validationTccPremiere": "Validation TCC Première",
     "validationTCCFinale": "Validation TCC Finale",
     "validationTccFinale": "Validation TCC Finale",
+    "validationRetour": "Validation Retour",
+    "tccValidationRetour": "Validation TCC Retour",
     "iob": "IOB",
     "executionOrdres": "Exécution des Ordres",
     "soumissionResultats": "Soumission des Résultats",
