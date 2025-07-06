@@ -281,6 +281,11 @@ export const menuItemMap: Record<
     href: "/ordres/validation-finale",
     translationKey: "validationFinale",
   },
+  "validation-retour": {
+    label: "Return Validation",
+    href: "/ordres/validation-retour",
+    translationKey: "validationRetour",
+  },
   "validation-tcc-premiere": {
     label: "TCC First Validation",
     href: "/ordres/validation-tcc-premiere",
@@ -290,6 +295,11 @@ export const menuItemMap: Record<
     label: "TCC Final Validation",
     href: "/ordres/validation-tcc-finale",
     translationKey: "validationTccFinale",
+  },
+  "validation-tcc-retour": {
+    label: "TCC Return Validation",
+    href: "/ordres/validation-tcc-retour",
+    translationKey: "tccValidationRetour",
   },
   execution: {
     label: "Execution",

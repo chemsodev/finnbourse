@@ -517,36 +517,57 @@ export default function OrdresTableREST({
       header: t("actions"),
       cell: ({ row }: any) => {
         const order = row.original;
+        const isReturnValidationPage = pageType === "validationRetour" || pageType === "tccValidationRetour";
+        
         return (
           <div className="flex items-center space-x-2">
-            {actions.includes("validate") && (
+            {isReturnValidationPage ? (
+              // Pour les pages de validation du retour, afficher un bouton pour voir les détails et réponses
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => openActionDialog(order.id, "validate")}
+                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                onClick={() => {
+                  // Ici on pourrait ouvrir un modal ou naviguer vers une page de détails
+                  console.log("Voir détails et réponses pour l'ordre:", order.id);
+                }}
               >
-                Valider
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Voir Détails
               </Button>
-            )}
-            {actions.includes("reject") && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-600 hover:bg-red-50"
-                onClick={() => openActionDialog(order.id, "reject")}
-              >
-                Rejeter
-              </Button>
-            )}
-            {actions.includes("cancel") && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-gray-600 border-gray-600 hover:bg-gray-50"
-                onClick={() => openActionDialog(order.id, "cancel")}
-              >
-                Annuler
-              </Button>
+            ) : (
+              // Pour les autres pages, afficher les boutons d'action normaux
+              <>
+                {actions.includes("validate") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openActionDialog(order.id, "validate")}
+                  >
+                    Valider
+                  </Button>
+                )}
+                {actions.includes("reject") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-600 hover:bg-red-50"
+                    onClick={() => openActionDialog(order.id, "reject")}
+                  >
+                    Rejeter
+                  </Button>
+                )}
+                {actions.includes("cancel") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-gray-600 border-gray-600 hover:bg-gray-50"
+                    onClick={() => openActionDialog(order.id, "cancel")}
+                  >
+                    Annuler
+                  </Button>
+                )}
+              </>
             )}
           </div>
         );
