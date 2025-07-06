@@ -3,7 +3,22 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, Edit, RefreshCw, Users } from "lucide-react";
+import {
+  Plus,
+  Users,
+  Edit,
+  Eye,
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import { useToast } from "@/hooks/use-toast";
+import { useTCC, useTCCUsers } from "@/hooks/useTCC";
+import { useRestToken } from "@/hooks/useRestToken";
+import { Badge } from "@/components/ui/badge";
+import Loading from "@/components/ui/loading";
 import {
   Table,
   TableBody,
@@ -12,56 +27,58 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTranslations } from "next-intl";
-import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
-import { TCCService } from "@/lib/services/tccService";
-import { useTCC } from "@/hooks/useTCC";
-import { TCC, TCCUser } from "@/lib/types/tcc";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { getRoleById } from "@/lib/roles";
 
-export default function TCCUsersPage() {
+interface TCCUsersPageProps {
+  params: {
+    locale: string;
+  };
+}
+
+export default function TCCUsersPage({ params }: TCCUsersPageProps) {
   const router = useRouter();
   const t = useTranslations("TCCPage");
   const { toast } = useToast();
 
-  // State
-  const [tccData, setTCCData] = useState<TCC | null>(null);
-  const [users, setUsers] = useState<TCCUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   // API hooks
-  const { tcc, fetchTCC } = useTCC();
+  const { tcc, isLoading, fetchTCC } = useTCC();
+  const { updateUser } = useTCCUsers();
+  const { hasRestToken, isLoading: tokenLoading } = useRestToken();
 
+  // State for dialogs and actions
+  const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
+    null
+  );
+  const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
+  const [viewUserDialog, setViewUserDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+
+  // Load TCC data on mount and when token becomes available
   useEffect(() => {
-    loadData();
-  }, []);
+    if (hasRestToken && !tokenLoading) {
+      loadTCCData();
+    }
+  }, [hasRestToken, tokenLoading]);
 
-  const loadData = async () => {
+  const loadTCCData = async () => {
     try {
-      setIsLoading(true);
-
-      // Fetch the single TCC
-      const currentTCC = await fetchTCC();
-      if (currentTCC) {
-        setTCCData(currentTCC);
-
-        // Users are already included in the TCC response
-        const tccWithUsers = currentTCC as any;
-        if (tccWithUsers.users && Array.isArray(tccWithUsers.users)) {
-          setUsers(tccWithUsers.users);
-          console.log("🔍 Loaded users from TCC:", tccWithUsers.users);
-        } else {
-          setUsers([]);
-        }
-      } else {
-        console.error("No TCC found");
-        toast({
-          title: "Error",
-          description: "No TCC configuration found",
-          variant: "destructive",
-        });
-      }
+      await fetchTCC();
     } catch (error) {
       console.error("Failed to load TCC data:", error);
       toast({
@@ -69,228 +86,298 @@ export default function TCCUsersPage() {
         description: "Failed to load TCC data",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleViewUser = (user: any) => {
+    setSelectedUser(user);
+    setViewUserDialog(true);
+  };
+
+  const handleToggleStatus = (userId: string) => {
+    setUserToToggleStatus(userId);
+    setStatusConfirmDialog(true);
+  };
+
+  const confirmToggleStatus = async () => {
+    if (!userToToggleStatus) return;
+
+    try {
+      const user = tcc?.users?.find((u) => u.id === userToToggleStatus);
+      if (!user) return;
+
+      const newStatus = user.status === "actif" ? "inactif" : "actif";
+      await updateUser(userToToggleStatus, { status: newStatus });
+
+      toast({
+        title: "Success",
+        description: `User status updated to ${newStatus}`,
+      });
+
+      // Refresh TCC data
+      await fetchTCC();
+    } catch (error) {
+      console.error("Failed to update user status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
+        variant: "destructive",
+      });
     } finally {
-      setIsLoading(false);
+      setUserToToggleStatus(null);
+      setStatusConfirmDialog(false);
     }
   };
 
-  const handleAddUser = () => {
-    if (tccData) {
-      router.push(`/tcc/${tccData.id}/users/add`);
-    }
-  };
-
-  const handleEditUser = (user: TCCUser) => {
-    if (tccData) {
-      router.push(`/tcc/${tccData.id}/users/edit/${user.id}`);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => router.push("/tcc")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-800">Loading...</h1>
-          <RefreshCw className="h-6 w-6 animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!tccData) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => router.push("/tcc")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-800">TCC Not Found</h1>
-        </div>
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-center text-gray-500">
-              No TCC configuration found. Please create a TCC first.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  // Loading state
+  if (isLoading || tokenLoading) {
+    return <Loading />;
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+    <div className="container mx-auto py-8">
+      <div className="mb-6 flex items-center gap-2">
         <Button
+          type="button"
           variant="outline"
           size="icon"
-          onClick={() => router.push("/tcc")}
+          onClick={() => router.push(`/${params.locale}/tcc`)}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-800">
-            {tccData.libelle} - Users
-          </h1>
-          <p className="text-gray-600">Manage users for TCC: {tccData.code}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={loadData} variant="outline" size="icon">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleAddUser}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add User
-          </Button>
-        </div>
+        <h1 className="text-2xl font-bold">{t("tccUsers")}</h1>
       </div>
 
-      {/* TCC Info Card */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            TCC Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm font-medium text-gray-600">Status</div>
-              <Badge
-                variant={tccData.status === "ACTIVE" ? "default" : "secondary"}
-              >
-                {tccData.status}
-              </Badge>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-600">
-                Account Type
-              </div>
-              <div className="text-sm">
-                {tccData.account_type === "DEPOSIT" && "Depot"}
-                {tccData.account_type === "SECURITIES" && "Titres"}
-                {tccData.account_type === "BOTH" && "Depot et Titres"}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-600">Contact</div>
-              <div className="text-sm">{tccData.email}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Users Table */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Users ({users.length})</span>
-          </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>{t("associatedUsers")}</CardTitle>
+          <Button
+            onClick={() => router.push(`/${params.locale}/tcc/form/users/add`)}
+            variant="default"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {t("addUser")}
+          </Button>
         </CardHeader>
         <CardContent>
-          {users.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No Users
-              </h3>
-              <p className="text-gray-500 mb-4">
-                This TCC doesn't have any users yet.
+          {!tcc?.users || tcc.users.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <Users className="h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-lg font-medium mb-2">{t("noUsersFound")}</h3>
+              <p className="text-muted-foreground mb-4 max-w-md">
+                {t("noUsersDescription")}
               </p>
-              <Button onClick={handleAddUser}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add First User
+              <Button
+                onClick={() =>
+                  router.push(`/${params.locale}/tcc/form/users/add`)
+                }
+                variant="outline"
+              >
+                {t("addUser")}
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Full Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Roles</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {user.firstname} {user.lastname}
-                    </TableCell>
-                    <TableCell>{user.email || "N/A"}</TableCell>
-                    <TableCell>{user.telephone || "N/A"}</TableCell>
-                    <TableCell>{(user as any).positionTcc || "N/A"}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {(user as any).roles &&
-                        Array.isArray((user as any).roles) ? (
-                          (user as any).roles.map(
-                            (role: string, index: number) => (
-                              <Badge
-                                key={index}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {role}
-                              </Badge>
-                            )
-                          )
-                        ) : (
-                          <span className="text-gray-400 text-sm">
-                            No roles
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          user.status === "actif" ? "default" : "secondary"
-                        }
-                      >
-                        {user.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-500">
-                      {(user as any).createdAt
-                        ? new Date((user as any).createdAt).toLocaleDateString()
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("name")}</TableHead>
+                    <TableHead>{t("email")}</TableHead>
+                    <TableHead>{t("phone")}</TableHead>
+                    <TableHead>{t("position")}</TableHead>
+                    <TableHead>{t("role")}</TableHead>
+                    <TableHead>{t("status")}</TableHead>
+                    <TableHead>{t("createdAt")}</TableHead>
+                    <TableHead className="text-right">{t("actions")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {tcc!.users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        {user.firstname} {user.lastname}
+                      </TableCell>
+                      <TableCell>{user.email || "N/A"}</TableCell>
+                      <TableCell>{user.telephone || "N/A"}</TableCell>
+                      <TableCell>{user.positionTcc || "N/A"}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {user.role?.map((roleId: string) => (
+                            <Badge
+                              key={roleId}
+                              variant="outline"
+                              className="text-xs mr-1"
+                            >
+                              {getRoleById(roleId)?.label || roleId}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            user.status === "actif" ? "default" : "secondary"
+                          }
+                        >
+                          {user.status === "actif"
+                            ? t("active")
+                            : t("inactive")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-500">
+                        {user.createdAt
+                          ? new Date(user.createdAt).toLocaleDateString()
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewUser(user)}
+                          >
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">{t("viewUser")}</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              router.push(
+                                `/${params.locale}/tcc/form/users/${user.id}`
+                              )
+                            }
+                          >
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">{t("editUser")}</span>
+                          </Button>
+                          <Button
+                            variant={
+                              user.status === "actif"
+                                ? "destructive"
+                                : "outline"
+                            }
+                            size="sm"
+                            onClick={() =>
+                              user.id ? handleToggleStatus(user.id) : null
+                            }
+                          >
+                            {user.status === "actif" ? (
+                              <XCircle className="h-4 w-4" />
+                            ) : (
+                              <CheckCircle className="h-4 w-4" />
+                            )}
+                            <span className="sr-only">
+                              {user.status === "actif"
+                                ? t("deactivateUser")
+                                : t("activateUser")}
+                            </span>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* View User Dialog */}
+      <Dialog open={viewUserDialog} onOpenChange={setViewUserDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t("userDetails")}</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">
+                    {t("name")}
+                  </p>
+                  <p className="text-lg">
+                    {selectedUser.firstname} {selectedUser.lastname}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">
+                    {t("email")}
+                  </p>
+                  <p className="text-lg">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">
+                    {t("phone")}
+                  </p>
+                  <p className="text-lg">{selectedUser.telephone || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">
+                    {t("status")}
+                  </p>
+                  <Badge
+                    variant={
+                      selectedUser.status === "actif" ? "secondary" : "outline"
+                    }
+                    className={
+                      selectedUser.status === "actif"
+                        ? "bg-green-100 text-green-800 hover:bg-green-200"
+                        : "bg-red-100 text-red-800 hover:bg-red-200"
+                    }
+                  >
+                    {selectedUser.status === "actif"
+                      ? t("active")
+                      : t("inactive")}
+                  </Badge>
+                </div>
+                {selectedUser.positionTcc && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">
+                      {t("position")}
+                    </p>
+                    <p className="text-lg">{selectedUser.positionTcc}</p>
+                  </div>
+                )}
+                <div className="col-span-2">
+                  <p className="text-sm font-semibold text-gray-500">
+                    {t("roles")}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedUser.role?.map((roleId: string) => (
+                      <Badge key={roleId} variant="outline">
+                        {getRoleById(roleId)?.label || roleId}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Status Confirmation Dialog */}
+      <AlertDialog
+        open={statusConfirmDialog}
+        onOpenChange={setStatusConfirmDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirmStatusChange")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("confirmStatusChangeDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmToggleStatus}>
+              {t("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

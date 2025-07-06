@@ -29,6 +29,8 @@ export interface TCC {
 
 export interface TCCUser {
   id?: string;
+  keycloakId?: string | null;
+  keycloakSource?: string | null;
   firstname: string;
   lastname: string;
   email: string;
@@ -37,8 +39,9 @@ export interface TCCUser {
   status: "actif" | "inactif";
   positionTcc: string;
   role: string[];
-  matricule: string;
-  organisation: string;
+  matricule?: string;
+  organisationIndividu?: string;
+  tcc?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -71,14 +74,23 @@ export interface TCCUserCreateRequest {
   status: "actif" | "inactif";
   positionTcc: string;
   role: string[];
+  matricule?: string;
+  organisationIndividu?: string; // Renamed from organisation to match API
+  tcc?: number; // Replaced tccId with tcc to match API (always 1)
 }
 
 export interface TCCUserUpdateRequest {
   firstname?: string;
   lastname?: string;
+  email?: string;
+  password?: string;
   telephone?: string;
   status?: "actif" | "inactif";
   positionTcc?: string;
+  role?: string[];
+  matricule?: string;
+  organisationIndividu?: string;
+  tcc?: number;
 }
 
 export interface TCCUserRoleUpdateRequest {

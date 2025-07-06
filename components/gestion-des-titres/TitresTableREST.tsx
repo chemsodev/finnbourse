@@ -41,12 +41,15 @@ import { useStocksREST } from "@/hooks/useStockREST";
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
+import { usePathname } from "next/navigation";
+import { TitreDetailsModal } from "./TitreDetailsModal";
 
 interface TitresTableProps {
   type: string;
+  isPrimary?: boolean;
 }
 
-export function TitresTableREST({ type }: TitresTableProps) {
+export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -58,24 +61,12 @@ export function TitresTableREST({ type }: TitresTableProps) {
   const [data, setData] = React.useState<Stock[]>([]);
   const { data: session } = useSession();
   const { toast } = useToast();
+  const pathname = usePathname();
+  const [selectedStock, setSelectedStock] = React.useState<Stock | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
 
-  // Map the type parameter to the correct backend filter value
-  let stockType: "action" | "obligation" | "sukuk" | "participatif" = "action";
-  if (type === "opv") {
-    stockType = "action";
-  } else if (type === "empruntobligataire") {
-    stockType = "obligation";
-  } else if (type === "sukukmp" || type === "sukukms" || type === "sukuk") {
-    stockType = "sukuk";
-  } else if (
-    type === "titresparticipatifsmp" ||
-    type === "titresparticipatifsms" ||
-    type === "titresparticipatifs"
-  ) {
-    stockType = "participatif";
-  } else if (type === "action" || type === "obligation") {
-    stockType = type;
-  }
+  // TitresTableREST gère uniquement les actions
+  const stockType: "action" = "action";
 
   // Use the REST stocks hook
   const { stocks, loading, error } = useStocksREST(stockType);
@@ -229,21 +220,16 @@ export function TitresTableREST({ type }: TitresTableProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(stock.id)}
+                onClick={() => {
+                  setSelectedStock(stock);
+                  setIsDetailsModalOpen(true);
+                }}
               >
-                {t("copierID")}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
-                >
-                  {t("voirDetails")}
-                </Link>
+                {t("voirDetails")}
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/passerunordre/marchesecondaire/${type}/${stock.id}`}
+                  href={`${pathname}/${stock.id}`}
                 >
                   {t("passerOrdre")}
                 </Link>
@@ -260,9 +246,17 @@ export function TitresTableREST({ type }: TitresTableProps) {
     if (stocks && Array.isArray(stocks)) {
       console.log("📊 Raw stocks data:", stocks);
 
+      // Filter stocks based on market type (primary vs secondary)
+      const filteredStocks = stocks.filter((stock: any) => {
+        const stockIsPrimary = stock.isPrimary === true;
+        return stockIsPrimary === isPrimary;
+      });
+
+      console.log(`🔍 Filtered stocks for ${isPrimary ? 'primary' : 'secondary'} market:`, filteredStocks);
+
       // Check if we have the expected properties
-      if (stocks.length > 0) {
-        const firstStock = stocks[0];
+      if (filteredStocks.length > 0) {
+        const firstStock = filteredStocks[0];
         console.log("📋 First stock sample:", {
           id: firstStock.id,
           name: firstStock.name,
@@ -270,11 +264,12 @@ export function TitresTableREST({ type }: TitresTableProps) {
           issuer: firstStock.issuer,
           status: firstStock.status,
           stockPrices: firstStock.stockPrices,
+          isPrimary: firstStock.isPrimary,
         });
       }
 
-      setData(stocks);
-      console.log(`✅ Loaded ${stocks.length} ${stockType} stocks`);
+      setData(filteredStocks);
+      console.log(`✅ Loaded ${filteredStocks.length} ${stockType} stocks for ${isPrimary ? 'primary' : 'secondary'} market`);
     } else if (error) {
       toast({
         variant: "destructive",
@@ -284,7 +279,7 @@ export function TitresTableREST({ type }: TitresTableProps) {
       });
       console.error("❌ Error loading stocks:", error);
     }
-  }, [stocks, error, toast, stockType]);
+  }, [stocks, error, toast, stockType, isPrimary]);
 
   const getTableData = () => {
     if (data && Array.isArray(data)) {
@@ -452,6 +447,17 @@ export function TitresTableREST({ type }: TitresTableProps) {
           </Button>
         </div>
       </div>
+
+      {/* Modal pour les détails */}
+      <TitreDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedStock(null);
+        }}
+        stock={selectedStock}
+        type={type}
+      />
     </div>
   );
 }

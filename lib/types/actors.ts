@@ -66,7 +66,7 @@ export interface Agence {
   director_name: string;
   director_email: string;
   director_phone: string;
-  financialInstitution: {
+  financialInstitution?: {
     id: string;
     institutionName: string;
     taxIdentificationNumber: string;
@@ -75,6 +75,7 @@ export interface Agence {
     establishmentDate: string;
     fullAddress: string;
   };
+  financialInstitutionId?: string; // Added for direct ID reference
   createdAt?: string;
   updatedAt?: string;
 }

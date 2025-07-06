@@ -42,18 +42,22 @@ import { useTranslations } from "next-intl";
 import { agencyData, type AgencyData } from "@/lib/exportables";
 
 // Agency user interface
-interface AgencyUser {
-  id: number;
-  fullname: string;
-  position: string;
-  matricule: string;
-  role: string;
-  type: string;
-  status: "active" | "inactive";
-  organisation: string;
-  password: string;
-  email?: string;
-  phone?: string;
+export interface ExtendedAgencyUser {
+  id: string;
+  firstname: string;
+  lastname: string;
+  fullname?: string; // Computed property for display
+  email: string;
+  telephone: string;
+  phone?: string; // Alternative field name
+  status: "actif" | "inactif" | "active" | "inactive"; // Supporting both formats
+  position?: string;
+  matricule?: string;
+  role: string[];
+  type?: "admin" | "user"; // Role type
+  organisation?: string; // Organization info
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function ViewAgencyPage() {
@@ -62,124 +66,137 @@ export default function ViewAgencyPage() {
   const params = useParams();
   const t = useTranslations("AgencyDetailsPage");
   const [isLoading, setIsLoading] = useState(true);
-  const [agency, setAgency] = useState<AgencyData | null>(null);
-  const [users, setUsers] = useState<AgencyUser[]>([]);
-  const [userToToggleStatus, setUserToToggleStatus] = useState<number | null>(
+  const [agency, setAgency] = useState<any | null>(null);
+  const [financialInstitution, setFinancialInstitution] = useState<any | null>(
+    null
+  );
+  const [users, setUsers] = useState<ExtendedAgencyUser[]>([]);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<string | null>(
     null
   );
   const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
+  const [passwordVisibility, setPasswordVisibility] = useState<
+    Record<string, boolean>
+  >({});
+  const [viewUserDialog, setViewUserDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<ExtendedAgencyUser | null>(
+    null
+  );
 
   useEffect(() => {
-    const fetchAgencyData = async () => {
-      try {
-        // Convert ID to number for proper comparison
-        const agencyId =
-          typeof params.id === "string"
-            ? parseInt(params.id, 10)
-            : Array.isArray(params.id)
-            ? parseInt(params.id[0], 10)
-            : 0;
+    fetchAgencyData();
+  }, [params.id]);
 
-        // Find agency in the mock data
-        const foundAgency = agencyData.find((agency) => agency.id === agencyId);
+  // Function to fetch and refresh Agency data
+  const fetchAgencyData = async () => {
+    try {
+      setIsLoading(true);
 
-        if (!foundAgency) {
-          toast({
-            title: "Erreur",
-            description: t("agencyNotFound"),
-            variant: "destructive",
-          });
-          router.push("/agence");
-          return;
-        }
-        setAgency(foundAgency);
+      // In a real implementation, you would fetch the agency from your API
+      const { actorAPI } = await import("@/app/actions/actorAPI");
 
-        // Mock agency users data - in a real app, this would come from an API call
-        const mockAgencyUsers: AgencyUser[] = [
-          {
-            id: 1,
-            fullname: "Sagi Salim",
-            position: "DG",
-            matricule: "M001",
-            role: "Validator 2",
-            type: "admin",
-            status: "active",
-            organisation: "SLIK PIS",
-            password: "SagiPassword123",
-            email: "sagi.salim@slikpis.dz",
-            phone: "+213 555-111-222",
-          },
-          {
-            id: 2,
-            fullname: "Amina Benali",
-            position: "Responsable",
-            matricule: "M002",
-            role: "Validator 1",
-            type: "user",
-            status: "active",
-            organisation: "SLIK PIS",
-            password: "AminaSecure456",
-            email: "amina.benali@slikpis.dz",
-            phone: "+213 555-333-444",
-          },
-          {
-            id: 3,
-            fullname: "Karim Diallo",
-            position: "Agent",
-            matricule: "M003",
-            role: "Initiator",
-            type: "user",
-            status: "inactive",
-            organisation: "SLIK PIS",
-            password: "StrongPass789",
-            email: "karim.diallo@slikpis.dz",
-            phone: "+213 555-555-666",
-          },
-        ];
+      // Get the agency ID from params
+      const agencyId =
+        typeof params.id === "string"
+          ? params.id
+          : Array.isArray(params.id)
+          ? params.id[0]
+          : "";
 
-        setUsers(mockAgencyUsers);
-      } catch (error) {
-        console.error("Error fetching agency data:", error);
+      if (!agencyId) {
         toast({
-          title: "Erreur",
-          description: "Erreur lors du chargement des données de l'agence",
+          title: "Error",
+          description: t("agencyNotFound"),
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
+        router.push("/agence");
+        return;
       }
-    };
 
-    fetchAgencyData();
-  }, [params.id, router, toast, t]);
+      // Fetch agency data
+      const agencyData = await actorAPI.agence.getOne(agencyId);
 
-  const handleToggleStatus = (userId: number) => {
+      if (!agencyData) {
+        toast({
+          title: "Error",
+          description: t("agencyNotFound"),
+          variant: "destructive",
+        });
+        router.push("/agence");
+        return;
+      }
+
+      setAgency(agencyData);
+
+      // If the agency has a financial institution, set it
+      if (agencyData.financialInstitution) {
+        setFinancialInstitution(agencyData.financialInstitution);
+      }
+
+      // Fetch agency users (assuming there's an API for this)
+      try {
+        const usersData = await actorAPI.agence.getUsers(agencyId);
+        setUsers(usersData || []);
+      } catch (userError) {
+        console.error("Failed to fetch agency users:", userError);
+        setUsers([]); // Set empty array if fetch fails
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching agency data:", error);
+      toast({
+        title: "Error",
+        description: t("failedToLoadAgency"),
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggleStatus = (userId: string) => {
     setUserToToggleStatus(userId);
     setStatusConfirmDialog(true);
   };
 
-  const confirmToggleStatus = () => {
-    if (!userToToggleStatus) return;
+  const confirmToggleStatus = async () => {
+    if (!userToToggleStatus || !agency?.id) return;
 
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userToToggleStatus
-          ? {
-              ...user,
-              status: user.status === "active" ? "inactive" : "active",
-            }
-          : user
-      )
-    );
+    try {
+      const currentUsers = users;
+      const userToUpdate = currentUsers.find(
+        (user) => user.id === userToToggleStatus
+      );
+      if (!userToUpdate) return;
 
-    toast({
-      title: "Statut mis à jour",
-      description: "Le statut de l'utilisateur a été mis à jour avec succès",
-    });
+      const updatedStatus =
+        userToUpdate.status === "actif" ? "inactif" : "actif";
 
-    // Reset dialog state
-    setStatusConfirmDialog(false);
-    setUserToToggleStatus(null);
+      // Update user via API
+      const { actorAPI } = await import("@/app/actions/actorAPI");
+      await actorAPI.agence.updateUser(agency.id, userToToggleStatus, {
+        ...userToUpdate,
+        status: updatedStatus,
+      });
+
+      // Refresh Agency data to get updated users
+      await fetchAgencyData();
+
+      toast({
+        title: t("success"),
+        description: t("userUpdatedSuccessfully"),
+      });
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      toast({
+        title: t("error"),
+        description: t("failedToUpdateUser"),
+        variant: "destructive",
+      });
+    } finally {
+      setStatusConfirmDialog(false);
+      setUserToToggleStatus(null);
+    }
   };
 
   const cancelToggleStatus = () => {
@@ -342,12 +359,21 @@ export default function ViewAgencyPage() {
                           {user.matricule}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.role === "Validator 2"
-                            ? t("validator2")
-                            : user.role === "Validator 1"
-                            ? t("validator1")
-                            : user.role === "Initiator"
-                            ? t("initiator")
+                          {Array.isArray(user.role) && user.role.length > 0
+                            ? user.role
+                                .map((r) =>
+                                  r.includes("validator_2") ||
+                                  r === "Validator 2"
+                                    ? t("validator2")
+                                    : r.includes("validator_1") ||
+                                      r === "Validator 1"
+                                    ? t("validator1")
+                                    : r.includes("initiator") ||
+                                      r === "Initiator"
+                                    ? t("initiator")
+                                    : t("consultation")
+                                )
+                                .join(", ")
                             : t("consultation")}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
@@ -365,24 +391,30 @@ export default function ViewAgencyPage() {
                         <TableCell className="whitespace-nowrap">
                           <div className="flex items-center space-x-2">
                             <Switch
-                              checked={user.status === "active"}
+                              checked={
+                                user.status === "active" ||
+                                user.status === "actif"
+                              }
                               onCheckedChange={() =>
                                 handleToggleStatus(user.id)
                               }
                               className={
-                                user.status === "active"
+                                user.status === "active" ||
+                                user.status === "actif"
                                   ? "bg-green-500 data-[state=checked]:bg-green-500"
                                   : "bg-red-500 data-[state=unchecked]:bg-red-500"
                               }
                             />
                             <span
                               className={
-                                user.status === "active"
+                                user.status === "active" ||
+                                user.status === "actif"
                                   ? "text-green-600 text-sm font-medium"
                                   : "text-red-600 text-sm"
                               }
                             >
-                              {user.status === "active"
+                              {user.status === "active" ||
+                              user.status === "actif"
                                 ? t("active")
                                 : t("inactive")}
                             </span>

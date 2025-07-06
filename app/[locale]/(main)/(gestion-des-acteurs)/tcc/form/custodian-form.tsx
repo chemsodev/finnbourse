@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
@@ -42,6 +43,30 @@ export function CustodianForm({
     defaultValues,
     mode: "onChange",
   });
+
+  // Reset form when defaultValues change (important for edit mode)
+  useEffect(() => {
+    console.log("TCC form default values changed:", defaultValues);
+    console.log(
+      "Financial Institution ID in defaultValues:",
+      defaultValues?.financialInstitutionId
+    );
+
+    if (defaultValues) {
+      // Reset the form with the new default values
+      console.log("Resetting TCC form with values:", defaultValues);
+      form.reset(defaultValues);
+
+      // Verify form values after reset
+      setTimeout(() => {
+        console.log("Current form values after reset:", form.getValues());
+        console.log(
+          "Current FI value:",
+          form.getValues().financialInstitutionId
+        );
+      }, 100);
+    }
+  }, [defaultValues, form]);
 
   // Update parent form when this form changes
   const handleFormChange = () => {
@@ -120,7 +145,11 @@ export function CustodianForm({
                 <FormItem>
                   <FormLabel>{t("status")}</FormLabel>
                   <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select
+                      value={field.value || "ACTIVE"}
+                      onValueChange={field.onChange}
+                      defaultValue="ACTIVE"
+                    >
                       <SelectTrigger id="statut" className="w-full">
                         <SelectValue placeholder={t("select")} />
                       </SelectTrigger>

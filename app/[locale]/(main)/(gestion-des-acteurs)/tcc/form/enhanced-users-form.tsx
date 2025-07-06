@@ -36,6 +36,7 @@ import { RelatedUserFormValues, relatedUserSchema } from "./schema";
 import { TccRole, getRoleTranslationKey } from "@/lib/types/roles";
 import { TCCService } from "@/lib/services/tccService";
 import { useToast } from "@/hooks/use-toast";
+import { RolesAssignment } from "@/components/RolesAssignment";
 
 interface EnhancedTCCUsersFormProps {
   users: RelatedUserFormValues[];
@@ -185,7 +186,7 @@ export function EnhancedTCCUsersForm({
 
           console.log("Creating TCC user immediately:", apiUserData);
 
-          await TCCService.createUser(apiUserData, tccId);
+          await TCCService.createUser(apiUserData);
 
           // Add to local list after successful creation
           onUsersChange([...users, formData]);
@@ -266,21 +267,10 @@ export function EnhancedTCCUsersForm({
     }));
   };
 
-  const handleRoleChange = (roleValue: string) => {
-    const currentRoles = Array.isArray(formData.roles) ? formData.roles : [];
-    if (!currentRoles.includes(roleValue)) {
-      setFormData((prev) => ({
-        ...prev,
-        roles: [...currentRoles, roleValue],
-      }));
-    }
-  };
-
-  const handleRemoveRole = (roleToRemove: string) => {
-    const currentRoles = Array.isArray(formData.roles) ? formData.roles : [];
+  const handleRolesChange = (roles: string[]) => {
     setFormData((prev) => ({
       ...prev,
-      roles: currentRoles.filter((role) => role !== roleToRemove),
+      roles,
     }));
   };
 
@@ -436,7 +426,7 @@ export function EnhancedTCCUsersForm({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
                     <Label htmlFor="status">{t("status")}</Label>
                     <Select
@@ -456,45 +446,17 @@ export function EnhancedTCCUsersForm({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="role">{t("addRole")}</Label>
-                    <Select onValueChange={handleRoleChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("selectRole")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="INITIATOR">
-                          {t("initiator")}
-                        </SelectItem>
-                        <SelectItem value="VALIDATOR_1">
-                          {t("validator1")}
-                        </SelectItem>
-                        <SelectItem value="VALIDATOR_2">
-                          {t("validator2")}
-                        </SelectItem>
-                        <SelectItem value="ADMIN">{t("adminRole")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
 
-                {formData.roles && formData.roles.length > 0 && (
-                  <div>
-                    <Label>{t("selectedRoles")}</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.roles.map((role, index) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="cursor-pointer"
-                          onClick={() => handleRemoveRole(role)}
-                        >
-                          {getRoleDisplayName(role)} ×
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label>{t("tccRoles")}</Label>
+                  <RolesAssignment
+                    selectedRoles={formData.roles || []}
+                    onRolesChange={handleRolesChange}
+                    userTypes={["tcc"]}
+                    showTabs={false}
+                  />
+                </div>
               </div>
 
               <DialogFooter>

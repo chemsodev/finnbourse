@@ -305,8 +305,8 @@ const FormPassationOrdreMarchePrimaire = ({
             formData.conditionPrix === "prixLimite"
               ? formData.coursLimite
               : selectedPrice,
-          market_type: "S", // Secondary market
-          operation_type: formData.buyTransaction ? "A" : "V", // A for Achat (buy), V for Vente (sell)
+          market_type: "P", 
+          operation_type: formData.buyTransaction ? "A" : "V",
           conditionDuree: formData.conditionDuree,
           conditionPrix: formData.conditionPrix,
           conditionQuantite: formData.conditionQuantite,
