@@ -147,7 +147,7 @@ const OrdersDropDown = () => {
             }`}
           >
             <CheckCircle2 size={14} />
-            <div>{t("SideBar.validationTccFinale")}</div>
+            <div>{t("validationTCCRetourFinale")}</div>
           </Link>
           <Link
             href="/ordres/validation-tcc-retour-finale"

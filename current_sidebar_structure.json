@@ -51,7 +51,7 @@
         {
           "id": "validation-tcc-finale",
           "href": "/ordres/validation-tcc-finale",
-          "translationKey": "validationTccFinale"
+          "translationKey": "validationTCCRetourFinale"
         },
         {
           "id": "validation-retour-premiere",
