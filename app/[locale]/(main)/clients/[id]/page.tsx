@@ -29,7 +29,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Save } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import Loading from "@/components/ui/loading";
-import { formSchema } from "../../schema";
+import { formSchema } from "../schema";
 import { ClientService } from "@/lib/services/clientService";
 import { useToast } from "@/hooks/use-toast";
 
