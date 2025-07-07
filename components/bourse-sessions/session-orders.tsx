@@ -41,6 +41,7 @@ import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { mockSessions } from "./session-management";
+import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 
 interface SessionOrdersProps {
   selectedSessionId?: string | null;
@@ -316,6 +317,27 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
             </div>
           </CardHeader>
           <CardContent>
+            <div className="flex mb-4 items-center justify-between">
+              <div>
+                <Button
+                  variant={marketType === "secondaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-r-none"
+                  onClick={() => setMarketType("secondaire")}
+                >
+                  Carnet d'ordres
+                </Button>
+                <Button
+                  variant={marketType === "primaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-l-none"
+                  onClick={() => setMarketType("primaire")}
+                >
+                  Souscriptions
+                </Button>
+              </div>
+              <PDFDropdownMenu customTitle="Impression" />
+            </div>
             <OrdresTable
               searchquery={searchquery}
               skip={currentPage}
@@ -436,7 +458,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     }
   });
 
-  // Bloc pour session terminée (status 'completed')
   if (selectedSessionData?.status === "completed") {
     return (
       <div className="space-y-6">
@@ -469,23 +490,26 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex mb-4">
-              <Button
-                variant={marketType === "secondaire" ? "default" : "outline"}
-                size="sm"
-                className="rounded-r-none"
-                onClick={() => setMarketType("secondaire")}
-              >
-                Carnet d'ordres
-              </Button>
-              <Button
-                variant={marketType === "primaire" ? "default" : "outline"}
-                size="sm"
-                className="rounded-l-none"
-                onClick={() => setMarketType("primaire")}
-              >
-                Souscriptions
-              </Button>
+            <div className="flex mb-4 items-center justify-between">
+              <div>
+                <Button
+                  variant={marketType === "secondaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-r-none"
+                  onClick={() => setMarketType("secondaire")}
+                >
+                  Carnet d'ordres
+                </Button>
+                <Button
+                  variant={marketType === "primaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-l-none"
+                  onClick={() => setMarketType("primaire")}
+                >
+                  Souscriptions
+                </Button>
+              </div>
+              <PDFDropdownMenu customTitle="Impression" />
             </div>
             <Table>
               <TableHeader>
@@ -572,23 +596,26 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex mb-4">
-            <Button
-              variant={marketType === "secondaire" ? "default" : "outline"}
-              size="sm"
-              className="rounded-r-none"
-              onClick={() => setMarketType("secondaire")}
-            >
-              Carnet d'ordres
-            </Button>
-            <Button
-              variant={marketType === "primaire" ? "default" : "outline"}
-              size="sm"
-              className="rounded-l-none"
-              onClick={() => setMarketType("primaire")}
-            >
-              Souscriptions
-            </Button>
+          <div className="flex mb-4 items-center justify-between">
+            <div>
+              <Button
+                variant={marketType === "secondaire" ? "default" : "outline"}
+                size="sm"
+                className="rounded-r-none"
+                onClick={() => setMarketType("secondaire")}
+              >
+                Carnet d'ordres
+              </Button>
+              <Button
+                variant={marketType === "primaire" ? "default" : "outline"}
+                size="sm"
+                className="rounded-l-none"
+                onClick={() => setMarketType("primaire")}
+              >
+                Souscriptions
+              </Button>
+            </div>
+            <PDFDropdownMenu customTitle="Impression" />
           </div>
           {(() => {
             const userRole = (session.data as any)?.user?.roleid;
