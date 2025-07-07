@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
-import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, List } from "lucide-react";
 import { Order } from "@/lib/interfaces";
 import OrdreDrawer from "@/components/gestion-des-ordres/OrdreDrawer";
 import {
@@ -41,6 +41,9 @@ import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { mockSessions } from "./session-management";
+import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
+import { TitreDetails } from "@/components/titres/TitreDetails";
+import { mockListedCompanies } from "@/lib/staticData";
 
 interface SessionOrdersProps {
   selectedSessionId?: string | null;
@@ -48,6 +51,12 @@ interface SessionOrdersProps {
 
 type SortField = 'id' | 'titre' | 'investisseur' | 'iob' | 'sens' | 'type' | 'quantity' | 'statut' | 'date';
 type SortDirection = 'asc' | 'desc' | null;
+
+const mockInstitutions = [
+  { id: "1", name: "Bank A" },
+  { id: "2", name: "Bank B" },
+  { id: "3", name: "Bank C" },
+];
 
 export default function SessionOrders({ selectedSessionId }: SessionOrdersProps) {
   const t = useTranslations("mesOrdres");
@@ -62,6 +71,9 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [loading, setLoading] = useState(true);
   const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
+  const [marketType, setMarketType] = useState<"secondaire" | "primaire">("secondaire");
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<any>(null);
 
   const STATUS_SATISFIED = 8; 
   const STATUS_UNSATISFIED = 9; 
@@ -271,68 +283,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
 
   const sortedOrders = orders;
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  const selectedSessionData = mockSessions.find(s => s.id === selectedSession);
-
-  if (selectedSessionData?.status === "active" && selectedSessionData?.id === "2") {
-    // On récupère les mêmes paramètres que dans /ordres/execution
-    const currentPage = Number(searchParams?.get("page")) || 0;
-    const searchquery = searchParams?.get("searchquery") || "";
-    const state = searchParams?.get("state") || "99";
-    const marketType = searchParams?.get("marketType") || "all";
-    const userRole = (session.data as any)?.user?.roleid;
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Ordres de la Session</CardTitle>
-              <CardDescription>
-                Ordres assignés à la session: {selectedSessionData?.name}
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-64">
-                <Select
-                  onValueChange={setSelectedSession}
-                  value={selectedSession}
-                >
-                  <SelectTrigger id="session-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockSessions.map((session) => (
-                      <SelectItem key={session.id} value={session.id}>
-                        {session.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <OrdresTable
-              searchquery={searchquery}
-              skip={currentPage}
-              state={state}
-              marketType={marketType}
-              pageType="orderExecution"
-              userRole={userRole?.toString() || "1"}
-              userType="iob"
-              activeTab="all"
-              showActionColumn={false}
-              showResponseButton={false}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Pour toutes les autres sessions, on passe le contenu filtré (sortedOrders)
   // Si le tableau est vide, on ajoute une ligne d'exemple factice pour la démo
   const displayOrders = sortedOrders.length > 0 ? sortedOrders : [
@@ -366,6 +316,15 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     }
   ];
 
+  // Filtrage optionnel des données (à adapter selon ta logique métier)
+  const filteredDisplayOrders = displayOrders.filter(order => {
+    if (marketType === "primaire") {
+      return order.securitytype === "empruntobligataire" || order.securitytype === "opv";
+    } else {
+      return order.securitytype !== "empruntobligataire" && order.securitytype !== "opv";
+    }
+  });
+
   // Ajoute l'index et les champs calculés à chaque ligne pour le tri spécial
   type TermineeRow = typeof displayOrders[0] & { idx: number, statut: string, transaction: number, reliquat: number };
   const displayOrdersWithIdx: TermineeRow[] = displayOrders.map((o, idx) => ({
@@ -398,29 +357,26 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     });
   };
   const sortedDisplayOrders: TermineeRow[] = sortDataTerminee(displayOrdersWithIdx, sortFieldTerminee, sortDirectionTerminee);
-
-  // Gestion du clic sur l'en-tête
-  const handleSortTerminee = (field: string) => {
-    if (sortFieldTerminee === field) {
-      if (sortDirectionTerminee === 'asc') setSortDirectionTerminee('desc');
-      else if (sortDirectionTerminee === 'desc') { setSortDirectionTerminee(null); setSortFieldTerminee(null); }
-      else setSortDirectionTerminee('asc');
+  const filteredSortedDisplayOrders = sortedDisplayOrders.filter(order => {
+    if (marketType === "primaire") {
+      return order.securitytype === "empruntobligataire" || order.securitytype === "opv";
     } else {
-      setSortFieldTerminee(field);
-      setSortDirectionTerminee('asc');
+      return order.securitytype !== "empruntobligataire" && order.securitytype !== "opv";
     }
-  };
+  });
 
-  // Icône de tri
-  const getSortIconTerminee = (field: string) => {
-    if (sortFieldTerminee !== field) return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
-    if (sortDirectionTerminee === 'asc') return <ChevronUp className="inline ml-1 h-4 w-4 text-blue-600" />;
-    if (sortDirectionTerminee === 'desc') return <ChevronDown className="inline ml-1 h-4 w-4 text-blue-600" />;
-    return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
-  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  // Bloc pour session terminée (status 'completed')
-  if (selectedSessionData?.status === "completed") {
+  const selectedSessionData = mockSessions.find(s => s.id === selectedSession);
+
+  if (selectedSessionData?.status === "active" && selectedSessionData?.id === "2") {
+    // On récupère les mêmes paramètres que dans /ordres/execution
+    const currentPage = Number(searchParams?.get("page")) || 0;
+    const searchquery = searchParams?.get("searchquery") || "";
+    const state = searchParams?.get("state") || "99";
+    const userRole = (session.data as any)?.user?.roleid;
     return (
       <div className="space-y-6">
         <Card>
@@ -428,7 +384,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
             <div>
               <CardTitle>Ordres de la Session</CardTitle>
               <CardDescription>
-                Ordres assignés à la session: {selectedSessionData?.name} (Terminée)
+                Ordres assignés à la session: {selectedSessionData?.name}
               </CardDescription>
             </div>
             <div className="flex items-center gap-4">
@@ -452,54 +408,113 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('idx')}></TableHead>
-                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('id')}>ID {getSortIconTerminee('id')}</TableHead>
-                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('securityissuer')}>Titre {getSortIconTerminee('securityissuer')}</TableHead>
-                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('orderdirection')}>Sens {getSortIconTerminee('orderdirection')}</TableHead>
-                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('quantity')}>Volume {getSortIconTerminee('quantity')}</TableHead>
-                  <TableHead className="text-center cursor-pointer" onClick={() => handleSortTerminee('statut')}>Statut {getSortIconTerminee('statut')}</TableHead>
-                  <TableHead colSpan={3} className="p-0 align-middle">
-                    <div className="flex flex-col items-center justify-center w-full h-full">
-                      <div className="font-bold uppercase text-xs  w-full text-center">Allocation</div>
-                      <div className="flex flex-row w-full pt-1">
-                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('transaction'); }}>Transaction {getSortIconTerminee('transaction')}</span>
-                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('quantity'); }}>Volume {getSortIconTerminee('quantity')}</span>
-                        <span className="flex-1 text-center font-semibold text-xs cursor-pointer" onClick={e => { e.stopPropagation(); handleSortTerminee('reliquat'); }}>Reliquat {getSortIconTerminee('reliquat')}</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedDisplayOrders.map((order, idx) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="px-4 py-2 text-center align-middle">{idx + 1}</TableCell>
-                    <TableCell className="px-4 py-2 text-center align-middle" title={order.id}>{order.id?.split("-")[0]}</TableCell>
-                    <TableCell className="px-4 py-2 text-center align-middle">{order.securityissuer}</TableCell>
-                    <TableCell className={`px-4 py-2 text-center align-middle ${order.orderdirection === 1 ? 'text-green-600' : 'text-red-600'}`}>{order.orderdirection === 1 ? 'Achat' : 'Vente'}</TableCell>
-                    <TableCell className="px-4 py-2 text-center align-middle">{order.quantity}</TableCell>
-                    <TableCell className="px-4 py-2 text-center align-middle">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${order.statut === 'Satisfait' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{order.statut}</span>
-                    </TableCell>
-                    {/* Allocation sous-colonnes */}
-                    <TableCell className="px-4 py-2 text-center align-middle">{order.transaction}</TableCell>
-                    <TableCell className="px-4 py-2 text-center align-middle">{order.quantity}</TableCell>
-                    <TableCell className="px-4 py-2 text-center align-middle">{order.reliquat}</TableCell>
-                    <TableCell className="px-4 py-2 text-right align-middle">
-                      <OrdreDrawer
-                        titreId={order.id}
-                        orderData={order}
-                        isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="flex mb-4 items-center justify-between">
+              <div className="flex flex-row">
+                <Button
+                  variant={marketType === "secondaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-r-none"
+                  onClick={() => setMarketType("secondaire")}
+                >
+                  Carnet d'ordres
+                </Button>
+                <Button
+                  variant={marketType === "primaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-l-none"
+                  onClick={() => setMarketType("primaire")}
+                >
+                  Souscriptions
+                </Button>
+              </div>
+              <PDFDropdownMenu customTitle="Impression" />
+            </div>
+            <OrdresTable
+              searchquery={searchquery}
+              skip={currentPage}
+              state={state}
+              marketType={marketType}
+              pageType="orderExecution"
+              userRole={userRole?.toString() || "1"}
+              userType="iob"
+              activeTab="all"
+              showActionColumn={false}
+              showResponseButton={false}
+              data={filteredDisplayOrders}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (selectedSessionData?.status === "completed" && selectedSessionData?.id === "1") {
+    const userRole = (session.data as any)?.user?.roleid;
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Ordres de la Session</CardTitle>
+              <CardDescription>
+                Ordres assignés à la session: {selectedSessionData?.name} ({selectedSessionData?.status})
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-64">
+                <Select
+                  onValueChange={setSelectedSession}
+                  value={selectedSession}
+                >
+                  <SelectTrigger id="session-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSessions.map((session) => (
+                      <SelectItem key={session.id} value={session.id}>
+                        {session.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex mb-4 items-center justify-between">
+              <div>
+                <Button
+                  variant={marketType === "secondaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-r-none"
+                  onClick={() => setMarketType("secondaire")}
+                >
+                  Carnet d'ordres
+                </Button>
+                <Button
+                  variant={marketType === "primaire" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-l-none"
+                  onClick={() => setMarketType("primaire")}
+                >
+                  Souscriptions
+                </Button>
+              </div>
+              <PDFDropdownMenu customTitle="Impression" />
+            </div>
+            <OrdresTable
+              searchquery={""}
+              skip={0}
+              state={"99"}
+              marketType={marketType}
+              pageType="orderExecution"
+              userRole={userRole?.toString() || "1"}
+              userType="iob"
+              activeTab="all"
+              showActionColumn={false}
+              showResponseButton={false}
+              data={filteredDisplayOrders}
+            />
           </CardContent>
         </Card>
       </div>
@@ -537,6 +552,27 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           </div>
         </CardHeader>
         <CardContent>
+          <div className="flex mb-4 items-center justify-between">
+            <div>
+              <Button
+                variant={marketType === "secondaire" ? "default" : "outline"}
+                size="sm"
+                className="rounded-r-none"
+                onClick={() => setMarketType("secondaire")}
+              >
+                Carnet d'ordres
+              </Button>
+              <Button
+                variant={marketType === "primaire" ? "default" : "outline"}
+                size="sm"
+                className="rounded-l-none"
+                onClick={() => setMarketType("primaire")}
+              >
+                Souscriptions
+              </Button>
+            </div>
+            <PDFDropdownMenu customTitle="Impression" />
+          </div>
           {(() => {
             const userRole = (session.data as any)?.user?.roleid;
             return (
@@ -544,14 +580,14 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                 searchquery={""}
                 skip={0}
                 state={"99"}
-                marketType={"all"}
+                marketType={marketType}
                 pageType="orderExecution"
                 userRole={userRole?.toString() || "1"}
                 userType="iob"
                 activeTab="all"
                 showActionColumn={false}
                 showResponseButton={false}
-                data={displayOrders}
+                data={filteredDisplayOrders}
               />
             );
           })()}

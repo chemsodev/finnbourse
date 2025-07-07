@@ -32,6 +32,8 @@
     "validationTccPremiere": "TCC First Validation",
     "validationTCCFinale": "TCC Final Validation",
     "validationTccFinale": "TCC Final Validation",
+    "validationRetour": "Return Validation",
+    "tccValidationRetour": "TCC Return Validation",
     "iob": "IOB",
     "iobSecondaryMarket": "IOB Secondary Market",
     "executionOrdres": "Order Execution",
