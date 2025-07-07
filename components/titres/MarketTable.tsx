@@ -30,12 +30,17 @@ import {
   // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  Loader2,
+  MoreHorizontal,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/hooks/use-toast";
-import { useStocksREST } from "@/hooks/useStockREST";
+
 import { formatDate, formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 
@@ -43,10 +48,11 @@ import { Stock, StockType } from "@/types/gestionTitres";
 import { TitreFormValues } from "./titreSchemaValidation";
 import { EditTitre } from "./EditTitre";
 import { EditSecondaryMarketTitre } from "./EditSecondaryMarketTitre";
+import { useStockApi } from "@/hooks/useStockApi";
 
 interface MarketTableProps {
   type: StockType;
-  marketType: "primary" | "secondary";
+  marketType: "primaire" | "secondaire";
 }
 
 interface TableState {
@@ -81,7 +87,10 @@ function mapToStockType(
 export function MarketTable({ type, marketType }: MarketTableProps) {
   const t = useTranslations("TitresTable");
   const { toast } = useToast();
+  const api = useStockApi();
   const [data, setData] = React.useState<Stock[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [sorting, setSorting] = React.useState<TableState["sorting"]>([]);
   const [columnFilters, setColumnFilters] = React.useState<
     TableState["columnFilters"]
@@ -95,20 +104,39 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
   const [editingTitre, setEditingTitre] =
     React.useState<TitreFormValues | null>(null);
 
-  const stockType = mapToStockType(type);
-  const { stocks, loading, error } = useStocksREST(stockType);
+  // Fetch stocks based on type and market
 
   React.useEffect(() => {
-    if (stocks?.length) {
-      setData(stocks);
-    } else if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de chargement",
-        description: error || "Impossible de charger les données.",
-      });
-    }
-  }, [stocks, error, toast]);
+    const fetchStocks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const stockType = mapToStockType(type);
+        const response = await api.filterStocks({
+          marketType,
+          stockType,
+        });
+
+        setData(response);
+      } catch (err) {
+        const errorMessage =
+          typeof err === "object" && err !== null && "message" in err
+            ? String((err as { message?: unknown }).message)
+            : "Failed to fetch stocks";
+        setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Error loading stocks",
+          description: errorMessage,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStocks();
+  }, [type, marketType, api, toast]);
 
   const handleEditClick = React.useCallback(
     (stock: Stock) => {
@@ -119,11 +147,11 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
         code: stock.code || "",
         issuer:
           typeof stock.issuer === "object"
-            ? stock.issuer.code ?? ""
-            : stock.issuer ?? "",
-        isinCode: "",
-        faceValue: 0,
-        quantity: 1,
+            ? stock.issuer.id || ""
+            : String(stock.issuer) || "",
+        isinCode: stock.isinCode || "",
+        faceValue: stock.faceValue || 0,
+        quantity: stock.quantity || 1,
         emissionDate: stock.emissionDate
           ? new Date(stock.emissionDate)
           : new Date(),
@@ -134,13 +162,13 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
           ? new Date(stock.enjoymentDate)
           : new Date(),
         marketListing: "primary",
-        status: ["activated", "suspended", "expired"].includes(
+        status: ["activated", "suspended", "delisted"].includes(
           stock.status as string
         )
-          ? (stock.status as "activated" | "suspended" | "expired")
+          ? (stock.status as "activated" | "suspended" | "delisted")
           : "activated",
         stockPrice: {
-          price: stock.stockPrices?.[0]?.price || 0,
+          price: stock.stockPrices?.[stock.stockPrices.length - 1]?.price || 0,
           date: new Date(),
           gap: 0,
         },
@@ -159,12 +187,12 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
 
   // Helper function to get the details link for a stock
   const getDetailsLink = (
-    marketType: "primary" | "secondary",
+    marketType: "primaire" | "secondaire",
     stockType: StockType,
     stockId: string
   ) => {
     const basePath =
-      marketType === "primary"
+      marketType === "primaire"
         ? "/gestion-des-titres/marcheprimaire"
         : "/gestion-des-titres/marchesecondaire";
 
@@ -249,7 +277,11 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
           accessorKey: "enjoymentDate",
           header: t("valeurOuverture"),
           cell: ({ row }) => {
-            const price = row.original.stockPrices?.[0]?.price;
+            const stockPrices = row.original?.stockPrices;
+            const price =
+              Array.isArray(stockPrices) && stockPrices.length > 0
+                ? stockPrices[0]?.price
+                : undefined;
             return formatPrice(price ?? 0) ?? "NC";
           },
         },
@@ -257,9 +289,21 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
           accessorKey: "currentPrice",
           header: t("valeurActuelle"),
           cell: ({ row }) => {
-            const prices = row.original.stockPrices ?? [];
-            const current = prices[prices.length - 1]?.price;
-            return formatPrice(current) ?? "NC";
+            const stockPrice = row.original?.stockPrices;
+            let current: number | undefined;
+            if (Array.isArray(stockPrice)) {
+              current =
+                stockPrice.length > 0
+                  ? stockPrice[stockPrice.length - 1]?.price
+                  : undefined;
+            } else if (
+              stockPrice &&
+              typeof stockPrice === "object" &&
+              "price" in stockPrice
+            ) {
+              current = (stockPrice as { price: number }).price;
+            }
+            return formatPrice(current ?? 0) ?? "NC";
           },
         }
       );
@@ -273,12 +317,12 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
           const status = row.original.status;
           return (
             t(
-              status === "active" || status === "activated"
+              status === "activated"
                 ? "actif"
                 : status === "suspended"
                 ? "suspendu"
-                : status === "moved_to_secondary"
-                ? "marche_secondaire"
+                : status === "delisted"
+                ? "deliste"
                 : "NC"
             ) ?? "NC"
           );
@@ -332,7 +376,15 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
   });
 
   if (loading) {
-    return <div className="p-8 text-center animate-pulse">Loading...</div>;
+    return (
+      <div className="p-8 text-center animate-pulse">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
   }
 
   return (
@@ -443,7 +495,7 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
         </div>
       </div>
       {editingTitre &&
-        (marketType === "secondary" ? (
+        (marketType === "secondaire" ? (
           <EditSecondaryMarketTitre
             open={!!editingTitre}
             onOpenChange={(open) => !open && setEditingTitre(null)}

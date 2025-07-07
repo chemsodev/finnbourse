@@ -6,6 +6,11 @@ export const StockPriceSchema = z.object({
   gap: z.number().optional(),
 });
 
+export const IssuerSchema = z.object({
+  id: z.string().min(1, "Issuer ID is required"),
+  name: z.string().min(1, "Issuer name is required"),
+});
+
 export const InstitutionSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -19,7 +24,6 @@ export const PaymentScheduleItemSchema = z.object({
 
 export const TitreSchema = z.object({
   id: z.string().optional(),
-  // name: z.string().min(1, "Name is required"),
   name: z.string().optional(),
   issuer: z.string().min(1, "Issuer ID is required"),
   isinCode: z.string().min(1, "ISIN code is required"),
@@ -31,7 +35,7 @@ export const TitreSchema = z.object({
   enjoymentDate: z.date(),
   marketListing: z.string().min(1, "Market listing is required"),
   type: z.string().min(1, "Type is required"),
-  status: z.enum(["activated", "suspended", "expired"]),
+  status: z.enum(["activated", "suspended", "delisted"]),
   dividendRate: z.number().min(0).optional(),
   capitalOperation: z.enum(["augmentation", "ouverture"]).optional(),
   maturityDate: z.date().optional(),

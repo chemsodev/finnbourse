@@ -73,19 +73,6 @@ const getMockInstitutions = () => [
   { id: "inst-4", name: "BEA Bank" },
 ];
 
-// Helper function to get type display name
-// const getTypeDisplayName = (type: string) => {
-//   const typeNames: Record<string, string> = {
-//     opv: "Public Offering (OPV)",
-//     empruntobligataire: "Bond Issues",
-//     action: "Stocks",
-//     sukuk: "Sukuk",
-//     participative: "Participative Securities",
-//   };
-
-//   return typeNames[type] || type.charAt(0).toUpperCase() + type.slice(1);
-// };
-
 export default async function TitreDetailsPage({
   params,
 }: {
