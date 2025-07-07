@@ -258,11 +258,11 @@ export const menuItemMap: Record<
     icon: "DollarSign",
     translationKey: "passerUnOrdre",
   },
-  portfolio: {
-    label: "Portfolio",
-    href: "/portefeuille",
-    icon: "Briefcase",
-    translationKey: "portefeuille",
+  "order-history": {
+    label: "Order History",
+    href: "/order-history",
+    icon: "History",
+    translationKey: "historiqueDesOrdres",
   },
 
   // Orders dropdown and children
@@ -311,6 +311,12 @@ export const menuItemMap: Record<
     href: "/ordres/resultats",
     translationKey: "resultats",
   },
+  "iob-secondary-market": {
+    label: "IOB Secondary Market",
+    href: "/iob-secondary-market",
+    icon: "BarChart2",
+    translationKey: "iobSecondaryMarket",
+  },
 
   // Securities & Emissions dropdown and children
   "titles-emissions-dropdown": {
@@ -341,6 +347,7 @@ export const menuItemMap: Record<
     href: "/gestion-des-titres",
     translationKey: "gestionTitres",
   },
+
   /* Account Management dropdown and children
   "account-management-dropdown": {
     label: "Account Management",
@@ -390,17 +397,17 @@ export const menuItemMap: Record<
     icon: "Landmark",
     translationKey: "agence",
   },
-  clients: {
-    label: "Clients",
-    href: "/clients",
-    icon: "Briefcase",
-    translationKey: "client",
-  },
   utilisateurs: {
     label: "Users",
     href: "/utilisateurs",
     icon: "UserCog",
     translationKey: "user",
+  },
+  clients: {
+    label: "Clients",
+    href: "/clients",
+    icon: "Briefcase",
+    translationKey: "client",
   },
 
   // Operations dropdown and children

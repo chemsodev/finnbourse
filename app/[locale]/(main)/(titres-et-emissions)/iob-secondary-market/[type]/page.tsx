@@ -10,7 +10,6 @@ import { useRestToken } from "@/hooks/useRestToken";
 import Link from "next/link";
 import { MarketTable } from "@/components/titres/MarketTable";
 import { StockType } from "@/types/gestionTitres";
-import { CreateTitre } from "@/components/titres/CreateTitre";
 
 type Props = {
   params: {
@@ -18,9 +17,10 @@ type Props = {
   };
 };
 
-const PrimaryMarketTypePage = ({ params }: Props) => {
+const SecondaryMarketTypePage = ({ params }: Props) => {
   const { type } = params;
   const t = useTranslations("Titres");
+
   const { restToken, isLoading } = useRestToken();
 
   useEffect(() => {
@@ -48,12 +48,10 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
 
   const getTypeLabel = (t: (key: string) => string, type: string) => {
     const typeMap: Record<string, string> = {
-      opv: t("opv"),
-      empruntobligataire: t("empruntObligataire"),
-      sukuk: t("sukuk"),
-      sukukmp: t("sukuk"),
-      titresparticipatifs: t("titresParticipatifs"),
-      titresparticipatifsmp: t("titresParticipatifs"),
+      actions: t("stock"),
+      obligations: t("bond"),
+      titresparticipatifsms: t("participativeTitles"),
+      sukukms: t("sukuk"),
     };
     return typeMap[type] || "";
   };
@@ -65,7 +63,7 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
       </div>
 
       <Link
-        href="/gestion-des-titres/marcheprimaire"
+        href="/gestion-des-titres/marchesecondaire"
         className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-4"
       >
         <ArrowLeft className="w-5" />
@@ -74,23 +72,19 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
 
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 text-center md:ltr:text-left md:rtl:text-right">
         <div className="text-3xl font-bold text-primary">
-          {t("marchePrimaire")}
+          {t("marchesecondaire")}
           <span className="text-lg text-black mx-1">
             {getTypeLabel(t, type)}
           </span>
         </div>
-        <div className="text-xs text-gray-500">{t("explMP")}</div>
-      </div>
-
-      <div className="flex justify-end mb-4 w-full">
-        <CreateTitre type={type} />
+        <div className="text-xs text-gray-500">{t("explMS")}</div>
       </div>
 
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <MarketTable type={type as StockType} marketType="primary" />
+        <MarketTable type={type as StockType} marketType="secondary" />
       </div>
     </div>
   );
 };
 
-export default PrimaryMarketTypePage;
+export default SecondaryMarketTypePage;

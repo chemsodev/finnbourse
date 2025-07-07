@@ -1,4 +1,3 @@
-// components/titres/TitreDetailsView.tsx
 "use client";
 import { useLocale, useTranslations } from "next-intl";
 import { fr, ar, enUS } from "date-fns/locale";
@@ -25,7 +24,7 @@ export function TitreDetails({
   companies,
   institutions,
 }: TitreDetailsViewProps) {
-  const t = useTranslations("TitreDetails");
+  const t = useTranslations("GestionDesTitres.ViewTitre");
   const locale = useLocale();
 
   // Memoized locale getter
@@ -63,13 +62,13 @@ export function TitreDetails({
     return companies.find((c) => c.id === id)?.name || id;
   };
 
-  const getInstitutionNames = (ids: string[] = []) => {
-    if (!ids || ids.length === 0) return null;
-    return institutions
-      .filter((i) => ids.includes(i.id))
-      .map((i) => i.name)
-      .join(", ");
-  };
+  // const getInstitutionNames = (ids: string[] = []) => {
+  //   if (!ids || ids.length === 0) return null;
+  //   return institutions
+  //     .filter((i) => ids.includes(i.id))
+  //     .map((i) => i.name)
+  //     .join(", ");
+  // };
 
   // Enhanced status badge component
   const StatusBadge = ({ status }: { status: string }) => {
@@ -98,7 +97,9 @@ export function TitreDetails({
         <span className="truncate">{label}</span>
       </div>
       <div className="text-sm text-gray-900 font-medium ml-4 text-right">
-        {value || <span className="text-gray-400 italic">Not specified</span>}
+        {value || (
+          <span className="text-gray-400 italic">{t("notSpecified")}</span>
+        )}
       </div>
     </div>
   );
@@ -108,7 +109,7 @@ export function TitreDetails({
     if (!amount && amount !== 0) return null;
     return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: "DZD", // Adjust currency as needed
+      currency: "DZD",
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -144,7 +145,7 @@ export function TitreDetails({
               <div className="text-2xl font-bold text-blue-600">
                 {formatCurrency(data.stockPrice.price)}
               </div>
-              <div className="text-sm text-gray-500">Current Price</div>
+              <div className="text-sm text-gray-500">{t("currentPrice")}</div>
             </div>
           )}
         </div>
@@ -156,19 +157,19 @@ export function TitreDetails({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              Essential Information
+              {t("essentialInformation")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-0">
-            {renderDetail("Issuer", getIssuerName(data.issuer))}
-            {renderDetail("ISIN Code", data.isinCode)}
-            {renderDetail("Code", data.code)}
-            {renderDetail("Capital Operation", data.capitalOperation)}
+            {renderDetail(t("issuer"), getIssuerName(data.issuer))}
+            {renderDetail(t("isinCode"), data.isinCode)}
+            {renderDetail(t("code"), data.code)}
+            {renderDetail(t("capitalOperation"), data.capitalOperation)}
             {renderDetail(
-              "Market Listing",
+              t("marketListing"),
               data.marketListing === "primary"
-                ? "Primary Market"
-                : "Secondary Market"
+                ? t("primaryMarket")
+                : t("secondaryMarket")
             )}
           </CardContent>
         </Card>
@@ -178,16 +179,22 @@ export function TitreDetails({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
-              Financial Details
+              {t("financialDetails")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-0">
-            {renderDetail("Face Value", formatCurrency(data.faceValue))}
-            {renderDetail("Quantity", data.quantity?.toLocaleString())}
-            {renderDetail("Voting Rights", data.votingRights ? "Yes" : "No")}
-            {renderDetail("Dividend Rate", formatPercentage(data.dividendRate))}
+            {renderDetail(t("faceValue"), formatCurrency(data.faceValue))}
+            {renderDetail(t("quantity"), data.quantity?.toLocaleString())}
+            {renderDetail(
+              t("votingRights"),
+              data.votingRights ? t("yes") : t("no")
+            )}
+            {renderDetail(
+              t("dividendRate"),
+              formatPercentage(data.dividendRate)
+            )}
             {data.durationYears &&
-              renderDetail("Duration", `${data.durationYears} years`)}
+              renderDetail(t("duration"), `${data.durationYears} years`)}
           </CardContent>
         </Card>
       </div>
@@ -197,14 +204,14 @@ export function TitreDetails({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Important Dates
+            {t("importantDates")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1">
               <div className="text-sm font-medium text-gray-600">
-                Emission Date
+                {t("emissionDate")}
               </div>
               <div className="text-sm text-gray-900">
                 {formatDate(data.emissionDate)}
@@ -212,7 +219,7 @@ export function TitreDetails({
             </div>
             <div className="space-y-1">
               <div className="text-sm font-medium text-gray-600">
-                Closing Date
+                {t("closingDate")}
               </div>
               <div className="text-sm text-gray-900">
                 {formatDate(data.closingDate)}
@@ -220,7 +227,7 @@ export function TitreDetails({
             </div>
             <div className="space-y-1">
               <div className="text-sm font-medium text-gray-600">
-                Enjoyment Date
+                {t("enjoymentDate")}
               </div>
               <div className="text-sm text-gray-900">
                 {formatDate(data.enjoymentDate)}
@@ -229,7 +236,7 @@ export function TitreDetails({
             {data.maturityDate && (
               <div className="space-y-1">
                 <div className="text-sm font-medium text-gray-600">
-                  Maturity Date
+                  {t("maturityDate")}
                 </div>
                 <div className="text-sm text-gray-900">
                   {formatDate(data.maturityDate)}
@@ -246,7 +253,7 @@ export function TitreDetails({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Associated Institutions
+              {t("associatedInstitutions")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -270,7 +277,8 @@ export function TitreDetails({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Payment Schedule ({data.paymentSchedule?.length ?? 0} payments)
+              {t("paymentSchedule")} ({data.paymentSchedule?.length ?? 0}{" "}
+              {t("payments")})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -279,13 +287,13 @@ export function TitreDetails({
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
-                      Payment Date
+                      {t("paymentDate")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
-                      Coupon Rate
+                      {t("couponRate")}
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
-                      Capital Rate
+                      {t("capitalRate")}
                     </th>
                   </tr>
                 </thead>

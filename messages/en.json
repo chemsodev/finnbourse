@@ -33,6 +33,7 @@
     "validationTCCFinale": "TCC Final Validation",
     "validationTccFinale": "TCC Final Validation",
     "iob": "IOB",
+    "iobSecondaryMarket": "IOB Secondary Market",
     "executionOrdres": "Order Execution",
     "soumissionResultats": "Results Submission",
     "titresEtEmissions": "Securities & Emissions",
@@ -50,6 +51,7 @@
     "teneurDeCompte": "Account Holder",
     "execution": "Execution",
     "resultats": "Results",
+    "historiqueDesOrdres": "Order History",
     "more": "More",
     "moreOptions": "More Options"
   },
@@ -389,7 +391,8 @@
     "de": "From",
     "lignesSelectionnees": "Selected Lines",
     "aucunResultat": "No results found",
-    "valeurActuelle": "Current Value"
+    "valeurActuelle": "Current Value",
+    "type": "Type"
   },
   "TitreDrawer": {
     "repayementMethod": "Repayment Method",
@@ -3052,6 +3055,39 @@
         "addInstitution": "Add Institution"
       }
     },
+    "ViewTitre": {
+      "essentialInformation": "Essential Information",
+      "financialDetails": "Financial Details",
+      "importantDates": "Important Dates",
+      "associatedInstitutions": "Associated Institutions",
+      "paymentSchedule": "Payment Schedule",
+      "issuer": "Issuer",
+      "isinCode": "ISIN Code",
+      "code": "Code",
+      "capitalOperation": "Capital Operation",
+      "faceValue": "Face Value",
+      "quantity": "Quantity",
+      "marketListing": "Market Listing",
+      "primaryMarket": "Primary Market",
+      "secondaryMarket": "Secondary Market",
+      "votingRights": "Voting Rights",
+      "yes": "Yes",
+      "no": "No",
+      "dividendRate": "Dividend Rate",
+      "duration": "Duration",
+      "emissionDate": "Emission Date",
+      "closingDate": "Closing Date",
+      "enjoymentDate": "Enjoyment Date",
+      "maturityDate": "Maturity Date",
+      "paymentDate": "Payment Date",
+      "couponRate": "Coupon Rate",
+      "capitalRate": "Capital Rate",
+      "payments": "Payments",
+      "currentPrice": "Current Price",
+      "notFound": "Security not found",
+      "notSpecified": "Not specified",
+      "notFoundDescription": "The requested titre with ID \"{id}\" could not be found."
+    },
     "EditTitre": {
       "editTitre": "Edit Security",
       "error": {
@@ -3106,6 +3142,73 @@
         "institutionName": "Institution Name",
         "institutionPlaceholder": "Enter institution name",
         "addInstitution": "Add Institution"
+      }
+    },
+    "EditSecondaryMarketTitre": {
+      "editStockPrice": "Edit Stock Price",
+      "price": "Price",
+      "gap": "Gap",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "success": {
+        "title": "Success",
+        "description": "Stock price updated successfully"
+      },
+      "error": {
+        "title": "Error",
+        "description": "Failed to update stock price"
+      }
+    }
+  },
+  "orderHistory": {
+    "orderHistory": "Orders History",
+    "orderHistoryDescription": "View and manage your orders history",
+    "subscriptionsHistory": "Subscriptions History",
+    "primaryMarket": "Primary Market",
+    "myOrders": {
+      "client": "Client",
+      "marketType": "Market",
+      "quantity": "Quantity",
+      "price": "Price",
+      "timeCondition": "Time Condition",
+      "executionType": "Execution Type",
+
+      "status": {
+        "status": "Status",
+        "validated": "Validated",
+        "rejected": "Rejected",
+        "canceled": "Canceled"
+      },
+      "marketTypes": {
+        "P": "Primary",
+        "S": "Secondary"
+      },
+      "noData": "No data available",
+      "noOrders": "No orders found for the selected criteria"
+    },
+    "orderDetails": {
+      "orderDetails": "Order Details",
+      "basicInformation": "Basic Information",
+      "financialDetails": "Financial Details",
+      "conditions": "Conditions",
+      "stock": "Stock",
+      "client": "Client",
+      "marketType": "Market Type",
+      "primaryMarket": "Primary Market",
+      "secondaryMarket": "Secondary Market",
+      "quantity": "Quantity",
+      "price": "Price",
+      "totalAmount": "Total Amount",
+      "timeCondition": "Time Condition",
+      "executionType": "Execution Type",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "close": "Close",
+      "status": {
+        "validated": "Validated",
+        "rejected": "Rejected",
+        "canceled": "Canceled",
+        "pending": "Pending"
       }
     }
   }

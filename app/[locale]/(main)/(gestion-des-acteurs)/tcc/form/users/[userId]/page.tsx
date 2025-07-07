@@ -152,8 +152,10 @@ export default function EditTCCUserPage({
 
   // Load user data when found
   useEffect(() => {
-    if (user) {
+    if (user && tcc) {
       console.log("👤 User found, loading user data:", user);
+      console.log("🔧 Current form values before reset:", form.getValues());
+
       // Convert user roles to array if needed and ensure proper typing
       const userRoles = (
         Array.isArray(user.role) ? user.role : [user.role]
@@ -161,7 +163,7 @@ export default function EditTCCUserPage({
         VALID_TCC_ROLES.includes(role as ValidTCCRole)
       );
 
-      form.reset({
+      const formData = {
         firstname: user.firstname || "",
         lastname: user.lastname || "",
         email: user.email || "",
@@ -169,11 +171,30 @@ export default function EditTCCUserPage({
         positionTcc: user.positionTcc || "",
         role: userRoles,
         status: user.status as "actif" | "inactif",
-      });
-    } else if (tcc && !isLoading) {
+      };
+
+      console.log("📝 Setting form data:", formData);
+
+      form.reset(formData);
+
+      // Force form to update by setting individual fields
+      setTimeout(() => {
+        form.setValue("firstname", user.firstname || "");
+        form.setValue("lastname", user.lastname || "");
+        form.setValue("email", user.email || "");
+        form.setValue("telephone", user.telephone || "");
+        form.setValue("positionTcc", user.positionTcc || "");
+        form.setValue("role", userRoles);
+        form.setValue("status", user.status as "actif" | "inactif");
+        console.log("🔧 Form values after manual set:", form.getValues());
+      }, 100);
+    } else if (tcc && !isLoading && !user) {
       console.log(
         "❌ User not found in TCC data. Available users:",
-        tcc.users?.map((u) => u.id)
+        tcc.users?.map((u) => ({
+          id: u.id,
+          name: `${u.firstname} ${u.lastname}`,
+        }))
       );
     }
   }, [form, user, tcc, isLoading]);
@@ -234,13 +255,32 @@ export default function EditTCCUserPage({
     console.log("⏳ TCC data loading...");
     return <Loading />;
   }
-
   if (loadingTimeout) {
     return (
       <div className="container mx-auto py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 max-w-2xl mx-auto text-center">
           <p className="text-gray-600">
             Loading is taking longer than expected.
+          </p>
+          <Button
+            className="mt-4"
+            onClick={() => router.push(`/${params.locale}/tcc/users`)}
+          >
+            Go to Users List
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If we have loaded but no TCC data at all
+  if (!isLoading && !tcc && hasRestToken && !tokenLoading) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="bg-white rounded-lg shadow-sm p-6 max-w-2xl mx-auto text-center">
+          <p className="text-gray-600">
+            No TCC data found. Please check your permissions or contact an
+            administrator.
           </p>
           <Button
             className="mt-4"
@@ -273,6 +313,15 @@ export default function EditTCCUserPage({
         <h1 className="text-2xl font-bold">
           {user ? t("editUser") : t("userNotFound")}
         </h1>
+        {!user && tcc && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+          >
+            Refresh
+          </Button>
+        )}
       </div>
 
       {!user && tcc && (
@@ -311,6 +360,18 @@ export default function EditTCCUserPage({
               the user management system or contact an administrator.
             </p>
           </div>
+
+          {/* Debug info */}
+          <div className="mb-4 p-2 bg-gray-50 border rounded text-xs">
+            <strong>Debug:</strong> Editing user {user.firstname}{" "}
+            {user.lastname} (ID: {user.id})
+            <br />
+            <strong>Roles:</strong>{" "}
+            {Array.isArray(user.role) ? user.role.join(", ") : user.role}
+            <br />
+            <strong>Status:</strong> {user.status}
+          </div>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

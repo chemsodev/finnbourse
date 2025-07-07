@@ -42,8 +42,13 @@ export function useTCC() {
       );
       const data = await TCCService.getTCC(restToken || undefined);
 
+      console.log("✅ TCC Service returned:", data);
+      console.log("✅ TCC Service returned users:", data?.users);
+      console.log("✅ TCC Service returned users length:", data?.users?.length);
+
       // Handle single TCC response
       setTcc(data); // data is already TCC | null
+      console.log("✅ TCC state set to:", data);
       return data;
     } catch (error) {
       // Only show error toast for actual API errors, not for "no TCC" scenarios

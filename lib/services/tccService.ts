@@ -18,24 +18,34 @@ export class TCCService {
    * Get the single TCC entity (since we only have one TCC in the system)
    */ static async getTCC(token?: string): Promise<TCC | null> {
     try {
+      console.log("🔄 TCCService.getTCC: Making API call...");
       const response = await actorAPI.tcc.getAll(token);
       const data = response.data || response;
 
       console.log("🔍 TCC API Response:", data);
+      console.log("🔍 TCC API Response type:", typeof data);
+      console.log("🔍 TCC API Response isArray:", Array.isArray(data));
 
       // Handle different response formats
       if (Array.isArray(data)) {
+        console.log("📊 Array response with length:", data.length);
         // If it's an array, return the first TCC
-        return data.length > 0 ? data[0] : null;
+        const firstTCC = data.length > 0 ? data[0] : null;
+        console.log("📊 First TCC from array:", firstTCC);
+        console.log("📊 First TCC users:", firstTCC?.users);
+        return firstTCC;
       } else if (data && typeof data === "object" && data.id) {
+        console.log("📊 Single object response:", data);
+        console.log("📊 Single object users:", data.users);
         // If it's a single TCC object
         return data as TCC;
       }
 
+      console.log("⚠️ No TCC found in response");
       // No TCC found
       return null;
     } catch (error) {
-      console.error("Error fetching TCC:", error);
+      console.error("❌ Error fetching TCC:", error);
       throw new Error("Failed to fetch TCC data");
     }
   }

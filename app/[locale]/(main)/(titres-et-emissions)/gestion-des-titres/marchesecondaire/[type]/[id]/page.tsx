@@ -118,7 +118,7 @@ export default async function TitreDetailsPage({
     <div className="container mx-auto py-8 motion-preset-focus motion-duration-2000">
       <div className="max-w-4xl mx-auto space-y-6">
         <Link
-          href={`/gestion-des-titres/marcheprimaire/${params.type}`}
+          href={`/gestion-des-titres/marchesecondaire/${params.type}`}
           className="inline-flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white  md:mt-10"
         >
           <ArrowLeft className="w-5" /> <div>{t("actions.back")}</div>

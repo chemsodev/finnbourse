@@ -48,6 +48,7 @@ export function useMenu(): UseMenuReturn {
     elements: [
       { id: "dashboard" },
       { id: "place-order" },
+      { id: "order-history" },
       {
         id: "orders-dropdown",
         children: [
@@ -61,19 +62,16 @@ export function useMenu(): UseMenuReturn {
           { id: "resultats" },
         ],
       },
+      { id: "iob-secondary-market" },
       {
         id: "titles-emissions-dropdown",
         children: [{ id: "emetteurs" }, { id: "gestion-titres" }],
       },
       {
         id: "actors-management-dropdown",
-        children: [
-          { id: "iob" },
-          { id: "tcc" },
-          { id: "agence" },
-          { id: "clients" },
-        ],
+        children: [{ id: "iob" }, { id: "tcc" }, { id: "agence" }],
       },
+      { id: "clients" },
       { id: "charts-editions" },
     ],
   });

@@ -10,13 +10,13 @@
       "id": "place-order",
       "href": "/passerunordre",
       "icon": "DollarSign",
-      "translationKey": "passerunordre"
+      "translationKey": "passerUnOrdre"
     },
     {
-      "id": "portfolio",
-      "href": "/portefeuille",
-      "icon": "Briefcase",
-      "translationKey": "portefeuille"
+      "id": "order-history",
+      "href": "/order-history",
+      "icon": "History",
+      "translationKey": "historiqueDesOrdres"
     },
     {
       "id": "orders-dropdown",
@@ -66,6 +66,12 @@
       ]
     },
     {
+      "id": "iob-secondary-market",
+      "href": "/iob-secondary-market",
+      "icon": "BarChart2",
+      "translationKey": "iobSecondaryMarket"
+    },
+    {
       "id": "titles-emissions-dropdown",
       "icon": "Award",
       "translationKey": "titresEtEmissions",
@@ -77,40 +83,9 @@
           "translationKey": "emetteurs"
         },
         {
-          "id": "emissions",
-          "href": "/emissions",
-          "icon": "BarChart3",
-          "translationKey": "emissions"
-        },
-        {
-          "id": "commissions",
-          "href": "/commissions",
-          "icon": "HandCoins",
-          "translationKey": "commissions"
-        },
-        {
           "id": "gestion-titres",
           "href": "/gestion-des-titres",
           "translationKey": "gestionTitres"
-        }
-      ]
-    },
-    {
-      "id": "account-management-dropdown",
-      "icon": "Users",
-      "translationKey": "gestionDeCompte",
-      "children": [
-        {
-          "id": "compte-titre",
-          "href": "/compte-titre",
-          "icon": "Receipt",
-          "translationKey": "compteDeTitre"
-        },
-        {
-          "id": "lien-comptes",
-          "href": "/lien-comptes",
-          "icon": "Link",
-          "translationKey": "lienComptes"
         }
       ]
     },
@@ -136,57 +111,14 @@
           "href": "/agence",
           "icon": "Landmark",
           "translationKey": "agence"
-        },
-        {
-          "id": "clients",
-          "href": "/clients",
-          "icon": "Briefcase",
-          "translationKey": "client"
-        },
-        {
-          "id": "utilisateurs",
-          "href": "/utilisateurs",
-          "icon": "UserCog",
-          "translationKey": "user"
         }
       ]
     },
     {
-      "id": "operations-dropdown",
-      "icon": "ArrowRightLeft",
-      "translationKey": "operationsSurTitres",
-      "children": [
-        {
-          "id": "annonce-ost",
-          "href": "/annonce-ost",
-          "icon": "Sparkle",
-          "translationKey": "annonceOst"
-        },
-        {
-          "id": "paiement-dividendes",
-          "href": "/paiement-de-dividendes",
-          "icon": "Sparkle",
-          "translationKey": "paiementDividendes"
-        },
-        {
-          "id": "paiement-droits-garde",
-          "href": "/paiement-droits-de-garde",
-          "icon": "Sparkle",
-          "translationKey": "paiementDroitsDeGarde"
-        },
-        {
-          "id": "paiement-coupon",
-          "href": "/paiement-coupon",
-          "icon": "Sparkle",
-          "translationKey": "paiementCoupon"
-        },
-        {
-          "id": "remboursement",
-          "href": "/remboursement",
-          "icon": "Sparkle",
-          "translationKey": "remboursement"
-        }
-      ]
+      "id": "clients",
+      "href": "/clients",
+      "icon": "Briefcase",
+      "translationKey": "client"
     },
     {
       "id": "charts-editions",
