@@ -141,7 +141,9 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
       cell: ({ row }) => {
         const stock = row.original as any;
         return (
-          <div className="capitalize text-xs font-semibold text-gray-700">{stock.type || ''}</div>
+          <div className="capitalize text-xs font-semibold text-gray-700">
+            {stock.type || ""}
+          </div>
         );
       },
     },

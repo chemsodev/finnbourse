@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import MarketCard from "@/components/titres/MarketCard";
 
 taintObjectReference;
-export default async function SecondaryMarketPage() {
+export default async function IOBSecondaryMarketPage() {
   const t = await getTranslations("GestionDesTitres.secondaryMarket");
   const tActions = await getTranslations("GestionDesTitres.actions");
 
@@ -16,13 +16,13 @@ export default async function SecondaryMarketPage() {
     {
       title: t("types.stock.title"),
       description: t("types.stock.description"),
-      href: "/gestion-des-titres/marchesecondaire/action",
+      href: "/iob-secondary-market/action",
       Icon: OPVIcon,
     },
     {
       title: t("types.bond.title"),
       description: t("types.bond.description"),
-      href: "/gestion-des-titres/marchesecondaire/obligation",
+      href: "/iob-secondary-market/obligation",
       Icon: BondIcon2,
     },
   ];

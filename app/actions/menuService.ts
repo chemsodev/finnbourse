@@ -311,6 +311,12 @@ export const menuItemMap: Record<
     href: "/ordres/resultats",
     translationKey: "resultats",
   },
+  // Order History
+  "historique-des-ordres": {
+    label: "Order History",
+    href: "/order-history",
+    translationKey: "historiqueDesOrdres",
+  },
 
   // Securities & Emissions dropdown and children
   "titles-emissions-dropdown": {
@@ -341,6 +347,7 @@ export const menuItemMap: Record<
     href: "/gestion-des-titres",
     translationKey: "gestionTitres",
   },
+
   /* Account Management dropdown and children
   "account-management-dropdown": {
     label: "Account Management",

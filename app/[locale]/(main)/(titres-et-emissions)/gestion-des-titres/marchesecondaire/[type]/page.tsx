@@ -24,12 +24,6 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
   const { data: session, status } = useSession();
   const { restToken, isLoading } = useRestToken();
 
-  const userRole = (session?.user as any)?.roleid;
-
-  useEffect(() => {
-    console.log("Primary Market Type:", type);
-  }, [type]);
-
   if (status === "loading" || isLoading || !restToken) {
     return (
       <>
@@ -75,7 +69,7 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
 
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 text-center md:ltr:text-left md:rtl:text-right">
         <div className="text-3xl font-bold text-primary">
-          {t("marchesecondaire")}
+          {t("marcheSecondaire")}
           <span className="text-lg text-black mx-1">
             {getTypeLabel(t, type)}
           </span>
@@ -84,7 +78,7 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
       </div>
 
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <MarketTable type={type as StockType} />
+        <MarketTable type={type as StockType} marketType="secondary" />
       </div>
     </div>
   );
