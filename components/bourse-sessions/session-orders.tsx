@@ -62,6 +62,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [loading, setLoading] = useState(true);
   const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
+  const [marketType, setMarketType] = useState<"secondaire" | "primaire">("secondaire");
 
   const STATUS_SATISFIED = 8; 
   const STATUS_UNSATISFIED = 9; 
@@ -419,6 +420,22 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     return <ChevronsUpDown className="inline ml-1 h-4 w-4 text-gray-400" />;
   };
 
+  // Filtrage optionnel des données (à adapter selon ta logique métier)
+  const filteredDisplayOrders = displayOrders.filter(order => {
+    if (marketType === "primaire") {
+      return order.securitytype === "empruntobligataire" || order.securitytype === "opv";
+    } else {
+      return order.securitytype !== "empruntobligataire" && order.securitytype !== "opv";
+    }
+  });
+  const filteredSortedDisplayOrders = sortedDisplayOrders.filter(order => {
+    if (marketType === "primaire") {
+      return order.securitytype === "empruntobligataire" || order.securitytype === "opv";
+    } else {
+      return order.securitytype !== "empruntobligataire" && order.securitytype !== "opv";
+    }
+  });
+
   // Bloc pour session terminée (status 'completed')
   if (selectedSessionData?.status === "completed") {
     return (
@@ -452,6 +469,24 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
             </div>
           </CardHeader>
           <CardContent>
+            <div className="flex mb-4">
+              <Button
+                variant={marketType === "secondaire" ? "default" : "outline"}
+                size="sm"
+                className="rounded-r-none"
+                onClick={() => setMarketType("secondaire")}
+              >
+                Carnet d'ordres
+              </Button>
+              <Button
+                variant={marketType === "primaire" ? "default" : "outline"}
+                size="sm"
+                className="rounded-l-none"
+                onClick={() => setMarketType("primaire")}
+              >
+                Souscriptions
+              </Button>
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -475,7 +510,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedDisplayOrders.map((order, idx) => (
+                {filteredSortedDisplayOrders.map((order, idx) => (
                   <TableRow key={order.id}>
                     <TableCell className="px-4 py-2 text-center align-middle">{idx + 1}</TableCell>
                     <TableCell className="px-4 py-2 text-center align-middle" title={order.id}>{order.id?.split("-")[0]}</TableCell>
@@ -537,6 +572,24 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           </div>
         </CardHeader>
         <CardContent>
+          <div className="flex mb-4">
+            <Button
+              variant={marketType === "secondaire" ? "default" : "outline"}
+              size="sm"
+              className="rounded-r-none"
+              onClick={() => setMarketType("secondaire")}
+            >
+              Carnet d'ordres
+            </Button>
+            <Button
+              variant={marketType === "primaire" ? "default" : "outline"}
+              size="sm"
+              className="rounded-l-none"
+              onClick={() => setMarketType("primaire")}
+            >
+              Souscriptions
+            </Button>
+          </div>
           {(() => {
             const userRole = (session.data as any)?.user?.roleid;
             return (
@@ -544,14 +597,14 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
                 searchquery={""}
                 skip={0}
                 state={"99"}
-                marketType={"all"}
+                marketType={marketType}
                 pageType="orderExecution"
                 userRole={userRole?.toString() || "1"}
                 userType="iob"
                 activeTab="all"
                 showActionColumn={false}
                 showResponseButton={false}
-                data={displayOrders}
+                data={filteredDisplayOrders}
               />
             );
           })()}
