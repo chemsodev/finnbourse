@@ -33,6 +33,7 @@
     "validationTCCFinale": "TCC Final Validation",
     "validationTccFinale": "TCC Final Validation",
     "iob": "IOB",
+    "iobSecondaryMarket": "IOB Secondary Market",
     "executionOrdres": "Order Execution",
     "soumissionResultats": "Results Submission",
     "titresEtEmissions": "Securities & Emissions",
@@ -50,6 +51,7 @@
     "teneurDeCompte": "Account Holder",
     "execution": "Execution",
     "resultats": "Results",
+    "historiqueDesOrdres": "Order History",
     "more": "More",
     "moreOptions": "More Options"
   },

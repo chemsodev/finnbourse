@@ -88,7 +88,7 @@ export default function ClientDashboard() {
   // Use the new clients hook
   const {
     clients,
-    isLoading,
+    loading,
     fetchClients,
     deleteClient: deleteClientAPI,
     hasToken,
@@ -188,7 +188,7 @@ export default function ClientDashboard() {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return <Loading className="min-h-[400px]" />;
   }
 

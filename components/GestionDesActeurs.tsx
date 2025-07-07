@@ -70,13 +70,6 @@ const GestionDesActeurs = () => {
             />
             <NavbarLink
               link={{
-                href: "/clients",
-                icon: <Briefcase size={14} />,
-                label: t("client"),
-              }}
-            />
-            <NavbarLink
-              link={{
                 href: "/utilisateurs",
                 icon: <UserCog size={14} />,
                 label: t("user"),

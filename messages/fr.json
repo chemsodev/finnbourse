@@ -33,6 +33,7 @@
     "validationTCCFinale": "Validation TCC Finale",
     "validationTccFinale": "Validation TCC Finale",
     "iob": "IOB",
+    "iobSecondaryMarket": "IOB Marché Secondaire",
     "executionOrdres": "Exécution des Ordres",
     "soumissionResultats": "Soumission des Résultats",
     "titresEtEmissions": "Titres et Émissions",
@@ -50,6 +51,7 @@
     "teneurDeCompte": "Teneur de Compte",
     "execution": "Exécution",
     "resultats": "Résultats",
+    "historiqueDesOrdres": "Historique des Ordres",
     "more": "Plus",
     "moreOptions": "Plus d'Options"
   },

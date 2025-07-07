@@ -1,0 +1,76 @@
+{
+  "elements": [
+    {
+      "id": "dashboard"
+    },
+    {
+      "id": "place-order"
+    },
+    {
+      "id": "order-history"
+    },
+    {
+      "id": "orders-dropdown",
+      "children": [
+        {
+          "id": "premiere-validation"
+        },
+        {
+          "id": "validation-finale"
+        },
+        {
+          "id": "validation-retour"
+        },
+        {
+          "id": "validation-tcc-premiere"
+        },
+        {
+          "id": "validation-tcc-finale"
+        },
+        {
+          "id": "validation-tcc-retour"
+        },
+        {
+          "id": "execution"
+        },
+        {
+          "id": "resultats"
+        }
+      ]
+    },
+    {
+      "id": "iob-secondary-market"
+    },
+    {
+      "id": "titles-emissions-dropdown",
+      "children": [
+        {
+          "id": "emetteurs"
+        },
+        {
+          "id": "gestion-titres"
+        }
+      ]
+    },
+    {
+      "id": "actors-management-dropdown",
+      "children": [
+        {
+          "id": "iob"
+        },
+        {
+          "id": "tcc"
+        },
+        {
+          "id": "agence"
+        }
+      ]
+    },
+    {
+      "id": "clients"
+    },
+    {
+      "id": "charts-editions"
+    }
+  ]
+}
