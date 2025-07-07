@@ -34,9 +34,14 @@
           "translationKey": "validationFinale"
         },
         {
-          "id": "validation-retour",
-          "href": "/ordres/validation-retour",
-          "translationKey": "validationRetour"
+          "id": "validation-retour-premiere",
+          "href": "/ordres/validation-retour-premiere",
+          "translationKey": "validationRetourPremiere"
+        },
+        {
+          "id": "validation-retour-finale",
+          "href": "/ordres/validation-retour-finale",
+          "translationKey": "validationRetourFinale"
         },
         {
           "id": "validation-tcc-premiere",
@@ -49,9 +54,14 @@
           "translationKey": "validationTccFinale"
         },
         {
-          "id": "validation-tcc-retour",
-          "href": "/ordres/validation-tcc-retour",
-          "translationKey": "tccValidationRetour"
+          "id": "validation-retour-premiere",
+          "href": "/ordres/validation-retour-premiere",
+          "translationKey": "validationRetourPremiere"
+        },
+        {
+          "id": "validation-tcc-retour-premiere",
+          "href": "/ordres/validation-tcc-retour-premiere",
+          "translationKey": "tccValidationRetourPremiere"
         },
         {
           "id": "execution",

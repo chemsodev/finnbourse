@@ -24,7 +24,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle } from "lucide-react";
+import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OrderElement } from "@/lib/services/orderService";
@@ -124,7 +124,7 @@ export default function OrdresTableREST({
 
   // Initial fetch on component mount
   useEffect(() => {
-    const isReturnValidationPage = taskID === "validation-retour" || taskID === "validation-tcc-retour";
+    const isReturnValidationPage = taskID === "validation-retour-finale" || taskID === "validation-tcc-retour";
     if (isReturnValidationPage) {
       console.log("Chargement automatique des exemples pour la page de validation du retour");
       setData(exampleOrders);
@@ -534,55 +534,26 @@ export default function OrdresTableREST({
       header: t("actions"),
       cell: ({ row }: any) => {
         const order = row.original;
-        const isReturnValidationPage = pageType === "validationRetour" || pageType === "tccValidationRetour";
+        const isReturnValidationPage = pageType === "validationRetourFinale" || pageType === "tccvalidationRetourFinale";
         
         return (
           <div className="flex items-center space-x-2">
-            {isReturnValidationPage ? (
-              // Pour les pages de validation du retour, afficher les boutons Valider et Annuler
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-                  onClick={() => openActionDialog(order.id, "validate")}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-                  onClick={() => openActionDialog(order.id, "cancel")}
-                >
-                  <XCircle className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              // Pour les autres pages, afficher les boutons d'action normaux
-              <>
-                {actions.includes("validate") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-                    onClick={() => openActionDialog(order.id, "validate")}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                )}
-                {actions.includes("cancel") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-                    onClick={() => openActionDialog(order.id, "cancel")}
-                  >
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                )}
-              </>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
+              onClick={() => openActionDialog(order.id, "validate")}
+            >
+              <CheckCircle className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
+              onClick={() => openActionDialog(order.id, "cancel")}
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
           </div>
         );
       },
@@ -810,9 +781,9 @@ export default function OrdresTableREST({
   return (
     <>
       <div className="rounded-md border">
-        {taskID !== "validation-tcc-retour" && (
-          <div className="flex justify-between items-center p-2 border-b">
-            {/* Market Type Tabs - Left side */}
+        <div className="flex justify-between items-center p-2 border-b">
+          {/* Market Type Tabs - Left side */}
+          {taskID !== "validation-tcc-premiere" && taskID !== "validation-tcc-finale" && (
             <div className="flex items-center gap-0">
               <Button
                 variant={activeTab === "all" ? "default" : "outline"}
@@ -843,36 +814,19 @@ export default function OrdresTableREST({
                 Souscriptions
               </Button>
             </div>
-
-            {/* Refresh Button - Right side */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchOrdersData()}
-              disabled={loading}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
-        )}
-
-        {taskID === "validation-tcc-retour" && (
-          <div className="flex justify-end items-center p-2 border-b">
-            {/* Refresh Button only for validation-tcc-retour */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchOrdersData()}
-              disabled={loading}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
-        )}
+          )}
+          {/* Refresh Button - Right side (toujours visible) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchOrdersData()}
+            disabled={loading}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
         {loading ? (
           <div className="py-14 w-full flex justify-center">
             <div role="status">
@@ -1000,12 +954,16 @@ export default function OrdresTableREST({
             <DialogTitle>
               {currentAction.action === "validate"
                 ? "Valider l'ordre"
-                : "Annuler l'ordre"}
+                : currentAction.action === "cancel"
+                ? "Annuler l'ordre"
+                : "Rejeter l'ordre"}
             </DialogTitle>
             <DialogDescription>
               {currentAction.action === "validate"
                 ? "Veuillez fournir un motif pour la validation de cet ordre."
-                : "Veuillez fournir un motif pour l'annulation de cet ordre."}
+                : currentAction.action === "cancel"
+                ? "Veuillez fournir un motif pour l'annulation de cet ordre."
+                : "Veuillez fournir un motif pour la rejet de cet ordre."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1054,7 +1012,7 @@ export default function OrdresTableREST({
               companies={companies}
               institutions={institutions}
               isValidationReturnPage={
-                taskID === "validation-retour" ||
+                taskID === "validation-retour-finale" ||
                 taskID === "validation-tcc-retour" ||
                 taskID === "resultats"
               }

@@ -101,15 +101,26 @@ const OrdersDropDown = () => {
             <div>{t("validationFinale")}</div>
           </Link>
           <Link
-            href="/ordres/validation-retour"
+            href="/ordres/validation-retour-finale"
             className={`flex items-center gap-2 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-3 w-full rounded-xl text-xs ${
-              pathname === "/ordres/validation-retour"
+              pathname === "/ordres/validation-retour-finale"
                 ? "bg-secondary/20 text-primary shadow-sm"
                 : ""
             }`}
           >
             <CheckCircle2 size={14} />
-            <div>{t("validationRetour")}</div>
+            <div>{t("SideBar.validationRetourFinale")}</div>
+          </Link>
+          <Link
+            href="/ordres/validation-retour-premiere"
+            className={`flex items-center gap-2 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-3 w-full rounded-xl text-xs ${
+              pathname === "/ordres/validation-retour-premiere"
+                ? "bg-secondary/20 text-primary shadow-sm"
+                : ""
+            }`}
+          >
+            <Clock size={14} />
+            <div>{t("SideBar.validationRetourFinale")}</div>
           </Link>
 
           {/* TCC Pages */}
@@ -136,18 +147,29 @@ const OrdersDropDown = () => {
             }`}
           >
             <CheckCircle2 size={14} />
-            <div>{t("validationTCCFinale")}</div>
+            <div>{t("SideBar.validationTccFinale")}</div>
           </Link>
           <Link
-            href="/ordres/validation-tcc-retour"
+            href="/ordres/validation-tcc-retour-finale"
             className={`flex items-center gap-2 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-3 w-full rounded-xl text-xs ${
-              pathname === "/ordres/validation-tcc-retour"
+              pathname === "/ordres/validation-tcc-retour-finale"
                 ? "bg-secondary/20 text-primary shadow-sm"
                 : ""
             }`}
           >
             <CheckCircle2 size={14} />
-            <div>{t("tccValidationRetour")}</div>
+            <div>{t("tccValidationRetourFinale")}</div>
+          </Link>
+          <Link
+            href="/ordres/validation-tcc-retour-premiere"
+            className={`flex items-center gap-2 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-3 w-full rounded-xl text-xs ${
+              pathname === "/ordres/validation-tcc-retour-premiere"
+                ? "bg-secondary/20 text-primary shadow-sm"
+                : ""
+            }`}
+          >
+            <Clock size={14} />
+            <div>{t("tccValidationRetourPremiere")}</div>
           </Link>
 
           {/* IOB Pages */}
