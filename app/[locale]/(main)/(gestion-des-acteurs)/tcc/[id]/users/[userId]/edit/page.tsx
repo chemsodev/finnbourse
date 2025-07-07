@@ -49,15 +49,11 @@ const userSchema = z
         message: "Phone number must be at least 10 characters.",
       })
       .optional(),
-    positionTcc: z.string().min(2, {
-      message: "Position must be at least 2 characters.",
+    positionTcc: z.string().min(1, {
+      message: "Position must be at least 1 character.",
     }),
-    matricule: z.string().min(1, {
-      message: "Matricule is required.",
-    }),
-    organisation: z.string().min(1, {
-      message: "Organization is required.",
-    }),
+    matricule: z.string().optional(),
+    organisation: z.string().optional(),
     role: z.array(z.string()).min(1, {
       message: "At least one role must be selected.",
     }),
@@ -101,7 +97,7 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
     telephone: "",
     positionTcc: "",
     matricule: "",
-    organisation: "",
+    organisation: "", // Maps to organisationIndividu in the API
     role: [],
     status: "actif",
   };
@@ -117,9 +113,10 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
     async function loadUser() {
       try {
         setIsLoading(true);
-        // Get all users and find the specific user by ID
-        const users = await TCCService.getUsers(tccId);
-        const userData = users.find((user) => user.id === userId);
+        // Get the TCC which includes its users
+        const tcc = await TCCService.getTCC();
+        // Find the specific user by ID
+        const userData = tcc?.users?.find((user) => user.id === userId);
 
         if (!userData) {
           throw new Error("User not found");
@@ -134,10 +131,14 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
           email: userData.email || "",
           telephone: userData.telephone || "",
           positionTcc: userData.positionTcc || "",
-          matricule: userData.matricule || "",
-          organisation: userData.organisation || "",
-          role: userData.role || [],
-          status: userData.status || "actif",
+          // Use Type assertion to access dynamic fields from the API
+          matricule: (userData as any).matricule || "",
+          organisation: (userData as any).organisationIndividu || "",
+          role: Array.isArray(userData.role) ? userData.role : [],
+          status:
+            userData.status === "actif" || userData.status === "inactif"
+              ? userData.status
+              : "actif",
           password: "",
           confirmPassword: "",
         };
@@ -157,7 +158,7 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
     }
 
     loadUser();
-  }, [form, tccId, userId, toast, t]);
+  }, [form, userId, toast, t]);
 
   const onSubmit = async (values: UserFormValues) => {
     try {
@@ -170,10 +171,13 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
         email: values.email,
         telephone: values.telephone || "",
         positionTcc: values.positionTcc || "",
-        matricule: values.matricule,
-        organisation: values.organisation,
-        role: values.role,
-        status: values.status,
+        // Include these fields to match the API structure
+        matricule: values.matricule || "",
+        organisationIndividu: values.organisation || "",
+        role: Array.isArray(values.role) ? values.role : [],
+        status: values.status || "actif",
+        // The API expects this field
+        tcc: 1,
       };
 
       // Only include password if provided
@@ -182,15 +186,17 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
       }
 
       // Update the user
-      await TCCService.updateUser(userId, userData, tccId);
+      await TCCService.updateUser(userId, userData);
+
+      console.log("User updated successfully:", userData);
 
       toast({
         title: t("success"),
         description: t("userUpdatedSuccessfully"),
       });
 
-      // Navigate back to users list
-      router.push(`/${params.locale}/tcc/${tccId}/users`);
+      // Navigate back to users list (no need for TCC ID)
+      router.push(`/${params.locale}/tcc/users`);
     } catch (error: any) {
       console.error("Failed to update user:", error);
 
@@ -243,7 +249,7 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
               {t("userNotFound")}
             </h2>
             <p className="text-gray-500 mb-4">{t("userNotFoundDescription")}</p>
-            <Button onClick={() => router.push(`/tcc/${tccId}/users`)}>
+            <Button onClick={() => router.push(`/${params.locale}/tcc/users`)}>
               {t("backToUsers")}
             </Button>
           </div>
@@ -258,7 +264,7 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push(`/tcc/${tccId}/users`)}
+          onClick={() => router.push(`/${params.locale}/tcc/users`)}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           {t("back")}
@@ -413,7 +419,9 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
                 name="matricule"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("matricule")}</FormLabel>
+                    <FormLabel>
+                      {t("matricule")} ({t("optional")})
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -427,7 +435,9 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
                 name="organisation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("organization")}</FormLabel>
+                    <FormLabel>
+                      {t("organization")} ({t("optional")})
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -478,13 +488,14 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
                     <FormLabel>{t("status")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || "actif"}
+                      defaultValue="actif"
                     >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder={t("selectStatus")} />
                         </SelectTrigger>
-                      </FormControl>{" "}
+                      </FormControl>
                       <SelectContent>
                         <SelectItem value="actif">{t("active")}</SelectItem>
                         <SelectItem value="inactif">{t("inactive")}</SelectItem>
@@ -500,9 +511,7 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  router.push(`/${params.locale}/tcc/${tccId}/users`)
-                }
+                onClick={() => router.push(`/${params.locale}/tcc/users`)}
               >
                 {t("cancel")}
               </Button>

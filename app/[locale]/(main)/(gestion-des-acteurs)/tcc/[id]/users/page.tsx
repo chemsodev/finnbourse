@@ -63,9 +63,9 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
       if (currentTCC && (currentTCC.id === params.id || !params.id)) {
         setTCCData(currentTCC);
 
-        // Fetch users for this TCC
+        // Fetch users for TCC (using the standard endpoint)
         try {
-          const tccUsers = await TCCService.getUsers(params.id);
+          const tccUsers = await TCCService.getUsers();
           setUsers(tccUsers);
         } catch (userError) {
           console.error("Failed to load users:", userError);

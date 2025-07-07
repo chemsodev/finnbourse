@@ -98,6 +98,16 @@ export const actorAPI = {
     },
     createUser: async (userData: any, token?: string) => {
       const restToken = token || (await getRestToken());
+
+      // Remove tccId from the request body if it exists (no longer needed for API)
+      if (userData.tccId) {
+        const { tccId: _, ...userDataWithoutTccId } = userData;
+        userData = userDataWithoutTccId;
+      }
+
+      console.log(`Creating TCC user:`, userData);
+
+      // Always use the standard endpoint
       return clientFetchREST("/tcc/users", {
         method: "POST",
         body: userData,
@@ -105,10 +115,9 @@ export const actorAPI = {
       });
     },
 
-    getUsers: async (tccId?: string, token?: string) => {
+    getUsers: async (token?: string) => {
       const restToken = token || (await getRestToken());
-      const endpoint = tccId ? `/tcc/${tccId}/users` : "/tcc/users";
-      return clientFetchREST(endpoint, {
+      return clientFetchREST("/tcc/users", {
         method: "GET",
         token: restToken || undefined,
       });
@@ -367,6 +376,14 @@ export const actorAPI = {
       return clientFetchREST(`/agence/${agenceId}/users`, {
         method: "POST",
         body: userData,
+        token: restToken || undefined,
+      });
+    },
+
+    getUsers: async (agenceId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/agence/${agenceId}/users`, {
+        method: "GET",
         token: restToken || undefined,
       });
     },

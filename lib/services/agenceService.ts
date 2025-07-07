@@ -101,11 +101,14 @@ export class AgenceService {
       code: apiData.code,
       address: apiData.address,
       code_swift: apiData.code_swift,
-      currency: apiData.currency,
+      currency: apiData.currency || "DZD",
       director_name: apiData.director_name,
       director_email: apiData.director_email,
       director_phone: apiData.director_phone,
-      financialInstitutionId: apiData.financialInstitution?.id,
+      financialInstitutionId:
+        apiData.financialInstitution?.id ||
+        apiData.financialInstitutionId ||
+        "",
     };
   }
 

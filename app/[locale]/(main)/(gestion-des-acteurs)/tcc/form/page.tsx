@@ -52,22 +52,24 @@ export default function FormPage({ params }: FormPageProps) {
         // Transform TCC data to form format
         const transformedData = TCCService.transformAPIDataToForm(currentTCC);
 
-        if (
-          !transformedData.financialInstitutionId &&
-          currentTCC.financialInstitutionId
-        ) {
+        // Ensure financial institution ID is properly set
+        if (currentTCC.financialInstitutionId) {
           transformedData.financialInstitutionId =
             currentTCC.financialInstitutionId;
         }
 
-        setFormValues((prev) => ({
-          ...prev,
-          custodian: {
-            ...prev.custodian,
-            ...transformedData,
-          },
+        console.log("Transformed TCC data for form:", transformedData);
+        console.log(
+          "Financial Institution ID:",
+          transformedData.financialInstitutionId
+        );
+
+        // Force a re-render with the new data by creating a new object
+        setFormValues({
+          custodian: transformedData,
+          relatedUsers: [], // Keep existing related users if needed
           tccId: currentTCC.id,
-        }));
+        });
 
         toast({
           title: "Data Loaded",
@@ -93,7 +95,7 @@ export default function FormPage({ params }: FormPageProps) {
       code: "",
       libelle: "",
       typeCompte: "DEPOSIT",
-      statut: "ACTIVE",
+      statut: "ACTIVE", // Set a default status value
       adresse: "",
       codePostal: "",
       ville: "",

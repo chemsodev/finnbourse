@@ -170,7 +170,12 @@ export function clientFetchREST<T = any>(
         };
         throw error;
       }
-      return response.json();
+      const text = await response.text();
+      try {
+        return text ? JSON.parse(text) : {};
+      } catch (e) {
+        return text;
+      }
     })
     .then((result) => {
       return result;
@@ -226,27 +231,22 @@ export const tccAPI = {
 
   getAll: (token?: string) => fetchREST("/tcc", { token }),
 
-  createUser: (tccId: string, userData: any, token?: string) =>
-    fetchREST(`/tcc/${tccId}/users`, {
+  createUser: (userData: any, token?: string) =>
+    fetchREST(`/tcc/users`, {
       method: "POST",
       body: userData,
       token,
     }),
 
-  updateUser: (tccId: string, userId: string, userData: any, token?: string) =>
-    fetchREST(`/tcc/${tccId}/users/${userId}`, {
+  updateUser: (userId: string, userData: any, token?: string) =>
+    fetchREST(`/tcc/users/${userId}`, {
       method: "PUT",
       body: userData,
       token,
     }),
 
-  updateUserRole: (
-    tccId: string,
-    userId: string,
-    roleData: any,
-    token?: string
-  ) =>
-    fetchREST(`/tcc/${tccId}/users/${userId}/role`, {
+  updateUserRole: (userId: string, roleData: any, token?: string) =>
+    fetchREST(`/tcc/users/${userId}/role`, {
       method: "PUT",
       body: roleData,
       token,

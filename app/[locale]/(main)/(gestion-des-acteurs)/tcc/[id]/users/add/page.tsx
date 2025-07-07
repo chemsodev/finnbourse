@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TCCService } from "@/lib/services/tccService";
 import { useTCCUsers } from "@/hooks/useTCC";
 import { TCC_USER_ROLES } from "@/lib/types/tcc";
+import { RolesAssignment } from "@/components/RolesAssignment";
 
 // Form schema
 const userSchema = z
@@ -128,8 +129,8 @@ export default function AddTCCUserPage({ params }: AddTCCUserPageProps) {
         status: values.status,
       };
 
-      // Create the user
-      await TCCService.createUser(userData, tccId);
+      // Create the user directly (no need to include tccId anymore)
+      await createUser(userData);
 
       toast({
         title: t("success"),
@@ -357,28 +358,13 @@ export default function AddTCCUserPage({ params }: AddTCCUserPageProps) {
                 render={({ field }) => (
                   <FormItem className="col-span-2">
                     <FormLabel>{t("roles")}</FormLabel>
-                    <div className="flex flex-wrap gap-2">
-                      {TCC_USER_ROLES.map((role) => (
-                        <Button
-                          key={role}
-                          type="button"
-                          variant={
-                            field.value.includes(role) ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => {
-                            if (field.value.includes(role)) {
-                              field.onChange(
-                                field.value.filter((r) => r !== role)
-                              );
-                            } else {
-                              field.onChange([...field.value, role]);
-                            }
-                          }}
-                        >
-                          {t(`roles.${role}`)}
-                        </Button>
-                      ))}
+                    <div className="mt-2">
+                      <RolesAssignment
+                        selectedRoles={field.value || []}
+                        onRolesChange={field.onChange}
+                        userTypes={["tcc"]}
+                        showTabs={false}
+                      />
                     </div>
                     <FormMessage />
                   </FormItem>

@@ -9,6 +9,7 @@ export const custodianFormSchema = z.object({
   }),
   statut: z.enum(["ACTIVE", "INACTIVE"], {
     required_error: "Status is required",
+    invalid_type_error: "Status must be either ACTIVE or INACTIVE",
   }),
   dateCreation: z.string().optional(),
 

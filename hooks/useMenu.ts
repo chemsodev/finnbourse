@@ -48,34 +48,22 @@ export function useMenu(): UseMenuReturn {
     elements: [
       { id: "dashboard" },
       { id: "place-order" },
-      { id: "portfolio" },
       {
         id: "orders-dropdown",
         children: [
           { id: "premiere-validation" },
           { id: "validation-finale" },
+          { id: "validation-retour" },
           { id: "validation-tcc-premiere" },
           { id: "validation-tcc-finale" },
+          { id: "validation-tcc-retour" },
           { id: "execution" },
           { id: "resultats" },
         ],
       },
       {
         id: "titles-emissions-dropdown",
-        children: [
-          { id: "emetteurs" },
-          { id: "emissions" },
-          { id: "commissions" },
-          { id: "gestion-titres" },
-        ],
-      },
-      {
-        id: "account-management-dropdown",
-        children: [
-          { id: "compte-espece" },
-          { id: "compte-titre" },
-          { id: "lien-comptes" },
-        ],
+        children: [{ id: "emetteurs" }, { id: "gestion-titres" }],
       },
       {
         id: "actors-management-dropdown",
@@ -84,17 +72,6 @@ export function useMenu(): UseMenuReturn {
           { id: "tcc" },
           { id: "agence" },
           { id: "clients" },
-          { id: "utilisateurs" },
-        ],
-      },
-      {
-        id: "operations-dropdown",
-        children: [
-          { id: "annonce-ost" },
-          { id: "paiement-dividendes" },
-          { id: "paiement-droits-garde" },
-          { id: "paiement-coupon" },
-          { id: "remboursement" },
         ],
       },
       { id: "charts-editions" },
