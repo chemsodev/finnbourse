@@ -781,9 +781,9 @@ export default function OrdresTableREST({
   return (
     <>
       <div className="rounded-md border">
-        {taskID !== "validation-tcc-retour" && (
-          <div className="flex justify-between items-center p-2 border-b">
-            {/* Market Type Tabs - Left side */}
+        <div className="flex justify-between items-center p-2 border-b">
+          {/* Market Type Tabs - Left side */}
+          {taskID !== "validation-tcc-premiere" && taskID !== "validation-tcc-finale" && (
             <div className="flex items-center gap-0">
               <Button
                 variant={activeTab === "all" ? "default" : "outline"}
@@ -814,36 +814,19 @@ export default function OrdresTableREST({
                 Souscriptions
               </Button>
             </div>
-
-            {/* Refresh Button - Right side */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchOrdersData()}
-              disabled={loading}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
-        )}
-
-        {taskID === "validation-tcc-retour" && (
-          <div className="flex justify-end items-center p-2 border-b">
-            {/* Refresh Button only for validation-tcc-retour */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchOrdersData()}
-              disabled={loading}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
-        )}
+          )}
+          {/* Refresh Button - Right side (toujours visible) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchOrdersData()}
+            disabled={loading}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
         {loading ? (
           <div className="py-14 w-full flex justify-center">
             <div role="status">
