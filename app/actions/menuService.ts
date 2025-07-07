@@ -347,6 +347,7 @@ export const menuItemMap: Record<
     href: "/gestion-des-titres",
     translationKey: "gestionTitres",
   },
+
   /* Account Management dropdown and children
   "account-management-dropdown": {
     label: "Account Management",

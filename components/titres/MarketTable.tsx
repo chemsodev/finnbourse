@@ -42,9 +42,11 @@ import { Link } from "@/i18n/routing";
 import { Stock, StockType } from "@/types/gestionTitres";
 import { TitreFormValues } from "./titreSchemaValidation";
 import { EditTitre } from "./EditTitre";
+import { EditSecondaryMarketTitre } from "./EditSecondaryMarketTitre";
 
 interface MarketTableProps {
   type: StockType;
+  marketType: "primary" | "secondary";
 }
 
 interface TableState {
@@ -76,7 +78,7 @@ function mapToStockType(
   return mapping[type];
 }
 
-export function MarketTable({ type }: MarketTableProps) {
+export function MarketTable({ type, marketType }: MarketTableProps) {
   const t = useTranslations("TitresTable");
   const { toast } = useToast();
   const [data, setData] = React.useState<Stock[]>([]);
@@ -155,6 +157,21 @@ export function MarketTable({ type }: MarketTableProps) {
     [type]
   );
 
+  // Helper function to get the details link for a stock
+  const getDetailsLink = (
+    marketType: "primary" | "secondary",
+    stockType: StockType,
+    stockId: string
+  ) => {
+    const basePath =
+      marketType === "primary"
+        ? "/gestion-des-titres/marcheprimaire"
+        : "/gestion-des-titres/marchesecondaire";
+
+    return `${basePath}/${stockType}/${stockId}`;
+  };
+
+  // Column definitions for the table
   const columns = React.useMemo<ColumnDef<Stock>[]>(() => {
     const cols: ColumnDef<Stock>[] = [
       {
@@ -182,7 +199,21 @@ export function MarketTable({ type }: MarketTableProps) {
         },
       },
     ];
-
+    if (type === "empruntobligataire" || type === "obligation") {
+      cols.splice(1, 0, {
+        // Insert after the first column
+        accessorKey: "bondType",
+        header: t("type"),
+        cell: ({ row }) => {
+          const stock = row.original as any;
+          return (
+            <div className="capitalize text-xs font-semibold text-gray-700">
+              {stock.type || ""}
+            </div>
+          );
+        },
+      });
+    }
     const hasEmissionData = ![
       "action",
       "obligation",
@@ -268,19 +299,11 @@ export function MarketTable({ type }: MarketTableProps) {
               <DropdownMenuContent align="end">
                 {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem asChild>
-                  <Link
-                    href={`/gestion-des-titres/marcheprimaire/${type}/${stock.id}`}
-                  >
+                  <Link href={getDetailsLink(marketType, type, stock.id)}>
                     {t("voirDetails")}
                   </Link>
                 </DropdownMenuItem>
-                {/* <DropdownMenuItem asChild>
-                  <Link
-                    href={`/gestion-des-titres/marcheprimaire/${type}/${stock.id}/edit`}
-                  >
-                    {t("modifier")}
-                  </Link>
-                </DropdownMenuItem> */}
+
                 <DropdownMenuItem onClick={() => handleEditClick(stock)}>
                   {t("modifier")}
                 </DropdownMenuItem>
@@ -419,18 +442,27 @@ export function MarketTable({ type }: MarketTableProps) {
           </Button>
         </div>
       </div>
-      {editingTitre && (
-        <EditTitre
-          type={type}
-          open={!!editingTitre}
-          onOpenChange={(open) => !open && setEditingTitre(null)}
-          defaultValues={editingTitre}
-          onSuccess={() => {
-            // Refresh data or update local state after successful edit
-            setEditingTitre(null);
-          }}
-        />
-      )}
+      {editingTitre &&
+        (marketType === "secondary" ? (
+          <EditSecondaryMarketTitre
+            open={!!editingTitre}
+            onOpenChange={(open) => !open && setEditingTitre(null)}
+            defaultValues={editingTitre}
+            onSuccess={() => {
+              setEditingTitre(null);
+            }}
+          />
+        ) : (
+          <EditTitre
+            type={type}
+            open={!!editingTitre}
+            onOpenChange={(open) => !open && setEditingTitre(null)}
+            defaultValues={editingTitre}
+            onSuccess={() => {
+              setEditingTitre(null);
+            }}
+          />
+        ))}
     </div>
   );
 }

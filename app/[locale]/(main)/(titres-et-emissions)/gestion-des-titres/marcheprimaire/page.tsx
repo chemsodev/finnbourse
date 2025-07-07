@@ -1,12 +1,6 @@
 import MyMarquee from "@/components/MyMarquee";
 import { getTranslations } from "next-intl/server";
-import {
-  BondIcon,
-  BondIcon2,
-  OPVIcon,
-  ParticipatifIcon,
-  SukukIcon,
-} from "@/components/icons/PrimaryMarketTypesIcons";
+import { BondIcon2, OPVIcon } from "@/components/icons/PrimaryMarketTypesIcons";
 import { MarketCardProps } from "@/types/gestionTitres";
 import { taintObjectReference } from "next/dist/server/app-render/entry-base";
 import Link from "next/link";
@@ -32,18 +26,18 @@ export default async function PrimaryMarketPage() {
       href: "/gestion-des-titres/marcheprimaire/empruntobligataire",
       Icon: BondIcon2,
     },
-    {
-      title: t("types.participativeTitles.title"),
-      description: t("types.participativeTitles.description"),
-      href: "/gestion-des-titres/marcheprimaire/titresparticipatifsmp",
-      Icon: ParticipatifIcon,
-    },
-    {
-      title: t("types.sukuk.title"),
-      description: t("types.sukuk.description"),
-      href: "/gestion-des-titres/marcheprimaire/sukukmp",
-      Icon: SukukIcon,
-    },
+    // {
+    //   title: t("types.participativeTitles.title"),
+    //   description: t("types.participativeTitles.description"),
+    //   href: "/gestion-des-titres/marcheprimaire/titresparticipatifsmp",
+    //   Icon: ParticipatifIcon,
+    // },
+    // {
+    //   title: t("types.sukuk.title"),
+    //   description: t("types.sukuk.description"),
+    //   href: "/gestion-des-titres/marcheprimaire/sukukmp",
+    //   Icon: SukukIcon,
+    // },
   ];
   return (
     <div className=" motion-preset-focus motion-duration-2000 ">
