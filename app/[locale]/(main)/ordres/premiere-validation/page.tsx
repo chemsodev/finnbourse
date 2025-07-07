@@ -89,10 +89,6 @@ export default async function PremiereValidationPage({
                   <TabSearch />
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <PDFDropdownMenu customTitle="Impression" />
-              </div>
             </div>
           </CardHeader>
 

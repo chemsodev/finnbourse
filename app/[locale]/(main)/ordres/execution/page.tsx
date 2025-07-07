@@ -111,13 +111,6 @@ const page = () => {
         </div>
         <div className="flex gap-4 flex-shrink-0 items-center">
           <PDFDropdownMenu />
-          <Link
-            href="/ordres/sessions"
-            className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-          >
-            <CalendarClock size={20} />
-            Sessions de Bourse
-          </Link>
         </div>
       </div>
 

@@ -94,10 +94,6 @@ export default async function validationRetourFinalePage({
                   <TabSearch />
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <PDFDropdownMenu customTitle="Impression" />
-              </div>
             </div>
           </CardHeader>
 
