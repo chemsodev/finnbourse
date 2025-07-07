@@ -69,7 +69,7 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
 
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 text-center md:ltr:text-left md:rtl:text-right">
         <div className="text-3xl font-bold text-primary">
-          {t("marchesecondaire")}
+          {t("marcheSecondaire")}
           <span className="text-lg text-black mx-1">
             {getTypeLabel(t, type)}
           </span>

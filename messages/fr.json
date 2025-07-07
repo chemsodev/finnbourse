@@ -556,7 +556,11 @@
     "marchePrimaire": "Marché Primarie",
     "opv": "OPF",
     "empruntObligataire": "Emprunt Obligataire",
-    "explMP": "Explorez les opportunités sur le marché primaire et ajustez vos stratégies."
+    "explMP": "Explorez les opportunités sur le marché primaire et ajustez vos stratégies.",
+    "explMS": "Explorez les opportunités sur le marché secondaire et ajustez vos stratégies.",
+    "stock": "Actions",
+    "bond": "Obligations",
+    "participativeTitles": "Titres Participatifs"
   },
   "TitresTable": {
     "logo": "Logo",
