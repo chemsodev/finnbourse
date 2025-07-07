@@ -28,8 +28,8 @@ export class ClientService {
       const response = await actorAPI.client.getOne(id, token);
       return response.data || response;
     } catch (error) {
-      console.error("Error fetching Client:", error);
-      throw new Error("Failed to fetch Client data");
+      console.error(`Error fetching Client with ID ${id}:`, error);
+      throw new Error(`Failed to fetch Client with ID ${id}`);
     }
   }
 
@@ -42,13 +42,18 @@ export class ClientService {
     token?: string
   ): Promise<Client> {
     try {
-      const response = id
-        ? await actorAPI.client.update(id, data, token)
-        : await actorAPI.client.create(data, token);
+      let response;
+      if (id) {
+        // Update existing client
+        response = await actorAPI.client.update(id, data, token);
+      } else {
+        // Create new client
+        response = await actorAPI.client.create(data, token);
+      }
       return response.data || response;
     } catch (error) {
-      console.error("Error creating/updating Client:", error);
-      throw new Error("Failed to create/update Client");
+      console.error(`Error ${id ? "updating" : "creating"} Client:`, error);
+      throw new Error(`Failed to ${id ? "update" : "create"} Client`);
     }
   }
 
@@ -59,8 +64,8 @@ export class ClientService {
     try {
       await actorAPI.client.delete(id, token);
     } catch (error) {
-      console.error("Error deleting Client:", error);
-      throw new Error("Failed to delete Client");
+      console.error(`Error deleting Client with ID ${id}:`, error);
+      throw new Error(`Failed to delete Client with ID ${id}`);
     }
   }
 

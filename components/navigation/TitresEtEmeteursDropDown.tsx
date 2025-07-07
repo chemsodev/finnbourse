@@ -11,16 +11,17 @@ import {
   BadgePercent,
   CheckCircle,
   HandCoins,
+  BarChart2,
 } from "lucide-react";
 import NavbarLink from "./NavbarLink";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-const TitresEtEmissionDropDown = () => {
+const TitresEtEmeteursDropDown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGestionOpen, setIsGestionOpen] = useState(false);
-  const t = useTranslations("TitresEtEmissionDropDown");
+  const t = useTranslations("TitresEtEmeteursDropDown");
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -76,6 +77,15 @@ const TitresEtEmissionDropDown = () => {
                 label: t("commissions"),
               }}
             />
+
+            <NavbarLink
+              link={{
+                href: "/iob-secondary-market",
+                icon: <BarChart2 size={14} />,
+                label: t("iobSecondaryMarket"),
+              }}
+            />
+
             <div>
               <button
                 onClick={toggleGestionDropdown}
@@ -124,4 +134,4 @@ const TitresEtEmissionDropDown = () => {
   );
 };
 
-export default TitresEtEmissionDropDown;
+export default TitresEtEmeteursDropDown;
