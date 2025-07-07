@@ -59,11 +59,6 @@ export default async function TCCFirstValidationPage({
                   <span>
                     Validation TCC Première
                   </span>
-                  {activeTab === "souscriptions" && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                      {tOrders("marcheprimaire")}
-                    </Badge>
-                  )}
                 </h1>
               </div>
             </div>
@@ -107,7 +102,7 @@ export default async function TCCFirstValidationPage({
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
                 taskID="validation-tcc-premiere"
-                marketType={activeTab === "souscriptions" ? "P" : marketType}
+                marketType={marketType}
                 pageType="tccFirstValidation"
                 activeTab={activeTab}
                 searchqueryParam={searchquery}
