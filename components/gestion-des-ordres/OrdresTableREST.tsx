@@ -24,7 +24,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle } from "lucide-react";
+import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OrderElement } from "@/lib/services/orderService";
@@ -538,51 +538,22 @@ export default function OrdresTableREST({
         
         return (
           <div className="flex items-center space-x-2">
-            {isReturnValidationPage ? (
-              // Pour les pages de validation du retour, afficher les boutons Valider et Annuler
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-                  onClick={() => openActionDialog(order.id, "validate")}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-                  onClick={() => openActionDialog(order.id, "cancel")}
-                >
-                  <XCircle className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              // Pour les autres pages, afficher les boutons d'action normaux
-              <>
-                {actions.includes("validate") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-                    onClick={() => openActionDialog(order.id, "validate")}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                )}
-                {actions.includes("cancel") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-                    onClick={() => openActionDialog(order.id, "cancel")}
-                  >
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                )}
-              </>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
+              onClick={() => openActionDialog(order.id, "validate")}
+            >
+              <CheckCircle className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
+              onClick={() => openActionDialog(order.id, "cancel")}
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
           </div>
         );
       },
@@ -1000,12 +971,16 @@ export default function OrdresTableREST({
             <DialogTitle>
               {currentAction.action === "validate"
                 ? "Valider l'ordre"
-                : "Annuler l'ordre"}
+                : currentAction.action === "cancel"
+                ? "Annuler l'ordre"
+                : "Rejeter l'ordre"}
             </DialogTitle>
             <DialogDescription>
               {currentAction.action === "validate"
                 ? "Veuillez fournir un motif pour la validation de cet ordre."
-                : "Veuillez fournir un motif pour l'annulation de cet ordre."}
+                : currentAction.action === "cancel"
+                ? "Veuillez fournir un motif pour l'annulation de cet ordre."
+                : "Veuillez fournir un motif pour la rejet de cet ordre."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
