@@ -284,7 +284,6 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
     const currentPage = Number(searchParams?.get("page")) || 0;
     const searchquery = searchParams?.get("searchquery") || "";
     const state = searchParams?.get("state") || "99";
-    const marketType = searchParams?.get("marketType") || "all";
     const userRole = (session.data as any)?.user?.roleid;
     return (
       <div className="space-y-6">
@@ -318,7 +317,7 @@ export default function SessionOrders({ selectedSessionId }: SessionOrdersProps)
           </CardHeader>
           <CardContent>
             <div className="flex mb-4 items-center justify-between">
-              <div>
+              <div className="flex flex-row">
                 <Button
                   variant={marketType === "secondaire" ? "default" : "outline"}
                   size="sm"
