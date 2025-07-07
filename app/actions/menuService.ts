@@ -318,11 +318,11 @@ export const menuItemMap: Record<
     translationKey: "iobSecondaryMarket",
   },
 
-  // Securities & Emissions dropdown and children
-  "titles-emissions-dropdown": {
-    label: "Securities & Emissions",
+  // Securities & Issuers dropdown and children
+  "titles-emetteurs-dropdown": {
+    label: "Securities & Issuers",
     icon: "Award",
-    translationKey: "titresEtEmissions",
+    translationKey: "titresEtEmeteurs",
   },
   emetteurs: {
     label: "Issuers",

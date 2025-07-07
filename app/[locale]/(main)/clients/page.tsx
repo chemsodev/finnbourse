@@ -228,44 +228,20 @@ export default function ClientDashboard() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between gap-4">
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="flex justify-between items-center">
+          <div className="relative flex items-center w-full max-w-md">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               type="search"
-              placeholder={t("search")}
+              placeholder={t("searchClients")}
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-green-600"
-              >
-                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                <path d="M4 7V2h10v4a2 2 0 0 0 2 2h4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" />
-                <path d="M10 12h4" />
-                <path d="M10 16h4" />
-                <path d="M10 8h1" />
-              </svg>
-              {t("exportExcel")}
-            </Button>
-            <Button onClick={() => router.push("/clients/create-client")}>
-              <Plus className="mr-2 h-4 w-4" /> {t("add")}
-            </Button>
-          </div>
+          <Button onClick={() => router.push("/clients/new")}>
+            <Plus className="mr-2 h-4 w-4" /> {t("addClient")}
+          </Button>
         </div>
 
         <div className="rounded-md border overflow-hidden">

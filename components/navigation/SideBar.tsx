@@ -18,11 +18,13 @@ import {
   LayoutDashboard,
   Settings,
   FileBarChart,
+  Briefcase,
+  FileText,
 } from "lucide-react";
 
 import LocaleButton from "../Locales/LocaleButton";
 import OperationsSurTitresDropDown from "./OperationsSurTitresDropDown";
-import TitresEtEmissionDropDown from "./TitresEtEmissionDropDown";
+import TitresEtEmeteursDropDown from "./TitresEtEmeteursDropDown";
 import GestionDeCompteDropDown from "./GestionDeCompteDropDown";
 import GestionDesActeurs from "../GestionDesActeurs";
 import OrdersDropDown from "./OrdersDropDown";
@@ -87,10 +89,24 @@ const SideBar = async () => {
                 label: translations.portefeuille,
               }}
             />
+            <NavbarLink
+              link={{
+                href: "/order-history",
+                icon: <FileText size={15} />,
+                label: t("historiqueDesOrdres"),
+              }}
+            />
             <OrdersDropDown />
-            <TitresEtEmissionDropDown />
+            <TitresEtEmeteursDropDown />
             <GestionDeCompteDropDown />
             <GestionDesActeurs />
+            <NavbarLink
+              link={{
+                href: "/clients",
+                icon: <Briefcase size={15} />,
+                label: t("client"),
+              }}
+            />
             <OperationsSurTitresDropDown
               titre={translations.operationsSurTitres}
               annonceOst={translations.annonceOst}

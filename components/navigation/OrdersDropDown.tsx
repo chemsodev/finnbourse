@@ -100,6 +100,17 @@ const OrdersDropDown = () => {
             <CheckCircle2 size={14} />
             <div>{t("validationFinale")}</div>
           </Link>
+          <Link
+            href="/ordres/validation-retour"
+            className={`flex items-center gap-2 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-3 w-full rounded-xl text-xs ${
+              pathname === "/ordres/validation-retour"
+                ? "bg-secondary/20 text-primary shadow-sm"
+                : ""
+            }`}
+          >
+            <CheckCircle2 size={14} />
+            <div>{t("validationRetour")}</div>
+          </Link>
 
           {/* TCC Pages */}
           <div className="mt-2 mb-1 text-xs text-gray-600 font-medium pl-2">
@@ -126,6 +137,17 @@ const OrdersDropDown = () => {
           >
             <CheckCircle2 size={14} />
             <div>{t("validationTCCFinale")}</div>
+          </Link>
+          <Link
+            href="/ordres/validation-tcc-retour"
+            className={`flex items-center gap-2 hover:bg-secondary/20 hover:text-primary hover:shadow-sm py-2 px-3 w-full rounded-xl text-xs ${
+              pathname === "/ordres/validation-tcc-retour"
+                ? "bg-secondary/20 text-primary shadow-sm"
+                : ""
+            }`}
+          >
+            <CheckCircle2 size={14} />
+            <div>{t("tccValidationRetour")}</div>
           </Link>
 
           {/* IOB Pages */}

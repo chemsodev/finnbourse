@@ -112,6 +112,63 @@ export function useClients() {
     }
   };
 
+  const createClient = async (clientData: any) => {
+    if (!hasRestToken) {
+      toast({
+        title: "Error",
+        description: "No authentication token available",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    try {
+      const response = await actorAPI.client.create(
+        clientData,
+        restToken || undefined
+      );
+      await fetchClients(); // Refresh the clients list
+      return response.data || response;
+    } catch (error) {
+      console.error("Failed to create client:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create client",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const updateClient = async (clientId: string, clientData: any) => {
+    if (!hasRestToken) {
+      toast({
+        title: "Error",
+        description: "No authentication token available",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    try {
+      const response = await actorAPI.client.update(
+        clientId,
+        clientData,
+        restToken || undefined
+      );
+      await fetchClients(); // Refresh the clients list
+      return response.data || response;
+    } catch (error) {
+      console.error("Failed to update client:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update client",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   return {
     clients,
     loading: loading || tokenLoading,
@@ -119,6 +176,8 @@ export function useClients() {
     fetchClients,
     deleteClient,
     getClientById,
+    createClient,
+    updateClient,
     hasToken: hasRestToken,
   };
 }

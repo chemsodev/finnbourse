@@ -62,10 +62,13 @@ export function useMenu(): UseMenuReturn {
           { id: "resultats" },
         ],
       },
-      { id: "iob-secondary-market" },
       {
-        id: "titles-emissions-dropdown",
-        children: [{ id: "emetteurs" }, { id: "gestion-titres" }],
+        id: "titles-emetteurs-dropdown",
+        children: [
+          { id: "emetteurs" },
+          { id: "gestion-titres" },
+          { id: "iob-secondary-market" },
+        ],
       },
       {
         id: "actors-management-dropdown",
