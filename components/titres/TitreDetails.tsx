@@ -252,7 +252,6 @@ export function TitreDetails({
         </CardContent>
       </Card>
 
-      {/* Order Response Section - Only for validation return pages */}
       {isValidationReturnPage && orderResponse && (
         <Card>
           <CardHeader>
