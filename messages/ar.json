@@ -29,6 +29,8 @@
     "validationTccPremiere": "التحقق الأول TCC",
     "validationTccFinale": "التحقق النهائي TCC",
     "tccValidationRetour": "إرجاع التحقق TCC",
+    "validationRetour": "التحقق من العودة",
+    "tccValidationRetour": "التحقق من العودة TCC",
     "iob": "وسيط بورصة",
     "executionOrdres": "تنفيذ الأوامر",
     "soumissionResultats": "تقديم النتائج",

@@ -17,12 +17,22 @@ interface TitreDetailsViewProps {
   data: TitreFormValues;
   companies: { id: string; name: string }[];
   institutions: { id: string; name: string }[];
+  withBackdrop?: boolean;
+  isValidationReturnPage?: boolean;
+  orderResponse?: {
+    reliquat?: number;
+    quantiteAcquise?: number;
+    prix?: number;
+  };
 }
 
 export function TitreDetails({
   data,
   companies,
   institutions,
+  withBackdrop = false,
+  isValidationReturnPage = false,
+  orderResponse,
 }: TitreDetailsViewProps) {
   const t = useTranslations("GestionDesTitres.ViewTitre");
   const locale = useLocale();
@@ -120,8 +130,8 @@ export function TitreDetails({
     return `${rate.toFixed(2)}%`;
   };
 
-  return (
-    <div className="max-w-6xl mx-auto space-y-6 p-4">
+  const content = (
+    <div className="max-w-6xl mx-auto space-y-6 p-4 h-[calc(100vh-50px)] overflow-auto">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -199,6 +209,8 @@ export function TitreDetails({
         </Card>
       </div>
 
+
+
       {/* Dates Section */}
       <Card>
         <CardHeader>
@@ -246,6 +258,45 @@ export function TitreDetails({
           </div>
         </CardContent>
       </Card>
+
+      {isValidationReturnPage && orderResponse && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Order Response
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-gray-600">
+                  Remaining Quantity
+                </div>
+                <div className="text-sm text-gray-900">
+                  {orderResponse.reliquat?.toLocaleString() || "N/A"}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-gray-600">
+                  Acquired Quantity
+                </div>
+                <div className="text-sm text-gray-900">
+                  {orderResponse.quantiteAcquise?.toLocaleString() || "N/A"}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-gray-600">
+                  Price
+                </div>
+                <div className="text-sm text-gray-900">
+                  {formatCurrency(orderResponse.prix) || "N/A"}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Institutions */}
       {Array.isArray(data.institutions) && data.institutions.length > 0 && (
@@ -319,4 +370,15 @@ export function TitreDetails({
       )}
     </div>
   );
+
+  if (withBackdrop) {
+    return (
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
+        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+          {content}
+        </div>
+      </div>
+    );
+  }
+  return content;
 }

@@ -68,6 +68,9 @@ import {
 } from "@/lib/mockData";
 import OrderStateFilter from "./OrderStateFilter";
 import MarketTypeFilter from "./MarketTypeFilter";
+import { createPortal } from "react-dom";
+import { TitreDetails } from "@/components/titres/TitreDetails";
+import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
 
 interface OrdresTableProps {
   searchquery: string;
@@ -130,6 +133,11 @@ export default function OrdresTable({
   const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
   const [responsesData, setResponsesData] = useState<Record<string, { reliquat: string; quantite: string; prix: string }>>({});
   const [responseVersion, setResponseVersion] = useState(0);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | null>(null);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(true);
 
   // Ajout pour message contextuel
   const attenteReponse = showActionColumn === true;
@@ -392,6 +400,79 @@ export default function OrdresTable({
     }
   };
 
+  // Composant Modal utilisant un portail pour couvrir tout l'écran
+  function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+    if (!open) return null;
+    return createPortal(
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
+        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+          <button
+            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+            onClick={onClose}
+          >
+            <span className="text-xl">×</span>
+          </button>
+          {children}
+        </div>
+      </div>,
+      typeof window !== 'undefined' ? document.body : (null as any)
+    );
+  }
+
+  // Utilitaire pour transformer un Order en TitreFormValues
+  function mapOrderToTitreFormValues(order: Order): TitreFormValues {
+    return {
+      id: order.id,
+      name: order.securityissuer || "",
+      issuer: order.securityissuer || "",
+      isinCode: order.securityid || "",
+      code: order.securityid || "",
+      faceValue: 0,
+      quantity: order.quantity || 0,
+      emissionDate: new Date(),
+      closingDate: new Date(),
+      enjoymentDate: new Date(),
+      marketListing: "secondary",
+      type: order.securitytype || "",
+      status: "activated",
+      dividendRate: undefined,
+      capitalOperation: undefined,
+      maturityDate: undefined,
+      durationYears: undefined,
+      paymentSchedule: undefined,
+      commission: undefined,
+      shareClass: undefined,
+      votingRights: undefined,
+      master: undefined,
+      institutions: undefined,
+      stockPrice: {
+        price: 0,
+        date: new Date(),
+        gap: 0,
+      },
+    };
+  }
+
+  // Charger les données des entreprises et institutions
+  useEffect(() => {
+    setTimeout(() => {
+      setCompanies([
+        { id: "1", name: "Company A" },
+        { id: "2", name: "Company B" },
+      ]);
+      setInstitutions([
+        { id: "1", name: "Institution X" },
+        { id: "2", name: "Institution Y" },
+      ]);
+      setLoadingDetails(false);
+    }, 500);
+  }, []);
+
+  const handleDetailsClick = (order: Order) => {
+    setSelectedOrderForDetails(order);
+    setIsDetailsModalOpen(true);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -619,11 +700,13 @@ export default function OrdresTable({
                 )}
                 {pageType !== "dashboard" && (
                   <TableCell>
-                    <OrdreDrawer 
-                      titreId={order.id} 
-                      orderData={order}
-                      isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
-                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDetailsClick(order)}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 )}
             </TableRow>
@@ -693,6 +776,27 @@ export default function OrdresTable({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal pour les détails du titre */}
+      {isDetailsModalOpen && selectedOrderForDetails && (
+        <Modal
+          open={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedOrderForDetails(null);
+          }}
+        >
+          {loadingDetails ? (
+            <div>Chargement des détails...</div>
+          ) : (
+            <TitreDetails
+              data={mapOrderToTitreFormValues(selectedOrderForDetails)}
+              companies={companies}
+              institutions={institutions}
+            />
+          )}
+        </Modal>
+      )}
     </div>
   );
 }
