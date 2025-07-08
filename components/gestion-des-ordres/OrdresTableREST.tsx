@@ -42,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createPortal } from "react-dom";
 import { TitreDetails } from "@/components/titres/TitreDetails";
+import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialog";
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
 
 // API base URL with fallback
@@ -74,7 +75,7 @@ interface OrdresTableRESTProps {
   stateParam?: string;
 }
 
-export default function OrdresTableREST({
+export default function OrdresTableREST({ 
   searchquery,
   taskID,
   marketType = "S",
@@ -583,25 +584,6 @@ export default function OrdresTableREST({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  // Composant Modal utilisant un portail pour couvrir tout l'écran
-  function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
-    if (!open) return null;
-    return createPortal(
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
-        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
-          <button
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-            onClick={onClose}
-          >
-            <span className="text-xl">×</span>
-          </button>
-          {children}
-        </div>
-      </div>,
-      typeof window !== 'undefined' ? document.body : (null as any)
-    );
-  }
-
   // Utilitaire pour transformer un OrderElement en TitreFormValues
   function mapOrderElementToTitreFormValues(order: OrderElement): TitreFormValues {
     const stockId = order.stock_id;
@@ -995,35 +977,22 @@ export default function OrdresTableREST({
         </DialogContent>
       </Dialog>
 
-      {/* Modal pour les détails du titre */}
-      {isDetailsModalOpen && selectedOrderForDetails && (
-        <Modal
+      {/* Détails de l'ordre (dialog natif) */}
+      {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
+        <OrderDetailsDialog
+          order={selectedOrderForDetails}
           open={isDetailsModalOpen}
-          onClose={() => {
-            setIsDetailsModalOpen(false);
-            setSelectedOrderForDetails(null);
-          }}
-        >
-          {loadingDetails ? (
-            <div>Chargement des détails...</div>
-          ) : (
-            <TitreDetails
-              data={mapOrderElementToTitreFormValues(selectedOrderForDetails)}
-              companies={companies}
-              institutions={institutions}
-              isValidationReturnPage={
-                taskID === "validation-retour-finale" ||
-                taskID === "validation-tcc-retour" ||
-                taskID === "resultats"
-              }
-              orderResponse={{
-                reliquat: selectedOrderForDetails.quantity ? Math.floor(selectedOrderForDetails.quantity * 0.3) : 0,
-                quantiteAcquise: selectedOrderForDetails.quantity ? Math.floor(selectedOrderForDetails.quantity * 0.7) : 0,
-                prix: selectedOrderForDetails.price || 0,
-              }}
-            />
-          )}
-        </Modal>
+          onOpenChange={setIsDetailsModalOpen}
+          stocksMap={stocksMap}
+          clientsMap={clientsMap}
+        />
+      )}
+      {isDetailsModalOpen && loadingDetails && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative text-center">
+            Chargement des détails...
+          </div>
+        </div>
       )}
     </>
   );
