@@ -25,12 +25,12 @@
     "gestionDesOrdres": "إدارة الطلبات",
     "premiereValidation": "التحقق الأول",
     "validationFinale": "التحقق النهائي",
-    "validationRetour": "إرجاع التحقق",
+    "validationRetourFinale": "إرجاع التحقق",
     "validationTccPremiere": "التحقق الأول TCC",
     "validationTccFinale": "التحقق النهائي TCC",
-    "tccValidationRetour": "إرجاع التحقق TCC",
-    "validationRetour": "التحقق من العودة",
-    "tccValidationRetour": "التحقق من العودة TCC",
+    "tccvalidationRetourFinale": "إرجاع التحقق TCC",
+    "validationRetourFinale": "التحقق من العودة",
+    "tccvalidationRetourFinale": "التحقق من العودة TCC",
     "iob": "وسيط بورصة",
     "executionOrdres": "تنفيذ الأوامر",
     "soumissionResultats": "تقديم النتائج",
@@ -2868,7 +2868,9 @@
         "rejected": "مرفوض",
         "canceled": "ملغي",
         "pending": "في الانتظار"
-      }
+      },
+      "response": "الاستجابة",
+      "reliquat": "المتبقي"
     }
   }
 }

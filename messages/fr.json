@@ -13,7 +13,7 @@
     "ordres": "Ordres",
     "marche": "Marché",
     "clients": "Clients",
-    "session": "Session",
+    "session": "Session", 
     "utilisateurs": "Utilisateurs",
     "operationsSurTitres": "Opérations sur titres",
     "annonceOst": "Annonce OST",
@@ -27,14 +27,14 @@
     "agence": "Agence",
     "premiereValidation": "Première Validation",
     "validationFinale": "Validation Finale",
-    "validationRetour": "Validation Retour",
+    "validationRetourPremiere": "Validation Retour Première",
+    "validationRetourFinale": "Validation Retour Finale",
     "tcc": "TCC",
     "validationTCCPremiere": "Validation TCC Première",
     "validationTccPremiere": "Validation TCC Première",
-    "validationTCCFinale": "Validation TCC Finale",
-    "validationTccFinale": "Validation TCC Finale",
-    "validationRetour": "Validation Retour",
-    "tccValidationRetour": "Validation TCC Retour",
+    "validationTCCFinal": "Validation TCC Finale",
+    "validationTCCRetourPremiere": "Validation TCC Retour Première",
+    "validationTCCRetourFinale": "Validation TCC Retour Finale",
     "iob": "IOB",
     "iobSecondaryMarket": "IOB Marché Secondaire",
     "executionOrdres": "Exécution des Ordres",
@@ -3268,7 +3268,10 @@
         "rejected": "Rejeté",
         "canceled": "Annulé",
         "pending": "En Attente"
-      }
+      },
+      "response": "Réponse",
+      "reliquat": "Reliquat",
+      "orderProgress": "Suivi de l'ordre"
     }
   }
 }

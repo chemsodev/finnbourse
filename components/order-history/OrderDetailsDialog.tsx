@@ -10,6 +10,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+
+
 import {
   Clock,
   ArrowRight,
@@ -24,6 +26,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { OrderElement } from "@/lib/services/orderService";
+import { OrderDetailsReponse } from "./OrderDetailsReponse";
+import { OrderTrack } from "./OrderTrack";
 
 interface OrderDetailsDialogProps {
   order: OrderElement | null;
@@ -200,6 +204,22 @@ export function OrderDetailsDialog({
               )}
             </CardContent>
           </Card>
+
+          <OrderDetailsReponse
+            order={order}
+            open={open}
+            onOpenChange={onOpenChange}
+            stocksMap={stocksMap}
+            clientsMap={clientsMap}
+          />
+
+          <OrderTrack
+            order={order}
+            open={open}
+            onOpenChange={onOpenChange}
+            stocksMap={stocksMap}
+            clientsMap={clientsMap}
+          />
         </div>
 
         {/* <div className="flex justify-end pt-4">
