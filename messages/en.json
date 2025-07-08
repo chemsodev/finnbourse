@@ -3259,7 +3259,10 @@
         "rejected": "Rejected",
         "canceled": "Canceled",
         "pending": "Pending"
-      }
+      },
+      "response": "Response",
+      "reliquat": "Remainder"
     }
-  }
+  },
+  "orderProgress": "Order Progress"
 }
