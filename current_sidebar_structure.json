@@ -51,17 +51,17 @@
         {
           "id": "validation-tcc-finale",
           "href": "/ordres/validation-tcc-finale",
-          "translationKey": "validationTCCRetourFinale"
-        },
-        {
-          "id": "validation-retour-premiere",
-          "href": "/ordres/validation-retour-premiere",
-          "translationKey": "validationRetourPremiere"
+          "translationKey": "validationTCCFinal"
         },
         {
           "id": "validation-tcc-retour-premiere",
           "href": "/ordres/validation-tcc-retour-premiere",
           "translationKey": "tccValidationRetourPremiere"
+        },
+        {
+          "id": "validation-tcc-retour-final",
+          "href": "/ordres/validation-tcc-retour-final",
+          "translationKey": "validationTCCRetourFinale"
         },
         {
           "id": "execution",

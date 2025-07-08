@@ -300,7 +300,7 @@ export const menuItemMap: Record<
   "validation-tcc-finale": {
     label: "TCC Final Validation",
     href: "/ordres/validation-tcc-finale",
-    translationKey: "validationTCCRetourFinale",
+    translationKey: "validationTCCFinal",
   },
   "validation-tcc-retour-premiere": {
     label: "TCC Return Validation",
