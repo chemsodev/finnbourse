@@ -36,55 +36,6 @@ export default async function OrdersHistoryPage({
       <div className="flex gap-8 mt-16">
         {/* Main content */}
         <div className="flex-1">
-          {/* Tabs at the top */}
-          <div className="mb-2">
-            <Tabs value={activeTab} className="w-auto">
-              <TabsList className="bg-gray-100/70 p-1 flex gap-2">
-                <TabsTrigger
-                  value="all"
-                  className={`${
-                    activeTab === "all"
-                      ? "bg-white/90 font-medium shadow-sm"
-                      : "hover:bg-gray-200/80"
-                  } transition-all duration-200`}
-                >
-                  <Link
-                    href={`/order-history?${new URLSearchParams({
-                      searchquery: searchquery || "",
-                      page: "0",
-                      tab: "all",
-                      state: state || "99",
-                      marketType: "S",
-                    }).toString()}`}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {t("orderHistory")}
-                  </Link>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="souscriptions"
-                  className={`${
-                    activeTab === "souscriptions"
-                      ? "bg-white/90 font-medium shadow-sm"
-                      : "hover:bg-gray-200/80"
-                  } transition-all duration-200`}
-                >
-                  <Link
-                    href={`/order-history?${new URLSearchParams({
-                      searchquery: searchquery || "",
-                      page: "0",
-                      tab: "souscriptions",
-                      state: state || "99",
-                      marketType: "P",
-                    }).toString()}`}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {t("subscriptionsHistory")}
-                  </Link>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
 
           <div className="flex flex-col gap-1 mb-8">
             <div className="text-2xl font-bold text-primary flex items-center justify-between">
@@ -118,7 +69,7 @@ export default async function OrdersHistoryPage({
                 <TabSearch />
               </div>
 
-              <div className="flex gap-4">
+              {/*<div className="flex gap-4">
                 <PDFDropdownMenu
                   customTitle={
                     activeTab === "souscriptions"
@@ -126,16 +77,7 @@ export default async function OrdersHistoryPage({
                       : t("orderHistory")
                   }
                 />
-
-                <ExportButton
-                  data={[]}
-                  customTitle={
-                    activeTab === "souscriptions"
-                      ? t("subscriptionsHistory")
-                      : t("orderHistory")
-                  }
-                />
-              </div>
+              </div>*/}
             </div>
 
             <div className="my-8">

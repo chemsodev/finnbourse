@@ -15,6 +15,7 @@ import {
   Mail,
   Printer,
   MapPin,
+  Edit,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "next/navigation";
@@ -40,6 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useTranslations } from "next-intl";
 import { agencyData, type AgencyData } from "@/lib/exportables";
+import { useRestToken } from "@/hooks/useRestToken";
 
 // Agency user interface
 export interface ExtendedAgencyUser {
@@ -53,9 +55,12 @@ export interface ExtendedAgencyUser {
   status: "actif" | "inactif" | "active" | "inactive"; // Supporting both formats
   position?: string;
   matricule?: string;
+  positionAgence?: string; // Position in agency
+  matriculeAgence?: string; // Matricule in agency
   role: string[];
   type?: "admin" | "user"; // Role type
   organisation?: string; // Organization info
+  organisationIndividu?: string; // Alternative field name for organization
   createdAt?: string;
   updatedAt?: string;
 }
@@ -65,6 +70,7 @@ export default function ViewAgencyPage() {
   const { toast } = useToast();
   const params = useParams();
   const t = useTranslations("AgencyDetailsPage");
+  const { restToken } = useRestToken();
   const [isLoading, setIsLoading] = useState(true);
   const [agency, setAgency] = useState<any | null>(null);
   const [financialInstitution, setFinancialInstitution] = useState<any | null>(
@@ -92,9 +98,6 @@ export default function ViewAgencyPage() {
     try {
       setIsLoading(true);
 
-      // In a real implementation, you would fetch the agency from your API
-      const { actorAPI } = await import("@/app/actions/actorAPI");
-
       // Get the agency ID from params
       const agencyId =
         typeof params.id === "string"
@@ -113,6 +116,9 @@ export default function ViewAgencyPage() {
         return;
       }
 
+      // Import the actorAPI
+      const { actorAPI } = await import("@/app/actions/actorAPI");
+
       // Fetch agency data
       const agencyData = await actorAPI.agence.getOne(agencyId);
 
@@ -126,6 +132,7 @@ export default function ViewAgencyPage() {
         return;
       }
 
+      console.log("Agency data loaded:", agencyData);
       setAgency(agencyData);
 
       // If the agency has a financial institution, set it
@@ -133,13 +140,16 @@ export default function ViewAgencyPage() {
         setFinancialInstitution(agencyData.financialInstitution);
       }
 
-      // Fetch agency users (assuming there's an API for this)
-      try {
-        const usersData = await actorAPI.agence.getUsers(agencyId);
-        setUsers(usersData || []);
-      } catch (userError) {
-        console.error("Failed to fetch agency users:", userError);
-        setUsers([]); // Set empty array if fetch fails
+      // Use the users data from the agency response
+      if (agencyData.users && Array.isArray(agencyData.users)) {
+        console.log("Agency users loaded from agency data:", agencyData.users);
+
+        // Simply set users from agency data
+        // We'll use type assertion since we know the structure is compatible
+        setUsers(agencyData.users as unknown as ExtendedAgencyUser[]);
+      } else {
+        console.log("No users found in agency data");
+        setUsers([]);
       }
 
       setIsLoading(false);
@@ -170,16 +180,56 @@ export default function ViewAgencyPage() {
       if (!userToUpdate) return;
 
       const updatedStatus =
-        userToUpdate.status === "actif" ? "inactif" : "actif";
+        userToUpdate.status === "actif" || userToUpdate.status === "active"
+          ? "inactif"
+          : "actif";
 
-      // Update user via API
-      const { actorAPI } = await import("@/app/actions/actorAPI");
-      await actorAPI.agence.updateUser(agency.id, userToToggleStatus, {
-        ...userToUpdate,
-        status: updatedStatus,
-      });
+      try {
+        // Try to use the actorAPI first
+        const { actorAPI } = await import("@/app/actions/actorAPI");
+        await actorAPI.agence.updateUser(
+          agency.id,
+          userToToggleStatus,
+          { status: updatedStatus },
+          restToken || undefined
+        );
+      } catch (updateError) {
+        console.warn(
+          "Failed to update user via actorAPI, trying direct API call:",
+          updateError
+        );
 
-      // Refresh Agency data to get updated users
+        // If actorAPI fails, try a direct API call
+        if (restToken) {
+          const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${restToken}`,
+          };
+
+          // Send a PUT request to the proper endpoint with minimal data
+          const response = await fetch(
+            `http://localhost:3001/api/v1/agence/${agency.id}/users/${userToToggleStatus}`,
+            {
+              method: "PUT",
+              headers,
+              body: JSON.stringify({ status: updatedStatus }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `Failed to update user status: ${response.statusText}`
+            );
+          }
+        } else {
+          // If we don't have a token, we can't update the user
+          throw new Error(
+            "No authentication token available for updating user status"
+          );
+        }
+      }
+
+      // Refresh agency data to get updated users regardless of which method succeeded
       await fetchAgencyData();
 
       toast({
@@ -209,22 +259,33 @@ export default function ViewAgencyPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex items-center mb-8 bg-slate-100 p-4 rounded-md">
+      <div className="flex items-center justify-between mb-8 bg-slate-100 p-4 rounded-md">
+        <div className="flex items-center">
+          <Button
+            onClick={() => router.push("/agence")}
+            variant="outline"
+            className="mr-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {t("backToList")}
+          </Button>
+          <h1 className="text-3xl font-bold">{t("generalInformation")}</h1>
+          {agency.code && (
+            <p className="text-lg text-primary ml-4">
+              {t("codeAgence")}:{" "}
+              <span className="font-semibold">{agency.code}</span>
+            </p>
+          )}
+        </div>
+
         <Button
-          onClick={() => router.push("/agence")}
-          variant="outline"
-          className="mr-4"
+          onClick={() => router.push(`/agence/form/${agency.id}`)}
+          variant="default"
+          className="bg-primary hover:bg-primary/90"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          {t("backToList")}
+          <Edit className="h-4 w-4 mr-2" />
+          {t("editAgency")}
         </Button>
-        <h1 className="text-3xl font-bold">{t("generalInformation")}</h1>
-        {agency.agenceCode && (
-          <p className="text-lg text-primary ml-4">
-            {t("codeAgence")}:{" "}
-            <span className="font-semibold">{agency.agenceCode}</span>
-          </p>
-        )}
       </div>
 
       <Tabs defaultValue="info" className="space-y-4">
@@ -254,23 +315,30 @@ export default function ViewAgencyPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="font-semibold">{t("nomBanque")}</p>
-                        <p>{agency.nomBanque}</p>
+                        <p>
+                          {agency.financialInstitution?.institutionName ||
+                            "N/A"}
+                        </p>
                       </div>
                       <div>
                         <p className="font-semibold">{t("codeAgence")}</p>
-                        <p>{agency.agenceCode}</p>
+                        <p>{agency.code || agency.agenceCode || "N/A"}</p>
                       </div>
                       <div>
                         <p className="font-semibold">{t("codeSwiftBic")}</p>
-                        <p>{agency.codeSwiftBic}</p>
+                        <p>
+                          {agency.code_swift || agency.codeSwiftBic || "N/A"}
+                        </p>
                       </div>
                       <div>
                         <p className="font-semibold">{t("devise")}</p>
-                        <p>{agency.devise}</p>
+                        <p>{agency.currency || agency.devise || "N/A"}</p>
                       </div>
                       <div className="col-span-2">
                         <p className="font-semibold">{t("adresseComplete")}</p>
-                        <p>{agency.adresseComplete}</p>
+                        <p>
+                          {agency.address || agency.adresseComplete || "N/A"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -282,17 +350,27 @@ export default function ViewAgencyPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="font-semibold">{t("directeurNom")}</p>
-                        <p>{agency.directeurNom}</p>
+                        <p>
+                          {agency.director_name || agency.directeurNom || "N/A"}
+                        </p>
                       </div>
                       <div>
                         <p className="font-semibold">
                           {t("directeurTelephone")}
                         </p>
-                        <p>{agency.directeurTelephone}</p>
+                        <p>
+                          {agency.director_phone ||
+                            agency.directeurTelephone ||
+                            "N/A"}
+                        </p>
                       </div>
                       <div className="col-span-2">
                         <p className="font-semibold">{t("directeurEmail")}</p>
-                        <p>{agency.directeurEmail}</p>
+                        <p>
+                          {agency.director_email ||
+                            agency.directeurEmail ||
+                            "N/A"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -304,8 +382,12 @@ export default function ViewAgencyPage() {
 
         <TabsContent value="users">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t("assignedUsers")}</CardTitle>
+              <Button onClick={() => router.push(`/agence/form/${agency.id}`)}>
+                <Users className="h-4 w-4 mr-2" />
+                {t("editUsers")}
+              </Button>
             </CardHeader>
             <CardContent className="overflow-x-auto">
               <Table>
@@ -350,23 +432,26 @@ export default function ViewAgencyPage() {
                     users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="whitespace-nowrap">
-                          {user.fullname}
+                          {user.fullname ||
+                            `${user.firstname} ${user.lastname}`}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.position}
+                          {user.position || user.positionAgence || "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.matricule}
+                          {user.matricule || user.matriculeAgence || "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           {Array.isArray(user.role) && user.role.length > 0
                             ? user.role
                                 .map((r) =>
                                   r.includes("validator_2") ||
-                                  r === "Validator 2"
+                                  r === "Validator 2" ||
+                                  r.includes("manager_2")
                                     ? t("validator2")
                                     : r.includes("validator_1") ||
-                                      r === "Validator 1"
+                                      r === "Validator 1" ||
+                                      r.includes("manager_1")
                                     ? t("validator1")
                                     : r.includes("initiator") ||
                                       r === "Initiator"
@@ -380,13 +465,15 @@ export default function ViewAgencyPage() {
                           {user.type === "admin" ? t("admin") : t("member")}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.organisation}
+                          {user.organisation ||
+                            user.organisationIndividu ||
+                            "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           {user.email || "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {user.phone || "-"}
+                          {user.phone || user.telephone || "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           <div className="flex items-center space-x-2">

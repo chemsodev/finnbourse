@@ -89,43 +89,51 @@ export default function ClientEdit() {
         const data = await getClientById(clientId);
         setClient(data);
 
-        // Map API data to form fields
+        // Map API data to form fields based on the API response format
         form.reset({
-          clientType: data.clientType || "personne_physique",
-          clientCode: data.clientCode || "",
-          clientSource: data.clientSource || "CPA",
+          clientType:
+            data.type === "individual"
+              ? "personne_physique"
+              : data.type === "corporate"
+              ? "personne_morale"
+              : "institution_financiere",
+          clientCode: data.client_code || "",
+          clientSource: data.client_source || "CPA",
           name: data.name || "",
           email: data.email || "",
-          phoneNumber: data.phoneNumber || "",
-          mobilePhone: data.mobilePhone || "",
-          idType: data.idType || "nin",
-          idNumber: data.idNumber || "",
+          phoneNumber: data.phone_number || "",
+          mobilePhone: data.mobile_phone || "",
+          idType: data.id_type || "nin",
+          idNumber: data.id_number || "",
           nin: data.nin || "",
           nationalite: data.nationalite || "",
           wilaya: data.wilaya || "",
           address: data.address || "",
-          iobType: data.iobType || "intern",
-          iobCategory: data.iobCategory || null,
-          hasCompteTitre: data.hasCompteTitre || false,
-          numeroCompteTitre: data.numeroCompteTitre || "",
-          ribBanque: data.ribBanque || "",
-          ribAgence: data.ribAgence || "",
-          ribCompte: data.ribCompte || "",
-          ribCle: data.ribCle || "",
+          iobType: data.iob_type || "intern",
+          iobCategory: data.iob_category || null,
+          hasCompteTitre: !!data.securities_account_number,
+          numeroCompteTitre: data.securities_account_number || "",
+          ribBanque: data.cash_account_bank_code || "",
+          ribAgence: data.cash_account_agency_code || "",
+          ribCompte: data.cash_account_number || "",
+          ribCle: data.cash_account_rip_key || "",
           observation: data.observation || "",
-          isEmployeeCPA: data.isEmployeeCPA || false,
+          isEmployeeCPA: data.employe_a_la_institution_financiere || false,
           matricule: data.matricule || "",
           poste: data.poste || "",
-          agenceCPA: data.agenceCPA || "",
-          selectedAgence: data.selectedAgence || "",
-          raisonSociale: data.raisonSociale || "",
+          agenceCPA: data.agence_cpa || "",
+          selectedAgence: data.agence || "",
+          raisonSociale: data.raison_sociale || "",
           nif: data.nif || "",
-          regNumber: data.regNumber || "",
-          legalForm: data.legalForm || "",
-          lieuNaissance: data.lieuNaissance || "",
-          dateNaissance: data.dateNaissance
-            ? new Date(data.dateNaissance)
+          regNumber: data.reg_number || "",
+          legalForm: data.legal_form || "",
+          lieuNaissance: data.lieu_naissance || "",
+          dateNaissance: data.date_naissance
+            ? new Date(data.date_naissance)
             : undefined,
+          financialInstitutionId: data.financialInstitutionId || "1",
+          agenceId: data.agenceId || data.agence || "1",
+          iobId: data.iobId || "1",
         });
       } catch (error) {
         console.error("Error fetching client:", error);
@@ -141,11 +149,8 @@ export default function ClientEdit() {
     try {
       setIsSaving(true);
 
-      // Transform form data to API format
-      const apiData = ClientService.transformFormDataToAPI(data);
-
-      // Call the API to update the client
-      await ClientService.createOrUpdate(apiData, clientId);
+      // Update the client directly, the transformation happens in the ClientService
+      await ClientService.createOrUpdate(data, clientId);
 
       toast({
         title: t("success"),
@@ -448,6 +453,14 @@ export default function ClientEdit() {
                 )}
               </div>
 
+              {/* Hidden fields for backend required IDs */}
+              <input
+                type="hidden"
+                {...form.register("financialInstitutionId")}
+              />
+              <input type="hidden" {...form.register("agenceId")} />
+              <input type="hidden" {...form.register("iobId")} />
+
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"
@@ -459,7 +472,21 @@ export default function ClientEdit() {
                 <Button type="submit" disabled={isSaving}>
                   {isSaving ? (
                     <>
-                      <Loading className="mr-2 h-4 w-4" />
+                      <span className="animate-spin mr-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                      </span>
                       {t("saving")}
                     </>
                   ) : (

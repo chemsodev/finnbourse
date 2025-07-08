@@ -70,7 +70,9 @@ import OrderStateFilter from "./OrderStateFilter";
 import MarketTypeFilter from "./MarketTypeFilter";
 import { createPortal } from "react-dom";
 import { TitreDetails } from "@/components/titres/TitreDetails";
+import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialog";
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
+import { OrderElement } from "@/lib/services/orderService";
 
 interface OrdresTableProps {
   searchquery: string;
@@ -400,25 +402,6 @@ export default function OrdresTable({
     }
   };
 
-  // Composant Modal utilisant un portail pour couvrir tout l'écran
-  function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
-    if (!open) return null;
-    return createPortal(
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
-        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
-          <button
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-            onClick={onClose}
-          >
-            <span className="text-xl">×</span>
-          </button>
-          {children}
-        </div>
-      </div>,
-      typeof window !== 'undefined' ? document.body : (null as any)
-    );
-  }
-
   // Utilitaire pour transformer un Order en TitreFormValues
   function mapOrderToTitreFormValues(order: Order): TitreFormValues {
     return {
@@ -472,6 +455,25 @@ export default function OrdresTable({
     setSelectedOrderForDetails(order);
     setIsDetailsModalOpen(true);
   };
+
+  // Mocks pour stocksMap et clientsMap (à remplacer par de vraies données si besoin)
+  const [stocksMap] = useState<Record<string, { code: string; name: string }>>({});
+  const [clientsMap] = useState<Record<string, { name: string }>>({});
+
+  // Conversion Order -> OrderElement pour OrderDetailsDialog
+  function toOrderElement(order: Order): OrderElement {
+    return {
+      id: Number(order.id),
+      quantity: order.quantity ?? 0,
+      price: (order as any).price ?? 0,
+      time_condition: (order as any).time_condition ?? '',
+      quantitative_condition: (order as any).quantitative_condition ?? '',
+      stock_id: (order as any).securityid ?? '',
+      market_type: (order as any).market_type ?? '',
+      client_id: (order as any).investorid ?? '',
+      status: String(order.orderstatus ?? ''),
+    };
+  }
 
   if (loading) {
     return <div>Loading...</div>;
@@ -777,25 +779,22 @@ export default function OrdresTable({
         </DialogContent>
       </Dialog>
 
-      {/* Modal pour les détails du titre */}
-      {isDetailsModalOpen && selectedOrderForDetails && (
-        <Modal
+      {/* Détails de l'ordre (dialog natif) */}
+      {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
+        <OrderDetailsDialog
+          order={selectedOrderForDetails ? toOrderElement(selectedOrderForDetails) : null}
           open={isDetailsModalOpen}
-          onClose={() => {
-            setIsDetailsModalOpen(false);
-            setSelectedOrderForDetails(null);
-          }}
-        >
-          {loadingDetails ? (
-            <div>Chargement des détails...</div>
-          ) : (
-            <TitreDetails
-              data={mapOrderToTitreFormValues(selectedOrderForDetails)}
-              companies={companies}
-              institutions={institutions}
-            />
-          )}
-        </Modal>
+          onOpenChange={setIsDetailsModalOpen}
+          stocksMap={stocksMap}
+          clientsMap={clientsMap}
+        />
+      )}
+      {isDetailsModalOpen && loadingDetails && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative text-center">
+            Chargement des détails...
+          </div>
+        </div>
       )}
     </div>
   );

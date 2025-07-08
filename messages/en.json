@@ -27,14 +27,14 @@
     "agence": "Agency",
     "premiereValidation": "First Validation",
     "validationFinale": "Final Validation",
-    "validationRetour": "Return Validation",
+    "validationRetourFinale": "Return Validation",
     "tcc": "TCC",
     "validationTCCPremiere": "TCC First Validation",
     "validationTccPremiere": "TCC First Validation",
     "validationTCCFinale": "TCC Final Validation",
     "validationTccFinale": "TCC Final Validation",
-    "validationRetour": "Return Validation",
-    "tccValidationRetour": "TCC Return Validation",
+    "validationRetourFinale": "Return Validation",
+    "tccvalidationRetourFinale": "TCC Return Validation",
     "iob": "IOB",
     "iobSecondaryMarket": "IOB Secondary Market",
     "executionOrdres": "Order Execution",
@@ -2076,7 +2076,19 @@
     "clientCreated": "Client created successfully",
     "clientUpdated": "Client updated successfully",
     "errorCreatingClient": "Error creating client",
-    "errorUpdatingClient": "Error updating client"
+    "errorUpdatingClient": "Error updating client",
+    "relatedUsers": "Related Users",
+    "addUser": "Add User",
+    "noUsersFound": "No users found for this client",
+    "userType": "User Type",
+    "role": "Role",
+    "editUser": "Edit User",
+    "owner": "Owner",
+    "agent": "Agent",
+    "legalGuardian": "Legal Guardian",
+    "birthPlace": "Birth Place",
+    "securitiesAccount": "Securities Account",
+    "cashAccount": "Cash Account"
   },
   "SecurityTransactionAnnouncement": {
     "title": "Schedule a Securities Transaction Announcement",
@@ -3259,7 +3271,10 @@
         "rejected": "Rejected",
         "canceled": "Canceled",
         "pending": "Pending"
-      }
+      },
+      "response": "Response",
+      "reliquat": "Remainder"
     }
-  }
+  },
+  "orderProgress": "Order Progress"
 }

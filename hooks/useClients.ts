@@ -15,6 +15,7 @@ export function useClients() {
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [agencyId, setAgencyId] = useState<string | null>(null);
   const { toast } = useToast();
   const { restToken, hasRestToken, isLoading: tokenLoading } = useRestToken();
   const { data: session } = useSession();
@@ -39,6 +40,11 @@ export function useClients() {
     }
   }, [session]);
 
+  // Function to set the agency ID for direct fetching
+  const setAgency = (id: string) => {
+    setAgencyId(id);
+  };
+
   const fetchClients = async () => {
     // Wait for token to be available
     if (tokenLoading) {
@@ -57,8 +63,59 @@ export function useClients() {
         "🔄 Fetching clients with token:",
         restToken?.substring(0, 20) + "..."
       );
-      const response = await actorAPI.client.getAll(restToken || undefined);
-      const data = response.data || response || [];
+
+      let data = [];
+
+      // If we have a specific agency ID, try to get clients from the agency endpoint
+      if (agencyId) {
+        try {
+          console.log(
+            `Fetching clients from agency endpoint for ID: ${agencyId}`
+          );
+          const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${restToken}`,
+          };
+
+          // Use the direct endpoint as shown in the example
+          const response = await fetch(
+            `http://localhost:3001/api/v1/agence/${agencyId}`,
+            { headers }
+          );
+
+          if (response.ok) {
+            const agencyData = await response.json();
+            if (agencyData.clients && Array.isArray(agencyData.clients)) {
+              console.log(
+                "Successfully fetched clients from agency data:",
+                agencyData.clients.length
+              );
+              data = agencyData.clients;
+            }
+          } else {
+            console.error(
+              "Failed to fetch from agency endpoint:",
+              response.status
+            );
+            // Fall back to the standard client API
+            const fallbackResponse = await actorAPI.client.getAll(
+              restToken || undefined
+            );
+            data = fallbackResponse.data || fallbackResponse || [];
+          }
+        } catch (error) {
+          console.error("Error fetching from agency endpoint:", error);
+          // Fall back to the standard client API
+          const fallbackResponse = await actorAPI.client.getAll(
+            restToken || undefined
+          );
+          data = fallbackResponse.data || fallbackResponse || [];
+        }
+      } else {
+        // Use the standard client API if no agency ID is specified
+        const response = await actorAPI.client.getAll(restToken || undefined);
+        data = response.data || response || [];
+      }
 
       console.log("✅ Clients fetched successfully:", data);
       setClients(data);
@@ -76,6 +133,7 @@ export function useClients() {
       setLoading(false);
     }
   };
+
   const deleteClient = async (clientId: string) => {
     // Delete functionality removed per user request
     toast({
@@ -96,11 +154,8 @@ export function useClients() {
     }
 
     try {
-      const response = await actorAPI.client.getOne(
-        clientId,
-        restToken || undefined
-      );
-      return response.data || response;
+      // Use ClientService to get client by id and handle mapping
+      return await ClientService.getOne(clientId, restToken || undefined);
     } catch (error) {
       console.error("Failed to fetch client:", error);
       toast({
@@ -123,12 +178,14 @@ export function useClients() {
     }
 
     try {
-      const response = await actorAPI.client.create(
+      // Use ClientService to create client and handle data transformation
+      const result = await ClientService.createOrUpdate(
         clientData,
+        undefined,
         restToken || undefined
       );
       await fetchClients(); // Refresh the clients list
-      return response.data || response;
+      return result;
     } catch (error) {
       console.error("Failed to create client:", error);
       toast({
@@ -151,13 +208,14 @@ export function useClients() {
     }
 
     try {
-      const response = await actorAPI.client.update(
-        clientId,
+      // Use ClientService to update client and handle data transformation
+      const result = await ClientService.createOrUpdate(
         clientData,
+        clientId,
         restToken || undefined
       );
       await fetchClients(); // Refresh the clients list
-      return response.data || response;
+      return result;
     } catch (error) {
       console.error("Failed to update client:", error);
       toast({
@@ -179,6 +237,7 @@ export function useClients() {
     createClient,
     updateClient,
     hasToken: hasRestToken,
+    setAgency, // Export the function to set agency ID
   };
 }
 

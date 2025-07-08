@@ -15,7 +15,7 @@ import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function ValidationRetourPage({
+export default async function validationRetourFinalePage({
   searchParams,
 }: {
   searchParams?: {
@@ -57,7 +57,7 @@ export default async function ValidationRetourPage({
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                   <span>
-                    Validation du Retour
+                    Validation Retour TCC
                   </span>
                   {activeTab === "souscriptions" && (
                     <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
@@ -94,10 +94,6 @@ export default async function ValidationRetourPage({
                   <TabSearch />
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <PDFDropdownMenu customTitle="Impression" />
-              </div>
             </div>
           </CardHeader>
 
@@ -106,9 +102,9 @@ export default async function ValidationRetourPage({
               <OrdresTableREST
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
-                taskID="validation-retour"
+                taskID="validation-tcc-retour"
                 marketType={activeTab === "souscriptions" ? "P" : marketType}
-                pageType="validationRetour"
+                pageType="validationRetourFinale"
                 activeTab={activeTab}
                 searchqueryParam={searchquery}
                 stateParam={state}

@@ -24,7 +24,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle } from "lucide-react";
+import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OrderElement } from "@/lib/services/orderService";
@@ -42,7 +42,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createPortal } from "react-dom";
 import { TitreDetails } from "@/components/titres/TitreDetails";
+import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialog";
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // API base URL with fallback
 const API_BASE =
@@ -74,7 +76,7 @@ interface OrdresTableRESTProps {
   stateParam?: string;
 }
 
-export default function OrdresTableREST({
+export default function OrdresTableREST({ 
   searchquery,
   taskID,
   marketType = "S",
@@ -104,6 +106,35 @@ export default function OrdresTableREST({
   const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
+  // State pour la sélection multiple
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+
+  // Handler pour sélectionner/désélectionner tout
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(data.map((order) => order.id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  // Handler pour sélectionner/désélectionner une ligne
+  const handleSelectRow = (id: number, checked: boolean) => {
+    setSelectedOrders((prev) =>
+      checked ? [...prev, id] : prev.filter((orderId) => orderId !== id)
+    );
+  };
+
+  // Handler pour valider/refuser la sélection
+  const handleBulkAction = (action: "validate" | "reject") => {
+    // Ici, tu peux faire un appel API ou mock
+    alert(
+      `${action === "validate" ? "Validation" : "Refus"} des ordres: ` +
+        selectedOrders.join(", ")
+    );
+    setSelectedOrders([]);
+  };
+
   // Validate taskID
   useEffect(() => {
     console.log("Current taskID:", taskID);
@@ -124,7 +155,7 @@ export default function OrdresTableREST({
 
   // Initial fetch on component mount
   useEffect(() => {
-    const isReturnValidationPage = taskID === "validation-retour" || taskID === "validation-tcc-retour";
+    const isReturnValidationPage = taskID === "validation-retour-finale" || taskID === "validation-tcc-retour";
     if (isReturnValidationPage) {
       console.log("Chargement automatique des exemples pour la page de validation du retour");
       setData(exampleOrders);
@@ -534,55 +565,26 @@ export default function OrdresTableREST({
       header: t("actions"),
       cell: ({ row }: any) => {
         const order = row.original;
-        const isReturnValidationPage = pageType === "validationRetour" || pageType === "tccValidationRetour";
+        const isReturnValidationPage = pageType === "validationRetourFinale" || pageType === "tccvalidationRetour";
         
         return (
           <div className="flex items-center space-x-2">
-            {isReturnValidationPage ? (
-              // Pour les pages de validation du retour, afficher les boutons Valider et Annuler
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-                  onClick={() => openActionDialog(order.id, "validate")}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-                  onClick={() => openActionDialog(order.id, "cancel")}
-                >
-                  <XCircle className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              // Pour les autres pages, afficher les boutons d'action normaux
-              <>
-                {actions.includes("validate") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-                    onClick={() => openActionDialog(order.id, "validate")}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                )}
-                {actions.includes("cancel") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-                    onClick={() => openActionDialog(order.id, "cancel")}
-                  >
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                )}
-              </>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
+              onClick={() => openActionDialog(order.id, "validate")}
+            >
+              <CheckCircle className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
+              onClick={() => openActionDialog(order.id, "cancel")}
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
           </div>
         );
       },
@@ -611,25 +613,6 @@ export default function OrdresTableREST({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
-
-  // Composant Modal utilisant un portail pour couvrir tout l'écran
-  function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
-    if (!open) return null;
-    return createPortal(
-      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
-        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
-          <button
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-            onClick={onClose}
-          >
-            <span className="text-xl">×</span>
-          </button>
-          {children}
-        </div>
-      </div>,
-      typeof window !== 'undefined' ? document.body : (null as any)
-    );
-  }
 
   // Utilitaire pour transformer un OrderElement en TitreFormValues
   function mapOrderElementToTitreFormValues(order: OrderElement): TitreFormValues {
@@ -810,9 +793,9 @@ export default function OrdresTableREST({
   return (
     <>
       <div className="rounded-md border">
-        {taskID !== "validation-tcc-retour" && (
-          <div className="flex justify-between items-center p-2 border-b">
-            {/* Market Type Tabs - Left side */}
+        <div className="flex justify-between items-center p-2 border-b">
+          {/* Market Type Tabs - Left side */}
+          {taskID !== "validation-tcc-premiere" && taskID !== "validation-tcc-finale" && (
             <div className="flex items-center gap-0">
               <Button
                 variant={activeTab === "all" ? "default" : "outline"}
@@ -843,36 +826,19 @@ export default function OrdresTableREST({
                 Souscriptions
               </Button>
             </div>
-
-            {/* Refresh Button - Right side */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchOrdersData()}
-              disabled={loading}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
-        )}
-
-        {taskID === "validation-tcc-retour" && (
-          <div className="flex justify-end items-center p-2 border-b">
-            {/* Refresh Button only for validation-tcc-retour */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchOrdersData()}
-              disabled={loading}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
-        )}
+          )}
+          {/* Refresh Button - Right side (toujours visible) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchOrdersData()}
+            disabled={loading}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
         {loading ? (
           <div className="py-14 w-full flex justify-center">
             <div role="status">
@@ -941,22 +907,28 @@ export default function OrdresTableREST({
         ) : (
           <Table>
             <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
+              <TableRow>
+                {/* Checkbox header */}
+                {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && (
+                  <TableHead>
+                    <Checkbox
+                      checked={selectedOrders.length === data.length && data.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Tout sélectionner"
+                    />
+                  </TableHead>
+                )}
+                {table.getHeaderGroups()[0].headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows?.length ? (
@@ -965,6 +937,16 @@ export default function OrdresTableREST({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                   >
+                    {/* Checkbox row */}
+                    {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrders.includes(row.original.id)}
+                          onCheckedChange={(checked) => handleSelectRow(row.original.id, !!checked)}
+                          aria-label={`Sélectionner l'ordre ${row.original.id}`}
+                        />
+                      </TableCell>
+                    )}
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
@@ -993,6 +975,15 @@ export default function OrdresTableREST({
         )}
       </div>
 
+      {/* Actions groupées sous le tableau */}
+      {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && data.length > 0 && (
+        <div className="flex gap-4 mt-4">
+          <Button variant="default" onClick={() => handleBulkAction("validate")} disabled={selectedOrders.length === 0}>Valider la sélection</Button>
+          <Button variant="destructive" onClick={() => handleBulkAction("reject")} disabled={selectedOrders.length === 0}>Refuser la sélection</Button>
+          <Button variant="outline" onClick={() => setSelectedOrders(data.map((order) => order.id))} disabled={selectedOrders.length === data.length}>Tout sélectionner</Button>
+        </div>
+      )}
+
       {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -1000,12 +991,16 @@ export default function OrdresTableREST({
             <DialogTitle>
               {currentAction.action === "validate"
                 ? "Valider l'ordre"
-                : "Annuler l'ordre"}
+                : currentAction.action === "cancel"
+                ? "Annuler l'ordre"
+                : "Rejeter l'ordre"}
             </DialogTitle>
             <DialogDescription>
               {currentAction.action === "validate"
                 ? "Veuillez fournir un motif pour la validation de cet ordre."
-                : "Veuillez fournir un motif pour l'annulation de cet ordre."}
+                : currentAction.action === "cancel"
+                ? "Veuillez fournir un motif pour l'annulation de cet ordre."
+                : "Veuillez fournir un motif pour la rejet de cet ordre."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1037,35 +1032,22 @@ export default function OrdresTableREST({
         </DialogContent>
       </Dialog>
 
-      {/* Modal pour les détails du titre */}
-      {isDetailsModalOpen && selectedOrderForDetails && (
-        <Modal
+      {/* Détails de l'ordre (dialog natif) */}
+      {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
+        <OrderDetailsDialog
+          order={selectedOrderForDetails}
           open={isDetailsModalOpen}
-          onClose={() => {
-            setIsDetailsModalOpen(false);
-            setSelectedOrderForDetails(null);
-          }}
-        >
-          {loadingDetails ? (
-            <div>Chargement des détails...</div>
-          ) : (
-            <TitreDetails
-              data={mapOrderElementToTitreFormValues(selectedOrderForDetails)}
-              companies={companies}
-              institutions={institutions}
-              isValidationReturnPage={
-                taskID === "validation-retour" ||
-                taskID === "validation-tcc-retour" ||
-                taskID === "resultats"
-              }
-              orderResponse={{
-                reliquat: selectedOrderForDetails.quantity ? Math.floor(selectedOrderForDetails.quantity * 0.3) : 0,
-                quantiteAcquise: selectedOrderForDetails.quantity ? Math.floor(selectedOrderForDetails.quantity * 0.7) : 0,
-                prix: selectedOrderForDetails.price || 0,
-              }}
-            />
-          )}
-        </Modal>
+          onOpenChange={setIsDetailsModalOpen}
+          stocksMap={stocksMap}
+          clientsMap={clientsMap}
+        />
+      )}
+      {isDetailsModalOpen && loadingDetails && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative text-center">
+            Chargement des détails...
+          </div>
+        </div>
       )}
     </>
   );

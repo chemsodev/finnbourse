@@ -59,11 +59,6 @@ export default async function TCCFinalValidationPage({
                   <span>
                     Validation TCC Finale
                   </span>
-                  {activeTab === "souscriptions" && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                      {tOrders("marcheprimaire")}
-                    </Badge>
-                  )}
                 </h1>
               </div>
             </div>
@@ -94,10 +89,6 @@ export default async function TCCFinalValidationPage({
                   <TabSearch />
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <PDFDropdownMenu customTitle="Impression" />
-              </div>
             </div>
           </CardHeader>
 
@@ -107,7 +98,7 @@ export default async function TCCFinalValidationPage({
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
                 taskID="validation-tcc-finale"
-                marketType={activeTab === "souscriptions" ? "P" : marketType}
+                marketType={marketType}
                 pageType="tccFinalValidation"
                 activeTab={activeTab}
                 searchqueryParam={searchquery}

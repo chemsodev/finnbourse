@@ -13,7 +13,7 @@
     "ordres": "Ordres",
     "marche": "Marché",
     "clients": "Clients",
-    "session": "Session",
+    "session": "Session", 
     "utilisateurs": "Utilisateurs",
     "operationsSurTitres": "Opérations sur titres",
     "annonceOst": "Annonce OST",
@@ -27,14 +27,14 @@
     "agence": "Agence",
     "premiereValidation": "Première Validation",
     "validationFinale": "Validation Finale",
-    "validationRetour": "Validation Retour",
+    "validationRetourPremiere": "Validation Retour Première",
+    "validationRetourFinale": "Validation Retour Finale",
     "tcc": "TCC",
     "validationTCCPremiere": "Validation TCC Première",
     "validationTccPremiere": "Validation TCC Première",
-    "validationTCCFinale": "Validation TCC Finale",
-    "validationTccFinale": "Validation TCC Finale",
-    "validationRetour": "Validation Retour",
-    "tccValidationRetour": "Validation TCC Retour",
+    "validationTCCFinal": "Validation TCC Finale",
+    "validationTCCRetourPremiere": "Validation TCC Retour Première",
+    "validationTCCRetourFinale": "Validation TCC Retour Finale",
     "iob": "IOB",
     "iobSecondaryMarket": "IOB Marché Secondaire",
     "executionOrdres": "Exécution des Ordres",
@@ -261,7 +261,19 @@
     "clientCreated": "Client créé avec succès",
     "clientUpdated": "Client mis à jour avec succès",
     "errorCreatingClient": "Erreur lors de la création du client",
-    "errorUpdatingClient": "Erreur lors de la mise à jour du client"
+    "errorUpdatingClient": "Erreur lors de la mise à jour du client",
+    "relatedUsers": "Utilisateurs associés",
+    "addUser": "Ajouter un utilisateur",
+    "noUsersFound": "Aucun utilisateur trouvé pour ce client",
+    "userType": "Type d'utilisateur",
+    "role": "Rôle",
+    "editUser": "Modifier l'utilisateur",
+    "owner": "Propriétaire",
+    "agent": "Mandataire",
+    "legalGuardian": "Tuteur légal",
+    "birthPlace": "Lieu de naissance",
+    "securitiesAccount": "Compte titres",
+    "cashAccount": "Compte espèces"
   },
   "voletNotif": {
     "nouvelleNotification": "Nouvelle Notification !",
@@ -3256,7 +3268,10 @@
         "rejected": "Rejeté",
         "canceled": "Annulé",
         "pending": "En Attente"
-      }
+      },
+      "response": "Réponse",
+      "reliquat": "Reliquat",
+      "orderProgress": "Suivi de l'ordre"
     }
   }
 }

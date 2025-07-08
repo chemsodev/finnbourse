@@ -111,37 +111,77 @@ export interface AgenceUser {
 
 export interface Client {
   id?: string;
-  code: string;
-  name: string;
-  type: "INDIVIDUAL" | "CORPORATE";
-  address: string;
-  postal_code: string;
-  city: string;
-  country: string;
-  phone: string;
+  type: "individual" | "company" | "financial_institution";
+  agence?: Agence | string;
+  agency_name?: string;
+  client_code: string;
+  client_source: string;
   email: string;
-  status: "ACTIVE" | "INACTIVE";
-  tax_number?: string;
-  registration_date?: string;
-  parent_agence_id?: string;
+  phone_number: string;
+  mobile_phone: string;
+  id_type: "passport" | "driving_license" | "CN" | "RC";
+  cash_account_bank_code: string;
+  cash_account_agency_code: string;
+  cash_account_number: string;
+  cash_account_rip_key: string;
+  cash_account_rip_full: string;
+  securities_account_number: string;
+
+  // Individual specific fields
+  name?: string;
+  id_number?: string;
+  nin?: string;
+  nationalite?: string;
+  wilaya?: string;
+  lieu_naissance?: string;
+  employe_a_la_institution_financiere?: boolean;
+
+  // Company specific fields
+  raison_sociale?: string;
+  nif?: string;
+  reg_number?: string;
+  legal_form?: string;
+
+  // Frontend-specific fields
+  status?: string;
+  date_naissance?: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface ClientCreateRequest {
-  code: string;
-  name: string;
-  type: "INDIVIDUAL" | "CORPORATE";
-  address: string;
-  postal_code: string;
-  city: string;
-  country: string;
-  phone: string;
+  type: "individual" | "company" | "financial_institution";
+  financialInstitutionId?: string;
+  agenceId?: string;
+  iobId?: string;
+  client_code: string;
+  client_source: string;
   email: string;
-  status: "ACTIVE" | "INACTIVE";
-  tax_number?: string;
-  registration_date?: string;
-  parent_agence_id?: string;
+  phone_number: string;
+  mobile_phone: string;
+  id_type: "passport" | "driving_license" | "CN" | "RC";
+  cash_account_bank_code: string;
+  cash_account_agency_code: string;
+  cash_account_number: string;
+  cash_account_rip_key: string;
+  cash_account_rip_full: string;
+  securities_account_number: string;
+
+  // For type discriminated union (matches backend structure)
+  client_details?: {
+    type: "individual" | "company";
+    name?: string;
+    id_number?: string;
+    nin?: string;
+    nationalite?: string;
+    wilaya?: string;
+    lieu_naissance?: string;
+    employe_a_la_institution_financiere?: boolean;
+    raison_sociale?: string;
+    nif?: string;
+    reg_number?: string;
+    legal_form?: string;
+  };
 }
 
 export interface ClientUser {
@@ -165,8 +205,9 @@ export const USER_STATUS_OPTIONS = [
 ] as const;
 
 export const CLIENT_TYPE_OPTIONS = [
-  { value: "INDIVIDUAL", label: "Individual" },
-  { value: "CORPORATE", label: "Corporate" },
+  { value: "individual", label: "Individual" },
+  { value: "corporate", label: "Corporate" },
+  { value: "financial_institution", label: "Financial Institution" },
 ] as const;
 
 // User roles for different actors

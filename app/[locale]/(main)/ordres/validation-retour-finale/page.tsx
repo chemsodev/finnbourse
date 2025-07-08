@@ -5,7 +5,7 @@ import MyMarquee from "@/components/MyMarquee";
 import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
 import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, Filter, Download, FileText } from "lucide-react";
+import { ArrowLeft, CalendarClock, CheckCircle, MessageSquare, Filter, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TabSearch from "@/components/TabSearch";
 import MyPagination from "@/components/navigation/MyPagination";
@@ -15,7 +15,7 @@ import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function PremiereValidationPage({
+export default async function validationRetourFinalePage({
   searchParams,
 }: {
   searchParams?: {
@@ -24,7 +24,6 @@ export default async function PremiereValidationPage({
     state?: string;
     marketType?: string;
     tab?: string;
-    action?: string;
   };
 }) {
   const session = await getServerSession(auth);
@@ -36,7 +35,6 @@ export default async function PremiereValidationPage({
   const state = searchParams?.state || "99";
   const marketType = searchParams?.marketType || "S";
   const activeTab = searchParams?.tab || "all";
-  const activeAction = searchParams?.action || "validation";
 
   const t = await getTranslations("orderManagement");
   const tOrders = await getTranslations("mesOrdres");
@@ -59,7 +57,7 @@ export default async function PremiereValidationPage({
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                   <span>
-                    {activeAction === "validation" ? "Premier validation" : "Réponse"}
+                    Validation du Retour
                   </span>
                   {activeTab === "souscriptions" && (
                     <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
@@ -70,13 +68,20 @@ export default async function PremiereValidationPage({
               </div>
             </div>
 
-                          
+            <Link href="/ordres/validation-tcc-premiere">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+            </Link>
           </div>
 
           <p className="text-gray-600 text-sm leading-relaxed max-w-3xl">
-            {activeAction === "validation" 
-              ? t("firstValidationDescription")
-              : "Gestion des réponses aux ordres et suivi des interactions"}
+            Validez les retours des ordres et consultez les détails des réponses reçues
           </p>
         </div>
 
@@ -95,24 +100,23 @@ export default async function PremiereValidationPage({
           <CardContent className="pt-0">
             <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
               <OrdresTableREST
-                key={`orders-table-${activeAction}-${activeTab}-${marketType}-${state}-${currentPage}`}
+                key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
-                taskID={activeAction === "validation" ? "premiere-validation" : "reponse"}
+                taskID="validation-retour-finale"
                 marketType={activeTab === "souscriptions" ? "P" : marketType}
-                pageType={activeAction === "validation" ? "firstValidation" : "reponse"}
+                pageType="validationRetourFinale"
                 activeTab={activeTab}
-                activeAction={activeAction}
                 searchqueryParam={searchquery}
                 stateParam={state}
               />
             </div>
 
             <div className="flex justify-end mt-8 pt-6 border-t border-gray-100">
-              <MyPagination preserveParams={["tab", "action", "marketType", "state"]} />
+              <MyPagination preserveParams={["tab", "marketType", "state"]} />
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
   );
-}
+} 
