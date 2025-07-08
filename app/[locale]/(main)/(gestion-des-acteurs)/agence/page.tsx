@@ -25,13 +25,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -51,8 +44,6 @@ export default function AgencePage() {
 
   // State
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAgence, setSelectedAgence] = useState<Agence | null>(null);
-  const [showViewDialog, setShowViewDialog] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -90,8 +81,7 @@ export default function AgencePage() {
   };
 
   const handleView = (agence: Agence) => {
-    setSelectedAgence(agence);
-    setShowViewDialog(true);
+    router.push(`/agence/${agence.id}/view`);
   };
 
   // Show loading state
@@ -188,7 +178,6 @@ export default function AgencePage() {
                     <TableHead>Director Name</TableHead>
                     <TableHead>Contact</TableHead>
                     <TableHead>Address</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -216,28 +205,28 @@ export default function AgencePage() {
                       <TableCell>
                         <div className="text-sm">{agence.address}</div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="default">ACTIVE</Badge>
-                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="icon">
                               <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">{t("openMenu")}</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               onClick={() => handleView(agence)}
+                              className="cursor-pointer"
                             >
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Details
+                              <Eye className="h-4 w-4 mr-2" />
+                              {t("viewDetails")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleEdit(agence)}
+                              className="cursor-pointer"
                             >
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
+                              <Edit className="h-4 w-4 mr-2" />
+                              {t("edit")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -250,91 +239,6 @@ export default function AgencePage() {
           )}
         </CardContent>
       </Card>
-
-      {/* View Agence Dialog */}
-      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Agence Details</DialogTitle>
-            <DialogDescription>
-              Detailed information about the selected Agence.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedAgence && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-gray-600">Code</div>
-                  <div>{selectedAgence.code}</div>
-                </div>{" "}
-                <div>
-                  <div className="text-sm font-medium text-gray-600">
-                    Director
-                  </div>
-                  <div>{selectedAgence.director_name}</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {" "}
-                <div>
-                  <div className="text-sm font-medium text-gray-600">
-                    Director Name
-                  </div>
-                  <div>{selectedAgence.director_name || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-600">
-                    Currency
-                  </div>
-                  <div>{selectedAgence.currency || "N/A"}</div>
-                </div>
-              </div>{" "}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-gray-600">Email</div>
-                  <div>{selectedAgence.director_email}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-600">Phone</div>
-                  <div>{selectedAgence.director_phone}</div>
-                </div>
-              </div>{" "}
-              <div>
-                <div className="text-sm font-medium text-gray-600">Address</div>
-                <div>{selectedAgence.address}</div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-600">
-                  SWIFT Code
-                </div>
-                <div>{selectedAgence.code_swift || "N/A"}</div>
-              </div>
-              {selectedAgence.financialInstitution && (
-                <div>
-                  <div className="text-sm font-medium text-gray-600">
-                    Financial Institution
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {selectedAgence.financialInstitution.institutionName}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Tax ID:{" "}
-                      {
-                        selectedAgence.financialInstitution
-                          .taxIdentificationNumber
-                      }
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {selectedAgence.financialInstitution.fullAddress}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

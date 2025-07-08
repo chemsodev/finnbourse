@@ -261,7 +261,19 @@
     "clientCreated": "Client créé avec succès",
     "clientUpdated": "Client mis à jour avec succès",
     "errorCreatingClient": "Erreur lors de la création du client",
-    "errorUpdatingClient": "Erreur lors de la mise à jour du client"
+    "errorUpdatingClient": "Erreur lors de la mise à jour du client",
+    "relatedUsers": "Utilisateurs associés",
+    "addUser": "Ajouter un utilisateur",
+    "noUsersFound": "Aucun utilisateur trouvé pour ce client",
+    "userType": "Type d'utilisateur",
+    "role": "Rôle",
+    "editUser": "Modifier l'utilisateur",
+    "owner": "Propriétaire",
+    "agent": "Mandataire",
+    "legalGuardian": "Tuteur légal",
+    "birthPlace": "Lieu de naissance",
+    "securitiesAccount": "Compte titres",
+    "cashAccount": "Compte espèces"
   },
   "voletNotif": {
     "nouvelleNotification": "Nouvelle Notification !",

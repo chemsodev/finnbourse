@@ -419,19 +419,73 @@ export const actorAPI = {
   // Client operations
   client: {
     getAll: async (token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST("/client", {
-        method: "GET",
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST("/client", {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in client.getAll:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/client`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Clients: ${response.status}`);
+        }
+
+        return await response.json();
+      }
     },
 
     getOne: async (clientId: string, token?: string) => {
-      const restToken = token || (await getRestToken());
-      return clientFetchREST(`/client/${clientId}`, {
-        method: "GET",
-        token: restToken || undefined,
-      });
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST(`/client/${clientId}`, {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in client.getOne:", error);
+        // Try using the local proxy API as a fallback
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/client/${clientId}`, { headers });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Client: ${response.status}`);
+        }
+
+        return await response.json();
+      }
+    },
+
+    getUsers: async (clientId: string, token?: string) => {
+      try {
+        const restToken = token || (await getRestToken());
+        return clientFetchREST(`/client/${clientId}/users`, {
+          method: "GET",
+          token: restToken || undefined,
+        });
+      } catch (error) {
+        console.error("Error in client.getUsers:", error);
+        // For now, return empty array if the endpoint isn't available
+        return [];
+      }
     },
 
     create: async (data: any, token?: string) => {

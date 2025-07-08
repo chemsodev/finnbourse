@@ -176,11 +176,28 @@ export const clientAPI = {
 
   // Client endpoints
   client: {
-    create: (clientData: any) =>
+    getAll: (token?: string) =>
+      clientFetchREST("/client", {
+        token: token || getClientToken(),
+      }),
+
+    getOne: (clientId: string, token?: string) =>
+      clientFetchREST(`/client/${clientId}`, {
+        token: token || getClientToken(),
+      }),
+
+    create: (clientData: any, token?: string) =>
       clientFetchREST("/client", {
         method: "POST",
         body: clientData,
-        token: getClientToken(),
+        token: token || getClientToken(),
+      }),
+
+    update: (clientId: string, clientData: any, token?: string) =>
+      clientFetchREST(`/client/${clientId}`, {
+        method: "POST", // Backend uses POST for updates
+        body: clientData,
+        token: token || getClientToken(),
       }),
 
     createUser: (clientId: string, userData: any) =>

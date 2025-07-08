@@ -2076,7 +2076,19 @@
     "clientCreated": "Client created successfully",
     "clientUpdated": "Client updated successfully",
     "errorCreatingClient": "Error creating client",
-    "errorUpdatingClient": "Error updating client"
+    "errorUpdatingClient": "Error updating client",
+    "relatedUsers": "Related Users",
+    "addUser": "Add User",
+    "noUsersFound": "No users found for this client",
+    "userType": "User Type",
+    "role": "Role",
+    "editUser": "Edit User",
+    "owner": "Owner",
+    "agent": "Agent",
+    "legalGuardian": "Legal Guardian",
+    "birthPlace": "Birth Place",
+    "securitiesAccount": "Securities Account",
+    "cashAccount": "Cash Account"
   },
   "SecurityTransactionAnnouncement": {
     "title": "Schedule a Securities Transaction Announcement",

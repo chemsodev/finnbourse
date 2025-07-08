@@ -4,10 +4,6 @@ import { useState, useEffect } from "react";
 import {
   Search,
   Plus,
-  MoreVertical,
-  ChevronDown,
-  Check,
-  X,
   Shuffle,
   Pencil,
   Trash2,
@@ -15,14 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -31,34 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import Loading from "@/components/ui/loading";
-import { Switch } from "@/components/ui/switch";
-
-import { useClients } from "@/hooks/useClients";
-// Define a simple Client type for the component
-interface Client {
-  id: string;
-  clientCode?: string;
-  clientType?: string;
-  name?: string;
-  raisonSociale?: string;
-  email?: string;
-  phoneNumber?: string;
-  status?: string;
-  [key: string]: any;
-}
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,6 +30,46 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import Loading from "@/components/ui/loading";
+
+import { useClients } from "@/hooks/useClients";
+// Define a more complete Client type for the component
+interface Client {
+  id: string;
+  type?: string;
+  agence?: string;
+  agency_name?: string;
+  client_code?: string;
+  client_source?: string;
+  email?: string;
+  phone_number?: string;
+  mobile_phone?: string;
+  id_type?: string;
+  cash_account_bank_code?: string;
+  cash_account_agency_code?: string;
+  cash_account_number?: string;
+  cash_account_rip_key?: string;
+  cash_account_rip_full?: string;
+  securities_account_number?: string;
+  name?: string;
+  id_number?: string;
+  nin?: string;
+  nationalite?: string;
+  wilaya?: string;
+  address?: string;
+  lieu_naissance?: string;
+  employe_a_la_institution_financiere?: boolean;
+  raison_sociale?: string;
+  nif?: string;
+  reg_number?: string;
+  legal_form?: string;
+  status?: string;
+  date_naissance?: string;
+  [key: string]: any;
+}
 
 export default function ClientDashboard() {
   const t = useTranslations("ClientDashboard");
@@ -78,13 +79,7 @@ export default function ClientDashboard() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [clientStatuses, setClientStatuses] = useState<{
-    [key: string]: string;
-  }>({});
-  const [statusConfirmDialog, setStatusConfirmDialog] = useState(false);
-  const [clientToToggleStatus, setClientToToggleStatus] = useState<
-    string | null
-  >(null);
+
   // Use the new clients hook
   const {
     clients,
@@ -104,6 +99,7 @@ export default function ClientDashboard() {
       loadClients();
     }
   }, []);
+
   const loadClients = async () => {
     try {
       console.log("🔄 Loading clients, hasToken:", hasToken);
@@ -114,61 +110,25 @@ export default function ClientDashboard() {
 
       const data = await fetchClients();
       console.log("✅ Clients loaded:", data);
-
-      // Initialize client statuses
-      const initialStatuses: { [key: string]: string } = {};
-      data.forEach((client: Client) => {
-        initialStatuses[client.id] = client.status || "actif";
-      });
-      setClientStatuses(initialStatuses);
     } catch (error) {
       console.error("Error fetching clients:", error);
     }
   };
-  const toggleClientStatus = (clientId: string) => {
-    setClientToToggleStatus(clientId);
-    setStatusConfirmDialog(true);
-  };
-
-  const confirmToggleStatus = () => {
-    if (!clientToToggleStatus) return;
-
-    const clientId = clientToToggleStatus;
-
-    // Update the status in state
-    setClientStatuses((prev) => ({
-      ...prev,
-      [clientId]: prev[clientId] === "actif" ? "inactif" : "actif",
-    }));
-
-    // In a real app, you would update the status in your database
-    console.log(
-      `Toggled status for client ID: ${clientId} from ${
-        clientStatuses[clientId]
-      } to ${clientStatuses[clientId] === "actif" ? "inactif" : "actif"}`
-    );
-
-    // Reset the confirmation dialog
-    setStatusConfirmDialog(false);
-    setClientToToggleStatus(null);
-  };
-
-  const cancelToggleStatus = () => {
-    setStatusConfirmDialog(false);
-    setClientToToggleStatus(null);
-  };
 
   const filteredClients = clients.filter(
     (client) =>
-      (client.clientType === "personne_physique"
+      (client.type === "individual"
         ? client.name || ""
-        : client.raisonSociale || ""
+        : client.raison_sociale || ""
       )
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
       (client.nin || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (client.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (client.phoneNumber || "")
+      (client.phone_number || client.mobile_phone || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (client.client_code || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase())
   );
@@ -214,10 +174,7 @@ export default function ClientDashboard() {
               <div className="flex flex-col gap-1">
                 <div>{t("numberByClientType")}</div>
                 <div className="font-bold text-2xl">
-                  {
-                    clients.filter((c) => c.clientType === "personne_physique")
-                      .length
-                  }
+                  {clients.filter((c) => c.type === "individual").length}
                 </div>
                 <div>{t("individuals")}</div>
               </div>
@@ -248,14 +205,11 @@ export default function ClientDashboard() {
           <Table>
             <TableHeader className="bg-primary">
               <TableRow>
-                <TableHead className="text-white font-medium">
+                <TableHead className="text-white font-medium w-[80px]">
                   {t("code")}
                 </TableHead>
                 <TableHead className="text-white font-medium">
                   {t("name")}
-                </TableHead>
-                <TableHead className="text-white font-medium">
-                  {t("type")}
                 </TableHead>
                 <TableHead className="text-white font-medium">
                   {t("email")}
@@ -263,13 +217,7 @@ export default function ClientDashboard() {
                 <TableHead className="text-white font-medium">
                   {t("phone")}
                 </TableHead>
-                <TableHead className="text-white font-medium">
-                  {t("address")}
-                </TableHead>
-                <TableHead className="text-white font-medium">
-                  {t("status")}
-                </TableHead>
-                <TableHead className="text-white font-medium w-[120px]">
+                <TableHead className="text-white font-medium text-right">
                   {t("actions")}
                 </TableHead>
               </TableRow>
@@ -277,68 +225,27 @@ export default function ClientDashboard() {
             <TableBody>
               {filteredClients.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    {t("noClientsFound")}
+                  <TableCell colSpan={5} className="text-center py-4">
+                    {searchQuery ? t("noClientsFound") : t("noClientsYet")}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredClients.map((client) => (
                   <TableRow key={client.id} className="hover:bg-slate-50">
                     <TableCell className="font-medium text-primary">
-                      {client.clientCode || "-"}
+                      {client.client_code || "-"}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {client.clientType === "personne_physique"
+                      {client.type === "individual"
                         ? client.name
-                        : client.raisonSociale}
+                        : client.raison_sociale}
+                    </TableCell>
+                    <TableCell>{client.email || "-"}</TableCell>
+                    <TableCell>
+                      {client.phone_number || client.mobile_phone || "-"}
                     </TableCell>
                     <TableCell>
-                      {client.clientType === "personne_physique"
-                        ? t("individual")
-                        : client.clientType === "personne_morale"
-                        ? t("company")
-                        : t("financialInstitution")}
-                    </TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell>
-                      {client.phoneNumber || client.mobilePhone}
-                    </TableCell>
-                    <TableCell>{client.address}</TableCell>
-                    <TableCell>
-                      {clientStatuses[client.id] === "actif" ? (
-                        <div className="flex items-center">
-                          <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-center text-xs mr-2">
-                            <span className="text-xs font-medium">actif</span>
-                          </div>
-                          <Switch
-                            checked={clientStatuses[client.id] === "actif"}
-                            onCheckedChange={() =>
-                              toggleClientStatus(client.id)
-                            }
-                            className="ml-2 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-                          >
-                            <div className="bg-white h-4 w-4 rounded-full transform transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0" />
-                          </Switch>
-                        </div>
-                      ) : (
-                        <div className="flex items-center">
-                          <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-center text-xs mr-2">
-                            <span className="text-xs font-medium">inactif</span>
-                          </div>
-                          <Switch
-                            checked={clientStatuses[client.id] === "actif"}
-                            onCheckedChange={() =>
-                              toggleClientStatus(client.id)
-                            }
-                            className="ml-2 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-                          >
-                            <div className="bg-white h-4 w-4 rounded-full transform transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0" />
-                          </Switch>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -385,9 +292,7 @@ export default function ClientDashboard() {
             <AlertDialogDescription>
               {t("deleteConfirmation")}{" "}
               <span className="font-medium">
-                {selectedClient?.clientType === "personne_physique"
-                  ? selectedClient.name
-                  : selectedClient?.raisonSociale}
+                {selectedClient?.raison_sociale}
               </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -412,26 +317,6 @@ export default function ClientDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Status Toggle Confirmation Dialog */}
-      <Dialog open={statusConfirmDialog} onOpenChange={setStatusConfirmDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirmer le changement de statut</DialogTitle>
-            <DialogDescription>
-              Êtes-vous sûr de vouloir changer le statut de ce client ?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end space-x-2 pt-5">
-            <Button variant="outline" onClick={cancelToggleStatus}>
-              Annuler
-            </Button>
-            <Button onClick={confirmToggleStatus} variant="default">
-              Confirmer
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
