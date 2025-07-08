@@ -44,6 +44,7 @@ import { createPortal } from "react-dom";
 import { TitreDetails } from "@/components/titres/TitreDetails";
 import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialog";
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // API base URL with fallback
 const API_BASE =
@@ -104,6 +105,35 @@ export default function OrdresTableREST({
   const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
   const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
+
+  // State pour la sélection multiple
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+
+  // Handler pour sélectionner/désélectionner tout
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(data.map((order) => order.id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  // Handler pour sélectionner/désélectionner une ligne
+  const handleSelectRow = (id: number, checked: boolean) => {
+    setSelectedOrders((prev) =>
+      checked ? [...prev, id] : prev.filter((orderId) => orderId !== id)
+    );
+  };
+
+  // Handler pour valider/refuser la sélection
+  const handleBulkAction = (action: "validate" | "reject") => {
+    // Ici, tu peux faire un appel API ou mock
+    alert(
+      `${action === "validate" ? "Validation" : "Refus"} des ordres: ` +
+        selectedOrders.join(", ")
+    );
+    setSelectedOrders([]);
+  };
 
   // Validate taskID
   useEffect(() => {
@@ -535,7 +565,7 @@ export default function OrdresTableREST({
       header: t("actions"),
       cell: ({ row }: any) => {
         const order = row.original;
-        const isReturnValidationPage = pageType === "validationRetourFinale" || pageType === "tccvalidationRetourFinale";
+        const isReturnValidationPage = pageType === "validationRetourFinale" || pageType === "tccvalidationRetour";
         
         return (
           <div className="flex items-center space-x-2">
@@ -877,22 +907,28 @@ export default function OrdresTableREST({
         ) : (
           <Table>
             <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
+              <TableRow>
+                {/* Checkbox header */}
+                {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && (
+                  <TableHead>
+                    <Checkbox
+                      checked={selectedOrders.length === data.length && data.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Tout sélectionner"
+                    />
+                  </TableHead>
+                )}
+                {table.getHeaderGroups()[0].headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows?.length ? (
@@ -901,6 +937,16 @@ export default function OrdresTableREST({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                   >
+                    {/* Checkbox row */}
+                    {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrders.includes(row.original.id)}
+                          onCheckedChange={(checked) => handleSelectRow(row.original.id, !!checked)}
+                          aria-label={`Sélectionner l'ordre ${row.original.id}`}
+                        />
+                      </TableCell>
+                    )}
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
@@ -928,6 +974,15 @@ export default function OrdresTableREST({
           </Table>
         )}
       </div>
+
+      {/* Actions groupées sous le tableau */}
+      {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && data.length > 0 && (
+        <div className="flex gap-4 mt-4">
+          <Button variant="default" onClick={() => handleBulkAction("validate")} disabled={selectedOrders.length === 0}>Valider la sélection</Button>
+          <Button variant="destructive" onClick={() => handleBulkAction("reject")} disabled={selectedOrders.length === 0}>Refuser la sélection</Button>
+          <Button variant="outline" onClick={() => setSelectedOrders(data.map((order) => order.id))} disabled={selectedOrders.length === data.length}>Tout sélectionner</Button>
+        </div>
+      )}
 
       {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
