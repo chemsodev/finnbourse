@@ -305,12 +305,12 @@ export const menuItemMap: Record<
   "validation-tcc-retour-premiere": {
     label: "TCC Return Validation",
     href: "/ordres/validation-tcc-retour-premiere",
-    translationKey: "tccvalidationRetourFinale",
+    translationKey: "validationTCCRetourPremiere",
   },
   "validation-tcc-retour-finale": {
     label: "TCC Return Validation",
     href: "/ordres/validation-tcc-retour-finale",
-    translationKey: "tccvalidationRetourFinale",
+    translationKey: "validationTCCRetourFinale",
   },
   execution: {
     label: "Execution",
