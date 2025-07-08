@@ -442,7 +442,39 @@ export default function OrdresTableHistory({
 
   return (
     <div className="rounded-md border">
-      <div className="flex justify-end p-2 border-b">
+      <div className="flex justify-between items-center p-2 border-b">
+        {/* Tabs à gauche */}
+        <div className="flex items-center gap-0">
+          <Button
+            variant={marketType === "S" ? "default" : "outline"}
+            size="sm"
+            className="rounded-r-none"
+            onClick={() => {
+              const params = new URLSearchParams(window.location.search);
+              params.set("tab", "all");
+              params.set("marketType", "S");
+              params.set("page", "0");
+              window.location.search = params.toString();
+            }}
+          >
+            Carnet d'ordres
+          </Button>
+          <Button
+            variant={marketType === "P" ? "default" : "outline"}
+            size="sm"
+            className="rounded-l-none"
+            onClick={() => {
+              const params = new URLSearchParams(window.location.search);
+              params.set("tab", "souscriptions");
+              params.set("marketType", "P");
+              params.set("page", "0");
+              window.location.search = params.toString();
+            }}
+          >
+            Souscriptions
+          </Button>
+        </div>
+        {/* Refresh à droite */}
         <Button
           variant="outline"
           size="sm"
