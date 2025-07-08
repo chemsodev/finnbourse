@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle, X } from "lucide-react";
 import Link from "next/link";
@@ -132,6 +132,23 @@ export default function OrdresTableREST({
       `${action === "validate" ? "Validation" : "Refus"} des ordres: ` +
         selectedOrders.join(", ")
     );
+    setSelectedOrders([]);
+  };
+
+  // State pour le dialog de motif groupé
+  const [bulkDialogOpen, setBulkDialogOpen] = useState<null | "validate" | "reject">(null);
+  const [bulkMotif, setBulkMotif] = useState("");
+  const motifInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Handler pour valider/refuser la sélection avec motif
+  const handleBulkConfirm = async () => {
+    // Ici, tu peux faire un appel API pour chaque ordre sélectionné avec le même motif
+    alert(
+      `${bulkDialogOpen === "validate" ? "Validation" : "Refus"} des ordres: ` +
+        selectedOrders.join(", ") + "\nMotif: " + bulkMotif
+    );
+    setBulkDialogOpen(null);
+    setBulkMotif("");
     setSelectedOrders([]);
   };
 
@@ -800,7 +817,7 @@ export default function OrdresTableREST({
               <Button
                 variant="outline"
                 className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors text-base p-2"
-                onClick={() => handleBulkAction("validate")}
+                onClick={() => setBulkDialogOpen("validate")}
                 disabled={selectedOrders.length === 0}
               >
                 <CheckCircle className="h-5 w-5" />
@@ -808,7 +825,7 @@ export default function OrdresTableREST({
               <Button
                 variant="outline"
                 className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors text-sm p-2"
-                onClick={() => handleBulkAction("reject")}
+                onClick={() => setBulkDialogOpen("reject")}
                 disabled={selectedOrders.length === 0}
               >
                 <XCircle className="h-5 w-5" />
@@ -1024,7 +1041,52 @@ export default function OrdresTableREST({
         </DialogContent>
       </Dialog>
 
-      {/* Détails de l'ordre (dialog natif) */}
+      {/* Dialog de motif pour action groupée */}
+      <Dialog open={!!bulkDialogOpen} onOpenChange={(open) => { if (!open) setBulkDialogOpen(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {bulkDialogOpen === "validate"
+                ? "Valider la sélection"
+                : bulkDialogOpen === "reject"
+                ? "Refuser la sélection"
+                : ""}
+            </DialogTitle>
+            <DialogDescription>
+              {bulkDialogOpen === "validate"
+                ? "Veuillez fournir un motif pour la validation de tous les ordres sélectionnés."
+                : bulkDialogOpen === "reject"
+                ? "Veuillez fournir un motif pour le refus de tous les ordres sélectionnés."
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="motif-bulk">Motif</Label>
+              <Textarea
+                id="motif-bulk"
+                placeholder="Entrez le motif ici..."
+                value={bulkMotif}
+                onChange={(e) => setBulkMotif(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-between">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setBulkDialogOpen(null)}
+            >
+              Annuler
+            </Button>
+            <Button type="button" onClick={handleBulkConfirm} disabled={!bulkMotif.trim()}>
+              Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
         <OrderDetailsDialog
           order={selectedOrderForDetails}
