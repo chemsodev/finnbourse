@@ -126,11 +126,13 @@ export function TitreDetails({
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900">{data.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {data.name ?? ""}
+            </h1>
             <div className="flex items-center gap-3 flex-wrap">
               <StatusBadge status={data.status} />
               <Badge variant="outline" className="text-sm">
-                {data.type}
+                {data.stockType}
               </Badge>
               {data.isinCode && (
                 <Badge variant="secondary" className="font-mono text-xs">
@@ -167,7 +169,7 @@ export function TitreDetails({
             {renderDetail(t("capitalOperation"), data.capitalOperation)}
             {renderDetail(
               t("marketListing"),
-              data.marketListing === "primary"
+              data.marketListing === "ALG"
                 ? t("primaryMarket")
                 : t("secondaryMarket")
             )}
@@ -233,7 +235,7 @@ export function TitreDetails({
                 {formatDate(data.enjoymentDate)}
               </div>
             </div>
-            {data.maturityDate && (
+            {/* {data.maturityDate && (
               <div className="space-y-1">
                 <div className="text-sm font-medium text-gray-600">
                   {t("maturityDate")}
@@ -242,7 +244,7 @@ export function TitreDetails({
                   {formatDate(data.maturityDate)}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </CardContent>
       </Card>

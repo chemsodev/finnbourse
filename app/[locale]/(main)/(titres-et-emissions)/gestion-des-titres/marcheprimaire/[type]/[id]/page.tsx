@@ -8,7 +8,8 @@ import Link from "next/link";
 const getMockTitre = (id: string): TitreFormValues => ({
   id: id,
   name: "Obligations du Trésor 2024",
-  issuer: "company-1",
+  issuer: "5987df5e-6fc4-4067-8a58-db332ca64911",
+  stockType: "obligation",
   isinCode: "DZ000123456789",
   code: "OT2024",
   faceValue: 10000,
@@ -16,9 +17,10 @@ const getMockTitre = (id: string): TitreFormValues => ({
   emissionDate: new Date("2024-01-15"),
   closingDate: new Date("2024-02-15"),
   enjoymentDate: new Date("2024-03-01"),
-  maturityDate: new Date("2029-03-01"),
-  marketListing: "primary",
-  type: "empruntobligataire",
+  // maturityDate: new Date("2029-03-01"),
+  marketListing: "ALG",
+  // type: "empruntobligataire",
+
   status: "activated",
   capitalOperation: "ouverture",
   votingRights: false,

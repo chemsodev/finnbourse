@@ -13,24 +13,24 @@ export interface Issuer {
   id: string;
   name: string;
   code?: string;
-  activitySector: string;
-  address: string;
-  capital: string;
-  email: string;
-  tel: string;
+  activitySector?: string;
+  address?: string;
+  capital?: string;
+  email?: string;
+  tel?: string;
   website?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Master {
   id: string;
-  institutionName: string;
-  agreementNumber: string;
-  establishmentDate: string;
-  fullAddress: string;
-  legalForm: string;
-  taxIdentificationNumber: string;
+  institutionName?: string;
+  agreementNumber?: string;
+  establishmentDate?: string;
+  fullAddress?: string;
+  legalForm?: string;
+  taxIdentificationNumber?: string;
 }
 
 export interface CapitalOperation {
@@ -40,10 +40,14 @@ export interface CapitalOperation {
   amount: number;
 }
 
-export interface Institution {
+export interface FinancialInstitution {
   id: string;
-  name: string;
-  type: string;
+  institutionName: string;
+  taxIdentificationNumber?: string;
+  agreementNumber?: string;
+  legalForm?: string;
+  establishmentDate?: string;
+  fullAddress?: string;
 }
 
 export interface RepaymentSchedule {
@@ -60,7 +64,12 @@ export interface CouponSchedule {
 }
 
 export type StockStatus = "activated" | "suspended" | "delisted";
-export type StockType = "obligation" | "action" | string;
+export type StockType =
+  | "obligation"
+  | "action"
+  | "sukuk"
+  | "participatif"
+  | string;
 export type MarketType = "primaire" | "secondaire";
 export type MarketListing = "ALG" | "TUN" | "CAS";
 export type ShareClass = "A" | "B" | "C" | null;
@@ -94,55 +103,55 @@ export type RepaymentMethod = "amortization" | "bullet" | "callable" | null;
 //   | "titresparticipatifsms";
 
 export interface Stock {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
   stockType: StockType;
   isinCode: string;
   code: string;
   faceValue: number;
   quantity: number;
-  emissionDate: string;
-  enjoymentDate: string;
-  closingDate: string;
+  emissionDate: Date;
+  enjoymentDate: Date;
+  closingDate: Date;
   marketListing: MarketListing;
-  type: string;
-  issuer: Issuer;
-  master: Master;
+  type?: string;
+  issuer: string;
+  master: string;
   status: StockStatus;
-  isPrimary: boolean;
+  // isPrimary: boolean;
   stockPrice?: StockPrice;
+  // institutions: FinancialInstitution[];
+  institutions: string[];
   createdAt?: string;
   updatedAt?: string;
   // Financial fields
-  dividendRate: number | null;
-  estimatedRate: number | null;
-  fixedRate: number | null;
-  variableRate: number | null;
-  yieldRate: number | null;
+  dividendRate?: number;
+  estimatedRate?: number;
+  fixedRate?: number;
+  variableRate?: number;
+  yieldRate?: number;
 
   // Dates
-  maturityDate: string | null;
+  // maturityDate?: string;
 
   // Additional fields
-  shareClass: ShareClass;
-  repaymentMethod: RepaymentMethod;
-  votingRights: boolean | null;
+  // shareClass: ShareClass;
+  // repaymentMethod?: RepaymentMethod;
+  votingRights: boolean;
 
   // Related data
-  capitalOperation: CapitalOperation | null;
-  capitalRepaymentSchedule: RepaymentSchedule[];
+  capitalOperation?: "augmentation" | "ouverture";
+  capitalRepaymentSchedule?: RepaymentSchedule[];
   couponSchedule?: CouponSchedule[];
-  institutions: Institution[];
-  stockPrices: StockPrice[];
+  stockPrices?: StockPrice[];
 }
 export interface MarketTableProps {
   type: StockType;
 }
 
 export interface StockPrice {
-  stock: string;
   price: number;
-  date: string;
+  date: Date;
   gap?: number;
 }
 

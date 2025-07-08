@@ -1,3 +1,6 @@
+import { Master } from "./../../types/gestionTitres";
+import { MarketListing } from "@/types/gestionTitres";
+
 import { z } from "zod";
 
 export const StockPriceSchema = z.object({
@@ -13,8 +16,30 @@ export const IssuerSchema = z.object({
 
 export const InstitutionSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  institutionName: z.string().optional(),
+  taxIdentificationNumber: z.string().optional(),
+  agreementNumber: z.string().optional(),
+  legalForm: z.string().optional(),
+  establishmentDate: z.string().optional(),
+  fullAddress: z.string().optional(),
 });
+
+export const StockTypeSchema = z.enum([
+  "action",
+  "obligation",
+  "sukuk",
+  "participatif",
+]);
+
+export const MarketListingSchema = z.enum(["ALG", "TUN", "CAS"]);
+
+export const MasterSchema = z
+  .object({
+    id: z.string(),
+    institutionName: z.string().optional(),
+    agreementNumber: z.string().optional(),
+  })
+  .optional();
 
 export const PaymentScheduleItemSchema = z.object({
   date: z.date(),
@@ -25,7 +50,9 @@ export const PaymentScheduleItemSchema = z.object({
 export const TitreSchema = z.object({
   id: z.string().optional(),
   name: z.string().optional(),
+  stockType: StockTypeSchema,
   issuer: z.string().min(1, "Issuer ID is required"),
+  // issuer: IssuerSchema,
   isinCode: z.string().min(1, "ISIN code is required"),
   code: z.string().min(1, "Code is required"),
   faceValue: z.number().min(0, "Face value must be positive"),
@@ -33,12 +60,12 @@ export const TitreSchema = z.object({
   emissionDate: z.date(),
   closingDate: z.date(),
   enjoymentDate: z.date(),
-  marketListing: z.string().min(1, "Market listing is required"),
-  type: z.string().min(1, "Type is required"),
+  marketListing: MarketListingSchema,
+  // type: z.string().optional(),
   status: z.enum(["activated", "suspended", "delisted"]),
   dividendRate: z.number().min(0).optional(),
   capitalOperation: z.enum(["augmentation", "ouverture"]).optional(),
-  maturityDate: z.date().optional(),
+  // maturityDate: z.date().optional(),
   durationYears: z.number().min(1).max(30).optional(),
   paymentSchedule: z.array(PaymentScheduleItemSchema).optional(),
   commission: z.number().min(0).optional(),
@@ -47,6 +74,7 @@ export const TitreSchema = z.object({
   master: z.string().optional(),
   institutions: z.array(z.string()).optional(),
   stockPrice: StockPriceSchema,
+  // isPrimary: z.boolean().optional(),
 });
 
 export type TitreFormValues = z.infer<typeof TitreSchema>;

@@ -62,6 +62,28 @@ interface TableState {
   rowSelection: RowSelectionState;
 }
 
+// function mapToStockType(
+//   type: StockType
+// ): "action" | "obligation" | "sukuk" | "participatif" {
+//   const mapping: Record<
+//     StockType,
+//     "action" | "obligation" | "sukuk" | "participatif"
+//   > = {
+//     opv: "action",
+//     empruntobligataire: "obligation",
+//     action: "action",
+//     obligation: "obligation",
+//     sukuk: "sukuk",
+//     sukukmp: "sukuk",
+//     sukukms: "sukuk",
+//     titresparticipatifs: "participatif",
+//     titresparticipatifsmp: "participatif",
+//     titresparticipatifsms: "participatif",
+//     participatif: "participatif",
+//   };
+//   return mapping[type];
+// }
+
 function mapToStockType(
   type: StockType
 ): "action" | "obligation" | "sukuk" | "participatif" {
@@ -83,7 +105,6 @@ function mapToStockType(
   };
   return mapping[type];
 }
-
 export function MarketTable({ type, marketType }: MarketTableProps) {
   const t = useTranslations("TitresTable");
   const { toast } = useToast();
@@ -142,13 +163,11 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
     (stock: Stock) => {
       const defaultValues: TitreFormValues = {
         id: stock.id,
-        type: type,
+        // type: type,
         name: stock.name || "",
+        stockType: mapToStockType(type),
         code: stock.code || "",
-        issuer:
-          typeof stock.issuer === "object"
-            ? stock.issuer.id || ""
-            : String(stock.issuer) || "",
+        issuer: String(stock.issuer) || "",
         isinCode: stock.isinCode || "",
         faceValue: stock.faceValue || 0,
         quantity: stock.quantity || 1,
@@ -161,7 +180,7 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
         enjoymentDate: stock.enjoymentDate
           ? new Date(stock.enjoymentDate)
           : new Date(),
-        marketListing: "primary",
+        marketListing: "ALG",
         status: ["activated", "suspended", "delisted"].includes(
           stock.status as string
         )
@@ -213,10 +232,14 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
         cell: ({ row }) => {
           const stock = row.original;
           const issuerName =
-            typeof stock.issuer === "object" ? stock.issuer.name : stock.issuer;
+            typeof stock.issuer === "object"
+              ? (stock.issuer as { name?: string }).name
+              : stock.issuer;
           const code =
             stock.code ??
-            (typeof stock.issuer === "object" ? stock.issuer.code : "N/A");
+            (typeof stock.issuer === "object"
+              ? (stock.issuer as { code?: string }).code
+              : "N/A");
 
           return (
             <div className="capitalize flex flex-col gap-1">
@@ -343,7 +366,9 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
               <DropdownMenuContent align="end">
                 {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem asChild>
-                  <Link href={getDetailsLink(marketType, type, stock.id)}>
+                  <Link
+                    href={getDetailsLink(marketType, type, stock?.id ?? "")}
+                  >
                     {t("voirDetails")}
                   </Link>
                 </DropdownMenuItem>
