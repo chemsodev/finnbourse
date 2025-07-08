@@ -803,7 +803,7 @@ export default function OrdresTableREST({
                 onClick={() => handleBulkAction("validate")}
                 disabled={selectedOrders.length === 0}
               >
-                Valider la selection
+                <CheckCircle className="h-5 w-5" />
               </Button>
               <Button
                 variant="outline"
@@ -811,7 +811,7 @@ export default function OrdresTableREST({
                 onClick={() => handleBulkAction("reject")}
                 disabled={selectedOrders.length === 0}
               >
-                Refuser la selection
+                <XCircle className="h-5 w-5" />
               </Button>
               <Button
                 variant="outline"
