@@ -29,7 +29,6 @@
     "validationTccPremiere": "التحقق الأول TCC",
     "validationTccFinale": "التحقق النهائي TCC",
     "tccvalidationRetourFinale": "إرجاع التحقق TCC",
-    "validationRetourFinale": "التحقق من العودة",
     "tccvalidationRetourFinale": "التحقق من العودة TCC",
     "iob": "وسيط بورصة",
     "executionOrdres": "تنفيذ الأوامر",
@@ -2872,5 +2871,27 @@
       "response": "الاستجابة",
       "reliquat": "المتبقي"
     }
+  },
+  "CreateUserForm": {
+    "title": "نموذج المشترك",
+    "quality": "صفة المشترك",
+    "chooseQuality": "اختر الصفة",
+    "proprietaire": "المالك",
+    "mandataire": "الوكيل",
+    "tuteurLegal": "الوصي القانوني",
+    "name": "الاسم الكامل",
+    "namePlaceholder": "الاسم الكامل",
+    "address": "العنوان",
+    "addressPlaceholder": "العنوان",
+    "wilaya": "الولاية",
+    "wilayaPlaceholder": "الولاية",
+    "birthdate": "تاريخ الميلاد",
+    "chooseDate": "اختر تاريخًا",
+    "idNumber": "رقم الهوية/بطاقة التعريف",
+    "idNumberPlaceholder": "رقم الهوية/بطاقة التعريف",
+    "nationality": "الجنسية",
+    "nationalityPlaceholder": "الجنسية",
+    "submit": "إرسال",
+    "back": "رجوع"
   }
 }

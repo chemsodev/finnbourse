@@ -3276,5 +3276,27 @@
       "reliquat": "Remainder"
     }
   },
-  "orderProgress": "Order Progress"
+  "orderProgress": "Order Progress",
+  "CreateUserForm": {
+    "title": "Subscriber Form",
+    "quality": "Subscriber Quality",
+    "chooseQuality": "Choose quality",
+    "proprietaire": "Owner",
+    "mandataire": "Agent",
+    "tuteurLegal": "Legal guardian",
+    "name": "Full Name",
+    "namePlaceholder": "Full Name",
+    "address": "Address",
+    "addressPlaceholder": "Address",
+    "wilaya": "Wilaya",
+    "wilayaPlaceholder": "Wilaya",
+    "birthdate": "Birthdate",
+    "chooseDate": "Select a date",
+    "idNumber": "ID/PC Number",
+    "idNumberPlaceholder": "ID/PC Number",
+    "nationality": "Nationality",
+    "nationalityPlaceholder": "Nationality",
+    "submit": "Submit",
+    "back": "Back"
+  }
 }

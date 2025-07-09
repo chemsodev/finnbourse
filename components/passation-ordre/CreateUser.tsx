@@ -12,12 +12,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, ArrowLeft } from "lucide-react";
 import { usePathname } from "next/navigation";
-
-const qualiteOptions = [
-  { value: "propriétaire", label: "propriétaire" },
-  { value: "Mandataire", label: "Mandataire" },
-  { value: "Tuteur legal", label: "Tuteur legal" },
-];
+import { useTranslations } from "next-intl";
 
 export const userFormSchema = z.object({
   qualite_souscripteur: z.enum(["propriétaire", "Mandataire","Tuteur legal"]).optional(),
@@ -40,6 +35,13 @@ type Props = {
 };
 
 export default function CreateUserForm({ defaultValues: initialValues, clientData, autoFillOnProprietaire = true, onSubmit, onBack }: Props) {
+  const t = useTranslations("CreateUserForm");
+  // Correction : options après le hook t
+  const qualiteOptions = [
+    { value: "propriétaire", label: t("proprietaire") },
+    { value: "Mandataire", label: t("mandataire") },
+    { value: "Tuteur legal", label: t("tuteurLegal") },
+  ];
   const form = useForm<UserFormType>({
     resolver: zodResolver(userFormSchema),
     defaultValues: initialValues || {},
@@ -83,11 +85,11 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
             onClick={onBack}
           >
-            <ArrowLeft className="w-5" /> <div>Retour</div>
+            <ArrowLeft className="w-5" /> <div>{t("back")}</div>
           </Button>
         </div>
       )}
-      <h2 className="text-2xl font-bold mb-6 text-center">Formulaire Souscripteur</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">{t("title")}</h2>
       <Form {...form} key={resetKey}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full max-w-2xl p-10 border rounded-md shadow bg-white">
           {/* Qualite souscripteur */}
@@ -96,11 +98,11 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             name="qualite_souscripteur"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Qualité du souscripteur</FormLabel>
+                <FormLabel>{t("quality")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Choisir la qualité" />
+                      <SelectValue placeholder={t("chooseQuality")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -122,9 +124,9 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             name="nom_prenom"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nom & Prénom</FormLabel>
+                <FormLabel>{t("name")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Nom & Prénom" />
+                  <Input {...field} placeholder={t("namePlaceholder")} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -137,9 +139,9 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             name="adresse"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Adresse</FormLabel>
+                <FormLabel>{t("address")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Adresse" />
+                  <Input {...field} placeholder={t("addressPlaceholder")} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -152,9 +154,9 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             name="wilaya"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Wilaya</FormLabel>
+                <FormLabel>{t("wilaya")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Wilaya" />
+                  <Input {...field} placeholder={t("wilayaPlaceholder")} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -167,7 +169,7 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             name="date_naissance"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date de naissance</FormLabel>
+                <FormLabel>{t("birthdate")}</FormLabel>
                 <Popover open={dateOpen} onOpenChange={setDateOpen}>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -177,7 +179,7 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
                         type="button"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "yyyy-MM-dd") : <span>Sélectionner une date</span>}
+                        {field.value ? format(field.value, "yyyy-MM-dd") : <span>{t("chooseDate")}</span>}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -206,9 +208,9 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             name="num_cni_pc"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Numéro CNI/PC</FormLabel>
+                <FormLabel>{t("idNumber")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Numéro CNI/PC" />
+                  <Input {...field} placeholder={t("idNumberPlaceholder")} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -221,16 +223,16 @@ export default function CreateUserForm({ defaultValues: initialValues, clientDat
             name="nationalite"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nationalité</FormLabel>
+                <FormLabel>{t("nationality")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Nationalité" />
+                  <Input {...field} placeholder={t("nationalityPlaceholder")} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="w-full">Soumettre</Button>
+          <Button type="submit" className="w-full">{t("submit")}</Button>
         </form>
       </Form>
     </div>

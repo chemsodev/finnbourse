@@ -3273,5 +3273,27 @@
       "reliquat": "Reliquat",
       "orderProgress": "Suivi de l'ordre"
     }
+  },
+  "CreateUserForm": {
+    "title": "Formulaire Souscripteur",
+    "quality": "Qualité du souscripteur",
+    "chooseQuality": "Choisir la qualité",
+    "proprietaire": "propriétaire",
+    "mandataire": "Mandataire",
+    "tuteurLegal": "Tuteur legal",
+    "name": "Nom & Prénom",
+    "namePlaceholder": "Nom & Prénom",
+    "address": "Adresse",
+    "addressPlaceholder": "Adresse",
+    "wilaya": "Wilaya",
+    "wilayaPlaceholder": "Wilaya",
+    "birthdate": "Date de naissance",
+    "chooseDate": "Sélectionner une date",
+    "idNumber": "Numéro CNI/PC",
+    "idNumberPlaceholder": "Numéro CNI/PC",
+    "nationality": "Nationalité",
+    "nationalityPlaceholder": "Nationalité",
+    "submit": "Soumettre",
+    "back": "Retour"
   }
 }
