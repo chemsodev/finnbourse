@@ -50,11 +50,20 @@ export interface FinancialInstitution {
   fullAddress?: string;
 }
 
-export interface RepaymentSchedule {
-  id: string;
-  date: string;
-  amount: number;
+export interface CapitalRepaymentScheduleItem {
+  date: Date;
+  rate: number;
 }
+
+export interface CouponScheduleItem {
+  date: Date;
+  rate: number;
+}
+// export interface RepaymentSchedule {
+//   id: string;
+//   date: string;
+//   amount: number;
+// }
 
 export interface CouponSchedule {
   id: string;
@@ -122,8 +131,10 @@ export interface Stock {
   stockPrice?: StockPrice;
   // institutions: FinancialInstitution[];
   institutions: string[];
+  capitalOperation?: "augmentation" | "ouverture";
   createdAt?: string;
   updatedAt?: string;
+  durationYears?: number;
   // Financial fields
   dividendRate?: number;
   estimatedRate?: number;
@@ -132,17 +143,21 @@ export interface Stock {
   yieldRate?: number;
 
   // Dates
-  // maturityDate?: string;
+  maturityDate?: Date;
 
   // Additional fields
   // shareClass: ShareClass;
   // repaymentMethod?: RepaymentMethod;
   votingRights: boolean;
 
+  //Schedules
+  capitalRepaymentSchedule?: CapitalRepaymentScheduleItem[];
+  couponSchedule?: CouponScheduleItem[];
+
   // Related data
-  capitalOperation?: "augmentation" | "ouverture";
-  capitalRepaymentSchedule?: RepaymentSchedule[];
-  couponSchedule?: CouponSchedule[];
+
+  // capitalRepaymentSchedule?: RepaymentSchedule[];
+  // couponSchedule?: CouponSchedule[];
   stockPrices?: StockPrice[];
 }
 export interface MarketTableProps {

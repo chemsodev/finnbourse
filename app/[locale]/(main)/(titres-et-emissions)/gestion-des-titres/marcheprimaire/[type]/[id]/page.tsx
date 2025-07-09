@@ -1,79 +1,82 @@
+"use client";
 import { TitreDetails } from "@/components/titres/TitreDetails";
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
-import { ArrowLeft } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { useFinancialInstitution } from "@/hooks/useFinancialInstitution";
+import { useIssuer } from "@/hooks/useIssuer";
+import { useStockApi } from "@/hooks/useStockApi";
+import { Stock, StockType } from "@/types/gestionTitres";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-// Mock data for testing
-const getMockTitre = (id: string): TitreFormValues => ({
-  id: id,
-  name: "Obligations du Trésor 2024",
-  issuer: "5987df5e-6fc4-4067-8a58-db332ca64911",
-  stockType: "obligation",
-  isinCode: "DZ000123456789",
-  code: "OT2024",
-  faceValue: 10000,
-  quantity: 1000000,
-  emissionDate: new Date("2024-01-15"),
-  closingDate: new Date("2024-02-15"),
-  enjoymentDate: new Date("2024-03-01"),
-  // maturityDate: new Date("2029-03-01"),
-  marketListing: "ALG",
-  // type: "empruntobligataire",
+interface PageParams {
+  id: string;
+  type: string;
+}
 
-  status: "activated",
-  capitalOperation: "ouverture",
-  votingRights: false,
-  dividendRate: 5.25,
-  durationYears: 5,
-  institutions: ["inst-1", "inst-2"],
-  stockPrice: {
-    price: 10250.5,
-    date: new Date(),
-    gap: 2.5,
-  },
-  paymentSchedule: [
-    {
-      date: new Date("2025-03-01"),
-      couponRate: 5.25,
-      capitalRate: 0,
-    },
-    {
-      date: new Date("2026-03-01"),
-      couponRate: 5.25,
-      capitalRate: 0,
-    },
-    {
-      date: new Date("2027-03-01"),
-      couponRate: 5.25,
-      capitalRate: 0,
-    },
-    {
-      date: new Date("2028-03-01"),
-      couponRate: 5.25,
-      capitalRate: 0,
-    },
-    {
-      date: new Date("2029-03-01"),
-      couponRate: 5.25,
-      capitalRate: 100, // Final payment includes capital
-    },
-  ],
-});
+function mapToStockType(
+  type: StockType
+): "action" | "obligation" | "sukuk" | "participatif" {
+  const mapping: Record<
+    StockType,
+    "action" | "obligation" | "sukuk" | "participatif"
+  > = {
+    opv: "action",
+    empruntobligataire: "obligation",
+    action: "action",
+    obligation: "obligation",
+    sukuk: "sukuk",
+    sukukmp: "sukuk",
+    sukukms: "sukuk",
+    titresparticipatifs: "participatif",
+    titresparticipatifsmp: "participatif",
+    titresparticipatifsms: "participatif",
+    participatif: "participatif",
+  };
+  return mapping[type] || "action";
+}
 
-const getMockCompanies = () => [
-  { id: "company-1", name: "Banque d'Algérie" },
-  { id: "company-2", name: "Sonatrach" },
-  { id: "company-3", name: "Algeria Telecom" },
-  { id: "company-4", name: "Air Algérie" },
-];
+// Helper function to map StockType to ObligationType
+function mapToObligationType(type: StockType): "participatif" | "sukuk" {
+  if (type.includes("sukuk")) {
+    return "sukuk";
+  }
+  if (type.includes("participatif")) {
+    return "participatif";
+  }
+  return "participatif";
+}
 
-const getMockInstitutions = () => [
-  { id: "inst-1", name: "Crédit Populaire d'Algérie" },
-  { id: "inst-2", name: "Banque Nationale d'Algérie" },
-  { id: "inst-3", name: "BADR Bank" },
-  { id: "inst-4", name: "BEA Bank" },
-];
+// Helper function to extract issuer ID
+function extractIssuerId(issuer: any): string {
+  if (typeof issuer === "string") {
+    return issuer;
+  }
+  if (issuer && typeof issuer === "object" && issuer.id) {
+    return issuer.id;
+  }
+  return "";
+}
+// Helper function to  extract institution IDs
+
+function extractInstitutionIds(institutions: any[]): string[] {
+  if (!Array.isArray(institutions)) {
+    return [];
+  }
+
+  return institutions
+    .map((inst) => {
+      if (typeof inst === "string") {
+        return inst;
+      }
+      if (inst && typeof inst === "object" && inst.id) {
+        return inst.id;
+      }
+      return "";
+    })
+    .filter((id) => id !== "");
+}
 
 // Helper function to get type display name
 // const getTypeDisplayName = (type: string) => {
@@ -88,16 +91,63 @@ const getMockInstitutions = () => [
 //   return typeNames[type] || type.charAt(0).toUpperCase() + type.slice(1);
 // };
 
-export default async function TitreDetailsPage({
-  params,
-}: {
-  params: { id: string; type: string };
-}) {
+export default function TitreDetailsPage({ params }: { params: PageParams }) {
+  const t = useTranslations("GestionDesTitres");
+  const api = useStockApi();
+
+  const {
+    institutions: financialInstitutions,
+    isLoading: institutionsLoading,
+  } = useFinancialInstitution();
+  const { issuers, isLoading: issuersLoading } = useIssuer();
+
+  const [titre, setTitre] = useState<Stock | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // Simulate API calls with mock data
-  const titre = getMockTitre(params.id);
-  const companies = getMockCompanies();
-  const institutions = getMockInstitutions();
-  const t = await getTranslations("GestionDesTitres");
+  // const titre = getMockTitre(params.id);
+  // const companies = getMockCompanies();
+  // const institutions = getMockInstitutions();
+
+  useEffect(() => {
+    const fetchTitre = async () => {
+      try {
+        setLoading(true);
+        const data = await api.getStockById(params.id);
+        setTitre(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load titre");
+        console.error("Error fetching titre:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTitre();
+  }, [params.id, api]);
+
+  if (loading || institutionsLoading || issuersLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              {t("ViewTitre.notFound")}
+            </h2>
+            <p className="text-gray-600">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!titre) {
     return (
@@ -116,6 +166,56 @@ export default async function TitreDetailsPage({
     );
   }
 
+  const titreData: TitreFormValues = {
+    id: titre.id,
+    name: titre.name || "",
+    stockType: mapToStockType(titre.stockType),
+    type: mapToObligationType(titre?.type || ""),
+    code: titre.code || "",
+    issuer: extractIssuerId(titre.issuer) || "",
+    isinCode: titre.isinCode || "",
+    faceValue: titre.faceValue || 0,
+    quantity: titre.quantity || 1,
+    master: titre.master || "",
+    emissionDate: titre.emissionDate
+      ? new Date(titre.emissionDate)
+      : new Date(),
+    closingDate: titre.closingDate ? new Date(titre.closingDate) : new Date(),
+    enjoymentDate: titre.enjoymentDate
+      ? new Date(titre.enjoymentDate)
+      : new Date(),
+    marketListing: titre.marketListing || "ALG",
+    status: ["activated", "suspended", "delisted"].includes(
+      titre.status as string
+    )
+      ? (titre.status as "activated" | "suspended" | "delisted")
+      : "activated",
+    stockPrice: {
+      price: titre.stockPrices?.[0]?.price || 0,
+      date: new Date(),
+      gap: 0,
+    },
+    capitalOperation: titre.capitalOperation || "ouverture",
+    votingRights: titre.votingRights || false,
+    dividendRate: titre.dividendRate,
+    durationYears: titre.durationYears || 1,
+    institutions: extractInstitutionIds(titre.institutions || []),
+    maturityDate: titre.maturityDate ? new Date(titre.maturityDate) : undefined,
+
+    // Schedules
+    capitalRepaymentSchedule:
+      titre.capitalRepaymentSchedule?.map((item) => ({
+        date: new Date(item.date),
+        rate: item.rate || 0,
+      })) || [],
+
+    couponSchedule:
+      titre.couponSchedule?.map((item) => ({
+        date: new Date(item.date),
+        rate: item.rate || 0,
+      })) || [],
+  };
+
   return (
     <div className="container mx-auto py-8 motion-preset-focus motion-duration-2000">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -126,9 +226,9 @@ export default async function TitreDetailsPage({
           <ArrowLeft className="w-5" /> <div>{t("actions.back")}</div>
         </Link>
         <TitreDetails
-          data={titre}
-          companies={companies}
-          institutions={institutions}
+          data={titreData}
+          companies={issuers}
+          institutions={financialInstitutions}
         />
       </div>
     </div>

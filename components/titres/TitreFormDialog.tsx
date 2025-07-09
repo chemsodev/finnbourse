@@ -54,6 +54,8 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { useStockApi } from "@/hooks/useStockApi";
 import { useIssuer } from "@/hooks/useIssuer";
 import { useFinancialInstitution } from "@/hooks/useFinancialInstitution";
+import { Stock } from "@/types/gestionTitres";
+import { Label } from "../ui/label";
 
 interface Company {
   id: string;
@@ -65,7 +67,7 @@ type TitreFormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultValues?: TitreFormValues;
-  onSuccess?: () => void;
+  onSuccess?: (newStock: Stock) => void;
   isEdit?: boolean;
   companies?: Company[];
 };
@@ -82,7 +84,7 @@ TitreFormDialogProps) {
   const { toast } = useToast();
   const locale = useLocale();
   const api = useStockApi();
-  const obligations = ["empruntobligataire", "titresparticipatifs", "sukukmp"];
+  // const obligations = ["empruntobligataire", "titresparticipatifs", "sukukmp"];
   const t = useTranslations(
     isEdit ? "GestionDesTitres.EditTitre" : "GestionDesTitres.CreateTitre"
   );
@@ -98,59 +100,6 @@ TitreFormDialogProps) {
   } = useFinancialInstitution();
 
   const { issuers, isLoading: issuersLoading } = useIssuer();
-
-  // Fetch institutions
-  // React.useEffect(() => {
-  //   if (!open) return;
-
-  //   const fetchInstitutions = async () => {
-  //     try {
-  //       setFetchingInstitutions(true);
-
-  //       // Mock data
-  //       // const mockInstitutions = [
-  //       //   { id: "1", name: "Bank A" },
-  //       //   { id: "2", name: "Bank B" },
-  //       //   { id: "3", name: "Bank C" },
-  //       // ];
-
-  //       setInstitutions(financialInstitutions || []);
-  //     } catch (error) {
-  //       console.error("Error fetching institutions:", error);
-  //       toast({
-  //         variant: "destructive",
-  //         title: t("error"),
-  //         description: t("fetchError"),
-  //       });
-  //     } finally {
-  //       setFetchingInstitutions(false);
-  //     }
-  //   };
-
-  //   fetchInstitutions();
-  // }, [open, toast, t]);
-
-  // Fetch companies (issuers)
-  // React.useEffect(() => {
-  //   if (!open) return;
-  //   const fetchCompanies = async () => {
-  //     try {
-  //       // TODO: Replace with actual API call
-  //       setCompanies(issuers || []);
-  //     } catch (error) {
-  //       console.error("Error fetching companies:", error);
-  //       toast({
-  //         variant: "destructive",
-  //         title: t("error"),
-  //         description: t("fetchError"),
-  //       });
-  //     } finally {
-  //       setFetchingCompanies(false);
-  //     }
-  //   };
-
-  //   fetchCompanies();
-  // }, [open, toast, t]);
 
   const form = useForm<TitreFormValues>({
     resolver: zodResolver(TitreSchema),
@@ -170,17 +119,21 @@ TitreFormDialogProps) {
       emissionDate: new Date(),
       closingDate: new Date(),
       enjoymentDate: new Date(),
+      maturityDate: new Date(),
       marketListing: "ALG",
       capitalOperation: "ouverture",
       votingRights: false,
       master: "",
       institutions: [],
-      // type: type,
+      capitalRepaymentSchedule: [],
+      couponSchedule: [],
+      type: "participatif",
       status: "activated",
+
       stockPrice: {
-        // price: 0,
+        price: 0,
         date: new Date(),
-        // gap: 0,
+        gap: 0,
       },
     },
   });
@@ -189,48 +142,54 @@ TitreFormDialogProps) {
     const subscription = form.watch((value, { name, type }) => {
       console.log("Form values:", value);
       console.log("Form errors:", form.formState.errors);
+      isEdit &&
+        console.log("Editing stock with ID:", defaultValues?.id, defaultValues);
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, defaultValues, isEdit]);
+
   // Watch for changes in the form
   const durationYears = form.watch("durationYears");
   const watchedType = form.watch("stockType");
   const watchedMaster = form.watch("institutions.0");
-  console.log(watchedMaster);
 
-  // Payment Schedule Field Array setup
-  const {
-    fields: paymentScheduleFields,
-    append: appendPaymentSchedule,
-    remove: removePaymentSchedule,
-  } = useFieldArray({
+  const { replace: replaceCapitalRepayment } = useFieldArray({
     control: form.control,
-    name: "paymentSchedule",
+    name: "capitalRepaymentSchedule",
   });
 
-  // Effect to update payment schedule when duration changes
+  const { replace: replaceCoupon } = useFieldArray({
+    control: form.control,
+    name: "couponSchedule",
+  });
+
   React.useEffect(() => {
-    if (
-      typeof watchedType !== "string" ||
-      !obligations.includes(watchedType) ||
-      !durationYears
-    )
+    if (watchedType !== "obligation" || !durationYears || durationYears <= 0) {
+      // Clear schedules if not obligation or no duration
+      replaceCapitalRepayment([]);
+      replaceCoupon([]);
       return;
+    }
 
-    // Clear existing fields
-    paymentScheduleFields.forEach((_, index) => removePaymentSchedule(index));
+    // Generate capital repayment schedule
+    const capitalSchedule = Array.from({ length: durationYears }, (_, i) => ({
+      date: new Date(new Date().setFullYear(new Date().getFullYear() + i + 1)),
+      rate: 0,
+    }));
 
-    // Add new fields based on duration
-    for (let i = 0; i < durationYears; i++) {
-      appendPaymentSchedule({
+    // Generate coupon schedule
+    const couponScheduleItems = Array.from(
+      { length: durationYears },
+      (_, i) => ({
         date: new Date(
           new Date().setFullYear(new Date().getFullYear() + i + 1)
         ),
-        couponRate: 0,
-        capitalRate: 0,
-      });
-    }
-  }, [durationYears, watchedType]);
+        rate: 0,
+      })
+    );
+    replaceCapitalRepayment(capitalSchedule);
+    replaceCoupon(couponScheduleItems);
+  }, [durationYears, watchedType, replaceCapitalRepayment, replaceCoupon]);
 
   async function onSubmit(values: TitreFormValues) {
     try {
@@ -252,6 +211,9 @@ TitreFormDialogProps) {
         emissionDate: new Date(values.emissionDate),
         closingDate: new Date(values.closingDate),
         enjoymentDate: new Date(values.enjoymentDate),
+        maturityDate: values.maturityDate
+          ? new Date(values.maturityDate)
+          : undefined,
         // isPrimary: values.isPrimary ?? false,
         // paymentSchedule: values?.paymentSchedule?.map((item) => ({
         //   ...item,
@@ -262,6 +224,17 @@ TitreFormDialogProps) {
           ...values.stockPrice,
           date: new Date(values.stockPrice.date),
         },
+        // payment schedule arrays
+        capitalRepaymentSchedule:
+          values.capitalRepaymentSchedule?.map((item) => ({
+            date: new Date(item.date),
+            rate: item.rate,
+          })) || [],
+        couponSchedule:
+          values.couponSchedule?.map((item) => ({
+            date: new Date(item.date),
+            rate: item.rate,
+          })) || [],
       };
 
       console.log("Submitting payload:", payload);
@@ -280,7 +253,9 @@ TitreFormDialogProps) {
 
       form.reset();
       onOpenChange(false);
-      onSuccess?.();
+      if (onSuccess) {
+        onSuccess(response);
+      }
     } catch (error) {
       console.error("Form submission error", error);
       toast({
@@ -334,7 +309,7 @@ TitreFormDialogProps) {
               {/* Basic Information Section */}
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold border-b pb-2">
-                  {/* {t("form.basicInformation")} */} Essential Informations
+                  {t("form.basicInformation")}
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
                   {/* Issuer Selection */}
@@ -498,7 +473,7 @@ TitreFormDialogProps) {
                 {/* Financial Details Section */}
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold border-b pb-2">
-                    {/* {t("form.financialDetails")} */} Financial Details
+                    {t("form.financialDetails")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Face Value */}
@@ -867,86 +842,136 @@ TitreFormDialogProps) {
                 </div>
 
                 {/* Conditional Fields for obligations */}
-                {typeof watchedType === "string" &&
-                  obligations.includes(watchedType) && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold border-b pb-2">
-                        Bond Specific Details
-                      </h3>
-                      <div className="grid grid-cols-1  gap-4">
-                        {/* Maturity Date */}
-                        {/* <FormField
-                          control={form.control}
-                          name="maturityDate"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Maturity Date</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className={cn(
-                                        "pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                    >
-                                      {field.value ? (
-                                        formatDateDisplay(field.value)
-                                      ) : (
-                                        <span>Select date</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                  className="w-auto p-0"
-                                  align="start"
-                                >
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    fromYear={new Date().getFullYear()}
-                                    toYear={new Date().getFullYear() + 30}
-                                    locale={getDateLocale()}
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        /> */}
+                {watchedType === "obligation" && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold border-b pb-2">
+                      Bond Specific Details
+                    </h3>
 
-                        {/* Duration in Years */}
-                        <FormField
-                          control={form.control}
-                          name="durationYears"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Duration (Years)</FormLabel>
-                              <FormControl>
+                    {/* Obligation Type  */}
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel className="text-base font-medium">
+                            Obligation Type
+                          </FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-6">
+                              <div className="flex items-center space-x-2">
                                 <Input
-                                  type="number"
-                                  min="1"
-                                  max="30"
-                                  {...field}
-                                  onChange={(e) =>
-                                    field.onChange(Number(e.target.value))
+                                  type="radio"
+                                  id="participatif"
+                                  value="participatif"
+                                  checked={field.value === "participatif"}
+                                  onChange={() =>
+                                    field.onChange("participatif")
                                   }
-                                  onKeyDown={preventNonNumericInput}
+                                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                                 />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                                <Label
+                                  htmlFor="participatif"
+                                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                                >
+                                  Participatif
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Input
+                                  type="radio"
+                                  id="sukuk"
+                                  value="sukuk"
+                                  checked={field.value === "sukuk"}
+                                  onChange={() => field.onChange("sukuk")}
+                                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                                />
+                                <Label
+                                  htmlFor="sukuk"
+                                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                                >
+                                  Sukuk
+                                </Label>
+                              </div>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1  gap-4">
+                      {/* Maturity Date */}
+                      <FormField
+                        control={form.control}
+                        name="maturityDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Maturity Date</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      formatDateDisplay(field.value)
+                                    ) : (
+                                      <span>Select date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  fromYear={new Date().getFullYear()}
+                                  toYear={new Date().getFullYear() + 30}
+                                  locale={getDateLocale()}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Duration in Years */}
+                      <FormField
+                        control={form.control}
+                        name="durationYears"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Duration (Years)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="1"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                                onKeyDown={preventNonNumericInput}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  )}
-                {typeof watchedType === "string" &&
-                  obligations.includes(watchedType) &&
+                  </div>
+                )}
+                {watchedType === "obligation" &&
                   durationYears &&
                   durationYears > 0 && (
                     <div className="space-y-4">
@@ -976,7 +1001,7 @@ TitreFormDialogProps) {
                                   <td className="px-4 py-4 whitespace-nowrap">
                                     <FormField
                                       control={form.control}
-                                      name={`paymentSchedule.${index}.date`}
+                                      name={`capitalRepaymentSchedule.${index}.date`}
                                       render={({ field }) => (
                                         <FormItem className="flex flex-col">
                                           <Popover>
@@ -1008,7 +1033,15 @@ TitreFormDialogProps) {
                                               <Calendar
                                                 mode="single"
                                                 selected={field.value}
-                                                onSelect={field.onChange}
+                                                onSelect={(date) => {
+                                                  field.onChange(date);
+                                                  if (date) {
+                                                    form.setValue(
+                                                      `couponSchedule.${index}.date`,
+                                                      date
+                                                    );
+                                                  }
+                                                }}
                                                 fromYear={new Date().getFullYear()}
                                                 toYear={
                                                   new Date().getFullYear() +
@@ -1028,7 +1061,7 @@ TitreFormDialogProps) {
                                   <td className="px-4 py-4 whitespace-nowrap">
                                     <FormField
                                       control={form.control}
-                                      name={`paymentSchedule.${index}.couponRate`}
+                                      name={`couponSchedule.${index}.rate`}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormControl>
@@ -1091,7 +1124,7 @@ TitreFormDialogProps) {
                                   <td className="px-4 py-4 whitespace-nowrap">
                                     <FormField
                                       control={form.control}
-                                      name={`paymentSchedule.${index}.capitalRate`}
+                                      name={`capitalRepaymentSchedule.${index}.rate`}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormControl>

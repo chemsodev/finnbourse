@@ -53,6 +53,8 @@ import { useStockApi } from "@/hooks/useStockApi";
 interface MarketTableProps {
   type: StockType;
   marketType: "primaire" | "secondaire";
+  stocks: Stock[];
+  setStocks: React.Dispatch<React.SetStateAction<Stock[]>>;
 }
 
 interface TableState {
@@ -61,28 +63,6 @@ interface TableState {
   columnVisibility: VisibilityState;
   rowSelection: RowSelectionState;
 }
-
-// function mapToStockType(
-//   type: StockType
-// ): "action" | "obligation" | "sukuk" | "participatif" {
-//   const mapping: Record<
-//     StockType,
-//     "action" | "obligation" | "sukuk" | "participatif"
-//   > = {
-//     opv: "action",
-//     empruntobligataire: "obligation",
-//     action: "action",
-//     obligation: "obligation",
-//     sukuk: "sukuk",
-//     sukukmp: "sukuk",
-//     sukukms: "sukuk",
-//     titresparticipatifs: "participatif",
-//     titresparticipatifsmp: "participatif",
-//     titresparticipatifsms: "participatif",
-//     participatif: "participatif",
-//   };
-//   return mapping[type];
-// }
 
 function mapToStockType(
   type: StockType
@@ -103,9 +83,25 @@ function mapToStockType(
     titresparticipatifsms: "participatif",
     participatif: "participatif",
   };
-  return mapping[type];
+  return mapping[type] || "action";
 }
-export function MarketTable({ type, marketType }: MarketTableProps) {
+
+// Helper function to map StockType to ObligationType
+function mapToObligationType(type: StockType): "participatif" | "sukuk" {
+  if (type.includes("sukuk")) {
+    return "sukuk";
+  }
+  if (type.includes("participatif")) {
+    return "participatif";
+  }
+  return "participatif";
+}
+export function MarketTable({
+  type,
+  marketType,
+  stocks,
+  setStocks,
+}: MarketTableProps) {
   const t = useTranslations("TitresTable");
   const { toast } = useToast();
   const api = useStockApi();
@@ -139,7 +135,8 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
           stockType,
         });
 
-        setData(response);
+        // setData(response);
+        setStocks(response || []);
       } catch (err) {
         const errorMessage =
           typeof err === "object" && err !== null && "message" in err
@@ -151,57 +148,103 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
           title: "Error loading stocks",
           description: errorMessage,
         });
+        setStocks([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStocks();
-  }, [type, marketType, api, toast]);
+  }, [type, marketType, api, toast, setStocks]);
 
   const handleEditClick = React.useCallback(
     (stock: Stock) => {
-      const defaultValues: TitreFormValues = {
-        id: stock.id,
-        // type: type,
-        name: stock.name || "",
-        stockType: mapToStockType(type),
-        code: stock.code || "",
-        issuer: String(stock.issuer) || "",
-        isinCode: stock.isinCode || "",
-        faceValue: stock.faceValue || 0,
-        quantity: stock.quantity || 1,
-        emissionDate: stock.emissionDate
-          ? new Date(stock.emissionDate)
-          : new Date(),
-        closingDate: stock.closingDate
-          ? new Date(stock.closingDate)
-          : new Date(),
-        enjoymentDate: stock.enjoymentDate
-          ? new Date(stock.enjoymentDate)
-          : new Date(),
-        marketListing: "ALG",
-        status: ["activated", "suspended", "delisted"].includes(
-          stock.status as string
-        )
-          ? (stock.status as "activated" | "suspended" | "delisted")
-          : "activated",
-        stockPrice: {
-          price: stock.stockPrices?.[stock.stockPrices.length - 1]?.price || 0,
-          date: new Date(),
-          gap: 0,
-        },
-        // Add other required fields with default values as needed
-        dividendRate: undefined,
-        commission: undefined,
-        shareClass: "",
-        votingRights: false,
-        institutions: [],
-      };
+      try {
+        const issuerString =
+          typeof stock.issuer === "string"
+            ? stock.issuer
+            : typeof stock.issuer === "object" &&
+              stock.issuer !== null &&
+              "id" in stock.issuer
+            ? (stock.issuer as { id: string }).id
+            : "";
 
-      setEditingTitre(defaultValues);
+        const defaultValues: TitreFormValues = {
+          id: stock.id,
+          type: mapToObligationType(type),
+          name: stock.name || "",
+          stockType: mapToStockType(type),
+          code: stock.code || "",
+          issuer: issuerString,
+          isinCode: stock.isinCode || "",
+          faceValue: stock.faceValue || 0,
+          quantity: stock.quantity || 1,
+          emissionDate: stock.emissionDate
+            ? new Date(stock.emissionDate)
+            : new Date(),
+          closingDate: stock.closingDate
+            ? new Date(stock.closingDate)
+            : new Date(),
+          enjoymentDate: stock.enjoymentDate
+            ? new Date(stock.enjoymentDate)
+            : new Date(),
+          marketListing: stock.marketListing || "ALG",
+          status: ["activated", "suspended", "delisted"].includes(
+            stock.status as string
+          )
+            ? (stock.status as "activated" | "suspended" | "delisted")
+            : "activated",
+
+          // Optional fields
+          dividendRate: stock.dividendRate,
+          capitalOperation: stock.capitalOperation,
+          maturityDate: stock.maturityDate
+            ? new Date(stock.maturityDate)
+            : undefined,
+          durationYears: undefined,
+          commission: undefined,
+          shareClass: undefined,
+          votingRights: stock.votingRights || false,
+          master: stock.master || "",
+          institutions: Array.isArray(stock.institutions)
+            ? stock.institutions.map((inst: string | { id: string }) =>
+                typeof inst === "string" ? inst : inst.id
+              )
+            : [],
+          // StockPrice
+          stockPrice: {
+            price:
+              stock.stockPrice?.price ||
+              stock.stockPrices?.[stock.stockPrices.length - 1]?.price ||
+              0,
+            date: stock.stockPrice?.date
+              ? new Date(stock.stockPrice.date)
+              : new Date(),
+            gap: stock.stockPrice?.gap || 0,
+          },
+          // Schedules
+          capitalRepaymentSchedule:
+            stock.capitalRepaymentSchedule?.map((item) => ({
+              date: new Date(item.date),
+              rate: item.rate || 0,
+            })) || [],
+          couponSchedule:
+            stock.couponSchedule?.map((item) => ({
+              date: new Date(item.date),
+              rate: item.rate || 0,
+            })) || [],
+        };
+        setEditingTitre(defaultValues);
+      } catch (error) {
+        console.error("Error preparing edit data:", error);
+        toast({
+          variant: "destructive",
+          title: "Error preparing edit data",
+          description: "Failed to prepare data for editing.",
+        });
+      }
     },
-    [type]
+    [type, toast]
   );
 
   // Helper function to get the details link for a stock
@@ -268,8 +311,10 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
     const hasEmissionData = ![
       "action",
       "obligation",
+      "sukuk",
       "sukukms",
       "titresparticipatifsms",
+      "participatif",
     ].includes(type);
     const hasStockPrices = ["action", "obligation"].includes(type);
 
@@ -373,9 +418,11 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem onClick={() => handleEditClick(stock)}>
-                  {t("modifier")}
-                </DropdownMenuItem>
+                {marketType === "secondaire" && (
+                  <DropdownMenuItem onClick={() => handleEditClick(stock)}>
+                    {t("modifier")}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           );
@@ -384,10 +431,11 @@ export function MarketTable({ type, marketType }: MarketTableProps) {
     );
 
     return cols;
-  }, [t, type, handleEditClick]);
+  }, [t, type, marketType]);
 
   const table = useReactTable({
-    data,
+    // data,
+    data: stocks || [],
     columns,
     state: { sorting, columnFilters, columnVisibility, rowSelection },
     onSortingChange: setSorting,

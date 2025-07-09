@@ -55,12 +55,12 @@ const DynamicDropdownMenu = ({
         onClick={toggleDropdown}
         className={`flex items-center gap-4 py-2 px-6 w-full rounded-md ${
           isActive
-            ? "bg-secondary/20 shadow-sm"
+            ? "bg-secondary text-primary shadow-sm"
             : "hover:bg-secondary/20 hover:text-primary hover:shadow-sm"
         }`}
       >
         {IconComponent ? (
-          <IconComponent size={15} />
+          <IconComponent size={15} className="text-primary" />
         ) : (
           <div className="w-[15px] h-[15px] rounded-full bg-gray-400" />
         )}
@@ -90,10 +90,8 @@ const DynamicDropdownMenu = ({
               <Link
                 key={child.id}
                 href={childInfo.href}
-                className={`flex items-center gap-2 hover:bg-secondary/10 hover:text-primary py-1 px-3 rounded-lg text-sm transition-colors ${
-                  isChildActive
-                    ? "bg-secondary/10 text-primary"
-                    : "text-gray-600"
+                className={`flex items-center gap-2 hover:bg-secondary/20 hover:text-primary py-1 px-3 rounded-lg text-sm transition-colors ${
+                  isChildActive ? "bg-secondary text-primary" : "text-gray-600"
                 }`}
               >
                 {childInfo.translationKey

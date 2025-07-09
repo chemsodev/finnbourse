@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 
@@ -9,7 +9,7 @@ import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
 import Link from "next/link";
 import { MarketTable } from "@/components/titres/MarketTable";
-import { StockType } from "@/types/gestionTitres";
+import { Stock, StockType } from "@/types/gestionTitres";
 import { CreateTitre } from "@/components/titres/CreateTitre";
 
 type Props = {
@@ -22,10 +22,16 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
   const { type } = params;
   const t = useTranslations("Titres");
   const { restToken, isLoading } = useRestToken();
+  const [stocks, setStocks] = useState<Stock[]>([]);
 
   useEffect(() => {
     console.log("Primary Market Type:", type);
   }, [type]);
+
+  // Function to handle new stock creation
+  const handleStockCreated = (newStock: Stock) => {
+    setStocks((prev) => [...prev, newStock]);
+  };
 
   if (status === "loading" || isLoading || !restToken) {
     return (
@@ -83,11 +89,16 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
       </div>
 
       <div className="flex justify-end mb-4 w-full">
-        <CreateTitre type={type} />
+        <CreateTitre type={type} onStockCreated={handleStockCreated} />
       </div>
 
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <MarketTable type={type as StockType} marketType="primaire" />
+        <MarketTable
+          type={type as StockType}
+          marketType="primaire"
+          stocks={stocks}
+          setStocks={setStocks}
+        />
       </div>
     </div>
   );

@@ -4,8 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TitreFormDialog } from "./TitreFormDialog";
+import { Stock } from "@/types/gestionTitres";
 
-export function CreateTitre({ type }: { type: string }) {
+export function CreateTitre({
+  type,
+  onStockCreated,
+}: {
+  type: string;
+  onStockCreated?: (newStock: Stock) => void;
+}) {
   const [open, setOpen] = useState(false);
   const t = useTranslations("GestionDesTitres.CreateTitre");
 
@@ -16,7 +23,12 @@ export function CreateTitre({ type }: { type: string }) {
         {t("ajouterUnTitre")}
       </Button>
 
-      <TitreFormDialog type={type} open={open} onOpenChange={setOpen} />
+      <TitreFormDialog
+        type={type}
+        open={open}
+        onOpenChange={setOpen}
+        onSuccess={onStockCreated}
+      />
     </>
   );
 }

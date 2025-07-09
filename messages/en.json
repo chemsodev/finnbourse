@@ -381,6 +381,7 @@
     "info": "Info",
     "actif": "Active",
     "suspendu": "Suspended",
+    "deliste": "Delisted",
     "marche_secondaire": "Secondary Market",
     "copierID": "Copy ID",
     "voirDetails": "View Details",
@@ -3060,6 +3061,8 @@
         "description": "Security created successfully"
       },
       "form": {
+        "basicInformation": "Basic Information",
+        "financialDetails": "Financial Details",
         "issuer": "Issuer",
         "selectIssuer": "Select an issuer",
         "searchIssuer": "Search issuer...",
@@ -3152,6 +3155,8 @@
         "description": "Security updated successfully"
       },
       "form": {
+        "basicInformation": "Basic Information",
+        "financialDetails": "Financial Details",
         "issuer": "Issuer",
         "selectIssuer": "Select an issuer",
         "searchIssuer": "Search issuer...",

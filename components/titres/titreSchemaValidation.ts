@@ -31,8 +31,11 @@ export const StockTypeSchema = z.enum([
   "participatif",
 ]);
 
+export const ObligationTypeSchema = z.enum(["participatif", "sukuk"]);
+
 export const MarketListingSchema = z.enum(["ALG", "TUN", "CAS"]);
 
+// Market Type Schema
 export const MasterSchema = z
   .object({
     id: z.string(),
@@ -41,12 +44,31 @@ export const MasterSchema = z
   })
   .optional();
 
-export const PaymentScheduleItemSchema = z.object({
+// Payment Schedule Item Schema
+// export const PaymentScheduleItemSchema = z.object({
+//   date: z.date(),
+//   couponRate: z.number().min(0).max(100),
+//   capitalRate: z.number().min(0).max(100),
+// });
+
+// Capital Repayment Schedule Item Schema
+export const CapitalRepaymentScheduleItemSchema = z.object({
   date: z.date(),
-  couponRate: z.number().min(0).max(100),
-  capitalRate: z.number().min(0).max(100),
+  rate: z
+    .number()
+    .min(0, "Rate must be positive")
+    .max(100, "Rate cannot exceed 100%"),
 });
 
+export const CouponScheduleItemSchema = z.object({
+  date: z.date(),
+  rate: z
+    .number()
+    .min(0, "Rate must be positive")
+    .max(100, "Rate cannot exceed 100%"),
+});
+
+// Titre Schema
 export const TitreSchema = z.object({
   id: z.string().optional(),
   name: z.string().optional(),
@@ -61,13 +83,13 @@ export const TitreSchema = z.object({
   closingDate: z.date(),
   enjoymentDate: z.date(),
   marketListing: MarketListingSchema,
-  // type: z.string().optional(),
+  type: ObligationTypeSchema,
   status: z.enum(["activated", "suspended", "delisted"]),
   dividendRate: z.number().min(0).optional(),
   capitalOperation: z.enum(["augmentation", "ouverture"]).optional(),
-  // maturityDate: z.date().optional(),
+  maturityDate: z.date().optional(),
   durationYears: z.number().min(1).max(30).optional(),
-  paymentSchedule: z.array(PaymentScheduleItemSchema).optional(),
+  // paymentSchedule: z.array(PaymentScheduleItemSchema).optional(),
   commission: z.number().min(0).optional(),
   shareClass: z.string().optional(),
   votingRights: z.boolean().optional(),
@@ -75,6 +97,34 @@ export const TitreSchema = z.object({
   institutions: z.array(z.string()).optional(),
   stockPrice: StockPriceSchema,
   // isPrimary: z.boolean().optional(),
+  capitalRepaymentSchedule: z
+    .array(CapitalRepaymentScheduleItemSchema)
+    .optional()
+    .default([])
+    .refine(
+      (arr) => {
+        const dates = arr.map((item) => item.date.getTime());
+        const uniqueDates = new Set(dates);
+        return uniqueDates.size === dates.length;
+      },
+      {
+        message: "Date values in capitalRepaymentSchedule must be unique",
+      }
+    ),
+  couponSchedule: z
+    .array(CouponScheduleItemSchema)
+    .optional()
+    .default([])
+    .refine(
+      (arr) => {
+        const dates = arr.map((item) => item.date.getTime());
+        const uniqueDates = new Set(dates);
+        return uniqueDates.size === dates.length;
+      },
+      {
+        message: "Date values in couponSchedule must be unique",
+      }
+    ),
 });
 
 export type TitreFormValues = z.infer<typeof TitreSchema>;

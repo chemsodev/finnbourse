@@ -12,11 +12,12 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import { FinancialInstitution } from "@/types/gestionTitres";
 
 interface TitreDetailsViewProps {
   data: TitreFormValues;
   companies: { id: string; name: string }[];
-  institutions: { id: string; name: string }[];
+  institutions: FinancialInstitution[];
 }
 
 export function TitreDetails({
@@ -39,6 +40,7 @@ export function TitreDetails({
     }
   };
 
+  console.log(data);
   // Improved date formatting with error handling
   const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return null;
@@ -85,7 +87,6 @@ export function TitreDetails({
     return <Badge className={config.color}>{config.label}</Badge>;
   };
 
-  // Enhanced detail renderer with better styling
   const renderDetail = (
     label: string,
     value: React.ReactNode,
@@ -127,7 +128,7 @@ export function TitreDetails({
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-gray-900">
-              {data.name ?? ""}
+              {getIssuerName(data.issuer) || t("unknownIssuer")}
             </h1>
             <div className="flex items-center gap-3 flex-wrap">
               <StatusBadge status={data.status} />
@@ -152,7 +153,6 @@ export function TitreDetails({
           )}
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Essential Information */}
         <Card>
@@ -200,7 +200,6 @@ export function TitreDetails({
           </CardContent>
         </Card>
       </div>
-
       {/* Dates Section */}
       <Card>
         <CardHeader>
@@ -235,7 +234,7 @@ export function TitreDetails({
                 {formatDate(data.enjoymentDate)}
               </div>
             </div>
-            {/* {data.maturityDate && (
+            {data.maturityDate && (
               <div className="space-y-1">
                 <div className="text-sm font-medium text-gray-600">
                   {t("maturityDate")}
@@ -244,11 +243,10 @@ export function TitreDetails({
                   {formatDate(data.maturityDate)}
                 </div>
               </div>
-            )} */}
+            )}
           </div>
         </CardContent>
       </Card>
-
       {/* Institutions */}
       {Array.isArray(data.institutions) && data.institutions.length > 0 && (
         <Card>
@@ -264,7 +262,7 @@ export function TitreDetails({
                 const inst = institutions.find((i) => i.id === id);
                 return inst ? (
                   <Badge key={id} variant="outline" className="px-3 py-1">
-                    {inst.name}
+                    {inst.institutionName}
                   </Badge>
                 ) : null;
               })}
@@ -273,13 +271,53 @@ export function TitreDetails({
         </Card>
       )}
 
-      {/* Payment Schedule */}
-      {(data.paymentSchedule?.length ?? 0) > 0 && (
+      {/* Capital Repayment Schedule */}
+      {(data.capitalRepaymentSchedule?.length ?? 0) > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              {t("paymentSchedule")} ({data.paymentSchedule?.length ?? 0}{" "}
+              {t("capitalRepaymentSchedule")} (
+              {data.capitalRepaymentSchedule?.length ?? 0} {t("payments")})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      {t("paymentDate")}
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      {t("capitalRate")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.capitalRepaymentSchedule?.map((payment, index) => (
+                    <tr key={index} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 text-sm">
+                        {formatDate(payment.date)}
+                      </td>
+                      <td className="py-3 px-4 text-sm font-medium text-blue-600">
+                        {formatPercentage(payment.rate)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {/* Coupon Schedule */}
+      {(data.couponSchedule?.length ?? 0) > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              {t("couponSchedule")} ({data.couponSchedule?.length ?? 0}{" "}
               {t("payments")})
             </CardTitle>
           </CardHeader>
@@ -294,22 +332,16 @@ export function TitreDetails({
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
                       {t("couponRate")}
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">
-                      {t("capitalRate")}
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.paymentSchedule?.map((payment, index) => (
+                  {data.couponSchedule?.map((payment, index) => (
                     <tr key={index} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4 text-sm">
                         {formatDate(payment.date)}
                       </td>
                       <td className="py-3 px-4 text-sm font-medium text-green-600">
-                        {formatPercentage(payment.couponRate)}
-                      </td>
-                      <td className="py-3 px-4 text-sm font-medium text-blue-600">
-                        {formatPercentage(payment.capitalRate)}
+                        {formatPercentage(payment.rate)}
                       </td>
                     </tr>
                   ))}
@@ -319,6 +351,61 @@ export function TitreDetails({
           </CardContent>
         </Card>
       )}
+      {(data.capitalRepaymentSchedule?.length ?? 0) > 0 &&
+        (data.couponSchedule?.length ?? 0) > 0 &&
+        data.capitalRepaymentSchedule?.length ===
+          data.couponSchedule?.length && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                {t("combinedPaymentSchedule")} (
+                {data.capitalRepaymentSchedule?.length ?? 0} {t("payments")})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">
+                        {t("paymentDate")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">
+                        {t("couponRate")}
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">
+                        {t("capitalRate")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.capitalRepaymentSchedule?.map(
+                      (capitalPayment, index) => {
+                        const couponPayment = data.couponSchedule?.[index];
+                        return (
+                          <tr key={index} className="border-b hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm">
+                              {formatDate(capitalPayment.date)}
+                            </td>
+                            <td className="py-3 px-4 text-sm font-medium text-green-600">
+                              {couponPayment
+                                ? formatPercentage(couponPayment.rate)
+                                : "N/A"}
+                            </td>
+                            <td className="py-3 px-4 text-sm font-medium text-blue-600">
+                              {formatPercentage(capitalPayment.rate)}
+                            </td>
+                          </tr>
+                        );
+                      }
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

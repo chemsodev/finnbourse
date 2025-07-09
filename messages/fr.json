@@ -3058,6 +3058,8 @@
         "description": "Titre créé avec succès"
       },
       "form": {
+        "basicInformation": "Informations Essentielles",
+        "financialDetails": "Détails Financiers",
         "issuer": "Émetteur",
         "selectIssuer": "Sélectionner un émetteur",
         "searchIssuer": "Rechercher un émetteur...",
@@ -3071,6 +3073,9 @@
         "selectMarket": "Sélectionner un marché",
         "primaryMarket": "Marché Primaire",
         "secondaryMarket": "Marché Secondaire",
+        "algeriaMarket": "Marché Algérien",
+        "tunisianMarket": "Marché Tunisien",
+        "cassablancaMarket": "Marché de Casablanca",
         "status": "Statut",
         "selectStatus": "Sélectionner un statut",
         "active": "Actif",
