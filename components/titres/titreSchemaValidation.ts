@@ -1,6 +1,3 @@
-import { Master } from "./../../types/gestionTitres";
-import { MarketListing } from "@/types/gestionTitres";
-
 import { z } from "zod";
 
 export const StockPriceSchema = z.object({
@@ -44,13 +41,6 @@ export const MasterSchema = z
   })
   .optional();
 
-// Payment Schedule Item Schema
-// export const PaymentScheduleItemSchema = z.object({
-//   date: z.date(),
-//   couponRate: z.number().min(0).max(100),
-//   capitalRate: z.number().min(0).max(100),
-// });
-
 // Capital Repayment Schedule Item Schema
 export const CapitalRepaymentScheduleItemSchema = z.object({
   date: z.date(),
@@ -83,7 +73,7 @@ export const TitreSchema = z.object({
   closingDate: z.date(),
   enjoymentDate: z.date(),
   marketListing: MarketListingSchema,
-  type: ObligationTypeSchema,
+  type: StockTypeSchema, // This can be "obligation", "action", etc.
   status: z.enum(["activated", "suspended", "delisted"]),
   dividendRate: z.number().min(0).optional(),
   capitalOperation: z.enum(["augmentation", "ouverture"]).optional(),

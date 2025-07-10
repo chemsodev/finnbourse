@@ -1,6 +1,7 @@
 import {
   ApiError,
   MoveToSecondaryData,
+  SecondaryMarketResponse,
   Stock,
   StockFilter,
   StockPrice,
@@ -83,11 +84,21 @@ const createApiClient = (getToken: () => string | null) => {
         method: "PUT",
         body: JSON.stringify(data),
       }),
+
+    // Update IOB market Secondary
+    updateIobMarketSecondary: (stockId: string, data: MoveToSecondaryData) =>
+      makeRequest<Stock>(`/stock/${stockId}/UpdateMarketSecondary`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+
     // Get delisted stocks
     getDelistedStocks: () => makeRequest<Stock[]>("/stock/filter/delisted"),
     // Get primary closing stocks
     getPrimaryClosingStocks: () =>
-      makeRequest<Stock[]>("/stock/primary-closing"),
+      makeRequest<SecondaryMarketResponse>("/stock/primary-closing").then(
+        (response) => response.data || []
+      ),
     // Activate stock
     activateStock: (stockId: string) =>
       makeRequest<Stock>(`/stock/${stockId}/activate`, { method: "PUT" }),

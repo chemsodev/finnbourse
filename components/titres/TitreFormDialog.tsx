@@ -54,7 +54,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { useStockApi } from "@/hooks/useStockApi";
 import { useIssuer } from "@/hooks/useIssuer";
 import { useFinancialInstitution } from "@/hooks/useFinancialInstitution";
-import { Stock } from "@/types/gestionTitres";
+import { MoveToSecondaryData, Stock } from "@/types/gestionTitres";
 import { Label } from "../ui/label";
 
 interface Company {
@@ -70,6 +70,7 @@ type TitreFormDialogProps = {
   onSuccess?: (newStock: Stock) => void;
   isEdit?: boolean;
   companies?: Company[];
+  isIOB?: boolean;
 };
 
 export function TitreFormDialog({
@@ -79,6 +80,7 @@ export function TitreFormDialog({
   defaultValues,
   onSuccess,
   isEdit = false,
+  isIOB = false,
 }: //   companies = [],
 TitreFormDialogProps) {
   const { toast } = useToast();
@@ -238,11 +240,33 @@ TitreFormDialogProps) {
       };
 
       console.log("Submitting payload:", payload);
+
+      // let response;
+      // if (isEdit && defaultValues?.id) {
+      //   const moveToSecondaryData: MoveToSecondaryData = {
+      //     price: payload.stockPrice.price,
+      //     gap: payload.stockPrice.gap,
+      //     date: payload.stockPrice.date.toISOString(),
+      //   };
+      //   if (isIOB) {
+      //     // Use IOB-specific endpoint
+      //     response = await api.updateIobMarketSecondary(
+      //       defaultValues.id,
+      //       moveToSecondaryData
+      //     );
+      //   } else {
+      //     // Use regular secondary market endpoint
+      //     response = await api.moveToSecondary(
+      //       defaultValues.id,
+      //       moveToSecondaryData
+      //     );
+      //   }
+      // } else {
+
+      //   response = await api.createStock(payload);
+      // }
       const response = await api.createStock(payload);
-      // const response =
-      //   isEdit && defaultValues?.id
-      //     ? await api.updateStock(defaultValues.id, payload)
-      //     : await api.createStock(payload);
+
       console.log("Create stock response:", response);
 
       toast({
@@ -261,7 +285,10 @@ TitreFormDialogProps) {
       toast({
         variant: "destructive",
         title: t("error.title"),
-        description: t("error.description"),
+        description:
+          typeof error === "object" && error !== null && "message" in error
+            ? String((error as { message?: string }).message)
+            : t("error.description"),
       });
     }
   }

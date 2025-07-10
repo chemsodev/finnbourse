@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 
@@ -9,7 +9,7 @@ import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
 import Link from "next/link";
 import { MarketTable } from "@/components/titres/MarketTable";
-import { StockType } from "@/types/gestionTitres";
+import { Stock, StockType } from "@/types/gestionTitres";
 
 type Props = {
   params: {
@@ -20,7 +20,7 @@ type Props = {
 const SecondaryMarketTypePage = ({ params }: Props) => {
   const { type } = params;
   const t = useTranslations("Titres");
-
+  const [stocks, setStocks] = useState<Stock[]>([]);
   const { restToken, isLoading } = useRestToken();
 
   useEffect(() => {
@@ -72,7 +72,7 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
 
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 text-center md:ltr:text-left md:rtl:text-right">
         <div className="text-3xl font-bold text-primary">
-          {t("marchesecondaire")}
+          {t("marcheSecondaire")}
           <span className="text-lg text-black mx-1">
             {getTypeLabel(t, type)}
           </span>
@@ -81,7 +81,13 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
       </div>
 
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <MarketTable type={type as StockType} marketType="secondary" />
+        <MarketTable
+          type={type as StockType}
+          marketType="secondaire"
+          stocks={stocks}
+          setStocks={setStocks}
+          isIOB={true}
+        />
       </div>
     </div>
   );

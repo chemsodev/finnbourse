@@ -2809,6 +2809,7 @@
       "editStockPrice": "تعديل سعر السهم",
       "price": "السعر",
       "gap": "الفجوة",
+      "date": "التاريخ",
       "cancel": "إلغاء",
       "saveChanges": "حفظ التغييرات",
       "success": {

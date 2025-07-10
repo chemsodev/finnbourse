@@ -3205,6 +3205,7 @@
       "editStockPrice": "Edit Stock Price",
       "price": "Price",
       "gap": "Gap",
+      "date": "Date",
       "cancel": "Cancel",
       "saveChanges": "Save Changes",
       "success": {

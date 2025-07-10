@@ -49,10 +49,12 @@ import { TitreFormValues } from "./titreSchemaValidation";
 import { EditTitre } from "./EditTitre";
 import { EditSecondaryMarketTitre } from "./EditSecondaryMarketTitre";
 import { useStockApi } from "@/hooks/useStockApi";
+import { is } from "date-fns/locale";
 
 interface MarketTableProps {
   type: StockType;
   marketType: "primaire" | "secondaire";
+  isIOB?: boolean;
   stocks: Stock[];
   setStocks: React.Dispatch<React.SetStateAction<Stock[]>>;
 }
@@ -99,13 +101,13 @@ function mapToObligationType(type: StockType): "participatif" | "sukuk" {
 export function MarketTable({
   type,
   marketType,
+  isIOB = false,
   stocks,
   setStocks,
 }: MarketTableProps) {
   const t = useTranslations("TitresTable");
   const { toast } = useToast();
   const api = useStockApi();
-  const [data, setData] = React.useState<Stock[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [sorting, setSorting] = React.useState<TableState["sorting"]>([]);
@@ -130,13 +132,15 @@ export function MarketTable({
         setError(null);
 
         const stockType = mapToStockType(type);
-        const response = await api.filterStocks({
-          marketType,
-          stockType,
-        });
+        const response =
+          marketType === "primaire" || (marketType === "secondaire" && isIOB)
+            ? await api.filterStocks({ marketType, stockType })
+            : await api.getPrimaryClosingStocks();
 
-        // setData(response);
         setStocks(response || []);
+        // marketType === "secondaire"
+        //   ? setStocks(response.data || [])
+        //   : setStocks(response || []);
       } catch (err) {
         const errorMessage =
           typeof err === "object" && err !== null && "message" in err
@@ -155,7 +159,7 @@ export function MarketTable({
     };
 
     fetchStocks();
-  }, [type, marketType, api, toast, setStocks]);
+  }, [type, marketType, api, toast, setStocks, isIOB]);
 
   const handleEditClick = React.useCallback(
     (stock: Stock) => {
@@ -169,11 +173,18 @@ export function MarketTable({
             ? (stock.issuer as { id: string }).id
             : "";
 
+        const isSecondaryMarket = marketType === "secondaire";
+        const stockType = mapToStockType(type);
+
+        const formType = isSecondaryMarket
+          ? stockType
+          : mapToObligationType(type);
+
         const defaultValues: TitreFormValues = {
           id: stock.id,
-          type: mapToObligationType(type),
+          type: stockType,
           name: stock.name || "",
-          stockType: mapToStockType(type),
+          stockType: stockType,
           code: stock.code || "",
           issuer: issuerString,
           isinCode: stock.isinCode || "",
@@ -258,7 +269,9 @@ export function MarketTable({
         ? "/gestion-des-titres/marcheprimaire"
         : "/gestion-des-titres/marchesecondaire";
 
-    return `${basePath}/${stockType}/${stockId}`;
+    return marketType === "primaire"
+      ? `${basePath}/${stockType}/${stockId}`
+      : `${basePath}/${stockId}`;
   };
 
   // Column definitions for the table
@@ -274,28 +287,28 @@ export function MarketTable({
         ),
         cell: ({ row }) => {
           const stock = row.original;
+          // Handle both object and string cases
           const issuerName =
-            typeof stock.issuer === "object"
-              ? (stock.issuer as { name?: string }).name
-              : stock.issuer;
-          const code =
-            stock.code ??
-            (typeof stock.issuer === "object"
-              ? (stock.issuer as { code?: string }).code
-              : "N/A");
+            stock.name ||
+            (typeof stock.issuer === "object" &&
+            stock.issuer !== null &&
+            "name" in stock.issuer
+              ? (stock.issuer as { name: string }).name
+              : stock.issuer) ||
+            "N/A";
+          const code = stock.code || "N/A";
 
           return (
             <div className="capitalize flex flex-col gap-1">
-              <div className="font-semibold">{issuerName ?? "N/A"}</div>
+              <div className="font-semibold">{issuerName}</div>
               <div className="uppercase text-xs text-gray-500">{code}</div>
             </div>
           );
         },
       },
     ];
-    if (type === "empruntobligataire" || type === "obligation") {
+    if (marketType === "secondaire" || type === "obligation") {
       cols.splice(1, 0, {
-        // Insert after the first column
         accessorKey: "bondType",
         header: t("type"),
         cell: ({ row }) => {
@@ -417,7 +430,6 @@ export function MarketTable({
                     {t("voirDetails")}
                   </Link>
                 </DropdownMenuItem>
-
                 {marketType === "secondaire" && (
                   <DropdownMenuItem onClick={() => handleEditClick(stock)}>
                     {t("modifier")}
@@ -431,10 +443,9 @@ export function MarketTable({
     );
 
     return cols;
-  }, [t, type, marketType]);
+  }, [t, type, marketType, handleEditClick]);
 
   const table = useReactTable({
-    // data,
     data: stocks || [],
     columns,
     state: { sorting, columnFilters, columnVisibility, rowSelection },
@@ -459,6 +470,9 @@ export function MarketTable({
   if (error) {
     return <div className="p-8 text-center text-red-500">{error}</div>;
   }
+
+  // Debugging information
+  console.log(marketType, stocks, isIOB);
 
   return (
     <div className="w-full">
@@ -567,7 +581,7 @@ export function MarketTable({
           </Button>
         </div>
       </div>
-      {editingTitre &&
+      {/* {editingTitre &&
         (marketType === "secondaire" ? (
           <EditSecondaryMarketTitre
             open={!!editingTitre}
@@ -587,7 +601,18 @@ export function MarketTable({
               setEditingTitre(null);
             }}
           />
-        ))}
+        ))} */}
+      {editingTitre && (
+        <EditSecondaryMarketTitre
+          open={!!editingTitre}
+          isIOB={isIOB}
+          onOpenChange={(open) => !open && setEditingTitre(null)}
+          defaultValues={editingTitre}
+          onSuccess={() => {
+            setEditingTitre(null);
+          }}
+        />
+      )}
     </div>
   );
 }

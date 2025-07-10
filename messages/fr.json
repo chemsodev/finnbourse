@@ -3200,6 +3200,7 @@
       "editStockPrice": "Modifier le Prix de l'Action",
       "price": "Prix",
       "gap": "Écart",
+      "date": "Date",
       "cancel": "Annuler",
       "saveChanges": "Enregistrer les Modifications",
       "success": {

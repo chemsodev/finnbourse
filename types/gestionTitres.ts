@@ -186,3 +186,10 @@ export interface ApiError {
   status?: number;
   errors?: Record<string, string>;
 }
+
+export interface SecondaryMarketResponse {
+  data: Stock[];
+  total: number;
+}
+
+export interface PrimaryMarketResponse extends Array<Stock> {}
