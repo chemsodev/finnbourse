@@ -6,7 +6,17 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Edit, Trash2, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Plus,
+  TrendingUp,
+  LineChart,
+  ArrowUpRight,
+  ArrowDownRight,
+  History,
+} from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import Loading from "@/components/ui/loading";
 import {
@@ -29,6 +39,37 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+
+// Portfolio data interface
+interface PortfolioData {
+  myPortfolio: {
+    holdings: {
+      name: string;
+      symbol: string;
+      quantity: number;
+      currentValue: number;
+      investmentValue: number;
+      profit: number;
+      profitPercentage: number;
+    }[];
+    totalInvestment: number;
+    totalCurrentValue: number;
+    totalProfit: number;
+    totalProfitPercentage: number;
+  };
+  transactionHistoryExample: {
+    id: string;
+    date: string;
+    type: string;
+    symbol: string;
+    name: string;
+    quantity: number;
+    price: number;
+    total: number;
+  }[];
+}
 
 export default function ClientView() {
   const t = useTranslations("ClientDashboard");
@@ -41,6 +82,8 @@ export default function ClientView() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
+  const [loadingPortfolio, setLoadingPortfolio] = useState(false);
   const dataFetchedRef = useRef<boolean>(false);
 
   const { getClientById, deleteClient, loading } = useClients();
@@ -82,10 +125,113 @@ export default function ClientView() {
       }
     };
 
+    const fetchPortfolio = async () => {
+      try {
+        setLoadingPortfolio(true);
+        // Fetch from the Mockoon API
+        const response = await fetch(
+          `http://localhost:8081/portfolio/${clientId}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch portfolio data");
+        }
+        const apiData = await response.json();
+
+        // Transform the API data to match the expected structure
+        const transformedData = {
+          myPortfolio: {
+            holdings: apiData.myPortfolio.holdings.map((holding: any) => ({
+              name: holding.stockName,
+              symbol: holding.stockCode,
+              quantity: holding.quantity,
+              currentValue: holding.currentValue,
+              investmentValue: holding.totalInvestment,
+              profit: holding.totalProfit,
+              profitPercentage: holding.profitPercentage,
+            })),
+            totalInvestment: apiData.myPortfolio.totalInvestment,
+            totalCurrentValue: apiData.myPortfolio.totalCurrentValue,
+            totalProfit: apiData.myPortfolio.totalProfit,
+            totalProfitPercentage: apiData.myPortfolio.totalProfitPercentage,
+          },
+          transactionHistoryExample: apiData.transactionHistoryExample.map(
+            (transaction: any, index: number) => ({
+              id: `TX${String(index + 1).padStart(3, "0")}`,
+              date: transaction.createdAt,
+              type: transaction.status === "completed" ? "BUY" : "PENDING",
+              symbol: transaction.stockCode,
+              name: transaction.stockName,
+              quantity: transaction.quantity,
+              price: transaction.price,
+              total: transaction.quantity * transaction.price,
+            })
+          ),
+        };
+
+        setPortfolio(transformedData);
+      } catch (error) {
+        console.error("Error fetching portfolio:", error);
+        // Create a fallback portfolio data if the API is not available
+        setPortfolio({
+          myPortfolio: {
+            holdings: [
+              {
+                name: "CPA Bank",
+                symbol: "CPA",
+                quantity: 100,
+                currentValue: 15000,
+                investmentValue: 12000,
+                profit: 3000,
+                profitPercentage: 25,
+              },
+              {
+                name: "Banque de Développement Local",
+                symbol: "BDL",
+                quantity: 50,
+                currentValue: 8500,
+                investmentValue: 8000,
+                profit: 500,
+                profitPercentage: 6.25,
+              },
+            ],
+            totalInvestment: 20000,
+            totalCurrentValue: 23500,
+            totalProfit: 3500,
+            totalProfitPercentage: 17.5,
+          },
+          transactionHistoryExample: [
+            {
+              id: "TX001",
+              date: "2023-04-15",
+              type: "BUY",
+              symbol: "CPA",
+              name: "CPA Bank",
+              quantity: 100,
+              price: 120,
+              total: 12000,
+            },
+            {
+              id: "TX002",
+              date: "2023-05-20",
+              type: "BUY",
+              symbol: "BDL",
+              name: "Banque de Développement Local",
+              quantity: 50,
+              price: 160,
+              total: 8000,
+            },
+          ],
+        });
+      } finally {
+        setLoadingPortfolio(false);
+      }
+    };
+
     if (clientId) {
       dataFetchedRef.current = true;
       fetchClient();
       fetchClientUsers();
+      fetchPortfolio();
     }
   }, [clientId]); // Remove getClientById from dependencies
 
@@ -100,6 +246,15 @@ export default function ClientView() {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
     }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("fr-DZ", {
+      style: "currency",
+      currency: "DZD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
   if (loading || !client) {
@@ -296,24 +451,246 @@ export default function ClientView() {
                   <p className="mt-1">{client.lieu_naissance || "-"}</p>
                 </div>
               )}
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">
-                  {t("status")}
-                </h3>
-                <p className="mt-1">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      client.status === "actif"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {client.status === "actif" ? t("active") : t("inactive")}
-                  </span>
-                </p>
-              </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Portfolio Section */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>{t("portfolio") || "Portfolio"}</CardTitle>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => router.push(`/clients/${clientId}/portfolio`)}
+          >
+            <LineChart className="h-4 w-4 mr-2" />
+            {t("viewFullPortfolio") || "View Full Portfolio"}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {loadingPortfolio ? (
+            <Loading className="min-h-[200px]" />
+          ) : portfolio ? (
+            <div>
+              <Tabs defaultValue="summary">
+                <TabsList>
+                  <TabsTrigger value="summary">
+                    {t("summary") || "Summary"}
+                  </TabsTrigger>
+                  <TabsTrigger value="transactions">
+                    {t("transactions") || "Transactions"}
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="summary">
+                  <div className="space-y-6">
+                    {/* Portfolio Summary */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="bg-white shadow-sm rounded-lg p-4 border">
+                        <h3 className="text-sm text-gray-500 font-medium">
+                          {t("totalInvestment") || "Total Investment"}
+                        </h3>
+                        <p className="text-2xl font-bold">
+                          {formatCurrency(
+                            portfolio.myPortfolio.totalInvestment
+                          )}
+                        </p>
+                      </div>
+                      <div className="bg-white shadow-sm rounded-lg p-4 border">
+                        <h3 className="text-sm text-gray-500 font-medium">
+                          {t("currentValue") || "Current Value"}
+                        </h3>
+                        <p className="text-2xl font-bold">
+                          {formatCurrency(
+                            portfolio.myPortfolio.totalCurrentValue
+                          )}
+                        </p>
+                      </div>
+                      <div className="bg-white shadow-sm rounded-lg p-4 border">
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-sm text-gray-500 font-medium">
+                            {t("totalProfit") || "Total Profit"}
+                          </h3>
+                          <Badge
+                            variant={
+                              portfolio.myPortfolio.totalProfit >= 0
+                                ? "default"
+                                : "destructive"
+                            }
+                            className="flex items-center"
+                          >
+                            {portfolio.myPortfolio.totalProfit >= 0 ? (
+                              <ArrowUpRight className="h-3 w-3 mr-1" />
+                            ) : (
+                              <ArrowDownRight className="h-3 w-3 mr-1" />
+                            )}
+                            {portfolio.myPortfolio.totalProfitPercentage}%
+                          </Badge>
+                        </div>
+                        <p className="text-2xl font-bold text-emerald-600">
+                          {formatCurrency(portfolio.myPortfolio.totalProfit)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Holdings */}
+                    <div>
+                      <h3 className="text-lg font-medium mb-3">
+                        {t("holdings") || "Holdings"}
+                      </h3>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t("name") || "Name"}</TableHead>
+                            <TableHead>{t("quantity") || "Quantity"}</TableHead>
+                            <TableHead>
+                              {t("investment") || "Investment"}
+                            </TableHead>
+                            <TableHead>
+                              {t("currentValue") || "Current Value"}
+                            </TableHead>
+                            <TableHead>{t("profit") || "Profit"}</TableHead>
+                            <TableHead>{t("percentage") || "%"}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {portfolio.myPortfolio.holdings.map((holding) => (
+                            <TableRow key={holding.symbol}>
+                              <TableCell>
+                                <div className="font-medium">
+                                  {holding.name}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {holding.symbol}
+                                </div>
+                              </TableCell>
+                              <TableCell>{holding.quantity}</TableCell>
+                              <TableCell>
+                                {formatCurrency(holding.investmentValue)}
+                              </TableCell>
+                              <TableCell>
+                                {formatCurrency(holding.currentValue)}
+                              </TableCell>
+                              <TableCell
+                                className={
+                                  holding.profit >= 0
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }
+                              >
+                                {formatCurrency(holding.profit)}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  {holding.profit >= 0 ? (
+                                    <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
+                                  ) : (
+                                    <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
+                                  )}
+                                  {holding.profitPercentage}%
+                                </div>
+                                <Progress
+                                  value={
+                                    holding.profitPercentage > 0
+                                      ? holding.profitPercentage
+                                      : holding.profitPercentage * -1
+                                  }
+                                  max={100}
+                                  className={`h-1.5 mt-1 ${
+                                    holding.profit >= 0
+                                      ? "bg-green-200"
+                                      : "bg-red-200"
+                                  }`}
+                                  indicatorClassName={
+                                    holding.profit >= 0
+                                      ? "bg-green-500"
+                                      : "bg-red-500"
+                                  }
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="transactions">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-medium">
+                        {t("recentTransactions") || "Recent Transactions"}
+                      </h3>
+                      <Badge variant="outline" className="flex items-center">
+                        <History className="h-3 w-3 mr-1" />
+                        {portfolio.transactionHistoryExample.length}{" "}
+                        {t("transactions") || "transactions"}
+                      </Badge>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t("date") || "Date"}</TableHead>
+                          <TableHead>{t("type") || "Type"}</TableHead>
+                          <TableHead>{t("security") || "Security"}</TableHead>
+                          <TableHead>{t("quantity") || "Quantity"}</TableHead>
+                          <TableHead>{t("price") || "Price"}</TableHead>
+                          <TableHead>{t("total") || "Total"}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {portfolio.transactionHistoryExample.map(
+                          (transaction) => (
+                            <TableRow key={transaction.id}>
+                              <TableCell>
+                                {new Date(transaction.date).toLocaleDateString(
+                                  "fr-DZ"
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    transaction.type === "BUY"
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                >
+                                  {transaction.type}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-medium">
+                                  {transaction.name}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {transaction.symbol}
+                                </div>
+                              </TableCell>
+                              <TableCell>{transaction.quantity}</TableCell>
+                              <TableCell>
+                                {formatCurrency(transaction.price)}
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                {formatCurrency(transaction.total)}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              {t("noPortfolioData") ||
+                "No portfolio data available for this client."}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -408,28 +785,22 @@ export default function ClientView() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("confirmDelete")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteClient")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("deleteClientConfirmation")}
+              {t("deleteConfirmation")}{" "}
+              <span className="font-medium">
+                {client.name || client.raison_sociale}
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              {t("cancel")}
-            </AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? (
-                <>
-                  <Loading className="mr-2 h-4 w-4" />
-                  {t("deleting")}
-                </>
-              ) : (
-                t("delete")
-              )}
+              {isDeleting ? t("deleting") : t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

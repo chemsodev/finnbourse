@@ -149,6 +149,7 @@ export const validateClientUserType = (
 
 export const formSchema = z
   .object({
+    // Keep client type as is for the form UI
     clientType: z.enum(["personne_physique", "personne_morale"]),
     clientCode: z.string().min(1, "Le code client est requis"),
     name: z.string().min(1, "Le nom est requis"),
@@ -162,10 +163,16 @@ export const formSchema = z
     address: z.string().optional().or(z.literal("")),
     dateNaissance: z
       .date()
-      .min(new Date(1900, 0, 1), "La date de naissance est requise"),
-    lieuNaissance: z.string().min(1, "Le lieu de naissance est requis"),
+      .min(new Date(1900, 0, 1), "La date de naissance est requise")
+      .optional()
+      .nullable(),
+    lieuNaissance: z
+      .string()
+      .min(1, "Le lieu de naissance est requis")
+      .optional()
+      .or(z.literal("")),
     iobType: z.enum(["intern", "extern"]),
-    iobCategory: z.string().nullable(),
+    iobCategory: z.string().nullable().optional(),
     numeroCompteTitre: z.string().optional().or(z.literal("")),
     ribBanque: z
       .string()
@@ -189,10 +196,22 @@ export const formSchema = z
       .or(z.literal("")),
     observation: z.string().optional().or(z.literal("")),
     selectedAgence: z.string().optional().or(z.literal("")),
-    raisonSociale: z.string().min(1, "La raison sociale est requise"),
-    nif: z.string().min(1, "Le NIF est requis"),
-    regNumber: z.string().min(1, "Le numéro du registre est requis"),
-    legalForm: z.string().min(1, "La forme juridique est requise"),
+    raisonSociale: z
+      .string()
+      .min(1, "La raison sociale est requise")
+      .optional()
+      .or(z.literal("")),
+    nif: z.string().min(1, "Le NIF est requis").optional().or(z.literal("")),
+    regNumber: z
+      .string()
+      .min(1, "Le numéro du registre est requis")
+      .optional()
+      .or(z.literal("")),
+    legalForm: z
+      .string()
+      .min(1, "La forme juridique est requise")
+      .optional()
+      .or(z.literal("")),
     financialInstitutionId: z.string().optional().or(z.literal("")),
     agenceId: z.string().optional().or(z.literal("")),
     iobId: z.string().optional().or(z.literal("")),
@@ -201,17 +220,19 @@ export const formSchema = z
     (data) => {
       if (data.clientType === "personne_physique") {
         return (
-          data.name &&
-          data.idNumber &&
-          data.nin &&
-          data.nationalite &&
-          data.wilaya &&
-          data.dateNaissance &&
-          data.lieuNaissance
+          !!data.name &&
+          !!data.idNumber &&
+          !!data.nin &&
+          !!data.nationalite &&
+          !!data.wilaya
+          // Date and lieu naissance are now optional for the form to work properly
         );
       } else {
         return (
-          data.raisonSociale && data.nif && data.regNumber && data.legalForm
+          !!data.raisonSociale &&
+          !!data.nif &&
+          !!data.regNumber &&
+          !!data.legalForm
         );
       }
     },

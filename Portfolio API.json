@@ -1,0 +1,129 @@
+{
+  "uuid": "c518aabd-7a69-4312-aaea-ff2d219c0b87",
+  "lastMigration": 33,
+  "name": "Portfolio API",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 8081,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "cd82a6cd-a57b-41a4-aaa3-fa82ba452016",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "portfolio",
+      "responses": [
+        {
+          "uuid": "1c534ac8-6f21-48c4-aec2-5231ce7ca178",
+          "body": "{\r\n  \"myPortfolio\": {\r\n    \"clientId\": \"client-id-1\",\r\n    \"clientName\": \"Client No 1\",\r\n    \"holdings\": [\r\n      {\r\n        \"stockId\": \"stock-id-cpa\",\r\n        \"stockCode\": \"CPA\",\r\n        \"stockName\": \"Credit Populaire d'Algerie\",\r\n        \"quantity\": 42,\r\n        \"averagePurchasePrice\": 600.00,\r\n        \"currentPrice\": 650.00,\r\n        \"totalInvestment\": 25200.00,\r\n        \"currentValue\": 27300.00,\r\n        \"totalProfit\": 2100.00,\r\n        \"profitPercentage\": 8.33\r\n      },\r\n      {\r\n        \"stockId\": \"stock-id-bdl\",\r\n        \"stockCode\": \"BDL\",\r\n        \"stockName\": \"Banque de Developpement Local\",\r\n        \"quantity\": 200,\r\n        \"averagePurchasePrice\": 450.00,\r\n        \"currentPrice\": 460.00,\r\n        \"totalInvestment\": 90000.00,\r\n        \"currentValue\": 92000.00,\r\n        \"totalProfit\": 2000.00,\r\n        \"profitPercentage\": 2.22\r\n      }\r\n    ],\r\n    \"totalInvestment\": 115200.00,\r\n    \"totalCurrentValue\": 119300.00,\r\n    \"totalProfit\": 4100.00,\r\n    \"totalProfitPercentage\": 3.56\r\n  },\r\n  \"transactionHistoryExample\": [\r\n    {\r\n      \"stockCode\": \"CPA\",\r\n      \"stockName\": \"Credit Populaire d'Algerie\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 12,\r\n      \"price\": 500.00,\r\n      \"status\": \"completed\",\r\n      \"createdAt\": \"2025-01-01T10:00:00Z\"\r\n    },\r\n    {\r\n      \"stockCode\": \"CPA\",\r\n      \"stockName\": \"Credit Populaire d'Algerie\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 20,\r\n      \"price\": 600.00,\r\n      \"status\": \"completed\",\r\n      \"createdAt\": \"2025-01-02T11:00:00Z\"\r\n    },\r\n    {\r\n      \"stockCode\": \"CPA\",\r\n      \"stockName\": \"Credit Populaire d'Algerie\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 10,\r\n      \"price\": 700.00,\r\n      \"status\": \"pending\",\r\n      \"createdAt\": \"2025-01-03T12:00:00Z\"\r\n    },\r\n    {\r\n      \"stockCode\": \"BDL\",\r\n      \"stockName\": \"Banque de Developpement Local\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 200,\r\n      \"price\": 450.00,\r\n      \"status\": \"pending\",\r\n      \"createdAt\": \"2025-01-04T13:00:00Z\"\r\n    }\r\n  ]\r\n}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "da02ac3a-64b4-4060-b7ef-652d0efcd9e7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "portfolio/:id",
+      "responses": [
+        {
+          "uuid": "c811ab97-8a2a-479d-b5ed-03b50c496a16",
+          "body": "{\r\n  \"myPortfolio\": {\r\n    \"clientId\": \"client-id-1\",\r\n    \"clientName\": \"Client No 1\",\r\n    \"holdings\": [\r\n      {\r\n        \"stockId\": \"stock-id-cpa\",\r\n        \"stockCode\": \"CPA\",\r\n        \"stockName\": \"Credit Populaire d'Algerie\",\r\n        \"quantity\": 42,\r\n        \"averagePurchasePrice\": 600.00,\r\n        \"currentPrice\": 650.00,\r\n        \"totalInvestment\": 25200.00,\r\n        \"currentValue\": 27300.00,\r\n        \"totalProfit\": 2100.00,\r\n        \"profitPercentage\": 8.33\r\n      },\r\n      {\r\n        \"stockId\": \"stock-id-bdl\",\r\n        \"stockCode\": \"BDL\",\r\n        \"stockName\": \"Banque de Developpement Local\",\r\n        \"quantity\": 200,\r\n        \"averagePurchasePrice\": 450.00,\r\n        \"currentPrice\": 460.00,\r\n        \"totalInvestment\": 90000.00,\r\n        \"currentValue\": 92000.00,\r\n        \"totalProfit\": 2000.00,\r\n        \"profitPercentage\": 2.22\r\n      }\r\n    ],\r\n    \"totalInvestment\": 115200.00,\r\n    \"totalCurrentValue\": 119300.00,\r\n    \"totalProfit\": 4100.00,\r\n    \"totalProfitPercentage\": 3.56\r\n  },\r\n  \"transactionHistoryExample\": [\r\n    {\r\n      \"stockCode\": \"CPA\",\r\n      \"stockName\": \"Credit Populaire d'Algerie\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 12,\r\n      \"price\": 500.00,\r\n      \"status\": \"completed\",\r\n      \"createdAt\": \"2025-01-01T10:00:00Z\"\r\n    },\r\n    {\r\n      \"stockCode\": \"CPA\",\r\n      \"stockName\": \"Credit Populaire d'Algerie\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 20,\r\n      \"price\": 600.00,\r\n      \"status\": \"completed\",\r\n      \"createdAt\": \"2025-01-02T11:00:00Z\"\r\n    },\r\n    {\r\n      \"stockCode\": \"CPA\",\r\n      \"stockName\": \"Credit Populaire d'Algerie\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 10,\r\n      \"price\": 700.00,\r\n      \"status\": \"pending\",\r\n      \"createdAt\": \"2025-01-03T12:00:00Z\"\r\n    },\r\n    {\r\n      \"stockCode\": \"BDL\",\r\n      \"stockName\": \"Banque de Developpement Local\",\r\n      \"clientId\": \"client-id-1\",\r\n      \"clientName\": \"Client No 1\",\r\n      \"quantity\": 200,\r\n      \"price\": 450.00,\r\n      \"status\": \"pending\",\r\n      \"createdAt\": \"2025-01-04T13:00:00Z\"\r\n    }\r\n  ]\r\n}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "cd82a6cd-a57b-41a4-aaa3-fa82ba452016"
+    },
+    {
+      "type": "route",
+      "uuid": "da02ac3a-64b4-4060-b7ef-652d0efcd9e7"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
