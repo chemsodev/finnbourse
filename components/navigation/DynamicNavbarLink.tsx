@@ -29,12 +29,12 @@ const DynamicNavbarLink = ({ href, icon, label }: DynamicNavbarLinkProps) => {
       href={href}
       className={`flex items-center gap-4 py-2 px-6 w-full rounded-md ${
         isActive
-          ? "bg-secondary/20 shadow-sm"
+          ? "bg-secondary text-primary shadow-sm"
           : "hover:bg-secondary/20 hover:text-primary hover:shadow-sm"
       }`}
     >
       {IconComponent ? (
-        <IconComponent size={15} />
+        <IconComponent size={15} className="text-primary" />
       ) : (
         <div className="w-[15px] h-[15px] rounded-full bg-gray-400" />
       )}

@@ -31,7 +31,8 @@ function getBaseUrl(isClient = false) {
   }
 
   // For server-side requests, use the environment variable or fallback to the direct URL
-  return "https://kh.finnetude.com/api/v1";
+  // return "https://kh.finnetude.com/api/v1";
+  return "http://192.168.0.113:3002/api/v1";
 }
 
 // Client-side only REST API fetcher

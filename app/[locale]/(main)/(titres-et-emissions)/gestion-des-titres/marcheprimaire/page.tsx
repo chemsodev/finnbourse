@@ -17,13 +17,13 @@ export default async function PrimaryMarketPage() {
     {
       title: t("types.ipo.title"),
       description: t("types.ipo.description"),
-      href: "/gestion-des-titres/marcheprimaire/opv",
+      href: "/gestion-des-titres/marcheprimaire/action",
       Icon: OPVIcon,
     },
     {
       title: t("types.bondIssue.title"),
       description: t("types.bondIssue.description"),
-      href: "/gestion-des-titres/marcheprimaire/empruntobligataire",
+      href: "/gestion-des-titres/marcheprimaire/obligation",
       Icon: BondIcon2,
     },
     // {

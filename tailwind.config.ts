@@ -11,7 +11,7 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#0F172A",
+          DEFAULT: "#151F50",
           foreground: "hsl(var(--primary-foreground))",
         },
         background: "hsl(var(--background))",
@@ -25,7 +25,8 @@ const config: Config = {
           foreground: "hsl(var(--popover-foreground))",
         },
         secondary: {
-          DEFAULT: "#1f42ff",
+          // DEFAULT: "#1f42ff",
+          DEFAULT: "#C3CEEE",
           foreground: "hsl(var(--secondary-foreground))",
         },
         muted: {
