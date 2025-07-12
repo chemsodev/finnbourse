@@ -5,10 +5,11 @@ const baseSchema = z.object({
   clientCode: z.string().min(1, "Le code client est requis"),
   email: z.string().email("Email invalide").optional().or(z.literal("")),
   phoneNumber: z.string().optional().or(z.literal("")),
+  mobilePhone: z.string().optional().or(z.literal("")),
   wilaya: z.string().min(1, "La wilaya est requise"),
   address: z.string().optional().or(z.literal("")),
   iobType: z.enum(["intern", "extern"]),
-  iobCategory: z.string().nullable(),
+  iobCategory: z.string().nullable().optional(),
   numeroCompteTitre: z.string().optional().or(z.literal("")),
   ribBanque: z
     .string()
@@ -37,7 +38,7 @@ const baseSchema = z.object({
   iobId: z.string().optional().or(z.literal("")),
 });
 
-// Schema for personne physique
+// Schema for personne physique (individual)
 const personnePhysiqueSchema = z
   .object({
     clientType: z.literal("personne_physique"),
@@ -58,10 +59,29 @@ const personnePhysiqueSchema = z
   })
   .extend(baseSchema.shape);
 
-// Schema for personne morale
+// Schema for personne morale (corporate)
 const personneMoraleSchema = z
   .object({
     clientType: z.literal("personne_morale"),
+    raisonSociale: z.string().min(1, "La raison sociale est requise"),
+    nif: z.string().min(1, "Le NIF est requis"),
+    regNumber: z.string().min(1, "Le numéro d'enregistrement est requis"),
+    legalForm: z.string().min(1, "La forme juridique est requise"),
+    // Make personne physique fields optional
+    name: z.string().optional(),
+    idType: z.enum(["passport", "permit_conduite", "nin"]).optional(),
+    idNumber: z.string().optional(),
+    nin: z.string().optional(),
+    nationalite: z.string().optional(),
+    dateNaissance: z.date().optional(),
+    lieuNaissance: z.string().optional(),
+  })
+  .extend(baseSchema.shape);
+
+// Schema for financial institution
+const institutionFinanciereSchema = z
+  .object({
+    clientType: z.literal("institution_financiere"),
     raisonSociale: z.string().min(1, "La raison sociale est requise"),
     nif: z.string().min(1, "Le NIF est requis"),
     regNumber: z.string().min(1, "Le numéro d'enregistrement est requis"),
@@ -102,75 +122,23 @@ export const clientUserSchema = z.object({
 export const clientSchema = z.discriminatedUnion("clientType", [
   personnePhysiqueSchema,
   personneMoraleSchema,
+  institutionFinanciereSchema,
 ]);
 
-// Export the inferred type
-export type ClientFormValues = z.infer<typeof clientSchema>;
-
-// Base interface for common fields
-export interface BaseClient {
-  id: number;
-  status: "actif" | "inactif"; // Updated to match the new status requirements
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Specific interfaces for each client type
-export interface PersonnePhysiqueClient
-  extends BaseClient,
-    z.infer<typeof personnePhysiqueSchema> {}
-export interface PersonneMoraleClient
-  extends BaseClient,
-    z.infer<typeof personneMoraleSchema> {}
-
-// Union type for all client types
-export type Client = PersonnePhysiqueClient | PersonneMoraleClient;
-
-// Interface for client user
-export interface ClientUser extends z.infer<typeof clientUserSchema> {
-  id: string;
-  clientId: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Validation function to ensure user types match client types
-export const validateClientUserType = (
-  clientType: string,
-  userType: string
-): boolean => {
-  if (clientType === "personne_physique") {
-    return ["proprietaire", "tuteur_legal"].includes(userType);
-  } else {
-    // personne_morale
-    return ["proprietaire", "mandataire"].includes(userType);
-  }
-};
-
+// Main form schema with proper conditional validation
 export const formSchema = z
   .object({
-    // Keep client type as is for the form UI
-    clientType: z.enum(["personne_physique", "personne_morale"]),
+    clientType: z.enum([
+      "personne_physique",
+      "personne_morale",
+      "institution_financiere",
+    ]),
     clientCode: z.string().min(1, "Le code client est requis"),
-    name: z.string().min(1, "Le nom est requis"),
     email: z.string().email("Email invalide").optional().or(z.literal("")),
     phoneNumber: z.string().optional().or(z.literal("")),
-    idType: z.enum(["passport", "permit_conduite", "nin"]),
-    idNumber: z.string().min(1, "Le numéro de pièce d'identité est requis"),
-    nin: z.string().min(1, "Le NIN est requis"),
-    nationalite: z.string().min(1, "La nationalité est requise"),
-    wilaya: z.string().optional().or(z.literal("")),
+    mobilePhone: z.string().optional().or(z.literal("")),
+    wilaya: z.string().min(1, "La wilaya est requise"),
     address: z.string().optional().or(z.literal("")),
-    dateNaissance: z
-      .date()
-      .min(new Date(1900, 0, 1), "La date de naissance est requise")
-      .optional()
-      .nullable(),
-    lieuNaissance: z
-      .string()
-      .min(1, "Le lieu de naissance est requis")
-      .optional()
-      .or(z.literal("")),
     iobType: z.enum(["intern", "extern"]),
     iobCategory: z.string().nullable().optional(),
     numeroCompteTitre: z.string().optional().or(z.literal("")),
@@ -196,50 +164,116 @@ export const formSchema = z
       .or(z.literal("")),
     observation: z.string().optional().or(z.literal("")),
     selectedAgence: z.string().optional().or(z.literal("")),
-    raisonSociale: z
-      .string()
-      .min(1, "La raison sociale est requise")
-      .optional()
-      .or(z.literal("")),
-    nif: z.string().min(1, "Le NIF est requis").optional().or(z.literal("")),
-    regNumber: z
-      .string()
-      .min(1, "Le numéro du registre est requis")
-      .optional()
-      .or(z.literal("")),
-    legalForm: z
-      .string()
-      .min(1, "La forme juridique est requise")
-      .optional()
-      .or(z.literal("")),
     financialInstitutionId: z.string().optional().or(z.literal("")),
     agenceId: z.string().optional().or(z.literal("")),
     iobId: z.string().optional().or(z.literal("")),
+
+    // Individual client fields
+    name: z.string().optional(),
+    idType: z.enum(["passport", "permit_conduite", "nin"]).optional(),
+    idNumber: z.string().optional(),
+    nin: z.string().optional(),
+    nationalite: z.string().optional(),
+    dateNaissance: z.date().optional().nullable(),
+    lieuNaissance: z.string().optional(),
+
+    // Corporate client fields
+    raisonSociale: z.string().optional(),
+    nif: z.string().optional(),
+    regNumber: z.string().optional(),
+    legalForm: z.string().optional(),
   })
   .refine(
     (data) => {
+      // Validate individual client required fields
       if (data.clientType === "personne_physique") {
-        return (
-          !!data.name &&
-          !!data.idNumber &&
-          !!data.nin &&
-          !!data.nationalite &&
-          !!data.wilaya
-          // Date and lieu naissance are now optional for the form to work properly
-        );
-      } else {
-        return (
-          !!data.raisonSociale &&
-          !!data.nif &&
-          !!data.regNumber &&
-          !!data.legalForm
+        return !!(
+          data.name &&
+          data.idNumber &&
+          data.nin &&
+          data.nationalite &&
+          data.dateNaissance &&
+          data.lieuNaissance
         );
       }
+      return true;
     },
     {
-      message: "Veuillez remplir tous les champs obligatoires",
+      message:
+        "Tous les champs requis pour une personne physique doivent être remplis",
+      path: ["clientType"],
+    }
+  )
+  .refine(
+    (data) => {
+      // Validate corporate client required fields
+      if (
+        data.clientType === "personne_morale" ||
+        data.clientType === "institution_financiere"
+      ) {
+        return !!(
+          data.raisonSociale &&
+          data.nif &&
+          data.regNumber &&
+          data.legalForm
+        );
+      }
+      return true;
+    },
+    {
+      message:
+        "Tous les champs requis pour une personne morale doivent être remplis",
       path: ["clientType"],
     }
   );
+
+// Export the inferred type
+export type ClientFormValues = z.infer<typeof clientSchema>;
+
+// Base interface for common fields
+export interface BaseClient {
+  id: number;
+  status: "actif" | "inactif";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Specific interfaces for each client type
+export interface PersonnePhysiqueClient
+  extends BaseClient,
+    z.infer<typeof personnePhysiqueSchema> {}
+export interface PersonneMoraleClient
+  extends BaseClient,
+    z.infer<typeof personneMoraleSchema> {}
+export interface InstitutionFinanciereClient
+  extends BaseClient,
+    z.infer<typeof institutionFinanciereSchema> {}
+
+// Union type for all client types
+export type Client =
+  | PersonnePhysiqueClient
+  | PersonneMoraleClient
+  | InstitutionFinanciereClient;
+
+// Interface for client user
+export interface ClientUser extends z.infer<typeof clientUserSchema> {
+  id: string;
+  clientId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Validation function to ensure user types match client types
+export const validateClientUserType = (
+  clientType: string,
+  userType: string
+): boolean => {
+  if (clientType === "personne_physique") {
+    return ["proprietaire", "tuteur_legal"].includes(userType);
+  } else {
+    // personne_morale or institution_financiere
+    return ["proprietaire", "mandataire"].includes(userType);
+  }
+};
 
 export type FormValues = z.infer<typeof formSchema>;

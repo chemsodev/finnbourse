@@ -52,6 +52,23 @@ export default async function middleware(req: NextRequest) {
 
   console.log("🛡️ Middleware processing:", pathname);
 
+  // Fix for double locale prefix issue (e.g., /en/en/passerunordre -> /en/passerunordre)
+  const doubleLocaleMatch = pathname.match(/^\/(fr|en|ar)\/(fr|en|ar)\/(.*)$/);
+  if (doubleLocaleMatch) {
+    const [, firstLocale, secondLocale, restPath] = doubleLocaleMatch;
+    // If both locales are the same, redirect to single locale
+    if (firstLocale === secondLocale) {
+      const correctedUrl = new URL(`/${firstLocale}/${restPath}`, req.url);
+      console.log(
+        "🔄 Fixing double locale prefix:",
+        pathname,
+        "->",
+        correctedUrl.pathname
+      );
+      return NextResponse.redirect(correctedUrl);
+    }
+  }
+
   // Handle API routes - skip middleware for API routes
   if (pathname.startsWith("/api")) {
     return NextResponse.next();

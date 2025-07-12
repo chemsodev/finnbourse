@@ -38,22 +38,29 @@ export interface Stock {
 
 // Legacy API interfaces for compatibility
 export const stockAPI = {
-  getAll: (token?: string) => clientFetchREST("/api/v1/stock", { token }),
+  getAll: (token?: string) => clientFetchREST("/stock", { token }),
   getById: (id: string, token?: string) =>
-    clientFetchREST(`/api/v1/stock/${id}`, { token }),
+    clientFetchREST(`/stock/${id}`, { token }),
   getPrimaryClosing: (token?: string) =>
-    clientFetchREST("/api/v1/stock/primary-closing", { token }),
+    clientFetchREST("/stock/primary-closing", { token }),
+  // Add filter endpoint for IOB secondary market
+  filter: (filterData: any, token?: string) =>
+    clientFetchREST("/stock/filter", {
+      method: "POST",
+      body: filterData,
+      token,
+    }),
   moveToSecondary: (id: string, token?: string) =>
-    clientFetchREST(`/api/v1/stock/${id}/move-to-secondary`, {
+    clientFetchREST(`/stock/${id}/move-to-secondary`, {
       method: "PUT",
       token,
     }),
   suspend: (id: string, token?: string) =>
-    clientFetchREST(`/api/v1/stock/${id}/suspend`, { method: "PUT", token }),
+    clientFetchREST(`/stock/${id}/suspend`, { method: "PUT", token }),
   activate: (id: string, token?: string) =>
-    clientFetchREST(`/api/v1/stock/${id}/activate`, { method: "PUT", token }),
+    clientFetchREST(`/stock/${id}/activate`, { method: "PUT", token }),
   update: (id: string, data: any, token?: string) =>
-    clientFetchREST(`/api/v1/stock/${id}`, {
+    clientFetchREST(`/stock/${id}`, {
       method: "PUT",
       body: data,
       token,
@@ -62,105 +69,102 @@ export const stockAPI = {
 
 export const stockTypeAPI = {
   action: {
-    getAll: (token?: string) =>
-      clientFetchREST("/api/v1/stock/action", { token }),
+    getAll: (token?: string) => clientFetchREST("/stock/action", { token }),
     getById: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/action/${id}`, { token }),
+      clientFetchREST(`/stock/action/${id}`, { token }),
     getPrimaryClosing: (token?: string) =>
-      clientFetchREST("/api/v1/stock/action/primary-closing", { token }),
+      clientFetchREST("/stock/action/primary-closing", { token }),
     moveToSecondary: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/action/${id}/move-to-secondary`, {
+      clientFetchREST(`/stock/action/${id}/move-to-secondary`, {
         method: "PUT",
         token,
       }),
     suspend: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/action/${id}/suspend`, {
+      clientFetchREST(`/stock/action/${id}/suspend`, {
         method: "PUT",
         token,
       }),
     activate: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/action/${id}/activate`, {
+      clientFetchREST(`/stock/action/${id}/activate`, {
         method: "PUT",
         token,
       }),
     update: (id: string, data: any, token?: string) =>
-      clientFetchREST(`/api/v1/stock/action/${id}`, {
+      clientFetchREST(`/stock/action/${id}`, {
         method: "PUT",
         body: data,
         token,
       }),
     create: (data: any, token?: string) =>
-      clientFetchREST("/api/v1/stock/action", {
+      clientFetchREST("/stock/action", {
         method: "POST",
         body: data,
         token,
       }),
   },
   obligation: {
-    getAll: (token?: string) =>
-      clientFetchREST("/api/v1/stock/obligation", { token }),
+    getAll: (token?: string) => clientFetchREST("/stock/obligation", { token }),
     getById: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/obligation/${id}`, { token }),
+      clientFetchREST(`/stock/obligation/${id}`, { token }),
     getPrimaryClosing: (token?: string) =>
-      clientFetchREST("/api/v1/stock/obligation/primary-closing", { token }),
+      clientFetchREST("/stock/obligation/primary-closing", { token }),
     moveToSecondary: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/obligation/${id}/move-to-secondary`, {
+      clientFetchREST(`/stock/obligation/${id}/move-to-secondary`, {
         method: "PUT",
         token,
       }),
     suspend: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/obligation/${id}/suspend`, {
+      clientFetchREST(`/stock/obligation/${id}/suspend`, {
         method: "PUT",
         token,
       }),
     activate: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/obligation/${id}/activate`, {
+      clientFetchREST(`/stock/obligation/${id}/activate`, {
         method: "PUT",
         token,
       }),
     update: (id: string, data: any, token?: string) =>
-      clientFetchREST(`/api/v1/stock/obligation/${id}`, {
+      clientFetchREST(`/stock/obligation/${id}`, {
         method: "PUT",
         body: data,
         token,
       }),
     create: (data: any, token?: string) =>
-      clientFetchREST("/api/v1/stock/obligation", {
+      clientFetchREST("/stock/obligation", {
         method: "POST",
         body: data,
         token,
       }),
   },
   sukuk: {
-    getAll: (token?: string) =>
-      clientFetchREST("/api/v1/stock/sukuk", { token }),
+    getAll: (token?: string) => clientFetchREST("/stock/sukuk", { token }),
     getById: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/sukuk/${id}`, { token }),
+      clientFetchREST(`/stock/sukuk/${id}`, { token }),
     getPrimaryClosing: (token?: string) =>
-      clientFetchREST("/api/v1/stock/sukuk/primary-closing", { token }),
+      clientFetchREST("/stock/sukuk/primary-closing", { token }),
     moveToSecondary: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/sukuk/${id}/move-to-secondary`, {
+      clientFetchREST(`/stock/sukuk/${id}/move-to-secondary`, {
         method: "PUT",
         token,
       }),
     suspend: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/sukuk/${id}/suspend`, {
+      clientFetchREST(`/stock/sukuk/${id}/suspend`, {
         method: "PUT",
         token,
       }),
     activate: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/sukuk/${id}/activate`, {
+      clientFetchREST(`/stock/sukuk/${id}/activate`, {
         method: "PUT",
         token,
       }),
     update: (id: string, data: any, token?: string) =>
-      clientFetchREST(`/api/v1/stock/sukuk/${id}`, {
+      clientFetchREST(`/stock/sukuk/${id}`, {
         method: "PUT",
         body: data,
         token,
       }),
     create: (data: any, token?: string) =>
-      clientFetchREST("/api/v1/stock/sukuk", {
+      clientFetchREST("/stock/sukuk", {
         method: "POST",
         body: data,
         token,
@@ -168,34 +172,34 @@ export const stockTypeAPI = {
   },
   participatif: {
     getAll: (token?: string) =>
-      clientFetchREST("/api/v1/stock/participatif", { token }),
+      clientFetchREST("/stock/participatif", { token }),
     getById: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/participatif/${id}`, { token }),
+      clientFetchREST(`/stock/participatif/${id}`, { token }),
     getPrimaryClosing: (token?: string) =>
-      clientFetchREST("/api/v1/stock/participatif/primary-closing", { token }),
+      clientFetchREST("/stock/participatif/primary-closing", { token }),
     moveToSecondary: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/participatif/${id}/move-to-secondary`, {
+      clientFetchREST(`/stock/participatif/${id}/move-to-secondary`, {
         method: "PUT",
         token,
       }),
     suspend: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/participatif/${id}/suspend`, {
+      clientFetchREST(`/stock/participatif/${id}/suspend`, {
         method: "PUT",
         token,
       }),
     activate: (id: string, token?: string) =>
-      clientFetchREST(`/api/v1/stock/participatif/${id}/activate`, {
+      clientFetchREST(`/stock/participatif/${id}/activate`, {
         method: "PUT",
         token,
       }),
     update: (id: string, data: any, token?: string) =>
-      clientFetchREST(`/api/v1/stock/participatif/${id}`, {
+      clientFetchREST(`/stock/participatif/${id}`, {
         method: "PUT",
         body: data,
         token,
       }),
     create: (data: any, token?: string) =>
-      clientFetchREST("/api/v1/stock/participatif", {
+      clientFetchREST("/stock/participatif", {
         method: "POST",
         body: data,
         token,
@@ -205,21 +209,21 @@ export const stockTypeAPI = {
 
 export const stockPriceAPI = {
   getHistory: (stockId: string, token?: string) =>
-    clientFetchREST(`/api/v1/stock/${stockId}/price-history`, { token }),
+    clientFetchREST(`/stock/${stockId}/price-history`, { token }),
   add: (stockId: string, data: any, token?: string) =>
-    clientFetchREST(`/api/v1/stock/${stockId}/price`, {
+    clientFetchREST(`/stock/${stockId}/price`, {
       method: "POST",
       body: data,
       token,
     }),
   update: (priceId: string, data: any, token?: string) =>
-    clientFetchREST(`/api/v1/stock-price/${priceId}`, {
+    clientFetchREST(`/stock-price/${priceId}`, {
       method: "PUT",
       body: data,
       token,
     }),
   delete: (priceId: string, token?: string) =>
-    clientFetchREST(`/api/v1/stock-price/${priceId}`, {
+    clientFetchREST(`/stock-price/${priceId}`, {
       method: "DELETE",
       token,
     }),

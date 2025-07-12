@@ -24,7 +24,16 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { List, AlertTriangle, Printer, RefreshCw, CheckCircle, MessageSquare, XCircle, X } from "lucide-react";
+import {
+  List,
+  AlertTriangle,
+  Printer,
+  RefreshCw,
+  CheckCircle,
+  MessageSquare,
+  XCircle,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OrderElement } from "@/lib/services/orderService";
@@ -46,9 +55,10 @@ import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialo
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// API base URL with fallback
+// API base URL with fallback - using MENU_ORDER for order management
 const API_BASE =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com/api/v1";
+  (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
+  "/api/v1";
 
 console.log("Using API Base URL:", API_BASE);
 
@@ -76,7 +86,7 @@ interface OrdresTableRESTProps {
   stateParam?: string;
 }
 
-export default function OrdresTableREST({ 
+export default function OrdresTableREST({
   searchquery,
   taskID,
   marketType = "S",
@@ -101,9 +111,14 @@ export default function OrdresTableREST({
     {}
   );
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<OrderElement | null>(null);
-  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
-  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] =
+    useState<OrderElement | null>(null);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [institutions, setInstitutions] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
   // State pour la sélection multiple
@@ -155,9 +170,13 @@ export default function OrdresTableREST({
 
   // Initial fetch on component mount
   useEffect(() => {
-    const isReturnValidationPage = taskID === "validation-retour-finale" || taskID === "validation-tcc-retour";
+    const isReturnValidationPage =
+      taskID === "validation-retour-finale" ||
+      taskID === "validation-tcc-retour";
     if (isReturnValidationPage) {
-      console.log("Chargement automatique des exemples pour la page de validation du retour");
+      console.log(
+        "Chargement automatique des exemples pour la page de validation du retour"
+      );
       setData(exampleOrders);
       setStocksMap(exampleStocks);
       setClientsMap(exampleClients);
@@ -565,8 +584,10 @@ export default function OrdresTableREST({
       header: t("actions"),
       cell: ({ row }: any) => {
         const order = row.original;
-        const isReturnValidationPage = pageType === "validationRetourFinale" || pageType === "tccvalidationRetour";
-        
+        const isReturnValidationPage =
+          pageType === "validationRetourFinale" ||
+          pageType === "tccvalidationRetour";
+
         return (
           <div className="flex items-center space-x-2">
             <Button
@@ -595,8 +616,8 @@ export default function OrdresTableREST({
       cell: ({ row }: any) => {
         const order = row.original;
         return (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => handleDetailsClick(order)}
           >
@@ -615,7 +636,9 @@ export default function OrdresTableREST({
   });
 
   // Utilitaire pour transformer un OrderElement en TitreFormValues
-  function mapOrderElementToTitreFormValues(order: OrderElement): TitreFormValues {
+  function mapOrderElementToTitreFormValues(
+    order: OrderElement
+  ): TitreFormValues {
     const stockId = order.stock_id;
     const stock = stocksMap[stockId];
     return {
@@ -678,7 +701,7 @@ export default function OrdresTableREST({
       client_id: "CLIENT001",
       market_type: "P",
       quantity: 1000,
-      price: 1500.50,
+      price: 1500.5,
       time_condition: "GTC",
       quantitative_condition: "All or None",
       status: "pending",
@@ -711,7 +734,7 @@ export default function OrdresTableREST({
       client_id: "CLIENT004",
       market_type: "S",
       quantity: 750,
-      price: 3200.00,
+      price: 3200.0,
       time_condition: "GTC",
       quantitative_condition: "Partial",
       status: "pending",
@@ -730,31 +753,31 @@ export default function OrdresTableREST({
   ];
 
   const exampleStocks: Record<string, StockDetails> = {
-    "STOCK001": {
+    STOCK001: {
       id: "STOCK001",
       code: "SNDP",
       name: "Sonatrach",
       type: "action",
     },
-    "STOCK002": {
+    STOCK002: {
       id: "STOCK002",
       code: "CRBP",
       name: "Crédit Populaire d'Algérie",
       type: "obligation",
     },
-    "STOCK003": {
+    STOCK003: {
       id: "STOCK003",
       code: "BNA",
       name: "Banque Nationale d'Algérie",
       type: "sukuk",
     },
-    "STOCK004": {
+    STOCK004: {
       id: "STOCK004",
       code: "ALG",
       name: "Air Algérie",
       type: "action",
     },
-    "STOCK005": {
+    STOCK005: {
       id: "STOCK005",
       code: "SNVI",
       name: "SNVI",
@@ -763,27 +786,27 @@ export default function OrdresTableREST({
   };
 
   const exampleClients: Record<string, ClientDetails> = {
-    "CLIENT001": {
+    CLIENT001: {
       id: "CLIENT001",
       name: "Ahmed Benali",
       email: "ahmed.benali@email.com",
     },
-    "CLIENT002": {
+    CLIENT002: {
       id: "CLIENT002",
       name: "Fatima Zohra",
       email: "fatima.zohra@email.com",
     },
-    "CLIENT003": {
+    CLIENT003: {
       id: "CLIENT003",
       name: "Mohammed Boudiaf",
       email: "mohammed.boudiaf@email.com",
     },
-    "CLIENT004": {
+    CLIENT004: {
       id: "CLIENT004",
       name: "Karim Messaoudi",
       email: "karim.messaoudi@email.com",
     },
-    "CLIENT005": {
+    CLIENT005: {
       id: "CLIENT005",
       name: "Amina Benali",
       email: "amina.benali@email.com",
@@ -795,38 +818,41 @@ export default function OrdresTableREST({
       <div className="rounded-md border">
         <div className="flex justify-between items-center p-2 border-b">
           {/* Market Type Tabs - Left side */}
-          {taskID !== "validation-tcc-premiere" && taskID !== "validation-tcc-finale" && (
-            <div className="flex items-center gap-0">
-              <Button
-                variant={activeTab === "all" ? "default" : "outline"}
-                size="sm"
-                className="rounded-r-none"
-                onClick={() => {
-                  const params = new URLSearchParams(searchParams);
-                  params.set("tab", "all");
-                  params.set("marketType", "S");
-                  params.set("page", "0");
-                  router.replace(`${pathname}?${params.toString()}`);
-                }}
-              >
-                Carnet d'ordres
-              </Button>
-              <Button
-                variant={activeTab === "souscriptions" ? "default" : "outline"}
-                size="sm"
-                className="rounded-l-none"
-                onClick={() => {
-                  const params = new URLSearchParams(searchParams);
-                  params.set("tab", "souscriptions");
-                  params.set("marketType", "P");
-                  params.set("page", "0");
-                  router.replace(`${pathname}?${params.toString()}`);
-                }}
-              >
-                Souscriptions
-              </Button>
-            </div>
-          )}
+          {taskID !== "validation-tcc-premiere" &&
+            taskID !== "validation-tcc-finale" && (
+              <div className="flex items-center gap-0">
+                <Button
+                  variant={activeTab === "all" ? "default" : "outline"}
+                  size="sm"
+                  className="rounded-r-none"
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set("tab", "all");
+                    params.set("marketType", "S");
+                    params.set("page", "0");
+                    router.replace(`${pathname}?${params.toString()}`);
+                  }}
+                >
+                  Carnet d'ordres
+                </Button>
+                <Button
+                  variant={
+                    activeTab === "souscriptions" ? "default" : "outline"
+                  }
+                  size="sm"
+                  className="rounded-l-none"
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set("tab", "souscriptions");
+                    params.set("marketType", "P");
+                    params.set("page", "0");
+                    router.replace(`${pathname}?${params.toString()}`);
+                  }}
+                >
+                  Souscriptions
+                </Button>
+              </div>
+            )}
           {/* Refresh Button - Right side (toujours visible) */}
           <Button
             variant="outline"
@@ -909,10 +935,13 @@ export default function OrdresTableREST({
             <TableHeader>
               <TableRow>
                 {/* Checkbox header */}
-                {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && (
+                {(taskID === "validation-tcc-finale" ||
+                  pageType === "tccFinalValidation") && (
                   <TableHead>
                     <Checkbox
-                      checked={selectedOrders.length === data.length && data.length > 0}
+                      checked={
+                        selectedOrders.length === data.length && data.length > 0
+                      }
                       onCheckedChange={handleSelectAll}
                       aria-label="Tout sélectionner"
                     />
@@ -938,11 +967,14 @@ export default function OrdresTableREST({
                     data-state={row.getIsSelected() && "selected"}
                   >
                     {/* Checkbox row */}
-                    {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && (
+                    {(taskID === "validation-tcc-finale" ||
+                      pageType === "tccFinalValidation") && (
                       <TableCell>
                         <Checkbox
                           checked={selectedOrders.includes(row.original.id)}
-                          onCheckedChange={(checked) => handleSelectRow(row.original.id, !!checked)}
+                          onCheckedChange={(checked) =>
+                            handleSelectRow(row.original.id, !!checked)
+                          }
                           aria-label={`Sélectionner l'ordre ${row.original.id}`}
                         />
                       </TableCell>
@@ -976,13 +1008,33 @@ export default function OrdresTableREST({
       </div>
 
       {/* Actions groupées sous le tableau */}
-      {(taskID === "validation-tcc-finale" || pageType === "tccFinalValidation") && data.length > 0 && (
-        <div className="flex gap-4 mt-4">
-          <Button variant="default" onClick={() => handleBulkAction("validate")} disabled={selectedOrders.length === 0}>Valider la sélection</Button>
-          <Button variant="destructive" onClick={() => handleBulkAction("reject")} disabled={selectedOrders.length === 0}>Refuser la sélection</Button>
-          <Button variant="outline" onClick={() => setSelectedOrders(data.map((order) => order.id))} disabled={selectedOrders.length === data.length}>Tout sélectionner</Button>
-        </div>
-      )}
+      {(taskID === "validation-tcc-finale" ||
+        pageType === "tccFinalValidation") &&
+        data.length > 0 && (
+          <div className="flex gap-4 mt-4">
+            <Button
+              variant="default"
+              onClick={() => handleBulkAction("validate")}
+              disabled={selectedOrders.length === 0}
+            >
+              Valider la sélection
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleBulkAction("reject")}
+              disabled={selectedOrders.length === 0}
+            >
+              Refuser la sélection
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedOrders(data.map((order) => order.id))}
+              disabled={selectedOrders.length === data.length}
+            >
+              Tout sélectionner
+            </Button>
+          </div>
+        )}
 
       {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>

@@ -93,8 +93,6 @@ export default function ProfileForm(props: {
   const { userDetails, restOfuserData } = props;
   const locale = useLocale();
   const t = useTranslations("profileForm");
-  const p = useTranslations("finalisationInscriptionParticulier");
-  const e = useTranslations("FinalisationInscriptionEntreprise");
   const session = useSession();
   const userId = (session.data?.user as any)?.id;
   const clientType = (session.data?.user as any)?.followsbusiness;

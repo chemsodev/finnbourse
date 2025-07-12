@@ -1,322 +1,417 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Search,
-  Plus,
-  Shuffle,
-  Pencil,
-  Trash2,
-  Eye,
-  Loader2,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Link } from "@/i18n/routing";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  Plus,
+  Filter,
+  Edit,
+  Trash2,
+  Eye,
+  Users,
+  Building,
+  CreditCard,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import Loading from "@/components/ui/loading";
+import { useClientApi } from "@/hooks/useClientApi";
+import { ClientFormValues } from "@/lib/services/client-api";
+import { toast } from "@/hooks/use-toast";
 
-import { useClients } from "@/hooks/useClients";
-// Define a more complete Client type for the component
-interface Client {
+interface ClientListItem {
   id: string;
-  type?: string;
-  agence?: string;
-  agency_name?: string;
-  client_code?: string;
-  client_source?: string;
-  email?: string;
-  phone_number?: string;
-  mobile_phone?: string;
-  id_type?: string;
-  cash_account_bank_code?: string;
-  cash_account_agency_code?: string;
-  cash_account_number?: string;
-  cash_account_rip_key?: string;
-  cash_account_rip_full?: string;
-  securities_account_number?: string;
+  clientCode: string;
+  email: string;
+  phoneNumber: string;
+  clientType:
+    | "personne_physique"
+    | "personne_morale"
+    | "institution_financiere";
   name?: string;
-  id_number?: string;
-  nin?: string;
-  nationalite?: string;
-  wilaya?: string;
-  address?: string;
-  lieu_naissance?: string;
-  employe_a_la_institution_financiere?: boolean;
-  raison_sociale?: string;
-  nif?: string;
-  reg_number?: string;
-  legal_form?: string;
-  status?: string;
-  date_naissance?: string;
-  [key: string]: any;
+  raisonSociale?: string;
+  wilaya: string;
+  numeroCompteTitre: string;
+  status: "actif" | "inactif";
+  createdAt: Date;
 }
 
-export default function ClientDashboard() {
-  const t = useTranslations("ClientDashboard");
+export default function ClientsPage() {
+  const t = useTranslations("ClientsPage");
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [clients, setClients] = useState<ClientListItem[]>([]);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  // Use the new clients hook
   const {
-    clients,
-    loading,
-    fetchClients,
-    deleteClient: deleteClientAPI,
-    hasToken,
-  } = useClients();
+    getAllClients,
+    transformBackendToForm,
+    isLoading,
+    error,
+    clearError,
+  } = useClientApi();
 
+  // Load clients on component mount
   useEffect(() => {
     loadClients();
-  }, [hasToken]);
-
-  useEffect(() => {
-    // Also try to load clients when the component mounts
-    if (hasToken && clients.length === 0) {
-      loadClients();
-    }
   }, []);
 
   const loadClients = async () => {
     try {
-      console.log("🔄 Loading clients, hasToken:", hasToken);
-      if (!hasToken) {
-        console.log("⚠️ No token available, skipping client fetch");
-        return;
-      }
+      const response = await getAllClients({
+        page: currentPage,
+        limit: 20,
+        search: searchTerm,
+        type: filterType !== "all" ? filterType : undefined,
+      });
 
-      const data = await fetchClients();
-      console.log("✅ Clients loaded:", data);
+      // Transform backend data to frontend format
+      const transformedClients = Array.isArray(response)
+        ? response.map(transformClientData)
+        : response?.data?.map(transformClientData) || [];
+
+      setClients(transformedClients);
     } catch (error) {
-      console.error("Error fetching clients:", error);
+      console.error("Failed to load clients:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load clients",
+        variant: "destructive",
+      });
     }
   };
 
-  const filteredClients = clients.filter(
-    (client) =>
-      (client.type === "individual"
-        ? client.name || ""
-        : client.raison_sociale || ""
-      )
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      (client.nin || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (client.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (client.phone_number || client.mobile_phone || "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      (client.client_code || "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-  );
+  const transformClientData = (backendClient: any): ClientListItem => {
+    return {
+      id: backendClient.id,
+      clientCode: backendClient.client_code || backendClient.clientCode,
+      email: backendClient.email,
+      phoneNumber: backendClient.phone_number || backendClient.phoneNumber,
+      clientType:
+        backendClient.type === "individual"
+          ? "personne_physique"
+          : backendClient.type === "company"
+          ? "personne_morale"
+          : "institution_financiere",
+      name: backendClient.name || backendClient.client_details?.name,
+      raisonSociale:
+        backendClient.raison_sociale ||
+        backendClient.client_details?.raison_sociale,
+      wilaya:
+        backendClient.wilaya || backendClient.client_details?.wilaya || "",
+      numeroCompteTitre:
+        backendClient.securities_account_number ||
+        backendClient.numeroCompteTitre,
+      status: "actif", // Default status
+      createdAt: new Date(backendClient.createdAt || Date.now()),
+    };
+  };
 
-  const handleDelete = async () => {
-    if (!selectedClient) return;
-    try {
-      setIsDeleting(true);
-      await deleteClientAPI(selectedClient.id);
-      // The hook will update the clients state automatically
-      setSelectedClient(null);
-    } catch (error) {
-      console.error("Error deleting client:", error);
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteDialogOpen(false);
+  // Filter clients based on search and filters
+  const filteredClients = clients.filter((client) => {
+    const matchesSearch =
+      client.clientCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.name &&
+        client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.raisonSociale &&
+        client.raisonSociale.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesType =
+      filterType === "all" || client.clientType === filterType;
+    const matchesStatus =
+      filterStatus === "all" || client.status === filterStatus;
+
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const getClientTypeIcon = (type: string) => {
+    switch (type) {
+      case "personne_physique":
+        return <Users className="h-4 w-4" />;
+      case "personne_morale":
+        return <Building className="h-4 w-4" />;
+      case "institution_financiere":
+        return <CreditCard className="h-4 w-4" />;
+      default:
+        return <Users className="h-4 w-4" />;
     }
   };
 
-  if (loading) {
-    return <Loading className="min-h-[400px]" />;
-  }
+  const getClientTypeBadge = (type: string) => {
+    const variants = {
+      personne_physique: "default",
+      personne_morale: "secondary",
+      institution_financiere: "outline",
+    } as const;
+
+    const labels = {
+      personne_physique: "Particulier",
+      personne_morale: "Entreprise",
+      institution_financiere: "Institution",
+    };
+
+    return (
+      <Badge variant={variants[type as keyof typeof variants] || "default"}>
+        {getClientTypeIcon(type)}
+        <span className="ml-1">
+          {labels[type as keyof typeof labels] || type}
+        </span>
+      </Badge>
+    );
+  };
+
+  const handleCreateClient = () => {
+    router.push("/clients/new");
+  };
+
+  const handleEditClient = (clientId: string) => {
+    router.push(`/clients/${clientId}/edit`);
+  };
+
+  const handleViewClient = (clientId: string) => {
+    router.push(`/clients/${clientId}`);
+  };
 
   return (
-    <div>
-      <div className="flex flex-col space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-secondary">
-            {t("title")}
-          </h1>
-          <div className="flex justify-end gap-4">
-            <div className="bg-primary justify-between gap-20 p-2 text-sm rounded-md shadow-sm flex text-white">
-              <div className="flex flex-col gap-1">
-                <div>{t("totalClients")}</div>
-                <div className="font-bold text-2xl">{clients.length}</div>
-                <div>{t("total")}</div>
-              </div>
-              <div className="flex flex-col justify-end">
-                <Shuffle />
-              </div>
-            </div>
-            <div className="bg-primary justify-between gap-8 p-2 text-sm rounded-md shadow-sm flex text-white">
-              <div className="flex flex-col gap-1">
-                <div>{t("numberByClientType")}</div>
-                <div className="font-bold text-2xl">
-                  {clients.filter((c) => c.type === "individual").length}
-                </div>
-                <div>{t("individuals")}</div>
-              </div>
-              <div className="flex flex-col justify-end">
-                <Shuffle />
-              </div>
-            </div>
-          </div>
+    <div className="container mx-auto px-4 py-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">{t("title")}</h1>
+          <p className="text-gray-600 mt-2">{t("description")}</p>
         </div>
-
-        <div className="flex justify-between items-center">
-          <div className="relative flex items-center w-full max-w-md">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              type="search"
-              placeholder={t("searchClients")}
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Button onClick={() => router.push("/clients/new")}>
-            <Plus className="mr-2 h-4 w-4" /> {t("addClient")}
-          </Button>
-        </div>
-
-        <div className="rounded-md border overflow-hidden">
-          <Table>
-            <TableHeader className="bg-primary">
-              <TableRow>
-                <TableHead className="text-white font-medium w-[80px]">
-                  {t("code")}
-                </TableHead>
-                <TableHead className="text-white font-medium">
-                  {t("name")}
-                </TableHead>
-                <TableHead className="text-white font-medium">
-                  {t("email")}
-                </TableHead>
-                <TableHead className="text-white font-medium">
-                  {t("phone")}
-                </TableHead>
-                <TableHead className="text-white font-medium text-right">
-                  {t("actions")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClients.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4">
-                    {searchQuery ? t("noClientsFound") : t("noClientsYet")}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredClients.map((client) => (
-                  <TableRow key={client.id} className="hover:bg-slate-50">
-                    <TableCell className="font-medium text-primary">
-                      {client.client_code || "-"}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {client.type === "individual"
-                        ? client.name
-                        : client.raison_sociale}
-                    </TableCell>
-                    <TableCell>{client.email || "-"}</TableCell>
-                    <TableCell>
-                      {client.phone_number || client.mobile_phone || "-"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            router.push(`/clients/${client.id}/view`)
-                          }
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => router.push(`/clients/${client.id}`)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedClient(client);
-                            setIsDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <Button
+          onClick={handleCreateClient}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          {t("addNewClient")}
+        </Button>
       </div>
 
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("areYouSure")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteConfirmation")}{" "}
-              <span className="font-medium">
-                {selectedClient?.raison_sociale}
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              {t("cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
+      {/* Filters and Search */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            {t("filtersAndSearch")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder={t("searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("filterByType")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("allTypes")}</SelectItem>
+                <SelectItem value="personne_physique">
+                  {t("individual")}
+                </SelectItem>
+                <SelectItem value="personne_morale">{t("company")}</SelectItem>
+                <SelectItem value="institution_financiere">
+                  {t("financialInstitution")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("filterByStatus")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("allStatuses")}</SelectItem>
+                <SelectItem value="actif">{t("active")}</SelectItem>
+                <SelectItem value="inactif">{t("inactive")}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              onClick={loadClients}
+              disabled={isLoading}
             >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("deleting")}
-                </>
-              ) : (
-                t("delete")
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {isLoading ? t("loading") : t("refresh")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Error Display */}
+      {error && (
+        <Card className="mb-6 border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <p className="text-red-700">{error}</p>
+              <Button variant="outline" size="sm" onClick={clearError}>
+                {t("dismiss")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Clients List */}
+      <div className="grid grid-cols-1 gap-4">
+        {filteredClients.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 text-lg">{t("noClientsFound")}</p>
+                <p className="text-gray-500 text-sm mt-2">
+                  {t("noClientsDescription")}
+                </p>
+                <Button onClick={handleCreateClient} className="mt-4">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t("createFirstClient")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredClients.map((client) => (
+            <Card key={client.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      {getClientTypeIcon(client.clientType)}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          {client.name ||
+                            client.raisonSociale ||
+                            client.clientCode}
+                        </h3>
+                        {getClientTypeBadge(client.clientType)}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
+                        <div>
+                          <span className="font-medium">{t("code")}:</span>{" "}
+                          {client.clientCode}
+                        </div>
+                        <div>
+                          <span className="font-medium">{t("email")}:</span>{" "}
+                          {client.email}
+                        </div>
+                        <div>
+                          <span className="font-medium">{t("phone")}:</span>{" "}
+                          {client.phoneNumber}
+                        </div>
+                        <div>
+                          <span className="font-medium">{t("wilaya")}:</span>{" "}
+                          {client.wilaya}
+                        </div>
+                        <div>
+                          <span className="font-medium">
+                            {t("accountNumber")}:
+                          </span>{" "}
+                          {client.numeroCompteTitre}
+                        </div>
+                        <div>
+                          <span className="font-medium">{t("status")}:</span>
+                          <Badge
+                            variant={
+                              client.status === "actif"
+                                ? "default"
+                                : "secondary"
+                            }
+                            className="ml-1"
+                          >
+                            {client.status === "actif"
+                              ? t("active")
+                              : t("inactive")}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewClient(client.id)}
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">{t("view")}</span>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditClient(client.id)}
+                    >
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only">{t("edit")}</span>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Pagination */}
+      {filteredClients.length > 0 && (
+        <div className="flex justify-center mt-8">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              {t("previous")}
+            </Button>
+
+            <span className="px-4 py-2 text-sm text-gray-600">
+              {t("page")} {currentPage}
+            </span>
+
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={filteredClients.length < 20}
+            >
+              {t("next")}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

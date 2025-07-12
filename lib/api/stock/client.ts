@@ -7,15 +7,25 @@ import {
   StockPrice,
 } from "@/types/gestionTitres";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.0.113:3002/api/v1";
+// Function to get the correct base URL based on environment
+const getBaseUrl = () => {
+  // For client-side requests (browser), use the proxy to avoid CORS
+  if (typeof window !== "undefined") {
+    return "/api/v1";
+  }
+  // For server-side requests, use the direct backend URL and add /api/v1
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com";
+  return `${baseUrl}/api/v1`;
+};
 
 const createApiClient = (getToken: () => string | null) => {
   const makeRequest = async <T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> => {
-    const url = `${BASE_URL}${endpoint}`;
+    const baseUrl = getBaseUrl();
+    const url = `${baseUrl}${endpoint}`;
     const token = getToken();
 
     const headers: HeadersInit = {
@@ -28,6 +38,8 @@ const createApiClient = (getToken: () => string | null) => {
       const response = await fetch(url, {
         ...options,
         headers,
+        // Add credentials for proxy requests
+        credentials: typeof window !== "undefined" ? "include" : "omit",
       });
 
       if (!response.ok) {

@@ -23,7 +23,6 @@ const TokenValidator: React.FC<TokenValidatorProps> = ({ children }) => {
     "/login",
     "/register",
     "/forgot-password",
-    "/inscription",
     "/motdepasseoublie",
   ];
   const isPublicPage = publicPages.some((page) => pathname.includes(page));

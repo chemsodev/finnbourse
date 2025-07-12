@@ -34,14 +34,9 @@ export const CLIENT_ROLES: RoleType[] = [
 // Agency roles - Updated to match backend specifications
 export const AGENCY_ROLES: RoleType[] = [
   {
-    id: "agence_client_manager_1",
-    label: "First Level Client Manager",
-    description: "First level client manager for agence.",
-  },
-  {
-    id: "agence_client_manager_2",
-    label: "Second Level Client Manager",
-    description: "Second level client manager for agence.",
+    id: "agence_client_manager",
+    label: "Client Manager",
+    description: "Client manager for agence.",
   },
   {
     id: "order_initializer_agence",
@@ -57,6 +52,26 @@ export const AGENCY_ROLES: RoleType[] = [
     id: "order_validator_agence_2",
     label: "Second Level Order Validator",
     description: "Second level order validator for agence.",
+  },
+  {
+    id: "order_validator_agence_retour_1",
+    label: "Return First Level Order Validator",
+    description: "Return first level order validator for agence.",
+  },
+  {
+    id: "order_validator_agence_retour_2",
+    label: "Return Second Level Order Validator",
+    description: "Return second level order validator for agence.",
+  },
+  {
+    id: "agence_viewer_order_history",
+    label: "Order History Viewer",
+    description: "Can view order history for agency.",
+  },
+  {
+    id: "agence_gestion_clients",
+    label: "Client Management",
+    description: "Can manage clients for agency.",
   },
   {
     id: "observateur_agence",
@@ -86,6 +101,11 @@ export const IOB_ROLES: RoleType[] = [
     id: "order_validator_iob_2",
     label: "Second Level Order Validator",
     description: "Second level order validator for IOB.",
+  },
+  {
+    id: "iob_secondary_market",
+    label: "IOB Secondary Market",
+    description: "Handles secondary market operations for IOB.",
   },
   {
     id: "observateur_iob",
@@ -120,6 +140,41 @@ export const TCC_ROLES: RoleType[] = [
     id: "order_validator_tcc_2",
     label: "Second Level Order Validator",
     description: "Second level order validator for TCC.",
+  },
+  {
+    id: "order_validator_tcc_retour_1",
+    label: "Return First Level Order Validator",
+    description: "Return first level order validator for TCC.",
+  },
+  {
+    id: "order_validator_tcc_retour_2",
+    label: "Return Second Level Order Validator",
+    description: "Return second level order validator for TCC.",
+  },
+  {
+    id: "tcc_viewer_order_history",
+    label: "Order History Viewer",
+    description: "Can view order history for TCC.",
+  },
+  {
+    id: "tcc_gestion_emetteurs",
+    label: "Issuer Management",
+    description: "Can manage issuers for TCC.",
+  },
+  {
+    id: "tcc_gestion_titres",
+    label: "Securities Management",
+    description: "Can manage securities for TCC.",
+  },
+  {
+    id: "tcc_gestion_clients",
+    label: "Client Management",
+    description: "Can manage clients for TCC.",
+  },
+  {
+    id: "order_executor",
+    label: "Order Executor",
+    description: "Can execute orders in the system.",
   },
   {
     id: "order_extern_initializer",

@@ -57,6 +57,7 @@ interface MarketTableProps {
   isIOB?: boolean;
   stocks: Stock[];
   setStocks: React.Dispatch<React.SetStateAction<Stock[]>>;
+  onRefresh?: (refreshFn: () => Promise<void>) => void;
 }
 
 interface TableState {
@@ -104,6 +105,7 @@ export function MarketTable({
   isIOB = false,
   stocks,
   setStocks,
+  onRefresh,
 }: MarketTableProps) {
   const t = useTranslations("TitresTable");
   const { toast } = useToast();
@@ -124,42 +126,45 @@ export function MarketTable({
     React.useState<TitreFormValues | null>(null);
 
   // Fetch stocks based on type and market
+  const fetchStocks = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const stockType = mapToStockType(type);
+      const response =
+        marketType === "primaire" || (marketType === "secondaire" && isIOB)
+          ? await api.filterStocks({ marketType, stockType })
+          : await api.getPrimaryClosingStocks();
+
+      setStocks(response || []);
+    } catch (err) {
+      const errorMessage =
+        typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message?: unknown }).message)
+          : "Failed to fetch stocks";
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Error loading stocks",
+        description: errorMessage,
+      });
+      setStocks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [type, marketType, api, toast, setStocks, isIOB]);
 
   React.useEffect(() => {
-    const fetchStocks = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const stockType = mapToStockType(type);
-        const response =
-          marketType === "primaire" || (marketType === "secondaire" && isIOB)
-            ? await api.filterStocks({ marketType, stockType })
-            : await api.getPrimaryClosingStocks();
-
-        setStocks(response || []);
-        // marketType === "secondaire"
-        //   ? setStocks(response.data || [])
-        //   : setStocks(response || []);
-      } catch (err) {
-        const errorMessage =
-          typeof err === "object" && err !== null && "message" in err
-            ? String((err as { message?: unknown }).message)
-            : "Failed to fetch stocks";
-        setError(errorMessage);
-        toast({
-          variant: "destructive",
-          title: "Error loading stocks",
-          description: errorMessage,
-        });
-        setStocks([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStocks();
-  }, [type, marketType, api, toast, setStocks, isIOB]);
+  }, [fetchStocks]);
+
+  // Expose refresh function to parent component
+  React.useEffect(() => {
+    if (onRefresh) {
+      onRefresh(fetchStocks);
+    }
+  }, [onRefresh, fetchStocks]);
 
   const handleEditClick = React.useCallback(
     (stock: Stock) => {
@@ -262,16 +267,19 @@ export function MarketTable({
   const getDetailsLink = (
     marketType: "primaire" | "secondaire",
     stockType: StockType,
-    stockId: string
+    stockId: string,
+    isIOB: boolean = false
   ) => {
-    const basePath =
-      marketType === "primaire"
-        ? "/gestion-des-titres/marcheprimaire"
-        : "/gestion-des-titres/marchesecondaire";
-
-    return marketType === "primaire"
-      ? `${basePath}/${stockType}/${stockId}`
-      : `${basePath}/${stockId}`;
+    if (marketType === "primaire") {
+      return `/gestion-des-titres/marcheprimaire/${stockType}/${stockId}`;
+    } else {
+      // Secondary market
+      if (isIOB) {
+        return `/iob-secondary-market/${stockType}/${stockId}`;
+      } else {
+        return `/gestion-des-titres/marchesecondaire/${stockId}`;
+      }
+    }
   };
 
   // Column definitions for the table
@@ -425,7 +433,12 @@ export function MarketTable({
                 {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem asChild>
                   <Link
-                    href={getDetailsLink(marketType, type, stock?.id ?? "")}
+                    href={getDetailsLink(
+                      marketType,
+                      type,
+                      stock?.id ?? "",
+                      isIOB
+                    )}
                   >
                     {t("voirDetails")}
                   </Link>
@@ -443,7 +456,7 @@ export function MarketTable({
     );
 
     return cols;
-  }, [t, type, marketType, handleEditClick]);
+  }, [t, type, marketType, handleEditClick, isIOB]);
 
   const table = useReactTable({
     data: stocks || [],
@@ -608,8 +621,10 @@ export function MarketTable({
           isIOB={isIOB}
           onOpenChange={(open) => !open && setEditingTitre(null)}
           defaultValues={editingTitre}
-          onSuccess={() => {
+          onSuccess={async () => {
             setEditingTitre(null);
+            // Refresh the table to show updated data
+            await fetchStocks();
           }}
         />
       )}

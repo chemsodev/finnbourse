@@ -186,12 +186,12 @@ export default function ClientPortfolio() {
         console.log("Fetching portfolio data...");
         setApiError(null);
 
-        // Skip the API call and use fallback data immediately for development
         // In production, you would uncomment this section to use the real API
         /*
         try {
           // Add timeout to the fetch call
-          const fetchPromise = fetch(`http://localhost:8081/portfolio/${clientId}`);
+          const portfolioApiUrl = process.env.NEXT_PUBLIC_PORTFOLIO_API_URL || 'http://localhost:8081';
+          const fetchPromise = fetch(`${portfolioApiUrl}/portfolio/${clientId}`);
           const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error("Fetch timeout")), 5000)
           );

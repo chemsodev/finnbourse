@@ -3,18 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   try {
     // Forward the request to the actual API with the authorization header
-    const response = await fetch(
-      "https://kh.finnetude.com/api/v1/financial-institution",
-      {
-        headers: {
-          "Content-Type": "application/json",
-          // Forward the authorization header if it exists
-          ...(request.headers.get("authorization") && {
-            Authorization: request.headers.get("authorization") || "",
-          }),
-        },
-      }
-    );
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com";
+    const BACKEND_URL = `${baseUrl}/api/v1`;
+    const response = await fetch(`${BACKEND_URL}/financial-institution`, {
+      headers: {
+        "Content-Type": "application/json",
+        // Forward the authorization header if it exists
+        ...(request.headers.get("authorization") && {
+          Authorization: request.headers.get("authorization") || "",
+        }),
+      },
+    });
 
     if (!response.ok) {
       console.error(`API request failed with status: ${response.status}`);
@@ -40,20 +40,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Forward the request to the actual API with the authorization header
-    const response = await fetch(
-      "https://kh.finnetude.com/api/v1/financial-institution",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Forward the authorization header if it exists
-          ...(request.headers.get("authorization") && {
-            Authorization: request.headers.get("authorization") || "",
-          }),
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com";
+    const BACKEND_URL = `${baseUrl}/api/v1`;
+    const response = await fetch(`${BACKEND_URL}/financial-institution`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Forward the authorization header if it exists
+        ...(request.headers.get("authorization") && {
+          Authorization: request.headers.get("authorization") || "",
+        }),
+      },
+      body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       console.error(`API request failed with status: ${response.status}`);

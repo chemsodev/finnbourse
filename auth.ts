@@ -49,20 +49,19 @@ const auth: any = {
             (req?.headers?.["x-forwarded-for"] as string) ||
             (req?.headers?.["x-real-ip"] as string) ||
             "IP not available"; // Use REST backend for authentication only
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-forwarded-for": ip,
-              },
-              body: JSON.stringify({
-                username: credentials?.email,
-                password: credentials?.password,
-              }),
-            }
-          );
+          const baseUrl =
+            process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com";
+          const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-forwarded-for": ip,
+            },
+            body: JSON.stringify({
+              username: credentials?.email,
+              password: credentials?.password,
+            }),
+          });
           const user = await res.json();
 
           if (res.ok && user?.access_token) {

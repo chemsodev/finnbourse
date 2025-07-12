@@ -8,7 +8,10 @@ export async function GET(
     const id = params.id;
 
     // Forward the request to the actual API with the authorization header
-    const response = await fetch(`https://kh.finnetude.com/api/v1/iob/${id}`, {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com";
+    const BACKEND_URL = `${baseUrl}/api/v1`;
+    const response = await fetch(`${BACKEND_URL}/iob/${id}`, {
       headers: {
         "Content-Type": "application/json",
         // Forward the authorization header if it exists

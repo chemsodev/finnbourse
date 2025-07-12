@@ -490,7 +490,7 @@ export const actorAPI = {
 
     create: async (data: any, token?: string) => {
       const restToken = token || (await getRestToken());
-      return clientFetchREST("/client", {
+      return clientFetchREST("/agence/clients", {
         method: "POST",
         body: data,
         token: restToken || undefined,

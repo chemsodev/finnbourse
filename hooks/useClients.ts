@@ -78,8 +78,10 @@ export function useClients() {
           };
 
           // Use the direct endpoint as shown in the example
+          const frontendUrl =
+            process.env.NEXTAUTH_URL || "http://localhost:3001";
           const response = await fetch(
-            `http://localhost:3001/api/v1/agence/${agencyId}`,
+            `${frontendUrl}/api/v1/agence/${agencyId}`,
             { headers }
           );
 

@@ -161,14 +161,23 @@ export function EnhancedAgenceUsersForm({
           // Transform form data to API format
           const apiUserData = {
             firstname: formData.fullName.split(" ")[0] || formData.fullName,
-            lastname: formData.fullName.split(" ").slice(1).join(" ") || "",
+            lastname: formData.fullName.split(" ").slice(1).join(" ") || " ", // Ensure lastname always has at least a space character
             email: formData.email,
             password: formData.password,
             telephone: formData.phone || "",
             positionAgence: formData.position || "",
             matriculeAgence: formData.matricule,
             organisationIndividu: formData.organization,
-            role: formData.roles || [],
+            role: formData.roles.map((role) => {
+              // Map any legacy role values to the correct ones
+              if (
+                role === "agence_client_manager_1" ||
+                role === "agence_client_manager_2"
+              ) {
+                return "agence_client_manager";
+              }
+              return role;
+            }),
             status: (formData.status === "active" ? "actif" : "inactif") as
               | "actif"
               | "inactif",
@@ -434,11 +443,64 @@ export function EnhancedAgenceUsersForm({
                       <SelectValue placeholder={t("addRole")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.values(AgenceRole).map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {translateRole(role)}
-                        </SelectItem>
-                      ))}
+                      {/* Use only the valid role values accepted by the backend */}
+                      <SelectItem
+                        key="agence_client_manager"
+                        value="agence_client_manager"
+                      >
+                        {translateRole("agence_client_manager")}
+                      </SelectItem>
+                      <SelectItem
+                        key="order_initializer_agence"
+                        value="order_initializer_agence"
+                      >
+                        {translateRole("order_initializer_agence")}
+                      </SelectItem>
+                      <SelectItem
+                        key="order_validator_agence_1"
+                        value="order_validator_agence_1"
+                      >
+                        {translateRole("order_validator_agence_1")}
+                      </SelectItem>
+                      <SelectItem
+                        key="order_validator_agence_2"
+                        value="order_validator_agence_2"
+                      >
+                        {translateRole("order_validator_agence_2")}
+                      </SelectItem>
+                      <SelectItem
+                        key="order_validator_agence_retour_1"
+                        value="order_validator_agence_retour_1"
+                      >
+                        {translateRole("order_validator_agence_retour_1")}
+                      </SelectItem>
+                      <SelectItem
+                        key="order_validator_agence_retour_2"
+                        value="order_validator_agence_retour_2"
+                      >
+                        {translateRole("order_validator_agence_retour_2")}
+                      </SelectItem>
+                      <SelectItem
+                        key="agence_viewer_order_history"
+                        value="agence_viewer_order_history"
+                      >
+                        {translateRole("agence_viewer_order_history")}
+                      </SelectItem>
+                      <SelectItem
+                        key="agence_gestion_clients"
+                        value="agence_gestion_clients"
+                      >
+                        {translateRole("agence_gestion_clients")}
+                      </SelectItem>
+                      <SelectItem
+                        key="observateur_agence"
+                        value="observateur_agence"
+                      >
+                        {translateRole("observateur_agence")}
+                      </SelectItem>
+                      <SelectItem key="agence_admin" value="agence_admin">
+                        {translateRole("agence_admin")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

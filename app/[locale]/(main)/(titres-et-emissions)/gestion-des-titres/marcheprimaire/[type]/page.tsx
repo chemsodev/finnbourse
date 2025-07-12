@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import MyMarquee from "@/components/MyMarquee";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { MarketTable } from "@/components/titres/MarketTable";
 import { Stock, StockType } from "@/types/gestionTitres";
 import { CreateTitre } from "@/components/titres/CreateTitre";
@@ -23,14 +23,28 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
   const t = useTranslations("Titres");
   const { restToken, isLoading } = useRestToken();
   const [stocks, setStocks] = useState<Stock[]>([]);
+  const [refreshTable, setRefreshTable] = useState<
+    (() => Promise<void>) | null
+  >(null);
 
   useEffect(() => {
     console.log("Primary Market Type:", type);
   }, [type]);
 
   // Function to handle new stock creation
-  const handleStockCreated = (newStock: Stock) => {
-    setStocks((prev) => [...prev, newStock]);
+  const handleStockCreated = async (newStock: Stock) => {
+    // Refresh the table instead of manually adding to local state
+    if (refreshTable) {
+      await refreshTable();
+    } else {
+      // Fallback to adding to local state if refresh function is not available
+      setStocks((prev) => [...prev, newStock]);
+    }
+  };
+
+  // Function to capture the refresh function from MarketTable
+  const handleRefreshFunction = (refreshFn: () => Promise<void>) => {
+    setRefreshTable(() => refreshFn);
   };
 
   if (status === "loading" || isLoading || !restToken) {
@@ -98,6 +112,7 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
           marketType="primaire"
           stocks={stocks}
           setStocks={setStocks}
+          onRefresh={handleRefreshFunction}
         />
       </div>
     </div>

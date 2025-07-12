@@ -187,7 +187,7 @@ export const clientAPI = {
       }),
 
     create: (clientData: any, token?: string) =>
-      clientFetchREST("/client", {
+      clientFetchREST("/agence/clients", {
         method: "POST",
         body: clientData,
         token: token || getClientToken(),

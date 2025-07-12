@@ -207,8 +207,10 @@ export default function ViewAgencyPage() {
           };
 
           // Send a PUT request to the proper endpoint with minimal data
+          const frontendUrl =
+            process.env.NEXTAUTH_URL || "http://localhost:3001";
           const response = await fetch(
-            `http://localhost:3001/api/v1/agence/${agency.id}/users/${userToToggleStatus}`,
+            `${frontendUrl}/api/v1/agence/${agency.id}/users/${userToToggleStatus}`,
             {
               method: "PUT",
               headers,

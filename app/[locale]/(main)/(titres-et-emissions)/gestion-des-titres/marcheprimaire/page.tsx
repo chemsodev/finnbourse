@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { BondIcon2, OPVIcon } from "@/components/icons/PrimaryMarketTypesIcons";
 import { MarketCardProps } from "@/types/gestionTitres";
 import { taintObjectReference } from "next/dist/server/app-render/entry-base";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import MarketCard from "@/components/titres/MarketCard";
 

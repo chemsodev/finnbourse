@@ -25,14 +25,15 @@ interface RESTResponse<T = any> {
 
 // Get the base URL for API requests, using the proxy for client-side requests
 function getBaseUrl(isClient = false) {
-  // For client-side requests, use the local proxy to avoid CORS issues
-  if (isClient && typeof window !== "undefined") {
+  if (isClient) {
+    // For client-side requests, use the proxy URL
     return "/api/v1";
   }
 
-  // For server-side requests, use the environment variable or fallback to the direct URL
-  // return "https://kh.finnetude.com/api/v1";
-  return "http://192.168.0.113:3002/api/v1";
+  // For server-side requests, use the environment variable and add /api/v1
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com";
+  return `${baseUrl}/api/v1`;
 }
 
 // Client-side only REST API fetcher
@@ -358,7 +359,7 @@ export const agenceAPI = {
 // Client API functions
 export const clientAPI = {
   create: (clientData: any, token?: string) =>
-    fetchREST("/client", {
+    fetchREST("/agence/clients", {
       method: "POST",
       body: clientData,
       token,

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { ArrowLeft } from "lucide-react";
 
 import MyMarquee from "@/components/MyMarquee";
@@ -21,11 +22,20 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
   const { type } = params;
   const t = useTranslations("Titres");
   const [stocks, setStocks] = useState<Stock[]>([]);
+  const [refreshTable, setRefreshTable] = useState<
+    (() => Promise<void>) | null
+  >(null);
+  const { data: session, status } = useSession();
   const { restToken, isLoading } = useRestToken();
 
   useEffect(() => {
-    console.log("Primary Market Type:", type);
+    console.log("IOB Secondary Market Type:", type);
   }, [type]);
+
+  // Function to capture the refresh function from MarketTable
+  const handleRefreshFunction = (refreshFn: () => Promise<void>) => {
+    setRefreshTable(() => refreshFn);
+  };
 
   if (status === "loading" || isLoading || !restToken) {
     return (
@@ -48,6 +58,11 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
 
   const getTypeLabel = (t: (key: string) => string, type: string) => {
     const typeMap: Record<string, string> = {
+      action: t("stock"),
+      obligation: t("bond"),
+      sukuk: t("sukuk"),
+      participatif: t("participativeTitles"),
+      // Legacy support for plural forms
       actions: t("stock"),
       obligations: t("bond"),
       titresparticipatifsms: t("participativeTitles"),
@@ -63,7 +78,7 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
       </div>
 
       <Link
-        href="/gestion-des-titres/marchesecondaire"
+        href="/iob-secondary-market"
         className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-4"
       >
         <ArrowLeft className="w-5" />
@@ -72,12 +87,12 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
 
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 text-center md:ltr:text-left md:rtl:text-right">
         <div className="text-3xl font-bold text-primary">
-          {t("marcheSecondaire")}
+          IOB {t("marcheSecondaire")}
           <span className="text-lg text-black mx-1">
             {getTypeLabel(t, type)}
           </span>
         </div>
-        <div className="text-xs text-gray-500">{t("explMS")}</div>
+        <div className="text-xs text-gray-500">IOB {t("explMS")}</div>
       </div>
 
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
@@ -87,6 +102,7 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
           stocks={stocks}
           setStocks={setStocks}
           isIOB={true}
+          onRefresh={handleRefreshFunction}
         />
       </div>
     </div>

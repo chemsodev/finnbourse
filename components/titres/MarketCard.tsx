@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import InfoDialog from "@/components/InfoDialog";
 import { MarketCardProps } from "@/types/gestionTitres";
 

@@ -83,39 +83,55 @@ export class ClientService {
     if (clientType === "personne_physique") {
       clientType = "individual";
     } else if (clientType === "personne_morale") {
-      clientType = "company";
+      clientType = "corporate";
     } else if (clientType === "institution_financiere") {
       clientType = "financial_institution";
     }
 
     // Default values for required fields
-    const defaultFinancialInstitutionId = "1"; // Default value for testing
-    const defaultAgenceId = "1"; // Default value for testing
-    const defaultIobId = "1"; // Default value for testing
+    const defaultFinancialInstitutionId =
+      frontendData.financialInstitutionId || "1";
+    const defaultAgenceId =
+      frontendData.agenceId || frontendData.selectedAgence || "1";
+    const defaultIobId = frontendData.iobId || "1";
 
-    const baseClientData = {
-      type: clientType,
-      financialInstitutionId:
-        frontendData.financialInstitutionId || defaultFinancialInstitutionId,
-      agenceId:
-        frontendData.agenceId || frontendData.selectedAgence || defaultAgenceId,
-      iobId: frontendData.iobId || defaultIobId,
-      client_code: frontendData.clientCode,
-      client_source: frontendData.clientSource,
-      email: frontendData.email,
-      phone_number: frontendData.phoneNumber,
-      mobile_phone: frontendData.mobilePhone,
-      id_type: frontendData.idType,
-      cash_account_bank_code: frontendData.ribBanque,
-      cash_account_agency_code: frontendData.ribAgence,
-      cash_account_number: frontendData.ribCompte,
-      cash_account_rip_key: frontendData.ribCle,
-      cash_account_rip_full:
+    // Build RIB full if components are provided
+    let ribFull = "";
+    if (
+      frontendData.ribBanque &&
+      frontendData.ribAgence &&
+      frontendData.ribCompte &&
+      frontendData.ribCle
+    ) {
+      ribFull =
         frontendData.ribBanque +
         frontendData.ribAgence +
         frontendData.ribCompte +
-        frontendData.ribCle,
-      securities_account_number: frontendData.numeroCompteTitre,
+        frontendData.ribCle;
+    }
+
+    const baseClientData = {
+      type: clientType,
+      financialInstitutionId: defaultFinancialInstitutionId,
+      agenceId: defaultAgenceId,
+      iobId: defaultIobId,
+      client_code: frontendData.clientCode,
+      client_source: frontendData.clientSource || "web",
+      email: frontendData.email || "",
+      phone_number: frontendData.phoneNumber || "",
+      mobile_phone: frontendData.mobilePhone || "",
+      wilaya: frontendData.wilaya,
+      address: frontendData.address || "",
+      id_type: frontendData.idType,
+      cash_account_bank_code: frontendData.ribBanque || "",
+      cash_account_agency_code: frontendData.ribAgence || "",
+      cash_account_number: frontendData.ribCompte || "",
+      cash_account_rip_key: frontendData.ribCle || "",
+      cash_account_rip_full: ribFull,
+      securities_account_number: frontendData.numeroCompteTitre || "",
+      iob_type: frontendData.iobType || "intern",
+      iob_category: frontendData.iobCategory || null,
+      observation: frontendData.observation || "",
     };
 
     // Create client_details based on client type
@@ -127,12 +143,15 @@ export class ClientService {
         id_number: frontendData.idNumber,
         nin: frontendData.nin,
         nationalite: frontendData.nationalite,
-        wilaya: frontendData.wilaya,
+        date_naissance: frontendData.dateNaissance
+          ? frontendData.dateNaissance.toISOString().split("T")[0]
+          : null,
         lieu_naissance: frontendData.lieuNaissance,
-        employe_a_la_institution_financiere: frontendData.isEmployeeCPA,
+        employe_a_la_institution_financiere:
+          frontendData.isEmployeeCPA || false,
       };
     } else if (
-      clientType === "company" ||
+      clientType === "corporate" ||
       clientType === "financial_institution"
     ) {
       client_details = {
@@ -141,7 +160,6 @@ export class ClientService {
         nif: frontendData.nif,
         reg_number: frontendData.regNumber,
         legal_form: frontendData.legalForm,
-        lieu_naissance: frontendData.lieuNaissance,
       };
     }
 
@@ -170,7 +188,13 @@ export class ClientService {
       }
     }
 
-    return {
+    // Parse date if available
+    let dateNaissance = null;
+    if (apiData.date_naissance) {
+      dateNaissance = new Date(apiData.date_naissance);
+    }
+
+    const baseClient = {
       id: apiData.id,
       type: apiData.type,
       clientType: clientType,
@@ -186,6 +210,8 @@ export class ClientService {
       phoneNumber: apiData.phone_number,
       mobile_phone: apiData.mobile_phone,
       mobilePhone: apiData.mobile_phone,
+      wilaya: apiData.wilaya,
+      address: apiData.address,
       id_type: apiData.id_type,
       idType: apiData.id_type,
       cash_account_bank_code: apiData.cash_account_bank_code,
@@ -200,43 +226,65 @@ export class ClientService {
       ribFull: apiData.cash_account_rip_full,
       securities_account_number: apiData.securities_account_number,
       numeroCompteTitre: apiData.securities_account_number,
-      name: apiData.name,
-      id_number: apiData.id_number,
-      idNumber: apiData.id_number,
-      nin: apiData.nin,
-      nationalite: apiData.nationalite,
-      wilaya: apiData.wilaya,
-      address: apiData.address,
-      lieu_naissance: apiData.lieu_naissance,
-      lieuNaissance: apiData.lieu_naissance,
-      employe_a_la_institution_financiere:
-        apiData.employe_a_la_institution_financiere,
-      isEmployeeCPA: apiData.employe_a_la_institution_financiere,
-      raison_sociale: apiData.raison_sociale,
-      raisonSociale: apiData.raison_sociale,
-      nif: apiData.nif,
-      reg_number: apiData.reg_number,
-      regNumber: apiData.reg_number,
-      legal_form: apiData.legal_form,
-      legalForm: apiData.legal_form,
-      status: apiData.status || "actif",
-      createdAt: apiData.createdAt || apiData.created_at,
-      updatedAt: apiData.updatedAt || apiData.updated_at,
-      date_naissance: apiData.date_naissance,
-      dateNaissance: apiData.date_naissance
-        ? new Date(apiData.date_naissance)
-        : undefined,
-      hasCompteTitre: !!apiData.securities_account_number,
+      iob_type: apiData.iob_type,
+      iobType: apiData.iob_type,
+      iob_category: apiData.iob_category,
+      iobCategory: apiData.iob_category,
+      observation: apiData.observation,
+      financialInstitutionId: apiData.financialInstitutionId,
+      agenceId: apiData.agenceId,
+      iobId: apiData.iobId,
+      status: apiData.status,
+      createdAt: apiData.createdAt,
+      updatedAt: apiData.updatedAt,
     };
+
+    // Add client-specific fields based on type
+    if (clientType === "personne_physique") {
+      return {
+        ...baseClient,
+        name: apiData.name,
+        id_number: apiData.id_number,
+        idNumber: apiData.id_number,
+        nin: apiData.nin,
+        nationalite: apiData.nationalite,
+        date_naissance: apiData.date_naissance,
+        dateNaissance: dateNaissance,
+        lieu_naissance: apiData.lieu_naissance,
+        lieuNaissance: apiData.lieu_naissance,
+        employe_a_la_institution_financiere:
+          apiData.employe_a_la_institution_financiere,
+        isEmployeeCPA: apiData.employe_a_la_institution_financiere,
+      };
+    } else if (
+      clientType === "personne_morale" ||
+      clientType === "institution_financiere"
+    ) {
+      return {
+        ...baseClient,
+        raison_sociale: apiData.raison_sociale,
+        raisonSociale: apiData.raison_sociale,
+        nif: apiData.nif,
+        reg_number: apiData.reg_number,
+        regNumber: apiData.reg_number,
+        legal_form: apiData.legal_form,
+        legalForm: apiData.legal_form,
+      };
+    }
+
+    return baseClient;
   }
 
   /**
-   * Legacy transform methods
+   * Transform form data to API format for backwards compatibility
    */
   static transformFormDataToAPI(formData: any): ClientCreateRequest {
     return this.mapFrontendToApi(formData);
   }
 
+  /**
+   * Transform API data to form format for backwards compatibility
+   */
   static transformAPIDataToForm(apiData: Client): any {
     return this.mapApiToFrontend(apiData);
   }
