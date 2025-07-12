@@ -2684,6 +2684,9 @@
         "selectMarket": "اختر سوقًا",
         "primaryMarket": "السوق الأولية",
         "secondaryMarket": "السوق الثانوية",
+        "algeriaMarket": "السوق الجزائرية",
+        "tunisianMarket": "السوق التونسية",
+        "cassablancaMarket": "السوق الدار البيضاء",
         "status": "الحالة",
         "selectStatus": "اختر حالة",
         "active": "نشط",
@@ -2808,6 +2811,7 @@
       "editStockPrice": "تعديل سعر السهم",
       "price": "السعر",
       "gap": "الفجوة",
+      "date": "التاريخ",
       "cancel": "إلغاء",
       "saveChanges": "حفظ التغييرات",
       "success": {

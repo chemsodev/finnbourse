@@ -51,6 +51,11 @@ import { useToast } from "@/hooks/use-toast";
 import { fr, ar, enUS } from "date-fns/locale";
 import { TitreFormValues, TitreSchema } from "./titreSchemaValidation";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { useStockApi } from "@/hooks/useStockApi";
+import { useIssuer } from "@/hooks/useIssuer";
+import { useFinancialInstitution } from "@/hooks/useFinancialInstitution";
+import { MoveToSecondaryData, Stock } from "@/types/gestionTitres";
+import { Label } from "../ui/label";
 
 interface Company {
   id: string;
@@ -62,9 +67,10 @@ type TitreFormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultValues?: TitreFormValues;
-  onSuccess?: () => void;
+  onSuccess?: (newStock: Stock) => void;
   isEdit?: boolean;
   companies?: Company[];
+  isIOB?: boolean;
 };
 
 export function TitreFormDialog({
@@ -74,96 +80,58 @@ export function TitreFormDialog({
   defaultValues,
   onSuccess,
   isEdit = false,
+  isIOB = false,
 }: //   companies = [],
 TitreFormDialogProps) {
   const { toast } = useToast();
   const locale = useLocale();
-  const obligations = ["empruntobligataire", "titresparticipatifs", "sukukmp"];
+  const api = useStockApi();
+  // const obligations = ["empruntobligataire", "titresparticipatifs", "sukukmp"];
   const t = useTranslations(
     isEdit ? "GestionDesTitres.EditTitre" : "GestionDesTitres.CreateTitre"
   );
 
-  const [companies, setCompanies] = React.useState<Company[]>([]);
-  const [fetchingCompanies, setFetchingCompanies] = React.useState(true);
-  const [institutions, setInstitutions] = React.useState<
-    { id: string; name: string }[]
-  >([]);
-  const [fetchingInstitutions, setFetchingInstitutions] = React.useState(false);
+  // const [institutions, setInstitutions] = React.useState<
+  //   { id: string; institutionName: string }[]
+  // >([]);
 
-  // Fetch institutions from backend
-  React.useEffect(() => {
-    if (!open) return;
+  // Fetch financial institutions and issuers
+  const {
+    institutions: financialInstitutions,
+    isLoading: institutionsLoading,
+  } = useFinancialInstitution();
 
-    const fetchInstitutions = async () => {
-      try {
-        setFetchingInstitutions(true);
-        // TODO: Replace with actual API call
-        // const response = await fetch('/api/institutions');
-        // const data = await response.json();
-
-        // Mock data
-        const mockInstitutions = [
-          { id: "1", name: "Bank A" },
-          { id: "2", name: "Bank B" },
-          { id: "3", name: "Bank C" },
-        ];
-
-        setInstitutions(mockInstitutions);
-      } catch (error) {
-        console.error("Error fetching institutions:", error);
-        toast({
-          variant: "destructive",
-          title: t("error"),
-          description: t("fetchError"),
-        });
-      } finally {
-        setFetchingInstitutions(false);
-      }
-    };
-
-    fetchInstitutions();
-  }, [open, toast, t]);
-
-  // Fetch companies on mount
-  React.useEffect(() => {
-    if (!open) return;
-    const fetchCompanies = async () => {
-      try {
-        // TODO: Replace with actual API call
-        setCompanies([
-          { id: "1", name: "Company A" },
-          { id: "2", name: "Company B" },
-        ]);
-      } catch (error) {
-        console.error("Error fetching companies:", error);
-        toast({
-          variant: "destructive",
-          title: t("error"),
-          description: t("fetchError"),
-        });
-      } finally {
-        setFetchingCompanies(false);
-      }
-    };
-
-    fetchCompanies();
-  }, [open, toast, t]);
+  const { issuers, isLoading: issuersLoading } = useIssuer();
 
   const form = useForm<TitreFormValues>({
     resolver: zodResolver(TitreSchema),
     defaultValues: defaultValues || {
-      name: "",
+      // name: "",
+      stockType: type as
+        | "action"
+        | "obligation"
+        | "sukuk"
+        | "participatif"
+        | undefined,
       issuer: "",
       isinCode: "",
       code: "",
-      faceValue: 0,
-      quantity: 1,
+      // faceValue: 0,
+      // quantity: 1,
       emissionDate: new Date(),
       closingDate: new Date(),
       enjoymentDate: new Date(),
-      marketListing: "",
-      type: type,
+      maturityDate: new Date(),
+      marketListing: "ALG",
+      capitalOperation: "ouverture",
+      votingRights: false,
+      master: "",
+      institutions: [],
+      capitalRepaymentSchedule: [],
+      couponSchedule: [],
+      type: "participatif",
       status: "activated",
+
       stockPrice: {
         price: 0,
         date: new Date(),
@@ -172,59 +140,134 @@ TitreFormDialogProps) {
     },
   });
 
+  React.useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      console.log("Form values:", value);
+      console.log("Form errors:", form.formState.errors);
+      isEdit &&
+        console.log("Editing stock with ID:", defaultValues?.id, defaultValues);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, defaultValues, isEdit]);
+
   // Watch for changes in the form
   const durationYears = form.watch("durationYears");
-  const watchedType = form.watch("type");
-  React.useEffect(() => {
-    console.log("TitreFormDialog type:", watchedType);
-  }, [watchedType]);
+  const watchedType = form.watch("stockType");
+  const watchedMaster = form.watch("institutions.0");
 
-  // Payment Schedule Field Array setup
-  const {
-    fields: paymentScheduleFields,
-    append: appendPaymentSchedule,
-    remove: removePaymentSchedule,
-  } = useFieldArray({
+  const { replace: replaceCapitalRepayment } = useFieldArray({
     control: form.control,
-    name: "paymentSchedule",
+    name: "capitalRepaymentSchedule",
   });
 
-  // Effect to update payment schedule when duration changes
+  const { replace: replaceCoupon } = useFieldArray({
+    control: form.control,
+    name: "couponSchedule",
+  });
+
   React.useEffect(() => {
-    if (!obligations.includes(watchedType) || !durationYears) return;
+    if (watchedType !== "obligation" || !durationYears || durationYears <= 0) {
+      // Clear schedules if not obligation or no duration
+      replaceCapitalRepayment([]);
+      replaceCoupon([]);
+      return;
+    }
 
-    // Clear existing fields
-    paymentScheduleFields.forEach((_, index) => removePaymentSchedule(index));
+    // Generate capital repayment schedule
+    const capitalSchedule = Array.from({ length: durationYears }, (_, i) => ({
+      date: new Date(new Date().setFullYear(new Date().getFullYear() + i + 1)),
+      rate: 0,
+    }));
 
-    // Add new fields based on duration
-    for (let i = 0; i < durationYears; i++) {
-      appendPaymentSchedule({
+    // Generate coupon schedule
+    const couponScheduleItems = Array.from(
+      { length: durationYears },
+      (_, i) => ({
         date: new Date(
           new Date().setFullYear(new Date().getFullYear() + i + 1)
         ),
-        couponRate: 0,
-        capitalRate: 0,
-      });
-    }
-  }, [durationYears, watchedType]);
+        rate: 0,
+      })
+    );
+    replaceCapitalRepayment(capitalSchedule);
+    replaceCoupon(couponScheduleItems);
+  }, [durationYears, watchedType, replaceCapitalRepayment, replaceCoupon]);
 
   async function onSubmit(values: TitreFormValues) {
     try {
-      // TODO: Replace with actual API call
-      // const url = isEdit
-      //   ? `/api/securities/${values.id}`
-      //   : '/api/securities';
-      // const method = isEdit ? 'PUT' : 'POST';
-      //
-      // const response = await fetch(url, {
-      //   method,
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(values)
-      // });
+      await form.trigger();
 
+      if (!form.formState.isValid) {
+        console.log("Form is invalid, not submitting");
+        return;
+      }
       // Simulate API call using values
       console.log("Submitting form values:", values);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const firstInstitutionId = values.institutions?.[0] ?? "";
+
+      const payload = {
+        ...values,
+        master: watchedMaster ? watchedMaster : firstInstitutionId,
+        votingRights: values.votingRights ?? false,
+        stockType: watchedType ? watchedType : "action",
+        emissionDate: new Date(values.emissionDate),
+        closingDate: new Date(values.closingDate),
+        enjoymentDate: new Date(values.enjoymentDate),
+        maturityDate: values.maturityDate
+          ? new Date(values.maturityDate)
+          : undefined,
+        // isPrimary: values.isPrimary ?? false,
+        // paymentSchedule: values?.paymentSchedule?.map((item) => ({
+        //   ...item,
+        //   date: item.date.toISOString(),
+        // })),
+        institutions: values.institutions || [],
+        stockPrice: {
+          ...values.stockPrice,
+          date: new Date(values.stockPrice.date),
+        },
+        // payment schedule arrays
+        capitalRepaymentSchedule:
+          values.capitalRepaymentSchedule?.map((item) => ({
+            date: new Date(item.date),
+            rate: item.rate,
+          })) || [],
+        couponSchedule:
+          values.couponSchedule?.map((item) => ({
+            date: new Date(item.date),
+            rate: item.rate,
+          })) || [],
+      };
+
+      console.log("Submitting payload:", payload);
+
+      // let response;
+      // if (isEdit && defaultValues?.id) {
+      //   const moveToSecondaryData: MoveToSecondaryData = {
+      //     price: payload.stockPrice.price,
+      //     gap: payload.stockPrice.gap,
+      //     date: payload.stockPrice.date.toISOString(),
+      //   };
+      //   if (isIOB) {
+      //     // Use IOB-specific endpoint
+      //     response = await api.updateIobMarketSecondary(
+      //       defaultValues.id,
+      //       moveToSecondaryData
+      //     );
+      //   } else {
+      //     // Use regular secondary market endpoint
+      //     response = await api.moveToSecondary(
+      //       defaultValues.id,
+      //       moveToSecondaryData
+      //     );
+      //   }
+      // } else {
+
+      //   response = await api.createStock(payload);
+      // }
+      const response = await api.createStock(payload);
+
+      console.log("Create stock response:", response);
 
       toast({
         variant: "success",
@@ -234,13 +277,18 @@ TitreFormDialogProps) {
 
       form.reset();
       onOpenChange(false);
-      onSuccess?.();
+      if (onSuccess) {
+        onSuccess(response);
+      }
     } catch (error) {
       console.error("Form submission error", error);
       toast({
         variant: "destructive",
         title: t("error.title"),
-        description: t("error.description"),
+        description:
+          typeof error === "object" && error !== null && "message" in error
+            ? String((error as { message?: string }).message)
+            : t("error.description"),
       });
     }
   }
@@ -262,6 +310,8 @@ TitreFormDialogProps) {
     });
   };
 
+  const isLoading = institutionsLoading || issuersLoading;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto space-y- p-8">
@@ -270,17 +320,23 @@ TitreFormDialogProps) {
             {t(isEdit ? "editTitre" : "ajouterUnTitre")}
           </DialogTitle>
         </DialogHeader>
-        {fetchingCompanies ? (
+        {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit(onSubmit)(e);
+              }}
+              className="space-y-6"
+            >
               {/* Basic Information Section */}
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold border-b pb-2">
-                  {/* {t("form.basicInformation")} */} Essential Informations
+                  {t("form.basicInformation")}
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
                   {/* Issuer Selection */}
@@ -302,8 +358,8 @@ TitreFormDialogProps) {
                                 )}
                               >
                                 {field.value
-                                  ? companies.find(
-                                      (company) => company.id === field.value
+                                  ? issuers.find(
+                                      (issuer) => issuer.id === field.value
                                     )?.name
                                   : t("form.selectIssuer")}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
@@ -320,23 +376,23 @@ TitreFormDialogProps) {
                                   {t("form.noIssuersFound")}
                                 </CommandEmpty>
                                 <CommandGroup>
-                                  {companies.map((company) => (
+                                  {issuers.map((issuer) => (
                                     <CommandItem
-                                      value={company.name}
-                                      key={company.id}
+                                      value={issuer.name}
+                                      key={issuer.id}
                                       onSelect={() => {
-                                        form.setValue("issuer", company.id);
+                                        form.setValue("issuer", issuer.id);
                                       }}
                                     >
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          company.id === field.value
+                                          issuer.id === field.value
                                             ? "opacity-100"
                                             : "opacity-0"
                                         )}
                                       />
-                                      {company.name}
+                                      {issuer.name}
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
@@ -404,7 +460,7 @@ TitreFormDialogProps) {
                             <SelectItem value="suspended">
                               {t("form.suspended")}
                             </SelectItem>
-                            <SelectItem value="expired">
+                            <SelectItem value="delisted">
                               {t("form.expired")}
                             </SelectItem>
                           </SelectContent>
@@ -444,7 +500,7 @@ TitreFormDialogProps) {
                 {/* Financial Details Section */}
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold border-b pb-2">
-                    {/* {t("form.financialDetails")} */} Financial Details
+                    {t("form.financialDetails")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Face Value */}
@@ -457,8 +513,7 @@ TitreFormDialogProps) {
                           <FormControl>
                             <Input
                               type="number"
-                              min="0"
-                              step="0.01"
+                              step="1"
                               {...field}
                               onChange={(e) =>
                                 field.onChange(Number(e.target.value))
@@ -480,7 +535,7 @@ TitreFormDialogProps) {
                           <FormControl>
                             <Input
                               type="number"
-                              min="1"
+                              // min="1"
                               {...field}
                               onChange={(e) =>
                                 field.onChange(Number(e.target.value))
@@ -511,11 +566,14 @@ TitreFormDialogProps) {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="primary">
-                                {t("form.primaryMarket")}
+                              <SelectItem value="ALG">
+                                {t("form.algeriaMarket")}
                               </SelectItem>
-                              <SelectItem value="secondary">
-                                {t("form.secondaryMarket")}
+                              <SelectItem value="TUN">
+                                {t("form.tunisianMarket")}
+                              </SelectItem>
+                              <SelectItem value="CAS">
+                                {t("form.cassablancaMarket")}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -567,7 +625,7 @@ TitreFormDialogProps) {
                             <Input
                               type="number"
                               min="0"
-                              step="0.01"
+                              // step="0.01"
                               {...field}
                               onChange={(e) =>
                                 field.onChange(Number(e.target.value))
@@ -592,7 +650,7 @@ TitreFormDialogProps) {
                                 type="number"
                                 min="0"
                                 max="100"
-                                step="0.01"
+                                // step="0.01"
                                 placeholder="Enter rate"
                                 value={field.value ?? ""}
                                 onChange={(e) => {
@@ -651,9 +709,9 @@ TitreFormDialogProps) {
                           <FormItem>
                             <FormLabel>Institutions</FormLabel>
                             <MultiSelect
-                              options={institutions.map((inst) => ({
+                              options={financialInstitutions.map((inst) => ({
                                 value: inst.id,
-                                label: inst.name,
+                                label: inst.institutionName,
                               }))}
                               selected={field.value || []}
                               onChange={field.onChange}
@@ -811,11 +869,64 @@ TitreFormDialogProps) {
                 </div>
 
                 {/* Conditional Fields for obligations */}
-                {obligations.includes(watchedType) && (
+                {watchedType === "obligation" && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-semibold border-b pb-2">
                       Bond Specific Details
                     </h3>
+
+                    {/* Obligation Type  */}
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel className="text-base font-medium">
+                            Obligation Type
+                          </FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-6">
+                              <div className="flex items-center space-x-2">
+                                <Input
+                                  type="radio"
+                                  id="participatif"
+                                  value="participatif"
+                                  checked={field.value === "participatif"}
+                                  onChange={() =>
+                                    field.onChange("participatif")
+                                  }
+                                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                                />
+                                <Label
+                                  htmlFor="participatif"
+                                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                                >
+                                  Participatif
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Input
+                                  type="radio"
+                                  id="sukuk"
+                                  value="sukuk"
+                                  checked={field.value === "sukuk"}
+                                  onChange={() => field.onChange("sukuk")}
+                                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                                />
+                                <Label
+                                  htmlFor="sukuk"
+                                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                                >
+                                  Sukuk
+                                </Label>
+                              </div>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <div className="grid grid-cols-1  gap-4">
                       {/* Maturity Date */}
                       <FormField
@@ -873,7 +984,6 @@ TitreFormDialogProps) {
                               <Input
                                 type="number"
                                 min="1"
-                                max="30"
                                 {...field}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))
@@ -888,7 +998,7 @@ TitreFormDialogProps) {
                     </div>
                   </div>
                 )}
-                {obligations.includes(watchedType) &&
+                {watchedType === "obligation" &&
                   durationYears &&
                   durationYears > 0 && (
                     <div className="space-y-4">
@@ -918,7 +1028,7 @@ TitreFormDialogProps) {
                                   <td className="px-4 py-4 whitespace-nowrap">
                                     <FormField
                                       control={form.control}
-                                      name={`paymentSchedule.${index}.date`}
+                                      name={`capitalRepaymentSchedule.${index}.date`}
                                       render={({ field }) => (
                                         <FormItem className="flex flex-col">
                                           <Popover>
@@ -950,7 +1060,15 @@ TitreFormDialogProps) {
                                               <Calendar
                                                 mode="single"
                                                 selected={field.value}
-                                                onSelect={field.onChange}
+                                                onSelect={(date) => {
+                                                  field.onChange(date);
+                                                  if (date) {
+                                                    form.setValue(
+                                                      `couponSchedule.${index}.date`,
+                                                      date
+                                                    );
+                                                  }
+                                                }}
                                                 fromYear={new Date().getFullYear()}
                                                 toYear={
                                                   new Date().getFullYear() +
@@ -970,7 +1088,7 @@ TitreFormDialogProps) {
                                   <td className="px-4 py-4 whitespace-nowrap">
                                     <FormField
                                       control={form.control}
-                                      name={`paymentSchedule.${index}.couponRate`}
+                                      name={`couponSchedule.${index}.rate`}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormControl>
@@ -1033,7 +1151,7 @@ TitreFormDialogProps) {
                                   <td className="px-4 py-4 whitespace-nowrap">
                                     <FormField
                                       control={form.control}
-                                      name={`paymentSchedule.${index}.capitalRate`}
+                                      name={`capitalRepaymentSchedule.${index}.rate`}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormControl>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IssuerService } from "@/lib/services/issuerService";
 
 export function useIssuer() {
@@ -19,9 +19,13 @@ export function useIssuer() {
     }
   };
 
+  useEffect(() => {
+    fetchIssuers();
+  }, []);
+
   return {
     issuers,
     isLoading,
     fetchIssuers,
   };
-} 
+}

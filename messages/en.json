@@ -382,6 +382,7 @@
     "info": "Info",
     "actif": "Active",
     "suspendu": "Suspended",
+    "deliste": "Delisted",
     "marche_secondaire": "Secondary Market",
     "copierID": "Copy ID",
     "voirDetails": "View Details",
@@ -3113,6 +3114,8 @@
         "description": "Security created successfully"
       },
       "form": {
+        "basicInformation": "Basic Information",
+        "financialDetails": "Financial Details",
         "issuer": "Issuer",
         "selectIssuer": "Select an issuer",
         "searchIssuer": "Search issuer...",
@@ -3126,6 +3129,9 @@
         "selectMarket": "Select market",
         "primaryMarket": "Primary Market",
         "secondaryMarket": "Secondary Market",
+        "algeriaMarket": "Algeria Market",
+        "tunisianMarket": "Tunisian Market",
+        "cassablancaMarket": "Casablanca Market",
         "status": "Status",
         "selectStatus": "Select status",
         "active": "Active",
@@ -3202,6 +3208,8 @@
         "description": "Security updated successfully"
       },
       "form": {
+        "basicInformation": "Basic Information",
+        "financialDetails": "Financial Details",
         "issuer": "Issuer",
         "selectIssuer": "Select an issuer",
         "searchIssuer": "Search issuer...",
@@ -3250,6 +3258,7 @@
       "editStockPrice": "Edit Stock Price",
       "price": "Price",
       "gap": "Gap",
+      "date": "Date",
       "cancel": "Cancel",
       "saveChanges": "Save Changes",
       "success": {

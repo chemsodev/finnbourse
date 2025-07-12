@@ -78,19 +78,6 @@ function extractInstitutionIds(institutions: any[]): string[] {
     .filter((id) => id !== "");
 }
 
-// Helper function to get type display name
-// const getTypeDisplayName = (type: string) => {
-//   const typeNames: Record<string, string> = {
-//     opv: "Public Offering (OPV)",
-//     empruntobligataire: "Bond Issues",
-//     action: "Stocks",
-//     sukuk: "Sukuk",
-//     participative: "Participative Securities",
-//   };
-
-//   return typeNames[type] || type.charAt(0).toUpperCase() + type.slice(1);
-// };
-
 export default function TitreDetailsPage({ params }: { params: PageParams }) {
   const t = useTranslations("GestionDesTitres");
   const api = useStockApi();
@@ -104,10 +91,6 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
   const [titre, setTitre] = useState<Stock | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Simulate API calls with mock data
-  // const titre = getMockTitre(params.id);
-  // const companies = getMockCompanies();
-  // const institutions = getMockInstitutions();
 
   useEffect(() => {
     const fetchTitre = async () => {
@@ -220,7 +203,7 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     <div className="container mx-auto py-8 motion-preset-focus motion-duration-2000">
       <div className="max-w-4xl mx-auto space-y-6">
         <Link
-          href={`/gestion-des-titres/marcheprimaire/${params.type}`}
+          href="/gestion-des-titres/marchesecondaire"
           className="inline-flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white  md:mt-10"
         >
           <ArrowLeft className="w-5" /> <div>{t("actions.back")}</div>
