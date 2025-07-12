@@ -49,10 +49,10 @@ import { createPortal } from "react-dom";
 
 interface TitresTableProps {
   type: string;
-  isPrimary?: boolean;
+  // isPrimary?: boolean; // supprimé
 }
 
-export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
+export function TitresTableREST({ type }: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -71,10 +71,7 @@ export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
   const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
-  // TitresTableREST gère uniquement les actions
   const stockType: "action" = "action";
-
-  // Use the REST stocks hook
   const { stocks, loading, error } = useStocksREST(stockType);
 
   // Extract roleId with type assertion
@@ -250,18 +247,7 @@ export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
   // Update data when stocks change
   useEffect(() => {
     if (stocks && Array.isArray(stocks)) {
-      console.log("📊 Raw stocks data:", stocks);
-
-      // Filter stocks based on market type (primary vs secondary)
-      const filteredStocks = stocks.filter((stock: any) => {
-        const stockIsPrimary = stock.isPrimary === true;
-        return stockIsPrimary === isPrimary;
-      });
-
-      console.log(`🔍 Filtered stocks for ${isPrimary ? 'primary' : 'secondary'} market:`, filteredStocks);
-
-      setData(filteredStocks);
-      console.log(`✅ Loaded ${filteredStocks.length} ${stockType} stocks for ${isPrimary ? 'primary' : 'secondary'} market`);
+      setData(stocks);
     } else if (error) {
       toast({
         variant: "destructive",
@@ -271,7 +257,7 @@ export function TitresTableREST({ type, isPrimary = false }: TitresTableProps) {
       });
       console.error("❌ Error loading stocks:", error);
     }
-  }, [stocks, error, toast, stockType, isPrimary]);
+  }, [stocks, error, toast, stockType]);
 
   useEffect(() => {
     // MOCK: Remplace par tes vrais appels API si besoin

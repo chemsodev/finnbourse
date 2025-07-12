@@ -79,6 +79,7 @@ import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
 import { useStockREST, useStocksREST } from "@/hooks/useStockREST";
 import { Stock } from "@/lib/services/stockService";
 import { useClientsList } from "@/hooks/useClientsList";
+import CreateUserForm, { UserFormType } from "./CreateUser";
 
 const FormPassationOrdreMarchePrimaire = ({
   titreId,
@@ -107,6 +108,8 @@ const FormPassationOrdreMarchePrimaire = ({
   const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [clientOpen, setClientOpen] = useState(false);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [userFormValues, setUserFormValues] = useState<UserFormType | null>(null);
 
   // Form condition states
   const [conditionDuree, setConditionDuree] = useState("deJour");
@@ -376,8 +379,8 @@ const FormPassationOrdreMarchePrimaire = ({
     return <PasserUnOrdreSkeleton />;
   }
 
-  // Afficher la sélection du client si aucun client n'est sélectionné
-  if (!form.watch("selectedClientId")) {
+  // Gestion des étapes
+  if (step === 1) {
     return (
       <div className="flex flex-col items-center justify-center w-full">
         {/* Bouton de retour aligné à gauche */}
@@ -392,7 +395,7 @@ const FormPassationOrdreMarchePrimaire = ({
           </Button>
         </div>
         <h2 className="text-2xl font-bold mb-4">
-          {t("selectClient") || "Sélectionner un client"}
+          Sélectionner le Bénéficiaire
         </h2>
         {/* Champ de recherche */}
         <div className="relative mb-4 w-full max-w-2xl">
@@ -414,6 +417,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 <TableHead className="text-center">Code</TableHead>
                 <TableHead className="text-center">Nom</TableHead>
                 <TableHead className="text-center">Email</TableHead>
+                <TableHead className="text-center">Type</TableHead>
                 <TableHead className="text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -434,6 +438,7 @@ const FormPassationOrdreMarchePrimaire = ({
                     {client.name || client.agency_name}
                   </TableCell>
                   <TableCell className="text-center">{client.email}</TableCell>
+                  <TableCell className="text-center">{client.type}</TableCell>
                   <TableCell className="text-center">
                     <Button
                       type="button"
@@ -442,9 +447,10 @@ const FormPassationOrdreMarchePrimaire = ({
                           ? "default"
                           : "outline"
                       }
-                      onClick={() =>
-                        form.setValue("selectedClientId", client.id)
-                      }
+                      onClick={() => {
+                        form.setValue("selectedClientId", client.id);
+                        setStep(2);
+                      }}
                     >
                       {form.watch("selectedClientId") === client.id
                         ? "Sélectionné"
@@ -484,290 +490,311 @@ const FormPassationOrdreMarchePrimaire = ({
     );
   }
 
-  return (
-    <>
-      <BulletinSubmitDialog
-        createdOrdreId={createdOrdreId || ""}
-        isDialogOpen={isDialogOpen}
-        setIsDialogOpen={setIsDialogOpen}
+  // step 2 : Form user
+  if (step === 2 && selectedClient) {
+    return (
+      <CreateUserForm
+        defaultValues={{}}
+        clientData={selectedClient}
+        autoFillOnProprietaire={true}
+        onSubmit={(values) => {
+          setUserFormValues(values);
+          setStep(3);
+        }}
+        onBack={() => {
+          form.setValue("selectedClientId", "");
+          setStep(1);
+        }}
       />
-      <div className="flex flex-col justify-center items-center w-full">
-        {/* Bouton pour fermer le formulaire et revenir à la sélection du client, aligné à gauche */}
-        <div className="w-full flex justify-start mb-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
-            onClick={() => form.setValue("selectedClientId", "")}
-          >
-            <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
-          </Button>
-        </div>
-        {/* Titre avec le code du client sélectionné */}
-        <h2 className="text-2xl font-bold mb-6">
-          {selectedClient?.client_code && selectedClient?.name
-            ? `${selectedClient.client_code} - ${selectedClient.name}`
-            : selectedClient?.client_code || selectedClient?.name}
-        </h2>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="w-full max-w-2xl"
-          >
-            <FormField
-              control={form.control}
-              name="selectedTitreId"
-              render={({ field }) => (
-                <FormItem className="flex justify-between text-xl items-baseline">
-                  <FormControl className="w-40">
-                    <div className="w-[100%] flex items-center justify-between rounded-md mb-6 h-14 border px-4 bg-muted">
-                      <div className="flex gap-4 items-center">
-                        {titre && (
-                          <div className="w-10 h-10 bg-primary rounded-md"></div>
-                        )}
-                        <div className="text-xl text-primary font-semibold">
-                          {titre || "Aucun titre sélectionné"}
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        {titre && (
-                          <div>
-                            {formatPrice(Number(selectedPrice) || 0)}
-                            {t("currency")}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    );
+  }
 
-            {/*debut form */}
-            <div className="p-10 border rounded-md shadow flex flex-col gap-10">
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">
-                  {t("visaCOSOB")}
-                </div>
-                <div className="text-lg font-semibold">VISA-9237</div>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
-                <div className="text-lg font-semibold">
-                  {data?.isinCode || data?.isincode || "N/A"}
-                </div>
-              </div>{" "}
-              {/* quantity */}
+  if (step === 3) {
+    return (
+      <>
+        <BulletinSubmitDialog
+          createdOrdreId={createdOrdreId || ""}
+          isDialogOpen={isDialogOpen}
+          setIsDialogOpen={setIsDialogOpen}
+        />
+        <div className="flex flex-col justify-center items-center w-full">
+          {/* Bouton pour fermer le formulaire et revenir à la sélection du client, aligné à gauche */}
+          <div className="w-full flex justify-start mb-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
+              onClick={() => setStep(2)}
+            >
+              <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
+            </Button>
+          </div>
+          {/* Titre avec le code du client sélectionné */}
+          <h2 className="text-2xl font-bold mb-6">
+            {selectedClient?.client_code && selectedClient?.name
+              ? `${selectedClient.client_code} - ${selectedClient.name}`
+              : selectedClient?.client_code || selectedClient?.name}
+          </h2>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="w-full max-w-2xl"
+            >
               <FormField
                 control={form.control}
-                name="quantite"
-                render={({ field }) => {
-                  return (
-                    <FormItem className="text-xl items-baseline">
-                      <div className="flex justify-between ">
-                        <FormLabel className="text-gray-400 capitalize text-lg">
-                          {t("quantite")}
-                        </FormLabel>
-                        <FormControl className="w-40">
-                          <Input
-                            placeholder="Quantité"
-                            type="number"
-                            min="0"
-                            {...field}
-                            onChange={(e) => {
-                              const value = Math.max(
-                                1,
-                                Math.min(
-                                  data?.quantity || 1,
-                                  parseInt(e.target.value) || 0
-                                )
-                              );
-                              field.onChange(value);
-                            }}
-                            onKeyDown={preventNonNumericInput}
-                          />
-                        </FormControl>
+                name="selectedTitreId"
+                render={({ field }) => (
+                  <FormItem className="flex justify-between text-xl items-baseline">
+                    <FormControl className="w-40">
+                      <div className="w-[100%] flex items-center justify-between rounded-md mb-6 h-14 border px-4 bg-muted">
+                        <div className="flex gap-4 items-center">
+                          {titre && (
+                            <div className="w-10 h-10 bg-primary rounded-md"></div>
+                          )}
+                          <div className="text-xl text-primary font-semibold">
+                            {titre || "Aucun titre sélectionné"}
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          {titre && (
+                            <div>
+                              {formatPrice(Number(selectedPrice) || 0)}
+                              {t("currency")}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              
-              {/* Date de validité - only show when date definie is selected */}
-              {watchedConditionDuree === "dateDefinie" && (
+
+              {/*debut form */}
+              <div className="p-10 border rounded-md shadow flex flex-col gap-10">
+                <div className="flex justify-between items-baseline">
+                  <div className=" text-gray-400 capitalize">
+                    {t("visaCOSOB")}
+                  </div>
+                  <div className="text-lg font-semibold">VISA-9237</div>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
+                  <div className="text-lg font-semibold">
+                    {data?.isinCode || data?.isincode || "N/A"}
+                  </div>
+                </div>{" "}
+                {/* quantity */}
                 <FormField
                   control={form.control}
-                  name="validite"
-                  render={({ field }) => (
-                    <FormItem className="text-xl items-baseline">
-                      <div className="flex justify-between w-full">
-                        <FormLabel className="text-gray-400 capitalize text-lg w-full">
-                          {t("dv")}
-                        </FormLabel>
-                        <FormControl>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "min-w-60 justify-start text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value ? (
-                                  format(field.value, "dd MMMM yyyy", {
-                                    locale: fr,
-                                  })
-                                ) : (
-                                  <span>{t("pickDate")}</span>
-                                )}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={(date) => {
-                                  // Limit to max 30 days from today
-                                  const maxDate = new Date();
-                                  maxDate.setDate(maxDate.getDate() + 30);
-                                  if (date && date <= maxDate) {
-                                    field.onChange(date);
-                                  }
-                                }}
-                                captionLayout="dropdown-buttons"
-                                fromDate={new Date()}
-                                toDate={(() => {
-                                  const maxDate = new Date();
-                                  maxDate.setDate(maxDate.getDate() + 30);
-                                  return maxDate;
-                                })()}
-                                locale={
-                                  locale === "fr"
-                                    ? fr
-                                    : locale === "en"
-                                    ? enUS
-                                    : ar
-                                }
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="quantite"
+                  render={({ field }) => {
+                    return (
+                      <FormItem className="text-xl items-baseline">
+                        <div className="flex justify-between ">
+                          <FormLabel className="text-gray-400 capitalize text-lg">
+                            {t("quantite")}
+                          </FormLabel>
+                          <FormControl className="w-40">
+                            <Input
+                              placeholder="Quantité"
+                              type="number"
+                              min="0"
+                              {...field}
+                              onChange={(e) => {
+                                const value = Math.max(
+                                  1,
+                                  Math.min(
+                                    data?.quantity || 1,
+                                    parseInt(e.target.value) || 0
+                                  )
+                                );
+                                field.onChange(value);
+                              }}
+                              onKeyDown={preventNonNumericInput}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
-              )}
-              
-              {/* date emission */}
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">
-                  {t("dateEmission")}
-                </div>
-                <div className="text-lg font-semibold">
-                  {(data?.emissionDate || data?.emissiondate) &&
-                    formatDate(data?.emissionDate || data?.emissiondate)}
-                </div>
-              </div>
-              {/* nb action */}
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-400 capitalize">
-                  {t("nbActions")}
-                </div>
-                <div className="text-lg font-semibold">
-                  {(data?.quantity && formatNumber(data?.quantity)) || "N/A"}
-                </div>
-              </div>
-              {/* montant brut */}
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-500">{t("montantBrut")}:</div>
-                <div className="font-semibold text-lg flex gap-1">
-                  <span>{formatPrice(grossAmount || 0)}</span>
-                  <span> {t("currency")}</span>
-                </div>
-              </div>
-              {/* commission */}
-              <div className="flex justify-between items-baseline">
-                <div className=" text-gray-500">{t("commission")}:</div>
-                <div className="font-semibold text-lg">0,9 %</div>
-              </div>
-              <Separator />
-              {/* montant total net */}
-              <div className="flex justify-between items-baseline">
-                <div className="text-gray-400 capitalize text-lg ">
-                  {t("mtt")}
-                </div>
-                <div className="text-xl font-bold flex gap-1">
-                  <span>{formatPrice(totalAmount || 0)}</span>
-                  <span> {t("currency")}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* buttons */}
-            <div className="flex justify-between gap-6 mt-4">
-              {extraFieldsData?.notice && (
-                <Link
-                  href={extraFieldsData?.notice || ""}
-                  className="w-full flex gap-2 justify-center items-center text-gray-600 border rounded-md p-2 text-center"
-                  target="_blank"
-                >
-                  <div>{t("tn")}</div>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    viewBox="0 0 16 16"
-                  >
-                    <path d="M8.5 6.5a.5.5 0 0 0-1 0v3.793L6.354 9.146a.5.5 0 1 0-.708.708l2 2a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 10.293z" />
-                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z" />
-                  </svg>
-                </Link>
-              )}
-            </div>
-            <div className="flex justify-between gap-6 mt-4">
-              <Button onClick={handleGoBack} type="reset" variant="outline">
-                {t("annuler")}
-              </Button>
-
-              <Button
-                type="submit"
-                className="w-full group gap-2"
-                disabled={isSubmitting}
-              >
-                {t("suivant")}
-                {isSubmitting ? (
-                  <svg
-                    aria-hidden="true"
-                    className="w-5 h-5 text-gray-200 animate-spin fill-gray-400"
-                    viewBox="0 0 100 101"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                      fill="currentColor"
-                    />
-                    <path
-                      d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                      fill="currentFill"
-                    />
-                  </svg>
-                ) : (
-                  <ArrowRight className="hidden group-hover:block text-white " />
+                
+                {/* Date de validité - only show when date definie is selected */}
+                {watchedConditionDuree === "dateDefinie" && (
+                  <FormField
+                    control={form.control}
+                    name="validite"
+                    render={({ field }) => (
+                      <FormItem className="text-xl items-baseline">
+                        <div className="flex justify-between w-full">
+                          <FormLabel className="text-gray-400 capitalize text-lg w-full">
+                            {t("dv")}
+                          </FormLabel>
+                          <FormControl>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "min-w-60 justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "dd MMMM yyyy", {
+                                      locale: fr,
+                                    })
+                                  ) : (
+                                    <span>{t("pickDate")}</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={(date) => {
+                                    // Limit to max 30 days from today
+                                    const maxDate = new Date();
+                                    maxDate.setDate(maxDate.getDate() + 30);
+                                    if (date && date <= maxDate) {
+                                      field.onChange(date);
+                                    }
+                                  }}
+                                  captionLayout="dropdown-buttons"
+                                  fromDate={new Date()}
+                                  toDate={(() => {
+                                    const maxDate = new Date();
+                                    maxDate.setDate(maxDate.getDate() + 30);
+                                    return maxDate;
+                                  })()}
+                                  locale={
+                                    locale === "fr"
+                                      ? fr
+                                      : locale === "en"
+                                      ? enUS
+                                      : ar
+                                  }
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </>
-  );
+                
+                {/* date emission */}
+                <div className="flex justify-between items-baseline">
+                  <div className=" text-gray-400 capitalize">
+                    {t("dateEmission")}
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {(data?.emissionDate || data?.emissiondate) &&
+                      formatDate(data?.emissionDate || data?.emissiondate)}
+                  </div>
+                </div>
+                {/* nb action */}
+                <div className="flex justify-between items-baseline">
+                  <div className=" text-gray-400 capitalize">
+                    {t("nbActions")}
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {(data?.quantity && formatNumber(data?.quantity)) || "N/A"}
+                  </div>
+                </div>
+                {/* montant brut */}
+                <div className="flex justify-between items-baseline">
+                  <div className=" text-gray-500">{t("montantBrut")}:</div>
+                  <div className="font-semibold text-lg flex gap-1">
+                    <span>{formatPrice(grossAmount || 0)}</span>
+                    <span> {t("currency")}</span>
+                  </div>
+                </div>
+                {/* commission */}
+                <div className="flex justify-between items-baseline">
+                  <div className=" text-gray-500">{t("commission")}:</div>
+                  <div className="font-semibold text-lg">0,9 %</div>
+                </div>
+                <Separator />
+                {/* montant total net */}
+                <div className="flex justify-between items-baseline">
+                  <div className="text-gray-400 capitalize text-lg ">
+                    {t("mtt")}
+                  </div>
+                  <div className="text-xl font-bold flex gap-1">
+                    <span>{formatPrice(totalAmount || 0)}</span>
+                    <span> {t("currency")}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* buttons */}
+              <div className="flex justify-between gap-6 mt-4">
+                {extraFieldsData?.notice && (
+                  <Link
+                    href={extraFieldsData?.notice || ""}
+                    className="w-full flex gap-2 justify-center items-center text-gray-600 border rounded-md p-2 text-center"
+                    target="_blank"
+                  >
+                    <div>{t("tn")}</div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8.5 6.5a.5.5 0 0 0-1 0v3.793L6.354 9.146a.5.5 0 1 0-.708.708l2 2a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 10.293z" />
+                      <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
+              <div className="flex justify-between gap-6 mt-4">
+                <Button onClick={handleGoBack} type="reset" variant="outline">
+                  {t("annuler")}
+                </Button>
+
+                <Button
+                  type="submit"
+                  className="w-full group gap-2"
+                  disabled={isSubmitting}
+                >
+                  {t("suivant")}
+                  {isSubmitting ? (
+                    <svg
+                      aria-hidden="true"
+                      className="w-5 h-5 text-gray-200 animate-spin fill-gray-400"
+                      viewBox="0 0 100 101"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                        fill="currentColor"
+                      />
+                      <path
+                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                        fill="currentFill"
+                      />
+                    </svg>
+                  ) : (
+                    <ArrowRight className="hidden group-hover:block text-white " />
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </>
+    );
+  }
 };
 
 export default FormPassationOrdreMarchePrimaire;

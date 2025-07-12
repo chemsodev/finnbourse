@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import {
   List,
@@ -147,6 +147,27 @@ export default function OrdresTableREST({
       `${action === "validate" ? "Validation" : "Refus"} des ordres: ` +
         selectedOrders.join(", ")
     );
+    setSelectedOrders([]);
+  };
+
+  // State pour le dialog de motif groupé
+  const [bulkDialogOpen, setBulkDialogOpen] = useState<
+    null | "validate" | "reject"
+  >(null);
+  const [bulkMotif, setBulkMotif] = useState("");
+  const motifInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Handler pour valider/refuser la sélection avec motif
+  const handleBulkConfirm = async () => {
+    // Ici, tu peux faire un appel API pour chaque ordre sélectionné avec le même motif
+    alert(
+      `${bulkDialogOpen === "validate" ? "Validation" : "Refus"} des ordres: ` +
+        selectedOrders.join(", ") +
+        "\nMotif: " +
+        bulkMotif
+    );
+    setBulkDialogOpen(null);
+    setBulkMotif("");
     setSelectedOrders([]);
   };
 
@@ -652,14 +673,18 @@ export default function OrdresTableREST({
       emissionDate: new Date(),
       closingDate: new Date(),
       enjoymentDate: new Date(),
-      marketListing: order.market_type === "P" ? "primary" : "secondary",
-      type: stock?.type || "",
+      marketListing: "ALG",
+      type:
+        (stock?.type as "action" | "obligation" | "sukuk" | "participatif") ||
+        "action",
+      stockType:
+        (stock?.type as "action" | "obligation" | "sukuk" | "participatif") ||
+        "action",
       status: "activated",
       dividendRate: undefined,
       capitalOperation: undefined,
       maturityDate: undefined,
       durationYears: undefined,
-      paymentSchedule: undefined,
       commission: undefined,
       shareClass: undefined,
       votingRights: undefined,
@@ -670,6 +695,8 @@ export default function OrdresTableREST({
         date: new Date(),
         gap: 0,
       },
+      capitalRepaymentSchedule: [],
+      couponSchedule: [],
     };
   }
 
@@ -817,43 +844,45 @@ export default function OrdresTableREST({
     <>
       <div className="rounded-md border">
         <div className="flex justify-between items-center p-2 border-b">
-          {/* Market Type Tabs - Left side */}
-          {taskID !== "validation-tcc-premiere" &&
-            taskID !== "validation-tcc-finale" && (
-              <div className="flex items-center gap-0">
+          {/* Actions groupées (texte) à gauche */}
+          {(taskID === "validation-tcc-finale" ||
+            pageType === "tccFinalValidation") &&
+            data.length > 0 && (
+              <div className="flex gap-2">
                 <Button
-                  variant={activeTab === "all" ? "default" : "outline"}
-                  size="sm"
-                  className="rounded-r-none"
-                  onClick={() => {
-                    const params = new URLSearchParams(searchParams);
-                    params.set("tab", "all");
-                    params.set("marketType", "S");
-                    params.set("page", "0");
-                    router.replace(`${pathname}?${params.toString()}`);
-                  }}
+                  variant="outline"
+                  className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors text-base p-2"
+                  onClick={() => setBulkDialogOpen("validate")}
+                  disabled={selectedOrders.length === 0}
                 >
-                  Carnet d'ordres
+                  <CheckCircle className="h-5 w-5" />
                 </Button>
                 <Button
-                  variant={
-                    activeTab === "souscriptions" ? "default" : "outline"
-                  }
-                  size="sm"
-                  className="rounded-l-none"
+                  variant="outline"
+                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors text-sm p-2"
+                  onClick={() => setBulkDialogOpen("reject")}
+                  disabled={selectedOrders.length === 0}
+                >
+                  <XCircle className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="text-sm font-normal p-2"
                   onClick={() => {
-                    const params = new URLSearchParams(searchParams);
-                    params.set("tab", "souscriptions");
-                    params.set("marketType", "P");
-                    params.set("page", "0");
-                    router.replace(`${pathname}?${params.toString()}`);
+                    if (selectedOrders.length === data.length) {
+                      setSelectedOrders([]);
+                    } else {
+                      setSelectedOrders(data.map((order) => order.id));
+                    }
                   }}
                 >
-                  Souscriptions
+                  {selectedOrders.length === data.length
+                    ? "Deselectionner"
+                    : "Tout selectionner"}
                 </Button>
               </div>
             )}
-          {/* Refresh Button - Right side (toujours visible) */}
+          {/* Refresh Button à droite */}
           <Button
             variant="outline"
             size="sm"
@@ -1007,35 +1036,6 @@ export default function OrdresTableREST({
         )}
       </div>
 
-      {/* Actions groupées sous le tableau */}
-      {(taskID === "validation-tcc-finale" ||
-        pageType === "tccFinalValidation") &&
-        data.length > 0 && (
-          <div className="flex gap-4 mt-4">
-            <Button
-              variant="default"
-              onClick={() => handleBulkAction("validate")}
-              disabled={selectedOrders.length === 0}
-            >
-              Valider la sélection
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleBulkAction("reject")}
-              disabled={selectedOrders.length === 0}
-            >
-              Refuser la sélection
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setSelectedOrders(data.map((order) => order.id))}
-              disabled={selectedOrders.length === data.length}
-            >
-              Tout sélectionner
-            </Button>
-          </div>
-        )}
-
       {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -1084,7 +1084,61 @@ export default function OrdresTableREST({
         </DialogContent>
       </Dialog>
 
-      {/* Détails de l'ordre (dialog natif) */}
+      {/* Dialog de motif pour action groupée */}
+      <Dialog
+        open={!!bulkDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) setBulkDialogOpen(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {bulkDialogOpen === "validate"
+                ? "Valider la sélection"
+                : bulkDialogOpen === "reject"
+                ? "Refuser la sélection"
+                : ""}
+            </DialogTitle>
+            <DialogDescription>
+              {bulkDialogOpen === "validate"
+                ? "Veuillez fournir un motif pour la validation de tous les ordres sélectionnés."
+                : bulkDialogOpen === "reject"
+                ? "Veuillez fournir un motif pour le refus de tous les ordres sélectionnés."
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="motif-bulk">Motif</Label>
+              <Textarea
+                id="motif-bulk"
+                placeholder="Entrez le motif ici..."
+                value={bulkMotif}
+                onChange={(e) => setBulkMotif(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-between">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setBulkDialogOpen(null)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              onClick={handleBulkConfirm}
+              disabled={!bulkMotif.trim()}
+            >
+              Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
         <OrderDetailsDialog
           order={selectedOrderForDetails}
