@@ -281,10 +281,16 @@ export const menuItemMap: Record<
     href: "/ordres/validation-finale",
     translationKey: "validationFinale",
   },
-  "validation-retour": {
+  
+  "validation-retour-premiere": {
     label: "Return Validation",
-    href: "/ordres/validation-retour",
-    translationKey: "validationRetour",
+    href: "/ordres/validation-retour-premiere",
+    translationKey: "validationRetourPremiere",
+  },
+  "validation-retour-finale": {
+    label: "Return Validation",
+    href: "/ordres/validation-retour-finale",
+    translationKey: "validationRetourFinale",
   },
   "validation-tcc-premiere": {
     label: "TCC First Validation",
@@ -294,12 +300,17 @@ export const menuItemMap: Record<
   "validation-tcc-finale": {
     label: "TCC Final Validation",
     href: "/ordres/validation-tcc-finale",
-    translationKey: "validationTccFinale",
+    translationKey: "validationTCCFinal",
   },
-  "validation-tcc-retour": {
+  "validation-tcc-retour-premiere": {
     label: "TCC Return Validation",
-    href: "/ordres/validation-tcc-retour",
-    translationKey: "tccValidationRetour",
+    href: "/ordres/validation-tcc-retour-premiere",
+    translationKey: "validationTCCRetourPremiere",
+  },
+  "validation-tcc-retour-finale": {
+    label: "TCC Return Validation",
+    href: "/ordres/validation-tcc-retour-finale",
+    translationKey: "validationTCCRetourFinale",
   },
   execution: {
     label: "Execution",

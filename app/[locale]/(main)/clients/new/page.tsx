@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,33 +26,41 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Save } from "lucide-react";
-import { useClients } from "@/hooks/useClients";
-import Loading from "@/components/ui/loading";
+import { ArrowLeft, Save, CalendarIcon } from "lucide-react";
 import { formSchema } from "../schema";
 import { ClientService } from "@/lib/services/clientService";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
-export default function ClientCreate() {
+// Define the form types to fix TypeScript errors
+type FormValues = z.infer<typeof formSchema>;
+
+export default function NewClient() {
   const t = useTranslations("ClientDashboard");
   const router = useRouter();
   const { toast } = useToast();
 
   const [isSaving, setIsSaving] = useState(false);
-  const [clientType, setClientType] = useState<string>("personne_physique");
+  const [clientType, setClientType] = useState<
+    "personne_physique" | "personne_morale"
+  >("personne_physique");
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       clientType: "personne_physique",
       clientCode: "",
-      clientSource: "CPA",
       name: "",
       email: "",
       phoneNumber: "",
-      mobilePhone: "",
       idType: "nin",
       idNumber: "",
       nin: "",
@@ -61,35 +69,43 @@ export default function ClientCreate() {
       address: "",
       iobType: "intern",
       iobCategory: null,
-      hasCompteTitre: false,
       numeroCompteTitre: "",
       ribBanque: "",
       ribAgence: "",
       ribCompte: "",
       ribCle: "",
       observation: "",
-      isEmployeeCPA: false,
-      matricule: "",
-      poste: "",
-      agenceCPA: "",
       selectedAgence: "",
       raisonSociale: "",
       nif: "",
       regNumber: "",
       legalForm: "",
       lieuNaissance: "",
+      dateNaissance: undefined,
+      financialInstitutionId: "1", // Default value
+      agenceId: "1", // Default value
+      iobId: "1", // Default value
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  // Update local client type state when form value changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "clientType" && value.clientType) {
+        setClientType(
+          value.clientType as "personne_physique" | "personne_morale"
+        );
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
+  const onSubmit = async (data: FormValues) => {
     try {
       setIsSaving(true);
 
-      // Transform form data to API format
-      const apiData = ClientService.transformFormDataToAPI(data);
-
-      // Call the API to create the client
-      const newClient = await ClientService.createOrUpdate(apiData);
+      // Create the new client
+      const result = await ClientService.createOrUpdate(data);
 
       toast({
         title: t("success"),
@@ -97,7 +113,7 @@ export default function ClientCreate() {
       });
 
       // Navigate to the client view page
-      router.push(`/clients/${newClient.id}/view`);
+      router.push(`/clients/${result.id}/view`);
     } catch (error) {
       console.error("Error creating client:", error);
       toast({
@@ -108,11 +124,6 @@ export default function ClientCreate() {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleClientTypeChange = (value: string) => {
-    setClientType(value);
-    form.setValue("clientType", value as any);
   };
 
   return (
@@ -127,7 +138,7 @@ export default function ClientCreate() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold tracking-tight">
-            {t("newClient")}
+            {t("addClient")}
           </h1>
         </div>
       </div>
@@ -137,78 +148,117 @@ export default function ClientCreate() {
           <CardTitle>{t("clientDetails")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs
-            defaultValue="personne_physique"
-            onValueChange={handleClientTypeChange}
-            className="mb-6"
-          >
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="personne_physique">
-                {t("individual")}
-              </TabsTrigger>
-              <TabsTrigger value="personne_morale">{t("company")}</TabsTrigger>
-              <TabsTrigger value="institution_financiere">
-                {t("financialInstitution")}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Client Code */}
-                <FormField
-                  control={form.control}
-                  name="clientCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("code")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Client Source */}
-                <FormField
-                  control={form.control}
-                  name="clientSource"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("clientSource")}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={t("selectClientSource")}
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="CPA">CPA</SelectItem>
-                          <SelectItem value="extern">
-                            {t("external")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Client Name / Raison Sociale based on client type */}
-                {clientType === "personne_physique" ? (
+              {/* Step 1: Client Type Selection */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">{t("selectClientType")}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Client Type */}
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="clientType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("name")}</FormLabel>
+                        <FormLabel>{t("clientType")}</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setClientType(
+                              value as "personne_physique" | "personne_morale"
+                            );
+                          }}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={t("selectClientType")}
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="personne_physique">
+                              {t("individual")}
+                            </SelectItem>
+                            <SelectItem value="personne_morale">
+                              {t("company")}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Client Code */}
+                  <FormField
+                    control={form.control}
+                    name="clientCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("code")}</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="CL-12345" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Step 2: Common Basic Information */}
+              <div className="space-y-6">
+                <div className="flex items-center">
+                  <Separator className="flex-grow" />
+                  <h3 className="mx-4 text-lg font-medium">
+                    {t("basicInformation")}
+                  </h3>
+                  <Separator className="flex-grow" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Email */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("email")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            placeholder="client@example.com"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Phone */}
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("phone")}</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="+213xxxxxxxxx" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Address */}
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("address")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -216,13 +266,14 @@ export default function ClientCreate() {
                       </FormItem>
                     )}
                   />
-                ) : (
+
+                  {/* Wilaya */}
                   <FormField
                     control={form.control}
-                    name="raisonSociale"
+                    name="wilaya"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("companyName")}</FormLabel>
+                        <FormLabel>{t("wilaya")}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -230,71 +281,35 @@ export default function ClientCreate() {
                       </FormItem>
                     )}
                   />
-                )}
+                </div>
+              </div>
 
-                {/* Email */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("email")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Step 3A: Individual client specific fields */}
+              {clientType === "personne_physique" && (
+                <div className="space-y-6">
+                  <div className="flex items-center">
+                    <Separator className="flex-grow" />
+                    <h3 className="mx-4 text-lg font-medium">
+                      {t("individualInformation")}
+                    </h3>
+                    <Separator className="flex-grow" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Name */}
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("name")}</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                {/* Phone */}
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("phone")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Mobile Phone */}
-                <FormField
-                  control={form.control}
-                  name="mobilePhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("mobilePhone")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Address */}
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("address")}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Additional fields based on client type */}
-                {clientType === "personne_physique" ? (
-                  <>
                     {/* ID Type */}
                     <FormField
                       control={form.control}
@@ -312,7 +327,7 @@ export default function ClientCreate() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="nin">NIN</SelectItem>
+                              <SelectItem value="nin">{t("nin")}</SelectItem>
                               <SelectItem value="passport">
                                 {t("passport")}
                               </SelectItem>
@@ -364,20 +379,89 @@ export default function ClientCreate() {
                         <FormItem>
                           <FormLabel>{t("nationality")}</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} defaultValue="Algerienne" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Wilaya */}
+                    {/* Birth Date */}
                     <FormField
                       control={form.control}
-                      name="wilaya"
+                      name="dateNaissance"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>{t("birthDate")}</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>{t("pickADate")}</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Birth Place */}
+                    <FormField
+                      control={form.control}
+                      name="lieuNaissance"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("wilaya")}</FormLabel>
+                          <FormLabel>{t("birthPlace")}</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3B: Company client specific fields */}
+              {clientType === "personne_morale" && (
+                <div className="space-y-6">
+                  <div className="flex items-center">
+                    <Separator className="flex-grow" />
+                    <h3 className="mx-4 text-lg font-medium">
+                      {t("companyInformation")}
+                    </h3>
+                    <Separator className="flex-grow" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Company Name */}
+                    <FormField
+                      control={form.control}
+                      name="raisonSociale"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("companyName")}</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -386,77 +470,6 @@ export default function ClientCreate() {
                       )}
                     />
 
-                    {/* Is Employee CPA */}
-                    <FormField
-                      control={form.control}
-                      name="isEmployeeCPA"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                          <div className="space-y-0.5">
-                            <FormLabel>{t("isEmployeeCPA")}</FormLabel>
-                            <FormDescription>
-                              {t("isEmployeeCPADescription")}
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Employee fields if isEmployeeCPA is true */}
-                    {form.watch("isEmployeeCPA") && (
-                      <>
-                        <FormField
-                          control={form.control}
-                          name="matricule"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("matricule")}</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="poste"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("poste")}</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="agenceCPA"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("agenceCPA")}</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
                     {/* NIF */}
                     <FormField
                       control={form.control}
@@ -501,119 +514,93 @@ export default function ClientCreate() {
                         </FormItem>
                       )}
                     />
-                  </>
-                )}
+                  </div>
+                </div>
+              )}
 
-                {/* Has Compte Titre */}
-                <FormField
-                  control={form.control}
-                  name="hasCompteTitre"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                      <div className="space-y-0.5">
-                        <FormLabel>{t("hasCompteTitre")}</FormLabel>
-                        <FormDescription>
-                          {t("hasCompteTitreDescription")}
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {/* Compte Titre fields if hasCompteTitre is true */}
-                {form.watch("hasCompteTitre") && (
+              {/* Step 4: Banking information section */}
+              <div className="space-y-6">
+                <div className="flex items-center">
+                  <Separator className="flex-grow" />
+                  <h3 className="mx-4 text-lg font-medium">
+                    {t("bankInformation")}
+                  </h3>
+                  <Separator className="flex-grow" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Securities Account */}
                   <FormField
                     control={form.control}
                     name="numeroCompteTitre"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("numeroCompteTitre")}</FormLabel>
+                        <FormLabel>{t("securitiesAccount")}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="SC12345678" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                )}
 
-                {/* RIB Information */}
-                <div className="col-span-2">
-                  <h3 className="text-lg font-medium mb-2">
-                    {t("ribInformation")}
-                  </h3>
-                  <div className="grid grid-cols-4 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="ribBanque"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("ribBanque")}</FormLabel>
-                          <FormControl>
-                            <Input {...field} maxLength={5} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ribAgence"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("ribAgence")}</FormLabel>
-                          <FormControl>
-                            <Input {...field} maxLength={5} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ribCompte"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("ribCompte")}</FormLabel>
-                          <FormControl>
-                            <Input {...field} maxLength={11} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ribCle"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("ribCle")}</FormLabel>
-                          <FormControl>
-                            <Input {...field} maxLength={2} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* Observation */}
-                <div className="col-span-2">
+                  {/* Bank Code */}
                   <FormField
                     control={form.control}
-                    name="observation"
+                    name="ribBanque"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("observation")}</FormLabel>
+                        <FormLabel>{t("bankCode")}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} maxLength={5} placeholder="00123" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Agency Code */}
+                  <FormField
+                    control={form.control}
+                    name="ribAgence"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("agencyCode")}</FormLabel>
+                        <FormControl>
+                          <Input {...field} maxLength={5} placeholder="00456" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Account Number */}
+                  <FormField
+                    control={form.control}
+                    name="ribCompte"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("accountNumber")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={11}
+                            placeholder="12345678901"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* RIB Key */}
+                  <FormField
+                    control={form.control}
+                    name="ribCle"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("ribKey")}</FormLabel>
+                        <FormControl>
+                          <Input {...field} maxLength={2} placeholder="42" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -621,6 +608,14 @@ export default function ClientCreate() {
                   />
                 </div>
               </div>
+
+              {/* Hidden fields for backend required IDs */}
+              <input
+                type="hidden"
+                {...form.register("financialInstitutionId")}
+              />
+              <input type="hidden" {...form.register("agenceId")} />
+              <input type="hidden" {...form.register("iobId")} />
 
               <div className="flex justify-end gap-2">
                 <Button
@@ -633,7 +628,21 @@ export default function ClientCreate() {
                 <Button type="submit" disabled={isSaving}>
                   {isSaving ? (
                     <>
-                      <Loading className="mr-2 h-4 w-4" />
+                      <span className="animate-spin mr-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                      </span>
                       {t("saving")}
                     </>
                   ) : (

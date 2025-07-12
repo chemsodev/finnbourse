@@ -68,6 +68,11 @@ import {
 } from "@/lib/mockData";
 import OrderStateFilter from "./OrderStateFilter";
 import MarketTypeFilter from "./MarketTypeFilter";
+import { createPortal } from "react-dom";
+import { TitreDetails } from "@/components/titres/TitreDetails";
+import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialog";
+import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
+import { OrderElement } from "@/lib/services/orderService";
 
 interface OrdresTableProps {
   searchquery: string;
@@ -130,6 +135,11 @@ export default function OrdresTable({
   const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
   const [responsesData, setResponsesData] = useState<Record<string, { reliquat: string; quantite: string; prix: string }>>({});
   const [responseVersion, setResponseVersion] = useState(0);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | null>(null);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(true);
 
   // Ajout pour message contextuel
   const attenteReponse = showActionColumn === true;
@@ -392,6 +402,79 @@ export default function OrdresTable({
     }
   };
 
+  // Utilitaire pour transformer un Order en TitreFormValues
+  function mapOrderToTitreFormValues(order: Order): TitreFormValues {
+    return {
+      id: order.id,
+      name: order.securityissuer || "",
+      issuer: order.securityissuer || "",
+      isinCode: order.securityid || "",
+      code: order.securityid || "",
+      faceValue: 0,
+      quantity: order.quantity || 0,
+      emissionDate: new Date(),
+      closingDate: new Date(),
+      enjoymentDate: new Date(),
+      marketListing: "secondary",
+      type: order.securitytype || "",
+      status: "activated",
+      dividendRate: undefined,
+      capitalOperation: undefined,
+      maturityDate: undefined,
+      durationYears: undefined,
+      paymentSchedule: undefined,
+      commission: undefined,
+      shareClass: undefined,
+      votingRights: undefined,
+      master: undefined,
+      institutions: undefined,
+      stockPrice: {
+        price: 0,
+        date: new Date(),
+        gap: 0,
+      },
+    };
+  }
+
+  // Charger les données des entreprises et institutions
+  useEffect(() => {
+    setTimeout(() => {
+      setCompanies([
+        { id: "1", name: "Company A" },
+        { id: "2", name: "Company B" },
+      ]);
+      setInstitutions([
+        { id: "1", name: "Institution X" },
+        { id: "2", name: "Institution Y" },
+      ]);
+      setLoadingDetails(false);
+    }, 500);
+  }, []);
+
+  const handleDetailsClick = (order: Order) => {
+    setSelectedOrderForDetails(order);
+    setIsDetailsModalOpen(true);
+  };
+
+  // Mocks pour stocksMap et clientsMap (à remplacer par de vraies données si besoin)
+  const [stocksMap] = useState<Record<string, { code: string; name: string }>>({});
+  const [clientsMap] = useState<Record<string, { name: string }>>({});
+
+  // Conversion Order -> OrderElement pour OrderDetailsDialog
+  function toOrderElement(order: Order): OrderElement {
+    return {
+      id: Number(order.id),
+      quantity: order.quantity ?? 0,
+      price: (order as any).price ?? 0,
+      time_condition: (order as any).time_condition ?? '',
+      quantitative_condition: (order as any).quantitative_condition ?? '',
+      stock_id: (order as any).securityid ?? '',
+      market_type: (order as any).market_type ?? '',
+      client_id: (order as any).investorid ?? '',
+      status: String(order.orderstatus ?? ''),
+    };
+  }
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -619,11 +702,13 @@ export default function OrdresTable({
                 )}
                 {pageType !== "dashboard" && (
                   <TableCell>
-                    <OrdreDrawer 
-                      titreId={order.id} 
-                      orderData={order}
-                      isSouscription={order.securitytype === "empruntobligataire" || order.securitytype === "opv"}
-                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDetailsClick(order)}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 )}
             </TableRow>
@@ -693,6 +778,24 @@ export default function OrdresTable({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Détails de l'ordre (dialog natif) */}
+      {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
+        <OrderDetailsDialog
+          order={selectedOrderForDetails ? toOrderElement(selectedOrderForDetails) : null}
+          open={isDetailsModalOpen}
+          onOpenChange={setIsDetailsModalOpen}
+          stocksMap={stocksMap}
+          clientsMap={clientsMap}
+        />
+      )}
+      {isDetailsModalOpen && loadingDetails && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative text-center">
+            Chargement des détails...
+          </div>
+        </div>
+      )}
     </div>
   );
 }

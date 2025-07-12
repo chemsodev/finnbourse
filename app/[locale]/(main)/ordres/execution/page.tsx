@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
 import Link from "next/link"; 
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, RefreshCw } from "lucide-react";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import { useSession } from "next-auth/react";
-import { ExportButton } from "@/components/ExportButton";
+
 import type { Order } from "@/lib/interfaces";
 import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { mockOrders, filterOrdersByMarketType } from "@/lib/mockData";
@@ -70,53 +70,7 @@ const page = () => {
     filteredData = filterOrdersByMarketType(data, "secondaire");
   }
 
-  const exportData = filteredData?.map((order) => ({
-    id: order.id,
-    ordertypes: order.orderdirection === 1 ? "Achat" : "Vente",
-    direction: order.orderdirection === 1 ? "Achat" : "Vente",
-    securityid: order.securityid,
-    securitytype: order.securitytype,
-    securityquantity: order.securityquantity,
-    currentMarketPrice: order.securityquantity,
-    quantity: order.quantity,
-    pricelimitmin: order.mst || "N/A",
-    pricelimitmax: order.mst || "N/A",
-    duration: order.duration,
-    orderdate: order.orderdate,
-    orderstatus:
-      order?.orderstatus === 0 && order?.payedWithCard
-        ? "Brouillon payé"
-        : order?.orderstatus === 0 && !order?.payedWithCard
-        ? tStatus("Draft")
-        : order?.orderstatus === 1
-        ? tStatus("Pending")
-        : order?.orderstatus === 2
-        ? tStatus("In_Progress")
-        : order?.orderstatus === 3
-        ? tStatus("Validated")
-        : order?.orderstatus === 4
-        ? tStatus("Being_Processed")
-        : order?.orderstatus === 5
-        ? tStatus("Completed")
-        : order?.orderstatus === 6
-        ? tStatus("Awaiting_Approval")
-        : order?.orderstatus === 7
-        ? tStatus("Ongoing")
-        : order?.orderstatus === 8
-        ? tStatus("Partially_Validated")
-        : order?.orderstatus === 9
-        ? tStatus("Expired")
-        : order?.orderstatus === 10
-        ? tStatus("Rejected")
-        : order?.orderstatus === 11
-        ? tStatus("Cancelled")
-        : "Unknown",
-    investor: order.investorid,
-    negotiator: order.negotiatorid,
-    securityissuer: order.securityissuer,
-    validity: order.validity,
-    createdat: order.createdat,
-  }));
+
 
   const handleActionToggle = () => {
     setShowActionColumn(!showActionColumn);
@@ -150,29 +104,56 @@ const page = () => {
           Gestion et suivi des ordres de bourse
         </div>
       </div>
-      <div className="border border-gray-100 rounded-md p-4 mt-10">
-        <div className="mb-4">
-          <div className="text-sm text-center font-medium text-gray-700 px-2 pb-1">
-            {showActionColumn
-              ? "Les ordres sont en attente de réponse..."
-              : "Les ordres sont en cours d'arrivage..."}
+      {/* Zone de recherche et actions globales */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 px-2">
+        <div className="">
+          <TabSearch />
+        </div>
+        <div className="flex gap-4 flex-shrink-0 items-center">
+          <PDFDropdownMenu />
+        </div>
+      </div>
+
+      <div className="border border-gray-100 rounded-md p-4 mt-4">
+        {/* Tabs et refresh dans le box */}
+        <div className="flex flex-wrap gap-2 mb-6 items-center justify-between">
+          <div className="flex">
+            <Button
+              variant={marketType === "all" || marketType === "secondaire" ? "default" : "outline"}
+              size="sm"
+              className="rounded-r-none"
+              onClick={() => {
+                const params = new URLSearchParams(searchParams);
+                params.set("marketType", "secondaire");
+                params.set("page", "0");
+                window.location.search = params.toString();
+              }}
+            >
+              Carnet d'ordres
+            </Button>
+            <Button
+              variant={marketType === "primaire" ? "default" : "outline"}
+              size="sm"
+              className="rounded-l-none"
+              onClick={() => {
+                const params = new URLSearchParams(searchParams);
+                params.set("marketType", "primaire");
+                params.set("page", "0");
+                window.location.search = params.toString();
+              }}
+            >
+              Souscriptions
+            </Button>
           </div>
-          <div className="flex justify-between w-full gap-4 items-center mt-2">
-            <div className="w-[30%]">
-              <TabSearch />
-            </div>
-            <div className="flex gap-4 flex-shrink-0">
-              <PDFDropdownMenu />
-              <Link
-                href="/ordres/sessions"
-                className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-              >
-                <CalendarClock size={20} />
-                Sessions de Bourse
-              </Link>
-              <ExportButton data={exportData} />
-            </div>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
         </div>
         <div className="my-8">
           <OrdresTable

@@ -15,7 +15,7 @@ import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function ValidationRetourPage({
+export default async function validationRetourFinalePage({
   searchParams,
 }: {
   searchParams?: {
@@ -34,7 +34,7 @@ export default async function ValidationRetourPage({
   const searchquery = searchParams?.searchquery || "";
   const state = searchParams?.state || "99";
   const marketType = searchParams?.marketType || "S";
-  const activeTab = "all"; // Force to "all" for validation-tcc-retour page
+  const activeTab = searchParams?.tab || "all";
 
   const t = await getTranslations("orderManagement");
   const tOrders = await getTranslations("mesOrdres");
@@ -59,6 +59,11 @@ export default async function ValidationRetourPage({
                   <span>
                     Validation Retour TCC
                   </span>
+                  {activeTab === "souscriptions" && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                      {tOrders("marcheprimaire")}
+                    </Badge>
+                  )}
                 </h1>
               </div>
             </div>
@@ -89,10 +94,6 @@ export default async function ValidationRetourPage({
                   <TabSearch />
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <PDFDropdownMenu customTitle="Impression" />
-              </div>
             </div>
           </CardHeader>
 
@@ -102,8 +103,8 @@ export default async function ValidationRetourPage({
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
                 taskID="validation-tcc-retour"
-                marketType={marketType}
-                pageType="validationRetour"
+                marketType={activeTab === "souscriptions" ? "P" : marketType}
+                pageType="validationRetourFinale"
                 activeTab={activeTab}
                 searchqueryParam={searchquery}
                 stateParam={state}
