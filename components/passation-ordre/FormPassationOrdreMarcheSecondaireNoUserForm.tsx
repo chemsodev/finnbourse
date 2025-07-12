@@ -79,7 +79,6 @@ import PasserUnOrdreSkeleton from "../PasserUnOrdreSkeleton";
 import { useStockREST, useStocksREST } from "@/hooks/useStockREST";
 import { Stock } from "@/lib/services/stockService";
 import { useClientsList } from "@/hooks/useClientsList";
-import CreateUserForm, { UserFormType } from "./CreateUser";
 
 const FormPassationOrdreMarcheSocondaire = ({
   titreId,
@@ -108,8 +107,6 @@ const FormPassationOrdreMarcheSocondaire = ({
   const [extraFieldsData, setExtraFieldsData] = useState<any>(null);
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [clientOpen, setClientOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [userFormValues, setUserFormValues] = useState<UserFormType | null>(null);
 
   // Form condition states
   const [conditionDuree, setConditionDuree] = useState("deJour");
@@ -379,8 +376,8 @@ const FormPassationOrdreMarcheSocondaire = ({
     return <PasserUnOrdreSkeleton />;
   }
 
-  // Gestion des étapes
-  if (step === 1) {
+  // Afficher la sélection du client si aucun client n'est sélectionné
+  if (!form.watch("selectedClientId")) {
     return (
       <div className="flex flex-col items-center justify-center w-full">
         {/* Bouton de retour aligné à gauche */}
@@ -395,7 +392,7 @@ const FormPassationOrdreMarcheSocondaire = ({
           </Button>
         </div>
         <h2 className="text-2xl font-bold mb-4">
-          Sélectionner le Bénéficiaire
+          {t("selectClient") || "Sélectionner un client"}
         </h2>
         {/* Champ de recherche */}
         <div className="relative mb-4 w-full max-w-2xl">
@@ -417,7 +414,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                 <TableHead className="text-center">Code</TableHead>
                 <TableHead className="text-center">Nom</TableHead>
                 <TableHead className="text-center">Email</TableHead>
-                <TableHead className="text-center">Type</TableHead>
                 <TableHead className="text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -438,7 +434,6 @@ const FormPassationOrdreMarcheSocondaire = ({
                     {client.name || client.agency_name}
                   </TableCell>
                   <TableCell className="text-center">{client.email}</TableCell>
-                  <TableCell className="text-center">{client.type}</TableCell>
                   <TableCell className="text-center">
                     <Button
                       type="button"
@@ -447,10 +442,9 @@ const FormPassationOrdreMarcheSocondaire = ({
                           ? "default"
                           : "outline"
                       }
-                      onClick={() => {
-                        form.setValue("selectedClientId", client.id);
-                        setStep(2);
-                      }}
+                      onClick={() =>
+                        form.setValue("selectedClientId", client.id)
+                      }
                     >
                       {form.watch("selectedClientId") === client.id
                         ? "Sélectionné"
@@ -490,25 +484,6 @@ const FormPassationOrdreMarcheSocondaire = ({
     );
   }
 
-  // step 2 : Form user
-  if (step === 2 && selectedClient) {
-    return (
-      <CreateUserForm
-        defaultValues={{}}
-        clientData={selectedClient}
-        onSubmit={(values) => {
-          setUserFormValues(values);
-          setStep(3);
-        }}
-        onBack={() => {
-          form.setValue("selectedClientId", "");
-          setStep(1);
-        }}
-      />
-    );
-  }
-
-  // step 3 : formulaire d'ordre (comme avant)
   return (
     <>
       <BulletinSubmitDialog
