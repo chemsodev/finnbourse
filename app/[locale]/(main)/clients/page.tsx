@@ -11,6 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -28,12 +36,20 @@ import {
   Users,
   Building,
   CreditCard,
+  RefreshCw,
+  MoreHorizontal,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useClientApi } from "@/hooks/useClientApi";
 import { ClientFormValues } from "@/lib/services/client-api";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface ClientListItem {
   id: string;
@@ -48,16 +64,15 @@ interface ClientListItem {
   raisonSociale?: string;
   wilaya: string;
   numeroCompteTitre: string;
-  status: "actif" | "inactif";
   createdAt: Date;
 }
 
 export default function ClientsPage() {
   const t = useTranslations("ClientsPage");
   const router = useRouter();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [clients, setClients] = useState<ClientListItem[]>([]);
 
@@ -120,7 +135,6 @@ export default function ClientsPage() {
       numeroCompteTitre:
         backendClient.securities_account_number ||
         backendClient.numeroCompteTitre,
-      status: "actif", // Default status
       createdAt: new Date(backendClient.createdAt || Date.now()),
     };
   };
@@ -137,10 +151,8 @@ export default function ClientsPage() {
 
     const matchesType =
       filterType === "all" || client.clientType === filterType;
-    const matchesStatus =
-      filterStatus === "all" || client.status === filterStatus;
 
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType;
   });
 
   const getClientTypeIcon = (type: string) => {
@@ -191,80 +203,61 @@ export default function ClientsPage() {
     router.push(`/clients/${clientId}`);
   };
 
+  // Show loading state
+  if (isLoading && clients.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center gap-4 mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">{t("title")}</h1>
+          <RefreshCw className="h-6 w-6 animate-spin" />
+        </div>
+        <Card>
+          <CardContent className="py-8">
+            <div className="text-center">Loading client data...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">{t("title")}</h1>
-          <p className="text-gray-600 mt-2">{t("description")}</p>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">{t("title")}</h1>
+        <div className="flex gap-2">
+          <Button
+            onClick={loadClients}
+            variant="outline"
+            size="icon"
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+          </Button>
+          <Button
+            onClick={handleCreateClient}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {t("addNewClient")}
+          </Button>
         </div>
-        <Button
-          onClick={handleCreateClient}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          {t("addNewClient")}
-        </Button>
       </div>
 
-      {/* Filters and Search */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            {t("filtersAndSearch")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder={t("searchPlaceholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("filterByType")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("allTypes")}</SelectItem>
-                <SelectItem value="personne_physique">
-                  {t("individual")}
-                </SelectItem>
-                <SelectItem value="personne_morale">{t("company")}</SelectItem>
-                <SelectItem value="institution_financiere">
-                  {t("financialInstitution")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("filterByStatus")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("allStatuses")}</SelectItem>
-                <SelectItem value="actif">{t("active")}</SelectItem>
-                <SelectItem value="inactif">{t("inactive")}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant="outline"
-              onClick={loadClients}
-              disabled={isLoading}
-            >
-              {isLoading ? t("loading") : t("refresh")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Search */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder={t("searchPlaceholder")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
 
       {/* Error Display */}
       {error && (
@@ -280,111 +273,96 @@ export default function ClientsPage() {
         </Card>
       )}
 
-      {/* Clients List */}
-      <div className="grid grid-cols-1 gap-4">
-        {filteredClients.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 text-lg">{t("noClientsFound")}</p>
-                <p className="text-gray-500 text-sm mt-2">
-                  {t("noClientsDescription")}
-                </p>
-                <Button onClick={handleCreateClient} className="mt-4">
-                  <Plus className="h-4 w-4 mr-2" />
+      {/* Clients Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Clients ({filteredClients.length})</span>
+            <Users className="h-5 w-5 text-gray-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredClients.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-800 mb-2">
+                {searchTerm ? t("noClientsFound") : t("noClientsYet")}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {searchTerm
+                  ? t("noClientsFoundDescription")
+                  : t("noClientsDescription")}
+              </p>
+              {!searchTerm && (
+                <Button
+                  onClick={handleCreateClient}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
                   {t("createFirstClient")}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredClients.map((client) => (
-            <Card key={client.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      {getClientTypeIcon(client.clientType)}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
-                          {client.name ||
-                            client.raisonSociale ||
-                            client.clientCode}
-                        </h3>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">{t("code")}</TableHead>
+                    <TableHead>{t("name")}</TableHead>
+                    <TableHead>{t("type")}</TableHead>
+                    <TableHead>{t("email")}</TableHead>
+                    <TableHead>{t("phone")}</TableHead>
+                    <TableHead>{t("accountNumber")}</TableHead>
+                    <TableHead className="w-[80px]">{t("actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredClients.map((client) => (
+                    <TableRow key={client.id} className="hover:bg-gray-50">
+                      <TableCell className="font-medium">
+                        {client.clientCode}
+                      </TableCell>
+                      <TableCell>
+                        {client.name || client.raisonSociale || "-"}
+                      </TableCell>
+                      <TableCell>
                         {getClientTypeBadge(client.clientType)}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
-                        <div>
-                          <span className="font-medium">{t("code")}:</span>{" "}
-                          {client.clientCode}
-                        </div>
-                        <div>
-                          <span className="font-medium">{t("email")}:</span>{" "}
-                          {client.email}
-                        </div>
-                        <div>
-                          <span className="font-medium">{t("phone")}:</span>{" "}
-                          {client.phoneNumber}
-                        </div>
-                        <div>
-                          <span className="font-medium">{t("wilaya")}:</span>{" "}
-                          {client.wilaya}
-                        </div>
-                        <div>
-                          <span className="font-medium">
-                            {t("accountNumber")}:
-                          </span>{" "}
-                          {client.numeroCompteTitre}
-                        </div>
-                        <div>
-                          <span className="font-medium">{t("status")}:</span>
-                          <Badge
-                            variant={
-                              client.status === "actif"
-                                ? "default"
-                                : "secondary"
-                            }
-                            className="ml-1"
-                          >
-                            {client.status === "actif"
-                              ? t("active")
-                              : t("inactive")}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewClient(client.id)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">{t("view")}</span>
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditClient(client.id)}
-                    >
-                      <Edit className="h-4 w-4" />
-                      <span className="sr-only">{t("edit")}</span>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+                      </TableCell>
+                      <TableCell>{client.email}</TableCell>
+                      <TableCell>{client.phoneNumber}</TableCell>
+                      <TableCell>{client.numeroCompteTitre}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleViewClient(client.id)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              {t("view")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleEditClient(client.id)}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              {t("edit")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Pagination */}
       {filteredClients.length > 0 && (

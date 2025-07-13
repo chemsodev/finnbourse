@@ -288,6 +288,11 @@ const FormPassationOrdreMarcheSocondaire = ({
   const handleSubmit = async (formData: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
+      // Find client details for souscripteur field
+      const selectedClient = clients.find(
+        (c) => c.id === formData.selectedClientId
+      );
+
       // Create order using REST API with the correct format
       const menuOrderBase =
         process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
@@ -318,6 +323,17 @@ const FormPassationOrdreMarcheSocondaire = ({
             formData.conditionDuree === "dateDefinie"
               ? formData.validite
               : undefined,
+          // Add souscripteur information from the selected client
+          souscripteur: {
+            qualite_souscripteur: "propriétaire", // Default value
+            nom_prenom: selectedClient?.name || "Client",
+            adresse: selectedClient?.address || "",
+            wilaya: selectedClient?.wilaya || "",
+            date_naissance:
+              selectedClient?.birth_date || new Date().toISOString(),
+            num_cni_pc: selectedClient?.id_number || "",
+            nationalite: selectedClient?.nationalite || "Algérienne",
+          },
         }),
       });
 

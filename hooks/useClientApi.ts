@@ -108,6 +108,7 @@ export const useClientApi = (): UseClientApiReturn => {
       setError(null);
 
       try {
+        console.log(`Updating client with ID: ${id}`);
         const result = await ClientApiService.updateClient(id, formData, token);
 
         toast({
@@ -117,6 +118,7 @@ export const useClientApi = (): UseClientApiReturn => {
 
         return result;
       } catch (error) {
+        console.error("Error details:", error);
         handleError(error, "update client");
         throw error;
       } finally {

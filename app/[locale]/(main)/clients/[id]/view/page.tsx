@@ -307,7 +307,7 @@ export default function ClientView() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => router.push(`/clients/${clientId}`)}
+            onClick={() => router.push(`/clients/${clientId}/edit`)}
           >
             <Edit className="h-4 w-4 mr-2" />
             {t("edit")}

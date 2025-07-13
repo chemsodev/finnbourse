@@ -274,6 +274,8 @@ export class ClientApiService {
   ): Promise<any> {
     const backendData =
       ClientTransformationService.transformFormToBackend(formData);
+    console.log("Updating client with ID:", id);
+    console.log("Update data:", backendData);
     const response = await actorAPI.client.update(id, backendData, token);
     return response.data || response;
   }

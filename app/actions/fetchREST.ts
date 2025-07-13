@@ -98,6 +98,16 @@ export function clientFetchREST<T = any>(
       typeof options.body === "string"
         ? options.body
         : JSON.stringify(options.body);
+
+    // Add extra debugging for PUT requests
+    if (options.method === "PUT") {
+      console.log(
+        "PUT request body:",
+        typeof options.body === "string"
+          ? options.body
+          : JSON.stringify(options.body).substring(0, 200) + "..."
+      );
+    }
   }
 
   return fetch(url, fetchOptions)

@@ -109,7 +109,9 @@ const FormPassationOrdreMarchePrimaire = ({
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [clientOpen, setClientOpen] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [userFormValues, setUserFormValues] = useState<UserFormType | null>(null);
+  const [userFormValues, setUserFormValues] = useState<UserFormType | null>(
+    null
+  );
 
   // Form condition states
   const [conditionDuree, setConditionDuree] = useState("deJour");
@@ -291,6 +293,11 @@ const FormPassationOrdreMarchePrimaire = ({
   const handleSubmit = async (formData: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
+      // Find client details for souscripteur field
+      const selectedClient = clients.find(
+        (c) => c.id === formData.selectedClientId
+      );
+
       // Create order using REST API with the correct format
       const menuOrderBase =
         process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
@@ -308,19 +315,25 @@ const FormPassationOrdreMarchePrimaire = ({
             formData.conditionPrix === "prixLimite"
               ? formData.coursLimite
               : selectedPrice,
-          market_type: "P", 
-          operation_type: formData.buyTransaction ? "A" : "V",
-          conditionDuree: formData.conditionDuree,
-          conditionPrix: formData.conditionPrix,
-          conditionQuantite: formData.conditionQuantite,
-          minQuantity:
-            formData.conditionQuantite === "quantiteMinimale"
-              ? formData.quantiteMinimale
-              : undefined,
-          validity:
-            formData.conditionDuree === "dateDefinie"
-              ? formData.validite
-              : undefined,
+          market_type: "P",
+          operation_type: null,
+          // Send null values for condition fields in primary market if they don't exist in the form
+          conditionDuree: null,
+          conditionPrix: null,
+          conditionQuantite: null,
+          minQuantity: null,
+          validity: null,
+          // Add souscripteur information from the selected client
+          souscripteur: {
+            qualite_souscripteur: "propriétaire", // Default value
+            nom_prenom: selectedClient?.name || "Client",
+            adresse: selectedClient?.address || "",
+            wilaya: selectedClient?.wilaya || "",
+            date_naissance:
+              selectedClient?.birth_date || new Date().toISOString(),
+            num_cni_pc: selectedClient?.id_number || "",
+            nationalite: selectedClient?.nationalite || "Algérienne",
+          },
         }),
       });
 
@@ -579,7 +592,9 @@ const FormPassationOrdreMarchePrimaire = ({
                   <div className="text-lg font-semibold">VISA-9237</div>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <div className=" text-gray-400 capitalize">{t("codeIsin")}</div>
+                  <div className=" text-gray-400 capitalize">
+                    {t("codeIsin")}
+                  </div>
                   <div className="text-lg font-semibold">
                     {data?.isinCode || data?.isincode || "N/A"}
                   </div>
@@ -620,7 +635,6 @@ const FormPassationOrdreMarchePrimaire = ({
                     );
                   }}
                 />
-                
                 {/* Date de validité - only show when date definie is selected */}
                 {watchedConditionDuree === "dateDefinie" && (
                   <FormField
@@ -688,7 +702,6 @@ const FormPassationOrdreMarchePrimaire = ({
                     )}
                   />
                 )}
-                
                 {/* date emission */}
                 <div className="flex justify-between items-baseline">
                   <div className=" text-gray-400 capitalize">

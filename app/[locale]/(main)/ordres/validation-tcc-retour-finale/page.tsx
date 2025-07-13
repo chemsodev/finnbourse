@@ -4,8 +4,16 @@ import auth from "@/auth";
 import MyMarquee from "@/components/MyMarquee";
 import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
 import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
-import Link from "next/link";
-import { ArrowLeft, CalendarClock, CheckCircle, MessageSquare, Filter, Download, FileText } from "lucide-react";
+import { Link } from "@/i18n/routing";
+import {
+  ArrowLeft,
+  CalendarClock,
+  CheckCircle,
+  MessageSquare,
+  Filter,
+  Download,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TabSearch from "@/components/TabSearch";
 import MyPagination from "@/components/navigation/MyPagination";
@@ -56,11 +64,12 @@ export default async function validationRetourFinalePage({
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <span>
-                    Validation Retour TCC
-                  </span>
+                  <span>Validation Retour TCC</span>
                   {activeTab === "souscriptions" && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/10 text-primary border-primary/20"
+                    >
                       {tOrders("marcheprimaire")}
                     </Badge>
                   )}
@@ -81,7 +90,8 @@ export default async function validationRetourFinalePage({
           </div>
 
           <p className="text-gray-600 text-sm leading-relaxed max-w-3xl">
-            Validez les retours des ordres et consultez les détails des réponses reçues
+            Validez les retours des ordres et consultez les détails des réponses
+            reçues
           </p>
         </div>
 
@@ -119,4 +129,4 @@ export default async function validationRetourFinalePage({
       </div>
     </div>
   );
-} 
+}

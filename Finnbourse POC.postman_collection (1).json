@@ -1,0 +1,231 @@
+{
+	"info": {
+		"_postman_id": "d1214fe4-9585-418c-9d5c-1872ed47f36d",
+		"name": "Finnbourse POC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "26947552"
+	},
+	"item": [
+		{
+			"name": "menu",
+			"item": [
+				{
+					"name": "get menu",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "localhost:8080/api/v1/menu/list"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "order",
+			"item": [
+				{
+					"name": "create_order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"stock_id\": \"123\",\r\n    \"client_id\": \"123\",\r\n\r\n    \"quantity\": 100,\r\n    \"price\": 700.50,\r\n\r\n    \"market_type\": \"S\",\r\n    \r\n    \"operation_type\": \"A\",\r\n    \r\n    \"conditionDuree\": \"deJour\",\r\n    \"conditionPrix\": \"prixMarche\",\r\n    \"conditionQuantite\": \"toutOuRien\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:8080/api/v1/order/create"
+					},
+					"response": []
+				},
+				{
+					"name": "get Orders",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"marketType\": \"S\",\r\n    \"taskID\": \"validation-retour-finale\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:8080/api/v1/order/list"
+					},
+					"response": []
+				},
+				{
+					"name": "get Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiZklYSTBPWmRPR0ZpUXQ0QWllZVFZV1FrbG95Ui1MUUZqQ2thTDZ0SXZVIn0.eyJleHAiOjE3NTA3MDU2MDksImlhdCI6MTc1MDY2OTYwOSwianRpIjoib25ydHJvOmFhMWM0MjNiLThkZjAtNGJmMy04NzlmLWUyOGQ5MjRiN2FjYiIsImlzcyI6Imh0dHBzOi8vYXV0aC5maW5uZXR1ZGUuY29tL3JlYWxtcy9jcGFfZW1wbG9pX3JlYWxtIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjdiNmFkY2M1LWQ5MTktNDAxZS1hN2M1LTBjODgxY2IzZTE5NiIsInR5cCI6IkJlYXJlciIsImF6cCI6ImJhY2tlbmRfY2xpZW50Iiwic2lkIjoiNTJlYTE3ZWUtODFhZC00MDIzLThlNGItYjJjMjZkYzI3ZDBkIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1jcGFfZW1wbG9pX3JlYWxtIiwib3JkZXJfdmFsaWRhdG9yX3RjY18yIiwib3JkZXJfaW5pdGlhbGl6ZXJfYWdlbmNlIiwicGFwZXJsZXNzX2FkbWluX3JvbGUiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwib3JkZXJfdmFsaWRhdG9yX2FnZW5jZV8xIiwib3JkZXJfdmFsaWRhdG9yX2FnZW5jZV8yIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInJvbGVzIjpbImRlZmF1bHQtcm9sZXMtY3BhX2VtcGxvaV9yZWFsbSIsIm9yZGVyX3ZhbGlkYXRvcl90Y2NfMiIsIm9yZGVyX2luaXRpYWxpemVyX2FnZW5jZSIsInBhcGVybGVzc19hZG1pbl9yb2xlIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsIm9yZGVyX3ZhbGlkYXRvcl9hZ2VuY2VfMSIsIm9yZGVyX3ZhbGlkYXRvcl9hZ2VuY2VfMiJdLCJuYW1lIjoibWFuYWdlciBtYW5hZ2VyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoibWFuYWdlckBmaW5uZXR1ZGUuY29tIiwiZ2l2ZW5fbmFtZSI6Im1hbmFnZXIiLCJmYW1pbHlfbmFtZSI6Im1hbmFnZXIiLCJlbWFpbCI6Im1hbmFnZXJAZmlubmV0dWRlLmNvbSJ9.BnFoTeVgwgVp3d2_nYSKQt5S9NQGMGJgvTOUUFek4Wzsw81jgW7Z4iITc9bwyiQLvNhatfgBnhpx4ZmHOhHFhP2CWKn7EFNFUv3uZVVI8Z9q32dDkE6Zu8iGMqDez3YeyYtltrDWzTV30FkBJmg0dFJm2IS49lqI2gvzGMjChxu1QbXSvE87NyEeD-1FzBifBBFA1ZC54Vb8TY81oYWqCEmAcCdGuSVDT-27rjLPSCR6mc6Zql6n2uo6HDYhw4Xrbwf57a9mobGAyYVMYLKjh2WzhZZBCPmJBVi5LRJ5lM_1DW3nqz4XjnhXAa4aYPhIEMVNjgDolEtwyYxjnn34Eg"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "localhost:8080/api/v1/order/fetch/26"
+					},
+					"response": []
+				},
+				{
+					"name": "set action",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"orderID\": \"1\",\r\n    \"taskID\": \"validation-retour-finale\",\r\n    \"action\": \"validate\",\r\n    \"motif\": \"test motif\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:8080/api/v1/order/set-action"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "session",
+			"item": [
+				{
+					"name": "close session",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"session_code\": \"001\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:8080/api/v1/session/close"
+					},
+					"response": []
+				},
+				{
+					"name": "fetch session",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:8080/api/v1/session/fetch"
+					},
+					"response": []
+				},
+				{
+					"name": "iob submit result",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"orderID\": 1,\r\n    \"taskID\": \"execution\",\r\n    \"action\": \"validate\",\r\n    \"quantity\": 50,\r\n    \"price\": 700.5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:8080/api/v1/order/submit-order-result"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiZklYSTBPWmRPR0ZpUXQ0QWllZVFZV1FrbG95Ui1MUUZqQ2thTDZ0SXZVIn0.eyJleHAiOjE3NTIxNzY4NDgsImlhdCI6MTc1MjE0MDg0OCwianRpIjoib25ydHJvOjI3NzdiNWY4LWQ4ZWYtNGU5OS1iOGYwLTlmYTdmODNiZDNlZiIsImlzcyI6Imh0dHBzOi8vYXV0aC5maW5uZXR1ZGUuY29tL3JlYWxtcy9jcGFfZW1wbG9pX3JlYWxtIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjdiNmFkY2M1LWQ5MTktNDAxZS1hN2M1LTBjODgxY2IzZTE5NiIsInR5cCI6IkJlYXJlciIsImF6cCI6ImJhY2tlbmRfY2xpZW50Iiwic2lkIjoiNzM3OWNiN2YtNzA3Yy00NjY4LWJmYmQtNzJiZmM1ODFlMzI1IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsicGFwZXJsZXNzX2FkbWluX3JvbGUiLCJvcmRlcl9leGVjdXRvciIsImFnZW5jZV9nZXN0aW9uX2NsaWVudHMiLCJvcmRlcl92YWxpZGF0b3JfYWdlbmNlX3JldG91cl8xIiwidGNjX2dlc3Rpb25fZW1ldHRldXJzIiwib3JkZXJfdmFsaWRhdG9yX2FnZW5jZV9yZXRvdXJfMiIsInRjY19nZXN0aW9uX3RpdHJlcyIsImFnZW5jZV92aWV3ZXJfb3JkZXJfaGlzdG9yeSIsIm9yZGVyX3ZhbGlkYXRvcl90Y2NfMSIsImRlZmF1bHQtcm9sZXMtY3BhX2VtcGxvaV9yZWFsbSIsInRjY192aWV3ZXJfb3JkZXJfaGlzdG9yeSIsIm9yZGVyX3ZhbGlkYXRvcl90Y2NfMiIsIm9yZGVyX3ZhbGlkYXRvcl9pb2JfMiIsIm9yZGVyX3ZhbGlkYXRvcl9pb2JfMSIsIm9yZGVyX2luaXRpYWxpemVyX2FnZW5jZSIsIm9mZmxpbmVfYWNjZXNzIiwiZmluYm91cnNlX3N1cGVyX2FkbWluIiwib3JkZXJfdmFsaWRhdG9yX3RjY19yZXRvdXJfMSIsImlvYl9zZWNvbmRhcnlfbWFya2V0Iiwib3JkZXJfdmFsaWRhdG9yX3RjY19yZXRvdXJfMiIsInRjY19nZXN0aW9uX2NsaWVudHMiLCJ1bWFfYXV0aG9yaXphdGlvbiIsIm9yZGVyX3ZhbGlkYXRvcl9hZ2VuY2VfMSIsIm9yZGVyX3ZhbGlkYXRvcl9hZ2VuY2VfMiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJyb2xlcyI6WyJwYXBlcmxlc3NfYWRtaW5fcm9sZSIsIm9yZGVyX2V4ZWN1dG9yIiwiYWdlbmNlX2dlc3Rpb25fY2xpZW50cyIsIm9yZGVyX3ZhbGlkYXRvcl9hZ2VuY2VfcmV0b3VyXzEiLCJ0Y2NfZ2VzdGlvbl9lbWV0dGV1cnMiLCJvcmRlcl92YWxpZGF0b3JfYWdlbmNlX3JldG91cl8yIiwidGNjX2dlc3Rpb25fdGl0cmVzIiwiYWdlbmNlX3ZpZXdlcl9vcmRlcl9oaXN0b3J5Iiwib3JkZXJfdmFsaWRhdG9yX3RjY18xIiwiZGVmYXVsdC1yb2xlcy1jcGFfZW1wbG9pX3JlYWxtIiwidGNjX3ZpZXdlcl9vcmRlcl9oaXN0b3J5Iiwib3JkZXJfdmFsaWRhdG9yX3RjY18yIiwib3JkZXJfdmFsaWRhdG9yX2lvYl8yIiwib3JkZXJfdmFsaWRhdG9yX2lvYl8xIiwib3JkZXJfaW5pdGlhbGl6ZXJfYWdlbmNlIiwib2ZmbGluZV9hY2Nlc3MiLCJmaW5ib3Vyc2Vfc3VwZXJfYWRtaW4iLCJvcmRlcl92YWxpZGF0b3JfdGNjX3JldG91cl8xIiwiaW9iX3NlY29uZGFyeV9tYXJrZXQiLCJvcmRlcl92YWxpZGF0b3JfdGNjX3JldG91cl8yIiwidGNjX2dlc3Rpb25fY2xpZW50cyIsInVtYV9hdXRob3JpemF0aW9uIiwib3JkZXJfdmFsaWRhdG9yX2FnZW5jZV8xIiwib3JkZXJfdmFsaWRhdG9yX2FnZW5jZV8yIl0sIm5hbWUiOiJtYW5hZ2VyIG1hbmFnZXIiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJtYW5hZ2VyQGZpbm5ldHVkZS5jb20iLCJnaXZlbl9uYW1lIjoibWFuYWdlciIsImZhbWlseV9uYW1lIjoibWFuYWdlciIsImVtYWlsIjoibWFuYWdlckBmaW5uZXR1ZGUuY29tIn0.FUwZqtvrKZO2Fd6IS70nNeilW_PQN-74Y3TNFKhz_pEH0WTxPtnOAWW6zRb0DQUKoOibHYG6QhyvSh_Ibw0Tth5YxUTpRWw0DEcfvAATI-a634TGaCFFz2sZwRA1jPB_NqcM4Y8s1Mvfbc91_aqa_IPRTa8c_tHde80gVz02IbyEXLUajBs_JesP_sGCEENXtae85XlJV4s5H5C6jUBEsXzJGY0hdKK_kSCjS7KoMNu0zoTQAK_RetoS2mCh2p9d3seIPnWRj4fA8sitnqprIg17mtC-xTExl4oDzHFV_UBD78plLL1bmmLeSBHVkyrU9SJru2f5tfydN6vYAYsB_g",
+			"type": "string"
+		}
+	]
+}

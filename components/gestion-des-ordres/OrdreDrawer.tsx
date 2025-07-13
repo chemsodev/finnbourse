@@ -19,10 +19,13 @@ import {
   Printer,
   FileText,
   TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { Order } from "@/lib/interfaces";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useOrderApi } from "@/hooks/useOrderApi";
+import { useToast } from "@/hooks/use-toast";
 
 // These are the direct component imports rather than importing from the modules
 // This avoids any potential circular dependencies
@@ -51,7 +54,7 @@ interface SupprProps {
 
 export default function OrdreDrawer({
   titreId,
-  orderData,
+  orderData: initialOrderData,
   isSouscription,
 }: {
   titreId: string;
@@ -59,8 +62,36 @@ export default function OrdreDrawer({
   isSouscription: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [orderData, setOrderData] = useState<Order>(initialOrderData);
+  const [isLoading, setIsLoading] = useState(false);
   const t = useTranslations("mesOrdres");
   const session = useSession();
+  const { getOrderById } = useOrderApi();
+  const { toast } = useToast();
+
+  // Fetch order details when drawer is opened
+  useEffect(() => {
+    if (isOpen && orderData?.id) {
+      const fetchOrderDetails = async () => {
+        try {
+          setIsLoading(true);
+          const fetchedOrder = await getOrderById(orderData.id);
+          setOrderData(fetchedOrder);
+        } catch (error) {
+          console.error("Failed to fetch order details:", error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch order details",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchOrderDetails();
+    }
+  }, [isOpen, orderData?.id, getOrderById, toast]);
 
   // Handle print for individual souscription
   const handlePrintSouscription = () => {
@@ -214,227 +245,285 @@ export default function OrdreDrawer({
 
   const renderSouscriptionDetails = () => (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("visaCosob")}</p>
-          <p className="font-semibold">{orderData.visaCosob}</p>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-lg">Loading order details...</span>
         </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("isinCode")}</p>
-          <p className="font-semibold">{orderData.isinCode}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("bdl")}</p>
-          <p className="font-semibold">{orderData.bdl}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("quantity")}</p>
-          <p className="font-semibold">{orderData.quantity?.toLocaleString()}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("emissionDate")}</p>
-          <p className="font-semibold">{new Date(orderData.emissionDate).toLocaleDateString()}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("totalShares")}</p>
-          <p className="font-semibold">{orderData.totalShares?.toLocaleString()}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("commission")}</p>
-          <p className="font-semibold">{orderData.commission}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("netAmount")}</p>
-          <p className="font-semibold">{orderData.netAmount}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("orderStatus")}</p>
-          <div
-            className={`mt-1 px-2 py-1 rounded-md text-white text-xs inline-block w-fit ${
-              orderData.orderstatus === 0
-                ? "bg-gray-600"
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("visaCosob")}
+            </p>
+            <p className="font-semibold">{orderData.visaCosob}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">{t("isinCode")}</p>
+            <p className="font-semibold">{orderData.isinCode}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">{t("bdl")}</p>
+            <p className="font-semibold">{orderData.bdl}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">{t("quantity")}</p>
+            <p className="font-semibold">
+              {orderData.quantity?.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("emissionDate")}
+            </p>
+            <p className="font-semibold">
+              {new Date(orderData.emissionDate).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("totalShares")}
+            </p>
+            <p className="font-semibold">
+              {orderData.totalShares?.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("commission")}
+            </p>
+            <p className="font-semibold">{orderData.commission}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("netAmount")}
+            </p>
+            <p className="font-semibold">{orderData.netAmount}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("orderStatus")}
+            </p>
+            <div
+              className={`mt-1 px-2 py-1 rounded-md text-white text-xs inline-block w-fit ${
+                orderData.orderstatus === 0
+                  ? "bg-gray-600"
+                  : orderData.orderstatus === 1
+                  ? "bg-yellow-600"
+                  : orderData.orderstatus === 2
+                  ? "bg-secondary"
+                  : orderData.orderstatus === 3
+                  ? "bg-green-600"
+                  : orderData.orderstatus === 4
+                  ? "bg-purple-600"
+                  : orderData.orderstatus === 5
+                  ? "bg-teal-600"
+                  : orderData.orderstatus === 6
+                  ? "bg-orange-600"
+                  : orderData.orderstatus === 7
+                  ? "bg-indigo-600"
+                  : orderData.orderstatus === 8
+                  ? "bg-orange-600"
+                  : orderData.orderstatus === 9
+                  ? "bg-red-700"
+                  : orderData.orderstatus === 10
+                  ? "bg-red-600"
+                  : orderData.orderstatus === 11
+                  ? "bg-gray-700"
+                  : "bg-gray-600"
+              }`}
+            >
+              {orderData.orderstatus === 0
+                ? t("draft")
                 : orderData.orderstatus === 1
-                ? "bg-yellow-600"
+                ? t("pending")
                 : orderData.orderstatus === 2
-                ? "bg-secondary"
+                ? t("inProgress")
                 : orderData.orderstatus === 3
-                ? "bg-green-600"
+                ? t("validated")
                 : orderData.orderstatus === 4
-                ? "bg-purple-600"
+                ? t("beingProcessed")
                 : orderData.orderstatus === 5
-                ? "bg-teal-600"
+                ? t("completed")
                 : orderData.orderstatus === 6
-                ? "bg-orange-600"
+                ? t("awaitingApproval")
                 : orderData.orderstatus === 7
-                ? "bg-indigo-600"
+                ? t("inExecution")
                 : orderData.orderstatus === 8
-                ? "bg-orange-600"
+                ? t("partiallyValidated")
                 : orderData.orderstatus === 9
-                ? "bg-red-700"
+                ? t("expired")
                 : orderData.orderstatus === 10
-                ? "bg-red-600"
+                ? t("rejected")
                 : orderData.orderstatus === 11
-                ? "bg-gray-700"
-                : "bg-gray-600"
-            }`}
-          >
-            {orderData.orderstatus === 0
-              ? t("draft")
-              : orderData.orderstatus === 1
-              ? t("pending")
-              : orderData.orderstatus === 2
-              ? t("inProgress")
-              : orderData.orderstatus === 3
-              ? t("validated")
-              : orderData.orderstatus === 4
-              ? t("beingProcessed")
-              : orderData.orderstatus === 5
-              ? t("completed")
-              : orderData.orderstatus === 6
-              ? t("awaitingApproval")
-              : orderData.orderstatus === 7
-              ? t("inExecution")
-              : orderData.orderstatus === 8
-              ? t("partiallyValidated")
-              : orderData.orderstatus === 9
-              ? t("expired")
-              : orderData.orderstatus === 10
-              ? t("rejected")
-              : orderData.orderstatus === 11
-              ? t("cancelled")
-              : t("unknown")}
+                ? t("cancelled")
+                : t("unknown")}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 
   const renderOrdreDetails = () => (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("visaCosob")}</p>
-          <p className="font-semibold">{orderData.visaCosob}</p>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-lg">Loading order details...</span>
         </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("isinCode")}</p>
-          <p className="font-semibold">{orderData.isinCode}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("mst")}</p>
-          <p className="font-semibold">{orderData.mst}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">
-            {t("transactionType")}
-          </p>
-          <p
-            className={`font-semibold ${
-              orderData.orderdirection === 1 ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {orderData.orderdirection === 1 ? t("achat") : t("vente")}
-          </p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("quantity")}</p>
-          <p className="font-semibold">{orderData.quantity?.toLocaleString()}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">
-            {t("priceInstruction")}
-          </p>
-          <p className="font-semibold">{orderData.priceInstruction}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">
-            {t("timeInstruction")}
-          </p>
-          <p className="font-semibold">{orderData.timeInstruction}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("validityDate")}</p>
-          <p className="font-semibold">{new Date(orderData.validityDate || "").toLocaleDateString()}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("emissionDate")}</p>
-          <p className="font-semibold">{new Date(orderData.emissionDate).toLocaleDateString()}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("numberOfShares")}</p>
-          <p className="font-semibold">{orderData.totalShares?.toLocaleString()}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("grossAmount")}</p>
-          <p className="font-semibold">{orderData.grossAmount}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("commission")}</p>
-          <p className="font-semibold">{orderData.commission}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("netAmount")}</p>
-          <p className="font-semibold">{orderData.netAmount}</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md">
-          <p className="text-sm font-medium text-gray-500">{t("orderStatus")}</p>
-          <div
-            className={`mt-1 px-2 py-1 rounded-md text-white text-xs inline-block w-fit ${
-              orderData.orderstatus === 0
-                ? "bg-gray-600"
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("visaCosob")}
+            </p>
+            <p className="font-semibold">{orderData.visaCosob}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">{t("isinCode")}</p>
+            <p className="font-semibold">{orderData.isinCode}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">{t("mst")}</p>
+            <p className="font-semibold">{orderData.mst}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("transactionType")}
+            </p>
+            <p
+              className={`font-semibold ${
+                orderData.orderdirection === 1
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              {orderData.orderdirection === 1 ? t("achat") : t("vente")}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">{t("quantity")}</p>
+            <p className="font-semibold">
+              {orderData.quantity?.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("priceInstruction")}
+            </p>
+            <p className="font-semibold">{orderData.priceInstruction}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("timeInstruction")}
+            </p>
+            <p className="font-semibold">{orderData.timeInstruction}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("validityDate")}
+            </p>
+            <p className="font-semibold">
+              {new Date(orderData.validityDate || "").toLocaleDateString()}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("emissionDate")}
+            </p>
+            <p className="font-semibold">
+              {new Date(orderData.emissionDate).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("numberOfShares")}
+            </p>
+            <p className="font-semibold">
+              {orderData.totalShares?.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("grossAmount")}
+            </p>
+            <p className="font-semibold">{orderData.grossAmount}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("commission")}
+            </p>
+            <p className="font-semibold">{orderData.commission}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("netAmount")}
+            </p>
+            <p className="font-semibold">{orderData.netAmount}</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm font-medium text-gray-500">
+              {t("orderStatus")}
+            </p>
+            <div
+              className={`mt-1 px-2 py-1 rounded-md text-white text-xs inline-block w-fit ${
+                orderData.orderstatus === 0
+                  ? "bg-gray-600"
+                  : orderData.orderstatus === 1
+                  ? "bg-yellow-600"
+                  : orderData.orderstatus === 2
+                  ? "bg-secondary"
+                  : orderData.orderstatus === 3
+                  ? "bg-green-600"
+                  : orderData.orderstatus === 4
+                  ? "bg-purple-600"
+                  : orderData.orderstatus === 5
+                  ? "bg-teal-600"
+                  : orderData.orderstatus === 6
+                  ? "bg-orange-600"
+                  : orderData.orderstatus === 7
+                  ? "bg-indigo-600"
+                  : orderData.orderstatus === 8
+                  ? "bg-orange-600"
+                  : orderData.orderstatus === 9
+                  ? "bg-red-700"
+                  : orderData.orderstatus === 10
+                  ? "bg-red-600"
+                  : orderData.orderstatus === 11
+                  ? "bg-gray-700"
+                  : "bg-gray-600"
+              }`}
+            >
+              {orderData.orderstatus === 0
+                ? t("draft")
                 : orderData.orderstatus === 1
-                ? "bg-yellow-600"
+                ? t("pending")
                 : orderData.orderstatus === 2
-                ? "bg-secondary"
+                ? t("inProgress")
                 : orderData.orderstatus === 3
-                ? "bg-green-600"
+                ? t("validated")
                 : orderData.orderstatus === 4
-                ? "bg-purple-600"
+                ? t("beingProcessed")
                 : orderData.orderstatus === 5
-                ? "bg-teal-600"
+                ? t("completed")
                 : orderData.orderstatus === 6
-                ? "bg-orange-600"
+                ? t("awaitingApproval")
                 : orderData.orderstatus === 7
-                ? "bg-indigo-600"
+                ? t("inExecution")
                 : orderData.orderstatus === 8
-                ? "bg-orange-600"
+                ? t("partiallyValidated")
                 : orderData.orderstatus === 9
-                ? "bg-red-700"
+                ? t("expired")
                 : orderData.orderstatus === 10
-                ? "bg-red-600"
+                ? t("rejected")
                 : orderData.orderstatus === 11
-                ? "bg-gray-700"
-                : "bg-gray-600"
-            }`}
-          >
-            {orderData.orderstatus === 0
-              ? t("draft")
-              : orderData.orderstatus === 1
-              ? t("pending")
-              : orderData.orderstatus === 2
-              ? t("inProgress")
-              : orderData.orderstatus === 3
-              ? t("validated")
-              : orderData.orderstatus === 4
-              ? t("beingProcessed")
-              : orderData.orderstatus === 5
-              ? t("completed")
-              : orderData.orderstatus === 6
-              ? t("awaitingApproval")
-              : orderData.orderstatus === 7
-              ? t("inExecution")
-              : orderData.orderstatus === 8
-              ? t("partiallyValidated")
-              : orderData.orderstatus === 9
-              ? t("expired")
-              : orderData.orderstatus === 10
-              ? t("rejected")
-              : orderData.orderstatus === 11
-              ? t("cancelled")
-              : t("unknown")}
+                ? t("cancelled")
+                : t("unknown")}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 
@@ -469,7 +558,7 @@ export default function OrdreDrawer({
                   {t("close")}
                 </Button>
               </DrawerClose>
-              {renderActionButtons()}
+              {!isLoading && renderActionButtons()}
             </div>
           </DrawerFooter>
         </div>

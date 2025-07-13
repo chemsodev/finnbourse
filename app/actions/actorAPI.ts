@@ -499,6 +499,8 @@ export const actorAPI = {
 
     update: async (clientId: string, data: any, token?: string) => {
       const restToken = token || (await getRestToken());
+      console.log(`Sending client update request for ID: ${clientId}`);
+      console.log("Using token:", restToken ? "Token provided" : "No token");
       return clientFetchREST(`/client/${clientId}`, {
         method: "PUT",
         body: data,
