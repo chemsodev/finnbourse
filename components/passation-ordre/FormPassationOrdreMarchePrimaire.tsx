@@ -316,7 +316,7 @@ const FormPassationOrdreMarchePrimaire = ({
               ? formData.coursLimite
               : selectedPrice,
           market_type: "P",
-          operation_type: null,
+          operation_type: "A", // Default to "A" (Achat/Buy) for primary market
           // Send null values for condition fields in primary market if they don't exist in the form
           conditionDuree: null,
           conditionPrix: null,
@@ -343,20 +343,33 @@ const FormPassationOrdreMarchePrimaire = ({
       }
 
       const result = await response.json();
-      setCreatedOrdreId(result.id || result.order_id);
-      setIsDialogOpen(true);
 
-      toast({
-        variant: "success",
-        action: (
-          <div className="w-full flex gap-6 items-center">
-            <CheckIcon size={40} />
-            <span className="first-letter:capitalize text-xs">
-              {t("ordrePasse")}
-            </span>
-          </div>
-        ),
-      });
+      // Check if there's an error in the response
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Check if data is available
+      if (result.data || result.id || result.order_id) {
+        setCreatedOrdreId(
+          result.id || result.order_id || (result.data && result.data.id)
+        );
+        setIsDialogOpen(true);
+
+        toast({
+          variant: "success",
+          action: (
+            <div className="w-full flex gap-6 items-center">
+              <CheckIcon size={40} />
+              <span className="first-letter:capitalize text-xs">
+                {t("ordrePasse")}
+              </span>
+            </div>
+          ),
+        });
+      } else {
+        throw new Error("No data returned from server");
+      }
     } catch (error: any) {
       console.error("Form submission error", error);
       toast({

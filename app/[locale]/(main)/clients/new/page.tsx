@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { SimpleClientForm } from "@/components/create-user-forms/SimpleClientForm";
 
 export default function NewClientPage() {

@@ -303,4 +303,11 @@ export interface Order {
   timeInstruction?: string;
   validityDate?: string;
   grossAmount?: string;
+
+  // API response fields
+  apiActions?: string | null;
+  status?: string; // Raw status from API
+  marketType?: string; // Market type (primary/secondary)
+  validationType?: string; // Buy/sell type
+  condition?: string; // Combined order conditions
 }

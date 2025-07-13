@@ -14,6 +14,7 @@ interface CreateClientDto {
   cash_account_rip_key: string;
   cash_account_rip_full: string;
   securities_account_number: string;
+
   client_details?: IndividualClientDetails | CompanyClientDetails;
 }
 
@@ -36,6 +37,8 @@ interface CompanyClientDetails {
   nif: string;
   reg_number: string;
   legal_form: string;
+  wilaya: string;
+  address: string;
   lieu_naissance: string;
 }
 
@@ -150,7 +153,7 @@ export class ClientTransformationService {
     const ribFull = `${formData.ribBanque}${formData.ribAgence}${formData.ribCompte}${formData.ribCle}`;
 
     // Base client data
-    const baseClient: CreateClientDto = {
+    const baseClient: any = {
       type: CLIENT_TYPE_MAP[formData.clientType],
       client_code: formData.clientCode,
       email: formData.email,
@@ -162,37 +165,31 @@ export class ClientTransformationService {
       cash_account_rip_key: formData.ribCle,
       cash_account_rip_full: ribFull,
       securities_account_number: formData.numeroCompteTitre,
+      wilaya: formData.wilaya,
+      address: formData.address,
     };
 
-    // Add client details based on type
+    // Add fields based on client type directly to the root object
     if (formData.clientType === "personne_physique") {
-      baseClient.client_details = {
-        type: "individual",
-        name: formData.name!,
-        id_number: formData.idNumber!,
-        nin: formData.nin!,
-        nationalite: formData.nationalite!,
-        wilaya: formData.wilaya,
-        address: formData.address,
-        birth_date: formData.dateNaissance!,
-        lieu_naissance: formData.lieuNaissance!,
-        employe_a_la_institution_financiere: null,
-      };
+      baseClient.name = formData.name;
+      baseClient.id_number = formData.idNumber;
+      baseClient.nin = formData.nin;
+      baseClient.nationalite = formData.nationalite;
+      baseClient.birth_date = formData.dateNaissance;
+      baseClient.lieu_naissance = formData.lieuNaissance;
+      baseClient.employe_a_la_institution_financiere = null;
     } else if (
       formData.clientType === "personne_morale" ||
       formData.clientType === "institution_financiere"
     ) {
-      baseClient.client_details = {
-        type: "company",
-        raison_sociale: formData.raisonSociale!,
-        nif: formData.nif!,
-        reg_number: formData.regNumber!,
-        legal_form: formData.legalForm!,
-        lieu_naissance: formData.wilaya, // Using wilaya as lieu_naissance
-      };
+      baseClient.raison_sociale = formData.raisonSociale;
+      baseClient.nif = formData.nif;
+      baseClient.reg_number = formData.regNumber;
+      baseClient.legal_form = formData.legalForm;
+      baseClient.lieu_naissance = formData.wilaya; // Using wilaya as lieu_naissance
     }
 
-    return baseClient;
+    return baseClient as CreateClientDto;
   }
 
   static transformUserFormToBackend(

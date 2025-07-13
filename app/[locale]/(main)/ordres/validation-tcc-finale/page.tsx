@@ -4,7 +4,7 @@ import auth from "@/auth";
 import MyMarquee from "@/components/MyMarquee";
 import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
 import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
-import { Link } from "@/i18n/routing";
+import Link from "next/link";
 import {
   ArrowLeft,
   CalendarClock,

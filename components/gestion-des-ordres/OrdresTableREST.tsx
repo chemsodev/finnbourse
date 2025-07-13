@@ -140,15 +140,8 @@ export default function OrdresTableREST({
     );
   };
 
-  // Handler pour valider/refuser la sélection
-  const handleBulkAction = (action: "validate" | "reject") => {
-    // Ici, tu peux faire un appel API ou mock
-    alert(
-      `${action === "validate" ? "Validation" : "Refus"} des ordres: ` +
-        selectedOrders.join(", ")
-    );
-    setSelectedOrders([]);
-  };
+  // Handler pour valider/refuser la sélection - maintenant géré par handleBulkConfirm
+  // Fonction supprimée pour éviter les alerts non désirées
 
   // State pour le dialog de motif groupé
   const [bulkDialogOpen, setBulkDialogOpen] = useState<
@@ -159,16 +152,81 @@ export default function OrdresTableREST({
 
   // Handler pour valider/refuser la sélection avec motif
   const handleBulkConfirm = async () => {
-    // Ici, tu peux faire un appel API pour chaque ordre sélectionné avec le même motif
-    alert(
-      `${bulkDialogOpen === "validate" ? "Validation" : "Refus"} des ordres: ` +
-        selectedOrders.join(", ") +
-        "\nMotif: " +
-        bulkMotif
-    );
-    setBulkDialogOpen(null);
-    setBulkMotif("");
-    setSelectedOrders([]);
+    console.log("handleBulkConfirm called with", {
+      bulkDialogOpen,
+      selectedOrders,
+    });
+    try {
+      const restToken = (session.data?.user as any)?.restToken;
+      if (!restToken) {
+        toast({
+          title: "Error",
+          description: "No authentication token available",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setLoading(true);
+      // Store the action type before closing dialog
+      const actionType = bulkDialogOpen === "validate" ? "validate" : "reject";
+      setBulkDialogOpen(null);
+
+      // Process orders one by one
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const orderId of selectedOrders) {
+        try {
+          const result = await orderService.processOrderActionWithReason(
+            restToken,
+            orderId,
+            taskID,
+            actionType,
+            bulkMotif
+          );
+
+          if (result.success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (err) {
+          console.error(`Error processing order ${orderId}:`, err);
+          failCount++;
+        }
+      }
+
+      // Show success message
+      if (successCount > 0) {
+        toast({
+          title: "Success",
+          description: `${successCount} ordre(s) traité(s) avec succès${
+            failCount > 0 ? `. ${failCount} échec(s).` : ""
+          }`,
+        });
+      } else if (failCount > 0) {
+        toast({
+          title: "Error",
+          description: `Échec de traitement pour ${failCount} ordre(s).`,
+          variant: "destructive",
+        });
+      }
+
+      // Refresh orders
+      await fetchOrdersData();
+    } catch (err) {
+      console.error(`Error during bulk action:`, err);
+      toast({
+        title: "Error",
+        description: `L'action groupée a échoué. Veuillez réessayer.`,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      setBulkMotif("");
+      setSelectedOrders([]);
+    }
   };
 
   // Validate taskID
@@ -201,7 +259,7 @@ export default function OrdresTableREST({
       setData(exampleOrders);
       setStocksMap(exampleStocks);
       setClientsMap(exampleClients);
-      setActions(["validate", "cancel"]);
+      setActions(["validate", "reject"]);
       setLoading(false);
     } else {
       fetchOrdersData();
@@ -368,7 +426,7 @@ export default function OrdresTableREST({
       setData(exampleOrders);
       setStocksMap(exampleStocks);
       setClientsMap(exampleClients);
-      setActions(["validate", "cancel"]);
+      setActions(["validate", "reject"]);
       setLoading(false);
     }
   };
@@ -611,22 +669,26 @@ export default function OrdresTableREST({
 
         return (
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-              onClick={() => openActionDialog(order.id, "validate")}
-            >
-              <CheckCircle className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-              onClick={() => openActionDialog(order.id, "cancel")}
-            >
-              <XCircle className="h-4 w-4" />
-            </Button>
+            {actions.includes("validate") && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
+                onClick={() => openActionDialog(order.id, "validate")}
+              >
+                <CheckCircle className="h-4 w-4" />
+              </Button>
+            )}
+            {actions.includes("reject") && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
+                onClick={() => openActionDialog(order.id, "reject")}
+              >
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         );
       },
@@ -849,22 +911,26 @@ export default function OrdresTableREST({
             pageType === "tccFinalValidation") &&
             data.length > 0 && (
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors text-base p-2"
-                  onClick={() => setBulkDialogOpen("validate")}
-                  disabled={selectedOrders.length === 0}
-                >
-                  <CheckCircle className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors text-sm p-2"
-                  onClick={() => setBulkDialogOpen("reject")}
-                  disabled={selectedOrders.length === 0}
-                >
-                  <XCircle className="h-5 w-5" />
-                </Button>
+                {actions.includes("validate") && (
+                  <Button
+                    variant="outline"
+                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors text-base p-2"
+                    onClick={() => setBulkDialogOpen("validate")}
+                    disabled={selectedOrders.length === 0}
+                  >
+                    <CheckCircle className="h-5 w-5" />
+                  </Button>
+                )}
+                {actions.includes("reject") && (
+                  <Button
+                    variant="outline"
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors text-sm p-2"
+                    onClick={() => setBulkDialogOpen("reject")}
+                    disabled={selectedOrders.length === 0}
+                  >
+                    <XCircle className="h-5 w-5" />
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="text-sm font-normal p-2"
@@ -929,7 +995,7 @@ export default function OrdresTableREST({
                   setData(exampleOrders);
                   setStocksMap(exampleStocks);
                   setClientsMap(exampleClients);
-                  setActions(["validate", "cancel"]);
+                  setActions(["validate", "reject"]);
                   setError(null);
                 }}
               >
@@ -952,7 +1018,7 @@ export default function OrdresTableREST({
                   setData(exampleOrders);
                   setStocksMap(exampleStocks);
                   setClientsMap(exampleClients);
-                  setActions(["validate", "cancel"]);
+                  setActions(["validate", "reject"]);
                 }}
               >
                 Charger des exemples
@@ -1043,16 +1109,16 @@ export default function OrdresTableREST({
             <DialogTitle>
               {currentAction.action === "validate"
                 ? "Valider l'ordre"
-                : currentAction.action === "cancel"
-                ? "Annuler l'ordre"
+                : currentAction.action === "reject"
+                ? "Rejeter l'ordre"
                 : "Rejeter l'ordre"}
             </DialogTitle>
             <DialogDescription>
               {currentAction.action === "validate"
                 ? "Veuillez fournir un motif pour la validation de cet ordre."
-                : currentAction.action === "cancel"
-                ? "Veuillez fournir un motif pour l'annulation de cet ordre."
-                : "Veuillez fournir un motif pour la rejet de cet ordre."}
+                : currentAction.action === "reject"
+                ? "Veuillez fournir un motif pour le rejet de cet ordre."
+                : "Veuillez fournir un motif pour le rejet de cet ordre."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
