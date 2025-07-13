@@ -13,6 +13,7 @@ import {
   Filter,
   Download,
   FileText,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TabSearch from "@/components/TabSearch";
@@ -23,7 +24,7 @@ import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function validationRetourFinalePage({
+export default async function validationTccRetourFinalePage({
   searchParams,
 }: {
   searchParams?: {
@@ -64,8 +65,8 @@ export default async function validationRetourFinalePage({
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <span>Validation Retour TCC</span>
-                  {activeTab === "souscriptions" && (
+                  <span>Validation Retour TCC Finale</span>
+                  {(marketType === "primaire" || marketType === "P") && (
                     <Badge
                       variant="secondary"
                       className="bg-primary/10 text-primary border-primary/20"
@@ -77,21 +78,21 @@ export default async function validationRetourFinalePage({
               </div>
             </div>
 
-            <Link href="/ordres/validation-tcc-premiere">
+            <Link href="/ordres/validation-tcc-retour-premiere">
               <Button
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back
+                {t("back")}
               </Button>
             </Link>
           </div>
 
           <p className="text-gray-600 text-sm leading-relaxed max-w-3xl">
-            Validez les retours des ordres et consultez les détails des réponses
-            reçues
+            {t("validationTccRetourFinaleDescription") ||
+              "Validation finale des retours TCC et consultation des détails"}
           </p>
         </div>
 
@@ -109,12 +110,74 @@ export default async function validationRetourFinalePage({
 
           <CardContent className="pt-0">
             <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+              {/* Tabs for Carnet d'ordres and Souscriptions */}
+              <div className="flex flex-wrap gap-2 mb-6 items-center justify-between p-4 border-b border-gray-100">
+                <div className="flex">
+                  <Link
+                    href={`/ordres/validation-tcc-retour-finale?${new URLSearchParams(
+                      {
+                        ...Object.fromEntries(
+                          new URLSearchParams(searchParams?.toString() || "")
+                        ),
+                        marketType: "secondaire",
+                        page: "0",
+                      }
+                    ).toString()}`}
+                  >
+                    <Button
+                      variant={
+                        marketType === "S" || marketType === "secondaire"
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      className="rounded-r-none"
+                    >
+                      Carnet d'ordres
+                    </Button>
+                  </Link>
+                  <Link
+                    href={`/ordres/validation-tcc-retour-finale?${new URLSearchParams(
+                      {
+                        ...Object.fromEntries(
+                          new URLSearchParams(searchParams?.toString() || "")
+                        ),
+                        marketType: "primaire",
+                        page: "0",
+                      }
+                    ).toString()}`}
+                  >
+                    <Button
+                      variant={
+                        marketType === "P" || marketType === "primaire"
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      className="rounded-l-none"
+                    >
+                      Souscriptions
+                    </Button>
+                  </Link>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
+                </Button>
+              </div>
+
               <OrdresTableREST
                 key={`orders-table-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
-                taskID="validation-tcc-retour"
-                marketType={activeTab === "souscriptions" ? "P" : marketType}
-                pageType="validationRetourFinale"
+                taskID="validation-tcc-retour-finale"
+                marketType={
+                  marketType === "primaire" || marketType === "P" ? "P" : "S"
+                }
+                pageType="validationTccRetourFinale"
                 activeTab={activeTab}
                 searchqueryParam={searchquery}
                 stateParam={state}

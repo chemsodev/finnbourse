@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { EnhancedClientForm } from "@/components/create-user-forms/EnhancedClientForm";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,11 @@ export default function EditClientPage({ params }: EditClientPageProps) {
 
   const handleSuccess = (client: any) => {
     // Redirect to the client details page
-    router.push(`/clients/${client.id}`);
+    router.push(`/clients/${client.id}/view`);
   };
 
   const handleCancel = () => {
-    router.push(`/clients/${id}`);
+    router.push(`/clients/${id}/view`);
   };
 
   return (
@@ -32,7 +32,7 @@ export default function EditClientPage({ params }: EditClientPageProps) {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.push(`/clients/${id}`)}
+          onClick={() => router.push(`/clients/${id}/view`)}
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="sr-only">{t("back")}</span>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
   Edit,
-  Trash2,
   Plus,
   TrendingUp,
   LineChart,
@@ -19,17 +19,6 @@ import {
 } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 import Loading from "@/components/ui/loading";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { actorAPI } from "@/app/actions/actorAPI";
 import {
   Table,
   TableBody,
@@ -63,7 +52,6 @@ interface PortfolioData {
     id: string;
     date: string;
     type: string;
-    status: string;
     symbol: string;
     name: string;
     quantity: number;
@@ -80,14 +68,12 @@ export default function ClientView() {
 
   const [client, setClient] = useState<any>(null);
   const [clientUsers, setClientUsers] = useState<any[]>([]);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
   const [loadingPortfolio, setLoadingPortfolio] = useState(false);
   const dataFetchedRef = useRef<boolean>(false);
 
-  const { getClientById, deleteClient, loading } = useClients();
+  const { getClientById, loading } = useClients();
 
   useEffect(() => {
     // Prevent multiple API calls
@@ -129,11 +115,9 @@ export default function ClientView() {
     const fetchPortfolio = async () => {
       try {
         setLoadingPortfolio(true);
-        // Fetch from the Mockoon API using environment variable
-        const portfolioApiUrl =
-          process.env.NEXT_PUBLIC_PORTFOLIO_API_URL || "http://localhost:8081";
+        // Fetch from the Mockoon API
         const response = await fetch(
-          `${portfolioApiUrl}/portfolio/${clientId}`
+          `http://localhost:8081/portfolio/${clientId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch portfolio data");
@@ -161,13 +145,12 @@ export default function ClientView() {
             (transaction: any, index: number) => ({
               id: `TX${String(index + 1).padStart(3, "0")}`,
               date: transaction.createdAt,
-              type: transaction.quantity > 0 ? "BUY" : "SELL",
-              status: transaction.status,
+              type: transaction.status === "completed" ? "BUY" : "PENDING",
               symbol: transaction.stockCode,
               name: transaction.stockName,
-              quantity: Math.abs(transaction.quantity), // Always show positive quantity
+              quantity: transaction.quantity,
               price: transaction.price,
-              total: Math.abs(transaction.quantity * transaction.price),
+              total: transaction.quantity * transaction.price,
             })
           ),
         };
@@ -208,7 +191,6 @@ export default function ClientView() {
               id: "TX001",
               date: "2023-04-15",
               type: "BUY",
-              status: "completed",
               symbol: "CPA",
               name: "CPA Bank",
               quantity: 100,
@@ -219,34 +201,11 @@ export default function ClientView() {
               id: "TX002",
               date: "2023-05-20",
               type: "BUY",
-              status: "completed",
               symbol: "BDL",
               name: "Banque de Développement Local",
               quantity: 50,
               price: 160,
               total: 8000,
-            },
-            {
-              id: "TX003",
-              date: "2023-06-10",
-              type: "SELL",
-              status: "completed",
-              symbol: "CPA",
-              name: "CPA Bank",
-              quantity: 20,
-              price: 130,
-              total: 2600,
-            },
-            {
-              id: "TX004",
-              date: "2023-07-05",
-              type: "BUY",
-              status: "pending",
-              symbol: "BDL",
-              name: "Banque de Développement Local",
-              quantity: 25,
-              price: 155,
-              total: 3875,
             },
           ],
         });
@@ -262,19 +221,6 @@ export default function ClientView() {
       fetchPortfolio();
     }
   }, [clientId]); // Remove getClientById from dependencies
-
-  const handleDelete = async () => {
-    try {
-      setIsDeleting(true);
-      await deleteClient(clientId);
-      router.push("/clients");
-    } catch (error) {
-      console.error("Error deleting client:", error);
-    } finally {
-      setIsDeleting(false);
-      setIsDeleteDialogOpen(false);
-    }
-  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("fr-DZ", {
@@ -312,251 +258,166 @@ export default function ClientView() {
             <Edit className="h-4 w-4 mr-2" />
             {t("edit")}
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {t("delete")}
-          </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-              <Edit className="h-4 w-4 text-gray-600" />
-            </div>
-            {t("clientDetails")}
-          </CardTitle>
+          <CardTitle>{t("clientDetails")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="bg-gray-50 p-4 rounded-lg border">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  {t("basicInformation") || "Basic Information"}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  {t("code")}
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      {t("code")}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {client.client_code || "-"}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      {t("type")}
-                    </span>
-                    <Badge variant="outline">
-                      {client.type === "individual"
-                        ? t("individual")
-                        : client.type === "corporate"
-                        ? t("company")
-                        : t("financialInstitution")}
-                    </Badge>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      {client.type === "individual"
-                        ? t("name")
-                        : t("companyName")}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {client.type === "individual"
-                        ? client.name
-                        : client.raison_sociale}
-                    </span>
-                  </div>
-                </div>
+                <p className="mt-1">{client.client_code || "-"}</p>
               </div>
-
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  {t("type")}
+                </h3>
+                <p className="mt-1">
+                  {client.type === "individual"
+                    ? t("individual")
+                    : client.type === "corporate"
+                    ? t("company")
+                    : t("financialInstitution")}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  {client.type === "individual" ? t("name") : t("companyName")}
+                </h3>
+                <p className="mt-1">
+                  {client.type === "individual"
+                    ? client.name
+                    : client.raison_sociale}
+                </p>
+              </div>
               {client.type !== "individual" && (
-                <div className="bg-gray-50 p-4 rounded-lg border">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    {t("companyDetails") || "Company Details"}
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("nif")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {client.nif || "-"}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("regNumber")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {client.reg_number || "-"}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("legalForm")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {client.legal_form || "-"}
-                      </span>
-                    </div>
+                <>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("nif")}
+                    </h3>
+                    <p className="mt-1">{client.nif || "-"}</p>
                   </div>
-                </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("regNumber")}
+                    </h3>
+                    <p className="mt-1">{client.reg_number || "-"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("legalForm")}
+                    </h3>
+                    <p className="mt-1">{client.legal_form || "-"}</p>
+                  </div>
+                </>
               )}
-
               {client.type === "individual" && (
-                <div className="bg-gray-50 p-4 rounded-lg border">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    {t("personalDetails") || "Personal Details"}
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("nin")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {client.nin || "-"}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("nationality")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {client.nationalite || "-"}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("idType")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {client.id_type || "-"}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("idNumber")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {client.id_number || "-"}
-                      </span>
-                    </div>
-                    {client.lieu_naissance && (
-                      <>
-                        <Separator />
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-600">
-                            {t("birthPlace")}
-                          </span>
-                          <span className="text-sm font-semibold text-gray-900">
-                            {client.lieu_naissance}
-                          </span>
-                        </div>
-                      </>
-                    )}
+                <>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("nin")}
+                    </h3>
+                    <p className="mt-1">{client.nin || "-"}</p>
                   </div>
-                </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("nationality")}
+                    </h3>
+                    <p className="mt-1">{client.nationalite || "-"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("idType")}
+                    </h3>
+                    <p className="mt-1">{client.id_type || "-"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("idNumber")}
+                    </h3>
+                    <p className="mt-1">{client.id_number || "-"}</p>
+                  </div>
+                </>
               )}
             </div>
-
-            <div className="space-y-6">
-              <div className="bg-gray-50 p-4 rounded-lg border">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  {t("contactInformation") || "Contact Information"}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  {t("email")}
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      {t("email")}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {client.email || "-"}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      {t("phone")}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {client.phone_number || "-"}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      {t("mobilePhone")}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {client.mobile_phone || "-"}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">
-                      {t("wilaya")}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {client.wilaya || "-"}
-                    </span>
-                  </div>
-                </div>
+                <p className="mt-1">{client.email || "-"}</p>
               </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg border">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  {t("accountDetails") || "Account Details"}
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  {t("phone")}
                 </h3>
-                <div className="space-y-3">
-                  {client.securities_account_number && (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-600">
-                          {t("securitiesAccount")}
-                        </span>
-                        <span className="text-sm font-semibold text-gray-900 font-mono">
-                          {client.securities_account_number}
-                        </span>
-                      </div>
-                      <Separator />
-                    </>
-                  )}
-                  {(client.cash_account_rip_full ||
-                    client.cash_account_bank_code ||
-                    client.cash_account_agency_code ||
-                    client.cash_account_number) && (
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium text-gray-600">
-                        {t("cashAccount")}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900 font-mono">
-                        {client.cash_account_rip_full ||
-                          [
-                            client.cash_account_bank_code,
-                            client.cash_account_agency_code,
-                            client.cash_account_number,
-                            client.cash_account_rip_key,
-                          ]
-                            .filter(Boolean)
-                            .join(" ") ||
-                          "-"}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                <p className="mt-1">{client.phone_number || "-"}</p>
               </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  {t("mobilePhone")}
+                </h3>
+                <p className="mt-1">{client.mobile_phone || "-"}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  {t("wilaya")}
+                </h3>
+                <p className="mt-1">{client.wilaya || "-"}</p>
+              </div>
+              {client.securities_account_number && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    {t("securitiesAccount")}
+                  </h3>
+                  <p className="mt-1">
+                    {client.securities_account_number || "-"}
+                  </p>
+                </div>
+              )}
+              {client.cash_account_rip_full && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    {t("cashAccount")}
+                  </h3>
+                  <p className="mt-1">{client.cash_account_rip_full || "-"}</p>
+                </div>
+              )}
+              {!client.cash_account_rip_full &&
+                (client.cash_account_bank_code ||
+                  client.cash_account_agency_code ||
+                  client.cash_account_number) && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      {t("cashAccount")}
+                    </h3>
+                    <p className="mt-1">
+                      {[
+                        client.cash_account_bank_code,
+                        client.cash_account_agency_code,
+                        client.cash_account_number,
+                        client.cash_account_rip_key,
+                      ]
+                        .filter(Boolean)
+                        .join(" ") || "-"}
+                    </p>
+                  </div>
+                )}
+              {client.lieu_naissance && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    {t("birthPlace")}
+                  </h3>
+                  <p className="mt-1">{client.lieu_naissance || "-"}</p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -565,12 +426,7 @@ export default function ClientView() {
       {/* Portfolio Section */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-gray-600" />
-            </div>
-            {t("portfolio") || "Portfolio"}
-          </CardTitle>
+          <CardTitle>{t("portfolio") || "Portfolio"}</CardTitle>
           <Button
             size="sm"
             variant="outline"
@@ -746,7 +602,6 @@ export default function ClientView() {
                         <TableRow>
                           <TableHead>{t("date") || "Date"}</TableHead>
                           <TableHead>{t("type") || "Type"}</TableHead>
-                          <TableHead>{t("status") || "Status"}</TableHead>
                           <TableHead>{t("security") || "Security"}</TableHead>
                           <TableHead>{t("quantity") || "Quantity"}</TableHead>
                           <TableHead>{t("price") || "Price"}</TableHead>
@@ -758,75 +613,35 @@ export default function ClientView() {
                           (transaction) => (
                             <TableRow key={transaction.id}>
                               <TableCell>
-                                <div className="font-mono text-sm">
-                                  {new Date(
-                                    transaction.date
-                                  ).toLocaleDateString("fr-DZ")}
-                                </div>
+                                {new Date(transaction.date).toLocaleDateString(
+                                  "fr-DZ"
+                                )}
                               </TableCell>
                               <TableCell>
                                 <Badge
                                   variant={
                                     transaction.type === "BUY"
                                       ? "default"
-                                      : "destructive"
-                                  }
-                                  className={
-                                    transaction.type === "BUY"
-                                      ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                      : "bg-red-100 text-red-800 hover:bg-red-200"
+                                      : "secondary"
                                   }
                                 >
-                                  {transaction.type === "BUY" ? (
-                                    <ArrowUpRight className="h-3 w-3 mr-1" />
-                                  ) : (
-                                    <ArrowDownRight className="h-3 w-3 mr-1" />
-                                  )}
                                   {transaction.type}
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                <Badge
-                                  variant={
-                                    transaction.status === "completed"
-                                      ? "default"
-                                      : "secondary"
-                                  }
-                                  className={
-                                    transaction.status === "completed"
-                                      ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                  }
-                                >
-                                  {transaction.status === "completed"
-                                    ? t("completed") || "Completed"
-                                    : t("pending") || "Pending"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <div className="font-medium text-sm">
-                                    {transaction.name}
-                                  </div>
-                                  <div className="text-xs text-gray-500 font-mono">
-                                    {transaction.symbol}
-                                  </div>
+                                <div className="font-medium">
+                                  {transaction.name}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {transaction.symbol}
                                 </div>
                               </TableCell>
+                              <TableCell>{transaction.quantity}</TableCell>
                               <TableCell>
-                                <div className="font-mono text-sm">
-                                  {transaction.quantity.toLocaleString("fr-DZ")}
-                                </div>
+                                {formatCurrency(transaction.price)}
                               </TableCell>
-                              <TableCell>
-                                <div className="font-mono text-sm">
-                                  {formatCurrency(transaction.price)}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="font-medium font-mono text-sm">
-                                  {formatCurrency(transaction.total)}
-                                </div>
+                              <TableCell className="font-medium">
+                                {formatCurrency(transaction.total)}
                               </TableCell>
                             </TableRow>
                           )
@@ -849,12 +664,7 @@ export default function ClientView() {
       {/* Related Users Section */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-              <Plus className="h-4 w-4 text-gray-600" />
-            </div>
-            {t("relatedUsers")}
-          </CardTitle>
+          <CardTitle>{t("relatedUsers")}</CardTitle>
           <Button
             size="sm"
             onClick={() => router.push(`/clients/${clientId}/users/new`)}
@@ -935,33 +745,6 @@ export default function ClientView() {
           )}
         </CardContent>
       </Card>
-
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteClient")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteConfirmation")}{" "}
-              <span className="font-medium">
-                {client.name || client.raison_sociale}
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeleting}
-            >
-              {isDeleting ? t("deleting") : t("delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

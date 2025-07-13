@@ -95,17 +95,18 @@ export function OrderDetailsDialog({
     </div>
   );
 
-  // Get stock name
-  // const getStockName = (stockId: string) => {
-  //   const stock = stocksMap[stockId];
-  //   return stock ? `${stock.code} - ${stock.name}` : stockId;
-  // };
 
-  // // Get client name
-  // const getClientName = (clientId: string) => {
-  //   return clientsMap[clientId]?.name || clientId;
-  // };
+  const getStockName = (stockId: string) => {
+    if (order?.stock_code && order?.stock_issuer_nom) {
+      return `${order.stock_code} - ${order.stock_issuer_nom}`;
+    }
+    return stockId;
+  };
 
+  // Get client name from direct API field
+  const getClientName = (clientId: string) => {
+    return order?.client_nom || clientId;
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-8 ">

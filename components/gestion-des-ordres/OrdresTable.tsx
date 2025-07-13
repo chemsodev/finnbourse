@@ -55,7 +55,14 @@ import PrintOrderDialog from "@/components/gestion-des-ordres/PrintOrderDialog";
 import OrdreDrawer from "./OrdreDrawer";
 import BulletinSubmitDialog from "../BulletinSubmitDialog";
 import SupprimerOrdre from "../SupprimerOrdre";
-import { List, AlertTriangle, Printer, ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
+import {
+  List,
+  AlertTriangle,
+  Printer,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+} from "lucide-react";
 import RateLimitReached from "../RateLimitReached";
 import { ValiderTotallement } from "../ValiderTotallement";
 import { Order } from "@/lib/interfaces";
@@ -73,6 +80,7 @@ import { TitreDetails } from "@/components/titres/TitreDetails";
 import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialog";
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
 import { OrderElement } from "@/lib/services/orderService";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrdresTableProps {
   searchquery: string;
@@ -97,10 +105,20 @@ interface OrdresTableProps {
   onActionToggle?: () => void;
   showResponseButton?: boolean;
   data?: Order[];
+  onRefresh?: () => void; // Add refresh callback
 }
 
-type SortField = 'id' | 'titre' | 'investisseur' | 'iob' | 'sens' | 'type' | 'quantity' | 'statut' | 'date';
-type SortDirection = 'asc' | 'desc' | null;
+type SortField =
+  | "id"
+  | "titre"
+  | "investisseur"
+  | "iob"
+  | "sens"
+  | "type"
+  | "quantity"
+  | "statut"
+  | "date";
+type SortDirection = "asc" | "desc" | null;
 
 export default function OrdresTable({
   searchquery,
@@ -115,37 +133,54 @@ export default function OrdresTable({
   onActionToggle,
   showResponseButton = true,
   data: injectedData,
+  onRefresh,
 }: OrdresTableProps) {
   const session = useSession();
+  const { toast } = useToast();
   const t = useTranslations("mesOrdres");
   const tStatus = useTranslations("status");
   const [data, setData] = useState<Order[]>(injectedData ?? []);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField | null>('date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortField, setSortField] = useState<SortField | null>("date");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [responseForm, setResponseForm] = useState({
-    reliquat: "",
     quantite: "",
     prix: "",
   });
-  const [ordersWithResponses, setOrdersWithResponses] = useState<Record<string, boolean>>({});
-  const [responsesData, setResponsesData] = useState<Record<string, { reliquat: string; quantite: string; prix: string }>>({});
+  const [ordersWithResponses, setOrdersWithResponses] = useState<
+    Record<string, boolean>
+  >({});
+  const [responsesData, setResponsesData] = useState<
+    Record<string, { quantite: string; prix: string }>
+  >({});
   const [responseVersion, setResponseVersion] = useState(0);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | null>(null);
-  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
-  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] =
+    useState<Order | null>(null);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [institutions, setInstitutions] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
+
+  // Add a state for tracking submission status
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Ajout pour message contextuel
   const attenteReponse = showActionColumn === true;
 
   // Sort function
-  const sortData = (data: Order[], field: SortField, direction: SortDirection) => {
+  const sortData = (
+    data: Order[],
+    field: SortField,
+    direction: SortDirection
+  ) => {
     if (!direction) return data;
 
     return [...data].sort((a, b) => {
@@ -153,52 +188,52 @@ export default function OrdresTable({
       let bValue: any;
 
       switch (field) {
-        case 'id':
-          aValue = a.id || '';
-          bValue = b.id || '';
+        case "id":
+          aValue = a.id || "";
+          bValue = b.id || "";
           break;
-        case 'titre':
-          aValue = (a.securityissuer || '') + (a.securityid || '');
-          bValue = (b.securityissuer || '') + (b.securityid || '');
+        case "titre":
+          aValue = (a.securityissuer || "") + (a.securityid || "");
+          bValue = (b.securityissuer || "") + (b.securityid || "");
           break;
-        case 'investisseur':
-          aValue = a.investorid || '';
-          bValue = b.investorid || '';
+        case "investisseur":
+          aValue = a.investorid || "";
+          bValue = b.investorid || "";
           break;
-        case 'iob':
-          aValue = a.negotiatorid || '';
-          bValue = b.negotiatorid || '';
+        case "iob":
+          aValue = a.negotiatorid || "";
+          bValue = b.negotiatorid || "";
           break;
-        case 'sens':
+        case "sens":
           aValue = a.orderdirection === 1 ? t("achat") : t("vente");
           bValue = b.orderdirection === 1 ? t("achat") : t("vente");
           break;
-        case 'type':
-          aValue = a.securitytype || '';
-          bValue = b.securitytype || '';
+        case "type":
+          aValue = a.securitytype || "";
+          bValue = b.securitytype || "";
           break;
-        case 'quantity':
+        case "quantity":
           aValue = a.quantity || 0;
           bValue = b.quantity || 0;
           break;
-        case 'statut':
+        case "statut":
           aValue = a.orderstatus || 0;
           bValue = b.orderstatus || 0;
           break;
-        case 'date':
-          aValue = new Date(a.createdat || '').getTime();
-          bValue = new Date(b.createdat || '').getTime();
+        case "date":
+          aValue = new Date(a.createdat || "").getTime();
+          bValue = new Date(b.createdat || "").getTime();
           break;
         default:
           return 0;
       }
 
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
+      if (typeof aValue === "string" && typeof bValue === "string") {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
       }
 
-      if (direction === 'asc') {
+      if (direction === "asc") {
         return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
       } else {
         return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
@@ -209,15 +244,15 @@ export default function OrdresTable({
   // Handle sort click
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      if (sortDirection === 'asc') {
-        setSortDirection('desc');
-      } else if (sortDirection === 'desc') {
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
         setSortDirection(null);
         setSortField(null);
       }
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -226,59 +261,122 @@ export default function OrdresTable({
     if (sortField !== field) {
       return <ChevronsUpDown className="ml-1 h-4 w-4 text-gray-400" />;
     }
-    if (sortDirection === 'asc') {
+    if (sortDirection === "asc") {
       return <ChevronUp className="ml-1 h-4 w-4 text-blue-600" />;
     }
-    if (sortDirection === 'desc') {
+    if (sortDirection === "desc") {
       return <ChevronDown className="ml-1 h-4 w-4 text-blue-600" />;
     }
     return <ChevronsUpDown className="ml-1 h-4 w-4 text-gray-400" />;
   };
 
-  // Handle response click
+  // Modified handleResponseClick to initialize form with existing values
   const handleResponseClick = (order: Order) => {
     setSelectedOrder(order);
     if (ordersWithResponses[order.id] && responsesData[order.id]) {
       setResponseForm({
-        reliquat: responsesData[order.id].reliquat,
         quantite: responsesData[order.id].quantite,
         prix: responsesData[order.id].prix,
       });
     } else {
+      // Initialize with default values from the order
       setResponseForm({
-        reliquat: "",
-        quantite: "",
-        prix: "",
+        quantite: order.quantity?.toString() || "",
+        prix: (order as any).price?.toString() || "",
       });
     }
     setIsResponseDialogOpen(true);
   };
 
   // Handle response submit
-  const handleResponseSubmit = () => {
-    // Ici vous pouvez traiter la soumission du formulaire
-    console.log("Réponse soumise:", {
-      orderId: selectedOrder?.id,
-      ...responseForm
-    });
-    // Ajouter l'ordre à la liste des ordres avec réponses soumises
-    if (selectedOrder?.id) {
-      setOrdersWithResponses(prev => {
+  const handleResponseSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+
+      if (!selectedOrder?.id) {
+        console.error("No order selected");
+        return;
+      }
+
+      const restToken = (session.data?.user as any)?.restToken;
+      if (!restToken) {
+        console.error("No authentication token available");
+        return;
+      }
+
+      // Get API base URL from environment variables
+      const BACKEND_API =
+        (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
+        "/api/v1";
+
+      const response = await fetch(`${BACKEND_API}/order/submit-order-result`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${restToken}`,
+        },
+        body: JSON.stringify({
+          orderID: parseInt(selectedOrder.id),
+          taskID: "execution",
+          action: "validate",
+          quantity: parseInt(responseForm.quantite) || selectedOrder.quantity,
+          price: parseFloat(responseForm.prix) || (selectedOrder as any).price,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Add the order to the list of orders with submitted responses
+      setOrdersWithResponses((prev) => {
         const updated = { ...prev, [selectedOrder.id!]: true };
-        // Incrémente la version pour forcer le re-render
-        setResponseVersion(v => v + 1);
+        // Increment version to force re-render
+        setResponseVersion((v) => v + 1);
         return updated;
       });
-      setResponsesData(prev => ({
+
+      setResponsesData((prev) => ({
         ...prev,
         [selectedOrder.id!]: {
-          reliquat: responseForm.reliquat,
           quantite: responseForm.quantite,
           prix: responseForm.prix,
         },
       }));
+
+      // Show success message with toast instead of alert
+      toast({
+        title: "Succès",
+        description: "Résultat d'exécution soumis avec succès",
+        variant: "default",
+      });
+
+      setIsResponseDialogOpen(false);
+
+      // Call refresh callback if provided
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error("Error submitting order result:", error);
+      // Show error message with toast instead of alert
+      toast({
+        title: "Erreur",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Une erreur s'est produite lors de la soumission",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsResponseDialogOpen(false);
   };
 
   // Filter data based on pageType and userRole
@@ -298,7 +396,9 @@ export default function OrdresTable({
       case "submitResults":
         return orders.filter((order) => order.orderstatus === 6);
       case "carnetordres":
-        return orders.filter((order) => order.orderstatus >= 0 && order.orderstatus <= 11);
+        return orders.filter(
+          (order) => order.orderstatus >= 0 && order.orderstatus <= 11
+        );
       case "souscriptions":
         // For subscriptions page, filter by primary market
         return filterOrdersByMarketType(orders, "primaire");
@@ -361,12 +461,12 @@ export default function OrdresTable({
   useEffect(() => {
     if (!loading && data.length > 0) {
       let sortedData = [...data];
-      
+
       // Apply sorting
       if (sortField && sortDirection) {
         sortedData = sortData(sortedData, sortField, sortDirection);
       }
-      
+
       setData(sortedData);
     }
   }, [sortField, sortDirection, loading]);
@@ -415,14 +515,24 @@ export default function OrdresTable({
       emissionDate: new Date(),
       closingDate: new Date(),
       enjoymentDate: new Date(),
-      marketListing: "secondary",
-      type: order.securitytype || "",
+      marketListing: "ALG",
+      type:
+        (order.securitytype as
+          | "action"
+          | "obligation"
+          | "sukuk"
+          | "participatif") || "action",
+      stockType:
+        (order.securitytype as
+          | "action"
+          | "obligation"
+          | "sukuk"
+          | "participatif") || "action",
       status: "activated",
       dividendRate: undefined,
       capitalOperation: undefined,
       maturityDate: undefined,
       durationYears: undefined,
-      paymentSchedule: undefined,
       commission: undefined,
       shareClass: undefined,
       votingRights: undefined,
@@ -433,6 +543,8 @@ export default function OrdresTable({
         date: new Date(),
         gap: 0,
       },
+      capitalRepaymentSchedule: [],
+      couponSchedule: [],
     };
   }
 
@@ -457,7 +569,9 @@ export default function OrdresTable({
   };
 
   // Mocks pour stocksMap et clientsMap (à remplacer par de vraies données si besoin)
-  const [stocksMap] = useState<Record<string, { code: string; name: string }>>({});
+  const [stocksMap] = useState<Record<string, { code: string; name: string }>>(
+    {}
+  );
   const [clientsMap] = useState<Record<string, { name: string }>>({});
 
   // Conversion Order -> OrderElement pour OrderDetailsDialog
@@ -466,12 +580,12 @@ export default function OrdresTable({
       id: Number(order.id),
       quantity: order.quantity ?? 0,
       price: (order as any).price ?? 0,
-      time_condition: (order as any).time_condition ?? '',
-      quantitative_condition: (order as any).quantitative_condition ?? '',
-      stock_id: (order as any).securityid ?? '',
-      market_type: (order as any).market_type ?? '',
-      client_id: (order as any).investorid ?? '',
-      status: String(order.orderstatus ?? ''),
+      time_condition: (order as any).time_condition ?? "",
+      quantitative_condition: (order as any).quantitative_condition ?? "",
+      stock_id: (order as any).securityid ?? "",
+      market_type: (order as any).market_type ?? "",
+      client_id: (order as any).investorid ?? "",
+      status: String(order.orderstatus ?? ""),
     };
   }
 
@@ -490,101 +604,99 @@ export default function OrdresTable({
           <TableRow>
             <TableHead></TableHead>
             {pageType !== "dashboard" && (
-              <TableHead 
+              <TableHead
                 className="font-bold uppercase cursor-pointer"
-                onClick={() => handleSort('id')}
+                onClick={() => handleSort("id")}
               >
                 <div className="flex items-center">
                   ID
-                  {getSortIcon('id')}
+                  {getSortIcon("id")}
                 </div>
               </TableHead>
             )}
-            <TableHead 
+            <TableHead
               className="cursor-pointer"
-              onClick={() => handleSort('titre')}
+              onClick={() => handleSort("titre")}
             >
               <div className="flex items-center">
                 {t("titre")}
-                {getSortIcon('titre')}
+                {getSortIcon("titre")}
               </div>
             </TableHead>
             {pageType === "carnetordres" && (
-              <TableHead 
+              <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort('investisseur')}
+                onClick={() => handleSort("investisseur")}
               >
                 <div className="flex items-center">
                   {t("investisseur")}
-                  {getSortIcon('investisseur')}
+                  {getSortIcon("investisseur")}
                 </div>
               </TableHead>
             )}
             {pageType === "carnetordres" && (
-              <TableHead 
+              <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort('iob')}
+                onClick={() => handleSort("iob")}
               >
                 <div className="flex items-center">
                   IOB
-                  {getSortIcon('iob')}
+                  {getSortIcon("iob")}
                 </div>
               </TableHead>
             )}
-            <TableHead 
+            <TableHead
               className="cursor-pointer"
-              onClick={() => handleSort('sens')}
+              onClick={() => handleSort("sens")}
             >
               <div className="flex items-center">
                 {t("sens")}
-                {getSortIcon('sens')}
+                {getSortIcon("sens")}
               </div>
             </TableHead>
-            <TableHead 
+            <TableHead
               className="cursor-pointer"
-              onClick={() => handleSort('type')}
+              onClick={() => handleSort("type")}
             >
               <div className="flex items-center">
                 {t("type")}
-                {getSortIcon('type')}
+                {getSortIcon("type")}
               </div>
             </TableHead>
             <TableHead>
               {pageType === "carnetordres" ? (
                 <OrderStateFilter />
               ) : (
-                <div 
+                <div
                   className="flex items-center cursor-pointer"
-                  onClick={() => handleSort('statut')}
+                  onClick={() => handleSort("statut")}
                 >
                   {t("statut")}
-                  {getSortIcon('statut')}
+                  {getSortIcon("statut")}
                 </div>
               )}
+            </TableHead>
+            {pageType === "carnetordres" && (
+              <TableHead>
+                <MarketTypeFilter />
               </TableHead>
-              {pageType === "carnetordres" && (
-                <TableHead>
-                  <MarketTypeFilter />
-                </TableHead>
-              )}
-            <TableHead 
+            )}
+            <TableHead
               className="cursor-pointer"
-              onClick={() => handleSort('date')}
+              onClick={() => handleSort("date")}
             >
               <div className="flex items-center">
                 {t("date")}
-                {getSortIcon('date')}
+                {getSortIcon("date")}
               </div>
             </TableHead>
             {pageType !== "dashboard" && <TableHead>Trans</TableHead>}
-            {showActionColumn && (
-              <TableHead>Réponse</TableHead>
-            )}
+            {showActionColumn && <TableHead>Réponse</TableHead>}
             {pageType !== "dashboard" && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-        {data.map((order: Order, idx) => (
+          {data.map((order: Order, idx) => (
             <TableRow key={order.id}>
               <TableCell>{skip + idx + 1}</TableCell>
               {pageType !== "dashboard" && (
@@ -597,18 +709,18 @@ export default function OrdresTable({
               <TableCell>
                 <div className="flex flex-col">
                   <div className="font-medium capitalize">
-                  {order?.securityissuer || "N/A"}
+                    {order?.securityissuer || "N/A"}
                   </div>
                   <div className="font-medium text-xs uppercase text-gray-400">
-                  {order?.securityid || "N/A"}
-                </div>
+                    {order?.securityid || "N/A"}
+                  </div>
                 </div>
               </TableCell>
-            {pageType === "carnetordres" && (
-              <TableCell>{order?.investorid || "N/A"}</TableCell>
+              {pageType === "carnetordres" && (
+                <TableCell>{order?.investorid || "N/A"}</TableCell>
               )}
-            {pageType === "carnetordres" && (
-              <TableCell>{order?.negotiatorid || "N/A"}</TableCell>
+              {pageType === "carnetordres" && (
+                <TableCell>{order?.negotiatorid || "N/A"}</TableCell>
               )}
               <TableCell
                 className={`${
@@ -618,15 +730,15 @@ export default function OrdresTable({
                 {order.orderdirection === 1 ? t("achat") : t("vente")}
               </TableCell>
               <TableCell>
-              {order.securitytype === "action"
+                {order.securitytype === "action"
                   ? t("action")
-                : order.securitytype === "obligation"
+                  : order.securitytype === "obligation"
                   ? t("obligation")
-                : order.securitytype === "sukuk"
+                  : order.securitytype === "sukuk"
                   ? t("sukuk")
-                : order.securitytype === "opv"
+                  : order.securitytype === "opv"
                   ? t("opv")
-                : order.securitytype === "titresparticipatifs"
+                  : order.securitytype === "titresparticipatifs"
                   ? t("titre_participatif")
                   : order.securitytype === "empruntobligataire"
                   ? t("emprunt_obligataire")
@@ -640,7 +752,7 @@ export default function OrdresTable({
                         ? "bg-green-600"
                         : "bg-green-600"
                       : pageType === "carnetordres"
-                      ? "bg-green-600"  
+                      ? "bg-green-600"
                       : getStatusBgColor(Number(order.orderstatus))
                   }`}
                 >
@@ -679,101 +791,109 @@ export default function OrdresTable({
                     : "Unknown"}
                 </div>
               </TableCell>
-                <TableCell className="text-xs">
-                  {(() => {
-                    const d = new Date(order.createdat);
-                    const day = String(d.getDate()).padStart(2, '0');
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const year = d.getFullYear();
-                    return `${day}/${month}/${year}`;
-                  })()}
+              <TableCell className="text-xs">
+                {(() => {
+                  const d = new Date(order.createdat);
+                  const day = String(d.getDate()).padStart(2, "0");
+                  const month = String(d.getMonth() + 1).padStart(2, "0");
+                  const year = d.getFullYear();
+                  return `${day}/${month}/${year}`;
+                })()}
+              </TableCell>
+              {pageType !== "dashboard" && (
+                <TableCell>
+                  {"sessionsCount" in order ? (order as any).sessionsCount : 0}
                 </TableCell>
-                {pageType !== "dashboard" && (
-                  <TableCell>
-                    {'sessionsCount' in order ? (order as any).sessionsCount : 0}
-                  </TableCell>
-                )}
-                {showActionColumn && (
-                  <TableCell>
-                    <Button size="sm" variant="outline" onClick={() => handleResponseClick(order)}>
-                      {ordersWithResponses[order.id] ? 'Modifier Résultat' : 'Résultat'}
-                    </Button>
-                  </TableCell>
-                )}
-                {pageType !== "dashboard" && (
-                  <TableCell>
-                    <Button 
-                      variant="outline" 
+              )}
+              {showActionColumn && (
+                <TableCell>
+                  {(order.apiActions === "validate" ||
+                    ordersWithResponses[order.id]) && (
+                    <Button
                       size="sm"
-                      onClick={() => handleDetailsClick(order)}
+                      variant="outline"
+                      onClick={() => handleResponseClick(order)}
+                      className={
+                        ordersWithResponses[order.id] ? "bg-green-50" : ""
+                      }
                     >
-                      <List className="h-4 w-4" />
+                      {ordersWithResponses[order.id]
+                        ? "Modifier Résultat"
+                        : "Soumettre Résultat"}
                     </Button>
-                  </TableCell>
-                )}
+                  )}
+                </TableCell>
+              )}
+              {pageType !== "dashboard" && (
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDetailsClick(order)}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
       {/* Dialog de réponse */}
-      <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
+      <Dialog
+        open={isResponseDialogOpen}
+        onOpenChange={setIsResponseDialogOpen}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              {selectedOrder && ordersWithResponses[selectedOrder.id] 
-                ? "Modifier la réponse à l'ordre" 
-                : "Réponse à l'ordre"
-              }
+              {selectedOrder && ordersWithResponses[selectedOrder.id]
+                ? "Modifier le résultat d'exécution"
+                : "Soumettre le résultat d'exécution"}
             </DialogTitle>
-            <DialogDescription>
-              Ordre ID: {selectedOrder?.id}
-            </DialogDescription>
+            <DialogDescription>Ordre ID: {selectedOrder?.id}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="reliquat" className="text-right">
-                Reliquat
-              </Label>
-              <Input
-                id="reliquat"
-                value={responseForm.reliquat}
-                onChange={(e) =>
-                  setResponseForm({ ...responseForm, reliquat: e.target.value })
-                }
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="quantite" className="text-right">
-                Quantité
+                Quantité exécutée
               </Label>
               <Input
                 id="quantite"
+                type="number"
                 value={responseForm.quantite}
                 onChange={(e) =>
                   setResponseForm({ ...responseForm, quantite: e.target.value })
                 }
                 className="col-span-3"
+                placeholder={selectedOrder?.quantity?.toString() || ""}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="prix" className="text-right">
-                Prix
+                Prix d'exécution
               </Label>
               <Input
                 id="prix"
+                type="number"
+                step="0.01"
                 value={responseForm.prix}
                 onChange={(e) =>
                   setResponseForm({ ...responseForm, prix: e.target.value })
                 }
                 className="col-span-3"
+                placeholder={(selectedOrder as any)?.price?.toString() || ""}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={handleResponseSubmit}>
-              Soumettre
+            <Button
+              type="submit"
+              onClick={handleResponseSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Soumission..." : "Soumettre"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -782,11 +902,13 @@ export default function OrdresTable({
       {/* Détails de l'ordre (dialog natif) */}
       {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
         <OrderDetailsDialog
-          order={selectedOrderForDetails ? toOrderElement(selectedOrderForDetails) : null}
+          order={
+            selectedOrderForDetails
+              ? toOrderElement(selectedOrderForDetails)
+              : null
+          }
           open={isDetailsModalOpen}
           onOpenChange={setIsDetailsModalOpen}
-          stocksMap={stocksMap}
-          clientsMap={clientsMap}
         />
       )}
       {isDetailsModalOpen && loadingDetails && (

@@ -46,7 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useClientApi } from "@/hooks/useClientApi";
 import { ClientFormValues } from "@/lib/services/client-api";
 import { useToast } from "@/hooks/use-toast";
@@ -200,7 +200,7 @@ export default function ClientsPage() {
   };
 
   const handleViewClient = (clientId: string) => {
-    router.push(`/clients/${clientId}`);
+    router.push(`/clients/${clientId}/view`);
   };
 
   // Show loading state

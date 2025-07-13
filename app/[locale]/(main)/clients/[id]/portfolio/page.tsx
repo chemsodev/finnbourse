@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -186,12 +187,12 @@ export default function ClientPortfolio() {
         console.log("Fetching portfolio data...");
         setApiError(null);
 
+        // Skip the API call and use fallback data immediately for development
         // In production, you would uncomment this section to use the real API
         /*
         try {
           // Add timeout to the fetch call
-          const portfolioApiUrl = process.env.NEXT_PUBLIC_PORTFOLIO_API_URL || 'http://localhost:8081';
-          const fetchPromise = fetch(`${portfolioApiUrl}/portfolio/${clientId}`);
+          const fetchPromise = fetch(`http://localhost:8081/portfolio/${clientId}`);
           const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error("Fetch timeout")), 5000)
           );

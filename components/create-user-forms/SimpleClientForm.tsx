@@ -165,7 +165,7 @@ export const SimpleClientForm: React.FC<SimpleClientFormProps> = ({
         phoneNumber: data.phoneNumber,
         mobilePhone: data.phoneNumber,
         wilaya: data.wilaya,
-        address: data.address,
+        address: data.address, // Make sure address is properly included
         iobType: "intern",
         numeroCompteTitre: data.numeroCompteTitre,
         ribBanque: data.ribBanque,
@@ -192,6 +192,7 @@ export const SimpleClientForm: React.FC<SimpleClientFormProps> = ({
         }),
       };
 
+      console.log("Submitting client data:", clientData);
       const result = await createClient(clientData);
 
       toast({
@@ -204,6 +205,11 @@ export const SimpleClientForm: React.FC<SimpleClientFormProps> = ({
       }
     } catch (error) {
       console.error("Form submission error:", error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la création du client",
+        variant: "destructive",
+      });
     }
   };
 
