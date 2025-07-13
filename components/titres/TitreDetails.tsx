@@ -17,8 +17,7 @@ import { FinancialInstitution } from "@/types/gestionTitres";
 interface TitreDetailsViewProps {
   data: TitreFormValues;
   companies: { id: string; name: string }[];
-
-  institutions: { id: string; name: string }[];
+  institutions: FinancialInstitution[];
   withBackdrop?: boolean;
   isValidationReturnPage?: boolean;
   orderResponse?: {
@@ -286,9 +285,7 @@ export function TitreDetails({
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-sm font-medium text-gray-600">
-                  Price
-                </div>
+                <div className="text-sm font-medium text-gray-600">Price</div>
                 <div className="text-sm text-gray-900">
                   {formatCurrency(orderResponse.prix) || "N/A"}
                 </div>

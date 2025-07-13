@@ -10,8 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-
-
 import {
   Clock,
   ArrowRight,
@@ -33,16 +31,12 @@ interface OrderDetailsDialogProps {
   order: OrderElement | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  stocksMap: Record<string, { code: string; name: string }>;
-  clientsMap: Record<string, { name: string }>;
 }
 
 export function OrderDetailsDialog({
   order,
   open,
   onOpenChange,
-  stocksMap,
-  clientsMap,
 }: OrderDetailsDialogProps) {
   const t = useTranslations("orderHistory.orderDetails");
 
@@ -102,15 +96,15 @@ export function OrderDetailsDialog({
   );
 
   // Get stock name
-  const getStockName = (stockId: string) => {
-    const stock = stocksMap[stockId];
-    return stock ? `${stock.code} - ${stock.name}` : stockId;
-  };
+  // const getStockName = (stockId: string) => {
+  //   const stock = stocksMap[stockId];
+  //   return stock ? `${stock.code} - ${stock.name}` : stockId;
+  // };
 
-  // Get client name
-  const getClientName = (clientId: string) => {
-    return clientsMap[clientId]?.name || clientId;
-  };
+  // // Get client name
+  // const getClientName = (clientId: string) => {
+  //   return clientsMap[clientId]?.name || clientId;
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -138,12 +132,12 @@ export function OrderDetailsDialog({
             <CardContent className="space-y-0">
               {renderDetail(
                 t("stock"),
-                getStockName(order.stock_id),
+                // getStockName(order.stock_id),
                 <Package className="h-4 w-4" />
               )}
               {renderDetail(
                 t("client"),
-                getClientName(order.client_id),
+                // getClientName(order.client_id),
                 <User className="h-4 w-4" />
               )}
               {renderDetail(
@@ -209,17 +203,9 @@ export function OrderDetailsDialog({
             order={order}
             open={open}
             onOpenChange={onOpenChange}
-            stocksMap={stocksMap}
-            clientsMap={clientsMap}
           />
 
-          <OrderTrack
-            order={order}
-            open={open}
-            onOpenChange={onOpenChange}
-            stocksMap={stocksMap}
-            clientsMap={clientsMap}
-          />
+          <OrderTrack order={order} open={open} onOpenChange={onOpenChange} />
         </div>
 
         {/* <div className="flex justify-end pt-4">

@@ -16,111 +16,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { List, AlertTriangle, RefreshCw } from "lucide-react";
 import { OrderElement } from "@/lib/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
-
-const mockOrders: OrderElement[] = [
-  {
-    id: 1001,
-    stock_id: "ABC123",
-    client_id: "CLIENT001",
-    market_type: "S",
-    quantity: 150,
-    price: 1250.5,
-    time_condition: "Good Till Cancelled",
-    quantitative_condition: "All or None",
-    status: "validated",
-  },
-  {
-    id: 1002,
-    stock_id: "XYZ789",
-    client_id: "CLIENT002",
-    market_type: "P",
-    quantity: 200,
-    price: 850.75,
-    time_condition: "Immediate or Cancel",
-    quantitative_condition: "Partial",
-    status: "rejected",
-  },
-  {
-    id: 1003,
-    stock_id: "DEF456",
-    client_id: "CLIENT003",
-    market_type: "S",
-    quantity: 75,
-    price: 2100.0,
-    time_condition: "Fill or Kill",
-    quantitative_condition: "All or None",
-    status: "canceled",
-  },
-  {
-    id: 1004,
-    stock_id: "GHI789",
-    client_id: "CLIENT004",
-    market_type: "P",
-    quantity: 300,
-    price: 950.25,
-    time_condition: "Good Till Date",
-    quantitative_condition: "Partial",
-    status: "validated",
-  },
-  {
-    id: 1005,
-    stock_id: "JKL012",
-    client_id: "CLIENT005",
-    market_type: "S",
-    quantity: 50,
-    price: 3200.0,
-    time_condition: "Immediate or Cancel",
-    quantitative_condition: "All or None",
-    status: "pending",
-  },
-];
-
-const mockStocks = {
-  ABC123: {
-    id: "ABC123",
-    code: "ABC",
-    name: "ABC Corporation",
-    type: "Equity",
-  },
-  XYZ789: { id: "XYZ789", code: "XYZ", name: "XYZ Industries", type: "Bond" },
-  DEF456: { id: "DEF456", code: "DEF", name: "DEF Technologies", type: "ETF" },
-  GHI789: { id: "GHI789", code: "GHI", name: "GHI Holdings", type: "Equity" },
-  JKL012: { id: "JKL012", code: "JKL", name: "JKL Financials", type: "Index" },
-};
-
-const mockClients = {
-  CLIENT001: {
-    id: "CLIENT001",
-    name: "Mohamed Ali",
-    email: "m.ali@example.com",
-  },
-  CLIENT002: {
-    id: "CLIENT002",
-    name: "Fatima Zahra",
-    email: "f.zahra@example.com",
-  },
-  CLIENT003: {
-    id: "CLIENT003",
-    name: "Ahmed Khan",
-    email: "a.khan@example.com",
-  },
-  CLIENT004: {
-    id: "CLIENT004",
-    name: "Amina Belkadi",
-    email: "a.belkadi@example.com",
-  },
-  CLIENT005: {
-    id: "CLIENT005",
-    name: "Youssef Mahmoud",
-    email: "y.mahmoud@example.com",
-  },
-};
+import { useJournalOrdersApi } from "@/hooks/useOrdersApi";
+import { JournalOrder } from "@/types/orders";
 
 interface StockDetails {
   id: string;
@@ -148,16 +51,13 @@ export default function OrdresTableHistory({
   marketType = "S",
   pageType,
 }: OrdresTableHistoryProps) {
-  const session = useSession();
   const t = useTranslations("orderHistory");
+  const api = useJournalOrdersApi();
   const [data, setData] = useState<OrderElement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const [stocksMap, setStocksMap] = useState<Record<string, StockDetails>>({});
-  const [clientsMap, setClientsMap] = useState<Record<string, ClientDetails>>(
-    {}
-  );
+
   const [selectedOrder, setSelectedOrder] = useState<OrderElement | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -171,21 +71,27 @@ export default function OrdresTableHistory({
   }, [taskID]);
 
   // Initial fetch on component mount
-  useEffect(() => {
-    fetchOrdersData();
-  }, [session, taskID, marketType, toast]);
 
   // Fetch orders from API
-  const fetchOrdersData = async () => {
-    setLoading(true);
-    setError(null);
-
+  const fetchOrdersData = useCallback(async () => {
     try {
-      const restToken = (session.data?.user as any)?.restToken;
-      //   Mock data for testing purposes
-      setData(mockOrders);
-      setStocksMap(mockStocks);
-      setClientsMap(mockClients);
+      setLoading(true);
+      setError(null);
+      const response = await api.getAllJournalOrders({
+        market_type: marketType,
+      });
+      console.log(response);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      setData(
+        (response.data.orders || []).map((order: JournalOrder) => ({
+          ...order,
+          time_condition: order.time_condition ?? "",
+          quantitative_condition: order.quantitative_condition ?? "",
+        }))
+      );
 
       //   if (!restToken) {
       //     setError("No authentication token available");
@@ -233,16 +139,24 @@ export default function OrdresTableHistory({
     } catch (err) {
       console.error("Error fetching orders:", err);
       setError(err instanceof Error ? err.message : "Unknown error");
+      const errorMessage =
+        typeof err === "object" && err !== null && "message" in err
+          ? String((err as { message?: unknown }).message)
+          : "Failed to fetch stocks";
       toast({
         title: "Error",
-        description: "Failed to load orders. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+      setData([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [api, marketType, toast]);
 
+  useEffect(() => {
+    fetchOrdersData();
+  }, [fetchOrdersData]);
   // Fetch stock details
   //   const fetchStockDetails = async (stockIds: string[], token: string) => {
   //     try {
@@ -350,31 +264,21 @@ export default function OrdresTableHistory({
       cell: ({ row }: any) => <div>{row.original.id}</div>,
     },
     {
-      accessorKey: "stock_id",
+      accessorKey: "stock_code",
       header: "Titre",
-      cell: ({ row }: any) => {
-        const stockId = row.original.stock_id;
-        const stock = stocksMap[stockId];
-        return (
-          <div className="flex flex-col">
-            <span className="font-medium">
-              {stock?.code || `ID: ${stockId || "N/A"}`}
-            </span>
-            <span className="text-xs text-gray-500">
-              {stock?.name || "Loading..."}
-            </span>
-          </div>
-        );
-      },
+      cell: ({ row }: any) => (
+        <div className="flex flex-col">
+          <span className="font-medium">{row.original.stock_code}</span>
+          <span className="text-xs text-gray-500">
+            {row.original.stock_issuer_nom}
+          </span>
+        </div>
+      ),
     },
     {
-      accessorKey: "client_id",
+      accessorKey: "client_nom",
       header: t("myOrders.client"),
-      cell: ({ row }: any) => {
-        const clientId = row.original.client_id;
-        const client = clientsMap[clientId];
-        return <div>{client?.name || `Client ID: ${clientId || "N/A"}`}</div>;
-      },
+      cell: ({ row }: any) => <div>{row.original.client_nom}</div>,
     },
     {
       accessorKey: "market_type",
@@ -395,6 +299,7 @@ export default function OrdresTableHistory({
       header: t("myOrders.price"),
       cell: ({ row }: any) => <div>{row.original.price} DA</div>,
     },
+
     {
       accessorKey: "time_condition",
       header: t("myOrders.timeCondition"),
@@ -408,28 +313,57 @@ export default function OrdresTableHistory({
     {
       accessorKey: "status",
       header: t("myOrders.status.status"),
-      cell: ({ row }: any) => (
-        <div className="capitalize">
-          {row.original.status === "validated" && (
-            <span className="text-green-600">
-              {t("myOrders.status.validated")}
-            </span>
-          )}
-          {row.original.status === "rejected" && (
-            <span className="text-red-600">
-              {t("myOrders.status.rejected")}
-            </span>
-          )}
-          {row.original.status === "canceled" && (
-            <span className="text-gray-600">
-              {t("myOrders.status.canceled")}
-            </span>
-          )}
-          {!["validated", "rejected", "canceled"].includes(
-            row.original.status
-          ) && <span>{row.original.status}</span>}
-        </div>
-      ),
+      cell: ({ row }: any) => {
+        const statusMap: Record<string, { text: string; color: string }> = {
+          "premiere-validation": {
+            text: t("myOrders.status.premiereValidation"),
+            color: "text-blue-600",
+          },
+          "validation-finale": {
+            text: t("myOrders.status.validationFinale"),
+            color: "text-green-600",
+          },
+          "validation-retour-premiere": {
+            text: t("myOrders.status.validationRetourPremiere"),
+            color: "text-yellow-600",
+          },
+          "validation-retour-finale": {
+            text: t("myOrders.status.validationRetourFinale"),
+            color: "text-yellow-600",
+          },
+          "validation-tcc-premiere": {
+            text: t("myOrders.status.validationTccPremiere"),
+            color: "text-blue-600",
+          },
+          "validation-tcc-finale": {
+            text: t("myOrders.status.validationTccFinale"),
+            color: "text-green-600",
+          },
+          "validation-tcc-retour-premiere": {
+            text: t("myOrders.status.validationTccRetourPremiere"),
+            color: "text-yellow-600",
+          },
+          "validation-tcc-retour-finale": {
+            text: t("myOrders.status.validationTccRetourFinale"),
+            color: "text-yellow-600",
+          },
+          execution: {
+            text: t("myOrders.status.execution"),
+            color: "text-purple-600",
+          },
+          "final-state": {
+            text: t("myOrders.status.finalState"),
+            color: "text-gray-600",
+          },
+        };
+
+        const statusInfo = statusMap[row.original.status] || {
+          text: row.original.status,
+          color: "text-gray-600",
+        };
+
+        return <span className={statusInfo.color}>{statusInfo.text}</span>;
+      },
     },
   ];
 
@@ -586,8 +520,6 @@ export default function OrdresTableHistory({
         order={selectedOrder}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        stocksMap={stocksMap}
-        clientsMap={clientsMap}
       />
     </div>
   );

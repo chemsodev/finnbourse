@@ -17,7 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect } from "react";
+import {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,53 +60,61 @@ const mockStocks = [
     issuer: "TOTAL",
     code: "TOTAL",
     name: "Total Energies",
-    facevalue: 52.30,
+    facevalue: 52.3,
     marketmetadata: {
       cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
-        price: 52.30 + (Math.random() - 0.5) * 5
-      }))
-    }
+        date: new Date(
+          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        price: 52.3 + (Math.random() - 0.5) * 5,
+      })),
+    },
   },
   {
     id: "2",
     issuer: "BNP Paribas",
     code: "BNP",
     name: "BNP Paribas",
-    facevalue: 45.80,
+    facevalue: 45.8,
     marketmetadata: {
       cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
-        price: 45.80 + (Math.random() - 0.5) * 3
-      }))
-    }
+        date: new Date(
+          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        price: 45.8 + (Math.random() - 0.5) * 3,
+      })),
+    },
   },
   {
     id: "3",
     issuer: "Orange",
     code: "ORA",
     name: "Orange SA",
-    facevalue: 12.50,
+    facevalue: 12.5,
     marketmetadata: {
       cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
-        price: 12.50 + (Math.random() - 0.5) * 2
-      }))
-    }
+        date: new Date(
+          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        price: 12.5 + (Math.random() - 0.5) * 2,
+      })),
+    },
   },
   {
     id: "4",
     issuer: "LVMH",
     code: "MC",
     name: "LVMH Moët Hennessy",
-    facevalue: 850.00,
+    facevalue: 850.0,
     marketmetadata: {
       cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
-        price: 850.00 + (Math.random() - 0.5) * 50
-      }))
-    }
-  }
+        date: new Date(
+          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        price: 850.0 + (Math.random() - 0.5) * 50,
+      })),
+    },
+  },
 ];
 
 const formSchema = z.object({
@@ -117,10 +132,16 @@ export function StaticStockTracker() {
   const [toDate, setToDate] = useState<Date | undefined>();
   const [stockOne, setStockOne] = useState<any>(mockStocks[0]);
   const [stockTwo, setStockTwo] = useState<any>(mockStocks[1]);
-  const [stockOneData, setStockOneData] = useState<any[]>(mockStocks[0].marketmetadata.cours);
-  const [stockTwoData, setStockTwoData] = useState<any[]>(mockStocks[1].marketmetadata.cours);
+  const [stockOneData, setStockOneData] = useState<any[]>(
+    mockStocks[0].marketmetadata.cours
+  );
+  const [stockTwoData, setStockTwoData] = useState<any[]>(
+    mockStocks[1].marketmetadata.cours
+  );
   const [compareMode, setCompareMode] = useState(true);
-  const [view, setView] = useState<'graphe comparatif' | 'carnet'>('graphe comparatif');
+  const [view, setView] = useState<"graphe comparatif" | "carnet">(
+    "graphe comparatif"
+  );
   const [graphHeight, setGraphHeight] = useState<number | undefined>(undefined);
   const formCardContentRef = useRef<HTMLDivElement>(null);
 
@@ -149,25 +170,22 @@ export function StaticStockTracker() {
     return Array.from(dateMap.values());
   }, []);
 
-  const fetchTwoStocks = useCallback(
-    async (idOne: string, idTwo: string) => {
-      setLoading(true);
-      try {
-        const stock1 = mockStocks.find(s => s.id === idOne) || mockStocks[0];
-        const stock2 = mockStocks.find(s => s.id === idTwo) || mockStocks[1];
-        
-        setStockOne(stock1);
-        setStockTwo(stock2);
-        setStockOneData(stock1.marketmetadata.cours);
-        setStockTwoData(stock2.marketmetadata.cours);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+  const fetchTwoStocks = useCallback(async (idOne: string, idTwo: string) => {
+    setLoading(true);
+    try {
+      const stock1 = mockStocks.find((s) => s.id === idOne) || mockStocks[0];
+      const stock2 = mockStocks.find((s) => s.id === idTwo) || mockStocks[1];
+
+      setStockOne(stock1);
+      setStockTwo(stock2);
+      setStockOneData(stock1.marketmetadata.cours);
+      setStockTwoData(stock2.marketmetadata.cours);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -248,7 +266,6 @@ export function StaticStockTracker() {
 
   return (
     <div className="w-full space-y-6">
-
       {/* Switch Buttons */}
       <div className="inline-flex shadow border border-gray-200">
         <button
@@ -259,7 +276,7 @@ export function StaticStockTracker() {
           } rounded-l`}
           onClick={() => setView("graphe comparatif")}
         >
-          graphe comparatif
+          {t("grapheComparatif")}
         </button>
         <button
           className={`px-4 py-1 text-[0.8vw] font-medium focus:z-10 ${
@@ -269,21 +286,24 @@ export function StaticStockTracker() {
           } rounded-r`}
           onClick={() => setView("carnet")}
         >
-          Carnet d'ordre
+          {t("carnetOrdre")}
         </button>
       </div>
 
-      {view === 'graphe comparatif' ? (
+      {view === "graphe comparatif" ? (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Chart Section - Takes 60% of the space */}
           <div className="lg:col-span-3">
             <Card className="h-full flex flex-col flex-1">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
-                  {t("graphe comparatif")}
+                  {t("grapheComparatif")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col" style={graphHeight ? {height: graphHeight} : {}}>
+              <CardContent
+                className="flex-1 flex flex-col"
+                style={graphHeight ? { height: graphHeight } : {}}
+              >
                 {!stockOneData || !stockTwoData ? (
                   <div className="h-60 border rounded-md flex justify-center text-center items-center shadow-inner">
                     {t("noData")}
@@ -294,7 +314,12 @@ export function StaticStockTracker() {
                       config={chartConfig}
                       className="aspect-auto h-full w-full"
                     >
-                      <AreaChart data={mergedData} height={graphHeight || 400} width={800} style={{height: '100%', width: '100%'}}>
+                      <AreaChart
+                        data={mergedData}
+                        height={graphHeight || 400}
+                        width={800}
+                        style={{ height: "100%", width: "100%" }}
+                      >
                         <CartesianGrid vertical={false} />
                         <XAxis
                           dataKey="date"
@@ -323,11 +348,14 @@ export function StaticStockTracker() {
                           content={
                             <ChartTooltipContent
                               labelFormatter={(value) => {
-                                return new Date(value).toLocaleDateString("fr-DZ", {
-                                  year: "numeric",
-                                  month: "numeric",
-                                  day: "numeric",
-                                });
+                                return new Date(value).toLocaleDateString(
+                                  "fr-DZ",
+                                  {
+                                    year: "numeric",
+                                    month: "numeric",
+                                    day: "numeric",
+                                  }
+                                );
                               }}
                               indicator="dot"
                             />
@@ -368,7 +396,10 @@ export function StaticStockTracker() {
               </CardHeader>
               <CardContent className="flex-1" ref={formCardContentRef}>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4 h-full flex flex-col"
+                  >
                     <div className="space-y-4 flex-1">
                       <div className="flex gap-4">
                         <div className="flex-1">
@@ -384,12 +415,16 @@ export function StaticStockTracker() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder={t("selectStock")} />
+                                      <SelectValue
+                                        placeholder={t("selectStock")}
+                                      />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
                                     {mockStocks?.map((t: any) => (
-                                      <SelectItem key={t.id} value={t.id}>{t.issuer}</SelectItem>
+                                      <SelectItem key={t.id} value={t.id}>
+                                        {t.issuer}
+                                      </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
@@ -411,7 +446,9 @@ export function StaticStockTracker() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder={t("selectStock")} />
+                                      <SelectValue
+                                        placeholder={t("selectStock")}
+                                      />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -449,7 +486,9 @@ export function StaticStockTracker() {
                                         {fromDate ? (
                                           format(
                                             fromDate,
-                                            locale === "ar" ? "dd/MM/yyyy" : "PPP",
+                                            locale === "ar"
+                                              ? "dd/MM/yyyy"
+                                              : "PPP",
                                             {
                                               locale:
                                                 locale === "fr"
@@ -514,7 +553,9 @@ export function StaticStockTracker() {
                                         {toDate ? (
                                           format(
                                             toDate,
-                                            locale === "ar" ? "dd/MM/yyyy" : "PPP",
+                                            locale === "ar"
+                                              ? "dd/MM/yyyy"
+                                              : "PPP",
                                             {
                                               locale:
                                                 locale === "fr"
@@ -561,7 +602,11 @@ export function StaticStockTracker() {
                         </div>
                       </div>
                     </div>
-                    <Button type="submit" disabled={loading} className="w-full mt-auto">
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full mt-auto"
+                    >
                       {loading ? "chargement..." : "Voir"}
                     </Button>
                   </form>

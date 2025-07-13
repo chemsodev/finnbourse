@@ -10,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-
 import {
   Clock,
   ArrowRight,
@@ -35,22 +34,13 @@ import {
 } from "@/components/ui/table";
 import { useState } from "react";
 
-
 interface OrderTrackProps {
   order: OrderElement | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  stocksMap: Record<string, { code: string; name: string }>;
-  clientsMap: Record<string, { name: string }>;
 }
 
-export function OrderTrack({
-  order,
-  open,
-  onOpenChange,
-  stocksMap,
-  clientsMap,
-}: OrderTrackProps) {
+export function OrderTrack({ order, open, onOpenChange }: OrderTrackProps) {
   const t = useTranslations("orderHistory.orderDetails");
   const [openRow, setOpenRow] = useState<number | null>(null);
 
@@ -75,68 +65,67 @@ export function OrderTrack({
 
   return (
     <div>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            {t("orderProgress")}
-          </CardTitle>
-        </CardHeader>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" />
+          {t("orderProgress")}
+        </CardTitle>
+      </CardHeader>
 
-    <Card>
+      <Card>
         <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>date</TableHead>
-            {/*<TableHead>etat</TableHead>*/}
-            <TableHead>Action</TableHead>
-            <TableHead>Nom</TableHead>
-            <TableHead>Motif</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {[
-            {
-              date: "2024-06-01 10:00",
-              etat: "V1 agence",
-              action: "valide",
-              nom: "user1",
-              motif:
-                "motif1motif1 motif1 motif1 motif1 motif1 motif1 motif1 motif1 motif1 v motif1 motif1 motif1 v motif1 ",
-            },
-            {
-              date: "2024-06-01 12:00",
-              etat: "V2 agence",
-              action: "rejete",
-              nom: "user2",
-              motif: "motif2",
-            },
-          ].map((step, idx) => (
-            <TableRow
-              key={idx}
-              className={openRow === idx ? "bg-gray-50" : ""}
-              onClick={() => setOpenRow(openRow === idx ? null : idx)}
-              style={{ cursor: "pointer" }}
-            >
-              <TableCell>{step.date}</TableCell>
-              {/*<TableCell>{step.etat}</TableCell>*/}
-              <TableCell>{step.action}</TableCell>
-              <TableCell>{step.nom}</TableCell>
-              <TableCell
-                className={
-                  openRow === idx
-                    ? "whitespace-normal max-w-none max-w-[200px]"
-                    : "max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap"
-                }
-                title={openRow === idx ? undefined : step.motif}
-              >
-                {step.motif}
-              </TableCell>
+          <TableHeader>
+            <TableRow>
+              <TableHead>date</TableHead>
+              {/*<TableHead>etat</TableHead>*/}
+              <TableHead>Action</TableHead>
+              <TableHead>Nom</TableHead>
+              <TableHead>Motif</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {[
+              {
+                date: "2024-06-01 10:00",
+                etat: "V1 agence",
+                action: "valide",
+                nom: "user1",
+                motif:
+                  "motif1motif1 motif1 motif1 motif1 motif1 motif1 motif1 motif1 motif1 v motif1 motif1 motif1 v motif1 ",
+              },
+              {
+                date: "2024-06-01 12:00",
+                etat: "V2 agence",
+                action: "rejete",
+                nom: "user2",
+                motif: "motif2",
+              },
+            ].map((step, idx) => (
+              <TableRow
+                key={idx}
+                className={openRow === idx ? "bg-gray-50" : ""}
+                onClick={() => setOpenRow(openRow === idx ? null : idx)}
+                style={{ cursor: "pointer" }}
+              >
+                <TableCell>{step.date}</TableCell>
+                {/*<TableCell>{step.etat}</TableCell>*/}
+                <TableCell>{step.action}</TableCell>
+                <TableCell>{step.nom}</TableCell>
+                <TableCell
+                  className={
+                    openRow === idx
+                      ? "whitespace-normal max-w-none max-w-[200px]"
+                      : "max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap"
+                  }
+                  title={openRow === idx ? undefined : step.motif}
+                >
+                  {step.motif}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </Card>
-
     </div>
   );
 }

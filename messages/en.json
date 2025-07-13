@@ -27,14 +27,14 @@
     "agence": "Agency",
     "premiereValidation": "First Validation",
     "validationFinale": "Final Validation",
-    "validationRetourFinale": "Return Validation",
     "tcc": "TCC",
-    "validationTCCPremiere": "TCC First Validation",
     "validationTccPremiere": "TCC First Validation",
     "validationTCCFinale": "TCC Final Validation",
-    "validationTccFinale": "TCC Final Validation",
-    "validationRetourFinale": "Return Validation",
-    "tccvalidationRetourFinale": "TCC Return Validation",
+    "validationTCCFinal": "TCC Final Validation",
+    "validationRetourPremiere": "First Return Validation",
+    "validationTCCRetourPremiere": "TCC First Return Validation",
+    "validationRetourFinale": "Final Return Validation",
+    "validationTCCRetourFinale": "TCC Final Return Validation",
     "iob": "IOB",
     "iobSecondaryMarket": "IOB Secondary Market",
     "executionOrdres": "Order Execution",
@@ -57,6 +57,24 @@
     "historiqueDesOrdres": "Order History",
     "more": "More",
     "moreOptions": "More Options"
+  },
+
+  "Dashboard": {
+    "Statistiques": "Statistics",
+    "journalandSeance": "Session and Journal",
+    "journalOperations": "Operations Journal",
+    "seanceResultat": "Session Result",
+    "derniereActualite": "Latest News",
+    "voirAllActualite": "View All News"
+  },
+  "MyPortfolio": {
+    "etatsDesOrdres": "Order Status",
+    "status": {
+      "pending": "Pending Orders",
+      "executed": "Executed Orders",
+      "nonExecuted": "Non Executed Orders",
+      "avisDoperation": "Operation Notice"
+    }
   },
   "Commissions": {
     "pageTitle": "Commission Management",
@@ -237,6 +255,8 @@
     "liveData": "Live Data",
     "chart": "Chart",
     "table": "Table",
+    "grapheComparatif": "Comparative Chart",
+    "carnetOrdre": "Order Book",
     "lastUpdate": "Last Update"
   },
   "TopBarDash": {
@@ -364,7 +384,7 @@
   },
   "TitresTable": {
     "logo": "Logo",
-    "titre": "Title",
+    "titre": "Security",
     "ouverture": "Opening",
     "cloture": "Closing",
     "variation": "Variation",
@@ -573,6 +593,17 @@
   "FormPassationOrdreObligation": {
     "action": "Action",
     "back": "Back",
+    "selectionnerBeneficiaire": "Select Beneficiary",
+    "rechercheClient": "Search for a client...",
+    "table": {
+      "code": "Code",
+      "nom": "Name",
+      "email": "Email",
+      "type": "Type",
+      "actions": "Actions",
+      "choisir": "Choose",
+      "selectionne": "Selected"
+    },
     "clientCode": "Client Code",
     "visaCosob": "COSOB Visa",
     "isinCode": "ISIN Code",
@@ -582,18 +613,33 @@
     "quantity": "Quantity",
     "conditionsDePrix": "Price Conditions",
     "prixMarche": "Market Price",
+    "prixLimite": "At Limit Price",
+    "vn": "Face Value",
+    "dl": "Limited Duration",
+    "dv": "Validity Date",
+    "ss": "Without Stipulation",
+    "coursMaximal": "Maximum Price",
+    "coursMinimal": "Minimum Price",
+    "quantiteMinimale": "Minimum Quantity",
+    "selectionnerCondition": "Select a condition",
     "conditionsDuree": "Duration Conditions",
     "dj": "Day Order",
     "conditionsQuantitatives": "Quantitative Conditions",
     "toutOuRien": "All or Nothing",
     "issueDate": "Issue Date",
+    "currency": "Currency",
     "nbActions": "Number of Shares",
     "grossAmount": "Gross Amount",
     "commission": "Commission",
     "netAmount": "Net Amount",
+    "mtt": "MTT",
+    "tn": "Download Notice",
     "downloadNotice": "Download Notice",
     "cancel": "Cancel",
-    "next": "Next"
+    "next": "Next",
+    "ordrePasse": "The order placement was successful",
+    "telechargerBulletinDC": "Download Bulletin DC",
+    "telechargerBulletin": "Download Bulletin"
   },
   "Message": {
     "description": "Description",
@@ -1393,7 +1439,10 @@
     "titre_participatif": "Participating Note",
     "emprunt_obligataire": "Bond Loan",
     "vente": "Sell",
-    "achat": "Buy"
+    "achat": "Buy",
+    "qte": "Quantity",
+    "prix": "Price",
+    "actions": "Actions"
   },
   "bourseSessions": {
     "title": "Stock Exchange Sessions Management",
@@ -1936,7 +1985,11 @@
     "notAvailable": "Not available",
     "fetchError": "Failed to fetch companies",
     "unknownError": "An unknown error occurred",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "email": "Email",
+    "tel": "Phone number",
+    "address": "Address",
+    "sortedByCreationDate": "Sorted by Creation Date"
   },
   "EditCompany": {
     "editCompany": "Edit Company",
@@ -2019,7 +2072,7 @@
     "totalClients": "Total Clients",
     "numberByClientType": "Number by Client Type",
     "individuals": "Individuals",
-    "total": "Total",
+
     "individual": "Individual",
     "company": "Company",
     "financialInstitution": "Financial Institution",
@@ -2574,6 +2627,10 @@
   },
   "TCCPage": {
     "title": "Account Holder Custodian",
+    "contactInformation": "Contact Information",
+    "regulatoryInformation": "Regulatory Information",
+    "comments": "Comments",
+    "surveillanceAuthority": "Surveillance Authority",
     "search": "Search",
     "add": "Add",
     "code": "Code",
@@ -2739,6 +2796,8 @@
   },
   "IOBPage": {
     "title": "Intermediaries in Stock Market Operations (IOB)",
+    "createIOB": "Create IOB",
+    "backToList": "Back to IOB List",
     "search": "Search",
     "add": "Add",
     "bankCode": "Bank code",
@@ -2840,6 +2899,7 @@
   },
   "AgencyPage": {
     "next": "Next",
+    "openMenu": "Open Menu",
     "agencyDetails": "Agency Details",
     "relatedUsers": "Related Users",
     "title": "Agency",
@@ -2888,6 +2948,8 @@
     "directeurTelephone": "Director Phone",
     "function": "Function",
     "telephone": "Telephone",
+    "phoneNumber": "Phone Number",
+    "roles": "Roles",
     "email": "Email",
     "address": "Address",
     "cancel": "Cancel",
@@ -2949,6 +3011,9 @@
     "agencyNotFound": "Agency not found",
     "backToList": "Back to list",
     "edit": "Edit",
+    "editAgency": "Edit Agency",
+    "editUsers": "Edit Users",
+    "name": "Name",
     "generalInformation": "General Information",
     "codeAgence": "Agency Code",
     "nomBanque": "Bank Name",
@@ -3295,6 +3360,7 @@
       "orderDetails": "Order Details",
       "basicInformation": "Basic Information",
       "financialDetails": "Financial Details",
+      "orderProgress": "Order Progress",
       "conditions": "Conditions",
       "stock": "Stock",
       "client": "Client",
@@ -3319,7 +3385,7 @@
       "reliquat": "Remainder"
     }
   },
-  "orderProgress": "Order Progress",
+
   "CreateUserForm": {
     "title": "Subscriber Form",
     "quality": "Subscriber Quality",
