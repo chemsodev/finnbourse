@@ -1,12 +1,3 @@
-// import MyMarquee from "@/components/MyMarquee";
-// import { getTranslations } from "next-intl/server";
-// import { BondIcon2, OPVIcon } from "@/components/icons/PrimaryMarketTypesIcons";
-// import { MarketCardProps } from "@/types/gestionTitres";
-// import { taintObjectReference } from "next/dist/server/app-render/entry-base";
-// import Link from "next/link";
-// import { ArrowLeft } from "lucide-react";
-// import MarketCard from "@/components/titres/MarketCard";
-
 "use client";
 
 import React, { useEffect, useState } from "react";

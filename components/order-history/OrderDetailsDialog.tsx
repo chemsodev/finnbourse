@@ -95,7 +95,7 @@ export function OrderDetailsDialog({
     </div>
   );
 
-  // Get stock name from direct API fields
+
   const getStockName = (stockId: string) => {
     if (order?.stock_code && order?.stock_issuer_nom) {
       return `${order.stock_code} - ${order.stock_issuer_nom}`;
@@ -107,7 +107,6 @@ export function OrderDetailsDialog({
   const getClientName = (clientId: string) => {
     return order?.client_nom || clientId;
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-8 ">
@@ -134,12 +133,12 @@ export function OrderDetailsDialog({
             <CardContent className="space-y-0">
               {renderDetail(
                 t("stock"),
-                getStockName(order.stock_id),
+                // getStockName(order.stock_id),
                 <Package className="h-4 w-4" />
               )}
               {renderDetail(
                 t("client"),
-                getClientName(order.client_id),
+                // getClientName(order.client_id),
                 <User className="h-4 w-4" />
               )}
               {renderDetail(

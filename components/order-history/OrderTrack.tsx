@@ -114,7 +114,7 @@ export function OrderTrack({ order, open, onOpenChange }: OrderTrackProps) {
                 <TableCell
                   className={
                     openRow === idx
-                      ? "whitespace-normal max-w-[200px]"
+                      ? "whitespace-normal max-w-none max-w-[200px]"
                       : "max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap"
                   }
                   title={openRow === idx ? undefined : step.motif}

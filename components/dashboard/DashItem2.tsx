@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getTranslations } from "next-intl/server";
 
 const DashItem2 = async () => {
   const session = (await getServerSession(auth)) as Session & {
@@ -14,6 +15,8 @@ const DashItem2 = async () => {
     };
   };
 
+  const t = await getTranslations("Dashboard");
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5">
       {/* Box 1 : Statistiques négociateur */}
@@ -21,7 +24,7 @@ const DashItem2 = async () => {
         <div className="w-full bg-white h-full  flex flex-col">
           <CardHeader className="">
             <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
-              Statistiques
+              {t("Statistiques")}
             </CardTitle>
           </CardHeader>
           <CardContent className="">
@@ -34,14 +37,18 @@ const DashItem2 = async () => {
         <div className="w-full bg-white h-full  flex flex-col">
           <CardHeader className="">
             <CardTitle className="text-xl font-semibold text-gray-900">
-            Journal & Séance 
+              {t("journalandSeance")}
             </CardTitle>
           </CardHeader>
           <CardContent className="">
-          <div className="flex mb-4 gap-2 w-full">
-            <button className="px-4 py-3 rounded bg-primary text-white w-1/2 text-[0.9vw] font-normal">Journal des Opérations</button>
-            <button className="px-4 py-3 rounded bg-primary text-white w-1/2 text-[0.9vw] font-normal">Séance résultat</button>
-          </div>
+            <div className="flex mb-4 gap-2 w-full">
+              <button className="px-4 py-3 rounded bg-primary text-white w-1/2 text-[0.9vw] font-normal">
+                {t("journalOperations")}
+              </button>
+              <button className="px-4 py-3 rounded bg-primary text-white w-1/2 text-[0.9vw] font-normal">
+                {t("seanceResultat")}
+              </button>
+            </div>
           </CardContent>
         </div>
       </div>

@@ -30,7 +30,6 @@
     "validationRetourPremiere": "Validation Retour Première",
     "validationRetourFinale": "Validation Retour Finale",
     "tcc": "TCC",
-    "validationTCCPremiere": "Validation TCC Première",
     "validationTccPremiere": "Validation TCC Première",
     "validationTCCFinal": "Validation TCC Finale",
     "validationTCCRetourPremiere": "Validation TCC Retour Première",
@@ -57,6 +56,23 @@
     "historiqueDesOrdres": "Historique des Ordres",
     "more": "Plus",
     "moreOptions": "Plus d'Options"
+  },
+  "Dashboard": {
+    "Statistiques": "Statistiques",
+    "journalandSeance": "Session et Journal",
+    "journalOperations": "Journal des Opérations",
+    "seanceResultat": "Résultat de la Session",
+    "derniereActualite": "Dernières Actualités",
+    "voirAllActualite": "Voir Toutes les Actualités"
+  },
+  "MyPortfolio": {
+    "etatsDesOrdres": "État des Ordres",
+    "status": {
+      "pending": "Ordres En Attentes",
+      "executed": "Ordres Exécutés",
+      "nonExecuted": "Ordres non Exécutés",
+      "avisDoperation": "Avis D'Opération"
+    }
   },
   "Commissions": {
     "pageTitle": "Gestion des Commissions",
@@ -290,7 +306,6 @@
     "security": "Titre",
     "price": "Prix",
     "date": "Date",
-    "total": "Total",
     "performance": "Performance",
     "filter": "Filtrer",
     "completed": "Complété",
@@ -370,6 +385,8 @@
     "liveData": "Données en Direct",
     "chart": "Graphique",
     "table": "Tableau",
+    "grapheComparatif": "Graphique Comparatif",
+    "carnetOrdre": "Carnet d'Ordres",
     "lastUpdate": "Dernière Mise à Jour"
   },
   "TopBarDash": {
@@ -924,6 +941,17 @@
   "FormPassationOrdreObligation": {
     "action": "Action",
     "back": "Retour",
+    "selectionnerBeneficiaire": "Sélectionner le bénéficiaire",
+    "rechercheClient": "Rechercher un client...",
+    "table": {
+      "code": "Code",
+      "nom": "Nom",
+      "email": "Email",
+      "type": "Type",
+      "actions": "Actions",
+      "choisir": "Choisir",
+      "selectionne": "Sélectionné"
+    },
     "clientCode": "Code client",
     "visaCosob": "Visa COSOB",
     "isinCode": "Code ISIN",
@@ -932,19 +960,33 @@
     "sale": "Vente",
     "quantity": "Quantité",
     "conditionsDePrix": "Conditions de prix",
+    "selectionnerCondition": "Sélectionner une condition",
     "prixMarche": "Prix du marché",
+    "prixLimite": "Au prix limite",
+    "vn": "Valeur Nominale",
+    "dl": "à durée limitée",
+    "dv": "Date de validité",
+    "ss": "sans stipulation",
+    "coursMaximal": "Prix maximal",
+    "coursMinimal": "Prix minimal",
     "conditionsDuree": "Conditions de durée",
     "dj": "Du jour",
     "conditionsQuantitatives": "Conditions quantitatives",
     "toutOuRien": "Tout ou rien",
+    "quantiteMinimale": "Quantité minimale",
     "issueDate": "Date d'émission",
+    "currency": "Devise",
     "nbActions": "Nombre d'actions",
     "grossAmount": "Montant brut",
     "commission": "Commission",
     "netAmount": "Montant net",
-    "downloadNotice": "Télécharger l'avis",
+    "mtt": "MTT",
+    "tn": "Télécharger l'avis",
     "cancel": "Annuler",
-    "next": "Suivant"
+    "next": "Suivant",
+    "ordrePasse": "L'ordre a été passé avec succès",
+    "telechargerBulletinDC": "Télécharger le Bulletin DC",
+    "telechargerBulletin": "Télécharger le Bulletin"
   },
   "status": {
     "Draft": "Brouillon",
@@ -1694,7 +1736,10 @@
     "titre_participatif": "Titre Participatif",
     "emprunt_obligataire": "Emprunt Obligataire",
     "vente": "Vente",
-    "achat": "Achat"
+    "achat": "Achat",
+    "qte": "Qté",
+    "prix": "Prix",
+    "actions": "Actions"
   },
   "bourseSessions": {
     "title": "Gestion des Sessions de Bourse",
@@ -1867,6 +1912,7 @@
   },
   "AgencyPage": {
     "next": "Suivant",
+    "openMenu": "Ouvrir le menu",
     "agencyDetails": "Détails de l'agence",
     "relatedUsers": "Utilisateurs liés",
     "title": "Agence",
@@ -1915,6 +1961,8 @@
     "directeurTelephone": "Téléphone du directeur",
     "function": "Fonction",
     "telephone": "Téléphone",
+    "phoneNumber": "Numéro de téléphone",
+    "roles": "Rôles",
     "email": "Email",
     "address": "Adresse",
     "cancel": "Annuler",
@@ -1976,6 +2024,9 @@
     "agencyNotFound": "Agence non trouvée",
     "backToList": "Retour à la liste",
     "edit": "Modifier",
+    "editAgency": "Modifier l'agence",
+    "editUsers": "Modifier les utilisateurs",
+    "name": "Nom",
     "generalInformation": "Informations générales",
     "codeAgence": "Code agence",
     "nomBanque": "Nom de la banque",
@@ -2355,7 +2406,11 @@
     "notAvailable": "Non disponible",
     "fetchError": "Échec de récupération des sociétés",
     "unknownError": "Une erreur inconnue s'est produite",
-    "refresh": "Actualiser"
+    "refresh": "Actualiser",
+    "email": "Email",
+    "tel": "Numéro de téléphone",
+    "address": "Adresse",
+    "sortedByCreationDate": "Trié par date de création"
   },
   "EditCompany": {
     "editCompany": "Modifier la Société",
@@ -2672,6 +2727,10 @@
   },
   "TCCPage": {
     "title": "Teneur de Compte-Conservateur",
+    "contactInformation": "Informations de contact",
+    "regulatoryInformation": "Informations réglementaires",
+    "comments": "Commentaires",
+    "surveillanceAuthority": "Autorité de surveillance",
     "search": "Rechercher",
     "add": "Ajouter",
     "code": "Code",
@@ -2766,7 +2825,8 @@
     "emailAlreadyInUseLocal": "Cet email est déjà utilisé par un autre utilisateur dans ce formulaire",
     "emailAlreadyInUseServer": "Email déjà utilisé sur le serveur",
     "invalidEmailFormat": "Format d'email invalide",
-    "failedToCreateUser": "Échec de la création de l'utilisateur"
+    "failedToCreateUser": "Échec de la création de l'utilisateur",
+    "back": "Retour"
   },
   "TCCDetailsPage": {
     "title": "Teneur de Compte-Conservateur",
@@ -2832,6 +2892,8 @@
   "IOBPage": {
     "title": "Intermédiaires en Opérations de Bourse (IOB)",
     "search": "Rechercher",
+    "createIOB": "Créer un IOB",
+    "backToList": "Retour à la liste des IOB",
     "add": "Ajouter",
     "bankCode": "Code banque",
     "shortName": "Lib Court",

@@ -3,9 +3,6 @@ import MyMarquee from "@/components/MyMarquee";
 import Link from "next/link";
 import TabSearch from "@/components/TabSearch";
 import MyPagination from "@/components/navigation/MyPagination";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExportButton } from "@/components/ExportButton";
-import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import OrdresTableHistory from "@/components/order-history/OrdresTableHistory";
 
 export default async function OrdersHistoryPage({
@@ -36,7 +33,6 @@ export default async function OrdersHistoryPage({
       <div className="flex gap-8 mt-16">
         {/* Main content */}
         <div className="flex-1">
-
           <div className="flex flex-col gap-1 mb-8">
             <div className="text-2xl font-bold text-primary flex items-center justify-between">
               <div>

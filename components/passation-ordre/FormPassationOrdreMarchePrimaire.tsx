@@ -417,17 +417,17 @@ const FormPassationOrdreMarchePrimaire = ({
             className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
             onClick={() => router.back()}
           >
-            <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
+            <ArrowLeft className="w-5" /> <div>{t("back")}</div>
           </Button>
         </div>
         <h2 className="text-2xl font-bold mb-4">
-          Sélectionner le Bénéficiaire
+          {t("selectionnerBeneficiaire")}
         </h2>
         {/* Champ de recherche */}
         <div className="relative mb-4 w-full max-w-2xl">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher un client..."
+            placeholder={t("rechercheClient")}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -440,11 +440,15 @@ const FormPassationOrdreMarchePrimaire = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-center">Code</TableHead>
-                <TableHead className="text-center">Nom</TableHead>
-                <TableHead className="text-center">Email</TableHead>
-                <TableHead className="text-center">Type</TableHead>
-                <TableHead className="text-center">Action</TableHead>
+                <TableHead className="text-center">{t("table.code")}</TableHead>
+                <TableHead className="text-center">{t("table.nom")}</TableHead>
+                <TableHead className="text-center">
+                  {t("table.email")}
+                </TableHead>
+                <TableHead className="text-center">{t("table.type")}</TableHead>
+                <TableHead className="text-center">
+                  {t("table.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -479,8 +483,8 @@ const FormPassationOrdreMarchePrimaire = ({
                       }}
                     >
                       {form.watch("selectedClientId") === client.id
-                        ? "Sélectionné"
-                        : "Choisir"}
+                        ? t("table.selectionne")
+                        : t("table.choisir")}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -552,7 +556,7 @@ const FormPassationOrdreMarchePrimaire = ({
               className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
               onClick={() => setStep(2)}
             >
-              <ArrowLeft className="w-5" /> <div>{t("retour")}</div>
+              <ArrowLeft className="w-5" /> <div>{t("back")}</div>
             </Button>
           </div>
           {/* Titre avec le code du client sélectionné */}
@@ -600,13 +604,13 @@ const FormPassationOrdreMarchePrimaire = ({
               <div className="p-10 border rounded-md shadow flex flex-col gap-10">
                 <div className="flex justify-between items-baseline">
                   <div className=" text-gray-400 capitalize">
-                    {t("visaCOSOB")}
+                    {t("visaCosob")}
                   </div>
                   <div className="text-lg font-semibold">VISA-9237</div>
                 </div>
                 <div className="flex justify-between items-baseline">
                   <div className=" text-gray-400 capitalize">
-                    {t("codeIsin")}
+                    {t("isinCode")}
                   </div>
                   <div className="text-lg font-semibold">
                     {data?.isinCode || data?.isincode || "N/A"}
@@ -621,7 +625,7 @@ const FormPassationOrdreMarchePrimaire = ({
                       <FormItem className="text-xl items-baseline">
                         <div className="flex justify-between ">
                           <FormLabel className="text-gray-400 capitalize text-lg">
-                            {t("quantite")}
+                            {t("quantity")}
                           </FormLabel>
                           <FormControl className="w-40">
                             <Input
@@ -718,7 +722,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 {/* date emission */}
                 <div className="flex justify-between items-baseline">
                   <div className=" text-gray-400 capitalize">
-                    {t("dateEmission")}
+                    {t("issueDate")}
                   </div>
                   <div className="text-lg font-semibold">
                     {(data?.emissionDate || data?.emissiondate) &&
@@ -736,7 +740,7 @@ const FormPassationOrdreMarchePrimaire = ({
                 </div>
                 {/* montant brut */}
                 <div className="flex justify-between items-baseline">
-                  <div className=" text-gray-500">{t("montantBrut")}:</div>
+                  <div className=" text-gray-500">{t("netAmount")}:</div>
                   <div className="font-semibold text-lg flex gap-1">
                     <span>{formatPrice(grossAmount || 0)}</span>
                     <span> {t("currency")}</span>
@@ -784,7 +788,7 @@ const FormPassationOrdreMarchePrimaire = ({
               </div>
               <div className="flex justify-between gap-6 mt-4">
                 <Button onClick={handleGoBack} type="reset" variant="outline">
-                  {t("annuler")}
+                  {t("cancel")}
                 </Button>
 
                 <Button
@@ -792,7 +796,7 @@ const FormPassationOrdreMarchePrimaire = ({
                   className="w-full group gap-2"
                   disabled={isSubmitting}
                 >
-                  {t("suivant")}
+                  {t("next")}
                   {isSubmitting ? (
                     <svg
                       aria-hidden="true"

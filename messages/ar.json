@@ -29,8 +29,12 @@
     "validationTccPremiere": "التحقق الأول TCC",
     "validationTccFinale": "التحقق النهائي TCC",
     "tccvalidationRetourFinale": "إرجاع التحقق TCC",
-    "tccvalidationRetourFinale": "التحقق من العودة TCC",
+    "validationRetourPremiere": "التحقق الأول للإرجاع",
+    "validationTCCFinal": "التحقق النهائي TCC",
+    "validationTCCRetourPremiere": "التحقق الأول للإرجاع TCC",
+    "validationTCCRetourFinale": "التحقق النهائي للإرجاع TCC",
     "iob": "وسيط بورصة",
+    "iobSecondaryMarket": "IOB السوق الثانوية",
     "executionOrdres": "تنفيذ الأوامر",
     "soumissionResultats": "تقديم النتائج",
     "titresEtEmeteurs": "الأوراق المالية والمصدرين",
@@ -51,7 +55,25 @@
     "more": "المزيد",
     "moreOptions": "خيارات أخرى",
     "agence": "الوكالة",
-    "tcc": "أمين الحساب"
+    "tcc": "أمين الحساب",
+    "historiqueDesOrdres": "تاريخ الطلبات"
+  },
+  "Dashboard": {
+    "Statistiques": "الإحصائيات",
+    "journalandSeance": "الجلسة والسجل",
+    "journalOperations": "سجل العمليات",
+    "seanceResultat": "نتيجة الجلسة",
+    "derniereActualite": "آخر الأخبار",
+    "voirAllActualite": "عرض جميع الأخبار"
+  },
+  "MyPortfolio": {
+    "etatsDesOrdres": "حالة الأوامر",
+    "status": {
+      "pending": "أوامر في الانتظار",
+      "executed": "أوامر منفذة",
+      "nonExecuted": "أوامر غير منفذة",
+      "avisDoperation": "إشعار العملية"
+    }
   },
   "finalisationInscriptionParticulier": {
     "nCompteTitres": "رقم حساب الأوراق المالية",
@@ -144,7 +166,9 @@
     "stockTwo": "السهم 2",
     "pickADate": "اختر تاريخاً",
     "startPeriod": "تاريخ البداية",
-    "endPeriod": "تاريخ النهاية"
+    "endPeriod": "تاريخ النهاية",
+    "grapheComparatif": "الرسم البياني المقارن",
+    "carnetOrdre": "دفتر الأوامر"
   },
   "TopBarDash": {
     "title": "قيمة المحفظة",
@@ -590,6 +614,17 @@
   "FormPassationOrdreObligation": {
     "action": "إجراء",
     "back": "رجوع",
+    "selectionnerBeneficiaire": "اختيار المستفيد",
+    "rechercheClient": "البحث عن عميل...",
+    "table": {
+      "code": "الرمز",
+      "nom": "الاسم",
+      "email": "البريد الإلكتروني",
+      "type": "النوع",
+      "actions": "الإجراءات",
+      "choisir": "اختيار",
+      "selectionne": "محدد"
+    },
     "clientCode": "رمز العميل",
     "visaCosob": "تأشيرة COSOB",
     "isinCode": "رمز ISIN",
@@ -1236,7 +1271,10 @@
     "titre_participatif": "سند مشاركة",
     "emprunt_obligataire": "قرض سندي",
     "vente": "بيع",
-    "achat": "شراء"
+    "achat": "شراء",
+    "qte": "الكمية",
+    "prix": "السعر",
+    "actions": "الإجراءات"
   },
   "bourseSessions": {
     "title": "إدارة جلسات البورصة",
@@ -1706,7 +1744,11 @@
     "notAvailable": "غير متوفر",
     "fetchError": "فشل في جلب الشركات",
     "unknownError": "حدث خطأ غير معروف",
-    "refresh": "تحديث"
+    "refresh": "تحديث",
+    "email": "البريد الإلكتروني",
+    "tel": "رقم الهاتف",
+    "address": "العنوان",
+    "sortedByCreationDate": "مرتب حسب تاريخ الإنشاء"
   },
   "EditCompany": {
     "editCompany": "تعديل الشركة",
@@ -2327,6 +2369,7 @@
   },
   "AgencyPage": {
     "next": "التالي",
+    "openMenu": "فتح القائمة",
     "agencyDetails": "تفاصيل الوكالة",
     "relatedUsers": "المستخدمون المرتبطون",
     "title": "الوكالة",
@@ -2375,6 +2418,8 @@
     "directeurTelephone": "هاتف المدير",
     "function": "الوظيفة",
     "telephone": "الهاتف",
+    "phoneNumber": "رقم الهاتف",
+    "roles": "الأدوار",
     "email": "البريد الإلكتروني",
     "address": "العنوان",
     "cancel": "إلغاء",
@@ -2393,6 +2438,9 @@
     "agencyNotFound": "الوكالة غير موجودة",
     "backToList": "العودة إلى القائمة",
     "edit": "تعديل",
+    "editAgency": "تعديل الوكالة",
+    "editUsers": "تعديل المستخدمين",
+    "name": "الاسم",
     "generalInformation": "معلومات عامة",
     "codeAgence": "رمز الوكالة",
     "nomBanque": "اسم البنك",
@@ -2424,6 +2472,7 @@
   "IOBPage": {
     "title": "IOB",
     "search": "بحث",
+    "createIOB": "إنشاء IOB",
     "add": "إضافة",
     "edit": "تعديل",
     "delete": "حذف",
@@ -2471,6 +2520,10 @@
   },
   "TCCPage": {
     "title": "أمين الحساب",
+    "contactInformation": "معلومات الاتصال",
+    "regulatoryInformation": "المعلومات التنظيمية",
+    "comments": "تعليقات",
+    "surveillanceAuthority": "سلطة الرقابة",
     "search": "بحث",
     "add": "إضافة",
     "code": "الرمز",
@@ -2519,7 +2572,8 @@
     "cancel": "إلغاء",
     "save": "حفظ",
     "areYouSure": "هل أنت متأكد؟",
-    "deleteConfirmation": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف أمين الحساب نهائيًا"
+    "deleteConfirmation": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف أمين الحساب نهائيًا",
+    "back": "رجوع"
   },
   "TCCDetailsPage": {
     "accountHolderNotFound": "لم يتم العثور على حافظ الحساب",

@@ -49,7 +49,7 @@ import { createPortal } from "react-dom";
 interface TitresTableProps {
   type: string;
   isPrimary?: boolean;
-} 
+}
 
 // Utilitaire pour transformer un Stock en TitreFormValues
 function mapStockToTitreFormValues(stock: Stock): TitreFormValues {
@@ -105,7 +105,15 @@ function mapStockToTitreFormValues(stock: Stock): TitreFormValues {
 }
 
 // Composant Modal utilisant un portail pour couvrir tout l'écran
-function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+function Modal({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
   if (!open) return null;
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
@@ -119,11 +127,14 @@ function Modal({ open, onClose, children }: { open: boolean; onClose: () => void
         {children}
       </div>
     </div>,
-    typeof window !== 'undefined' ? document.body : (null as any)
+    typeof window !== "undefined" ? document.body : (null as any)
   );
 }
 
-export function TitresTableObligation({ type, isPrimary = false }: TitresTableProps) {
+export function TitresTableObligation({
+  type,
+  isPrimary = false,
+}: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -131,20 +142,24 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const t = useTranslations("titresTable");
+  const t = useTranslations("TitresTable");
   const [data, setData] = React.useState<Stock[]>([]);
   const { data: session } = useSession();
   const { toast } = useToast();
   const pathname = usePathname();
   const [selectedStock, setSelectedStock] = React.useState<Stock | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
-  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
-  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [institutions, setInstitutions] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
   // TitresTableObligation gère les obligations, sukuk et participatif
   let stockType: "obligation" | "sukuk" | "participatif";
-  
+
   if (type === "empruntobligataire") {
     stockType = "obligation";
   } else if (type === "sukukmp" || type === "sukukms" || type === "sukuk") {
@@ -334,11 +349,7 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
                 {t("voirDetails")}
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link
-                  href={`${pathname}/${stock.id}`}
-                >
-                  {t("passerOrdre")}
-                </Link>
+                <Link href={`${pathname}/${stock.id}`}>{t("passerOrdre")}</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -358,7 +369,10 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
         return stockIsPrimary === isPrimary;
       });
 
-      console.log(`🔍 Filtered stocks for ${isPrimary ? 'primary' : 'secondary'} market:`, filteredStocks);
+      console.log(
+        `🔍 Filtered stocks for ${isPrimary ? "primary" : "secondary"} market:`,
+        filteredStocks
+      );
 
       // Check if we have the expected properties
       if (filteredStocks.length > 0) {
@@ -375,7 +389,11 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
       }
 
       setData(filteredStocks);
-      console.log(`✅ Loaded ${filteredStocks.length} ${stockType} stocks for ${isPrimary ? 'primary' : 'secondary'} market`);
+      console.log(
+        `✅ Loaded ${filteredStocks.length} ${stockType} stocks for ${
+          isPrimary ? "primary" : "secondary"
+        } market`
+      );
     } else if (error) {
       toast({
         variant: "destructive",
@@ -550,22 +568,22 @@ export function TitresTableObligation({ type, isPrimary = false }: TitresTablePr
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="space-x-2">
-                      <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              {t("precedent")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              {t("suivant")}
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {t("precedent")}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {t("suivant")}
+          </Button>
         </div>
       </div>
 

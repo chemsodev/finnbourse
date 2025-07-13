@@ -14,10 +14,12 @@ import {
 
 // Add this import for time-based displays
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const StaticDashNews = () => {
   // Create a state to track if we're in client-side rendering
   const [isClient, setIsClient] = useState(false);
+  const t = useTranslations("Dashboard");
 
   // Set isClient to true when component mounts (client-side only)
   useEffect(() => {
@@ -125,7 +127,7 @@ const StaticDashNews = () => {
   return (
     <>
       <h2 className="text-[1vw] font-semibold text-gray-900 mb-3">
-        Dernières Actualités
+        {t("derniereActualite")}
       </h2>
       <Card className="border border-gray-200 min-h-[400px] flex-1">
         <CardContent className="p-0">
@@ -164,7 +166,7 @@ const StaticDashNews = () => {
           <div className="p-[0.5vw]">
             <button className="w-full text-text-[0.7vw] font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200">
               <span className="flex items-center justify-center gap-2 text-[0.7vw]">
-                Voir Toutes les Actualités
+                {t("voirAllActualite")}
                 <ExternalLink className="w-3 h-3" />
               </span>
             </button>
