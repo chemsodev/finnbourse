@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
+  ColumnDef,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,26 +18,13 @@ import {
 } from "@/components/ui/table";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { List, AlertTriangle, RefreshCw } from "lucide-react";
 import { OrderElement } from "@/lib/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
 import { useJournalOrdersApi } from "@/hooks/useOrdersApi";
 import { JournalOrder } from "@/types/orders";
-
-interface StockDetails {
-  id: string;
-  code: string;
-  name: string;
-  type?: string;
-}
-
-interface ClientDetails {
-  id: string;
-  name: string;
-  email?: string;
-}
 
 interface OrdresTableHistoryProps {
   searchquery?: string;
@@ -53,220 +41,106 @@ export default function OrdresTableHistory({
 }: OrdresTableHistoryProps) {
   const t = useTranslations("orderHistory");
   const api = useJournalOrdersApi();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<OrderElement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   const { toast } = useToast();
 
   const [selectedOrder, setSelectedOrder] = useState<OrderElement | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Validate taskID
-  useEffect(() => {
-    if (!taskID) {
-      console.error("No taskID provided");
-      setError("No taskID provided");
-      setLoading(false);
-    }
-  }, [taskID]);
-
-  // Initial fetch on component mount
+  // Handle navigation
+  const handleTabChange = useCallback(
+    (newMarketType: string, tab: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", tab);
+      params.set("marketType", newMarketType);
+      params.set("page", "0");
+      router.push(`?${params.toString()}`);
+    },
+    [router, searchParams]
+  );
 
   // Fetch orders from API
   const fetchOrdersData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.getAllJournalOrders({
+
+      const filters: any = {
         market_type: marketType,
-      });
-      console.log(response);
+      };
+
+      // Add search filter if provided
+      if (searchquery && searchquery.trim()) {
+        filters.search = searchquery.trim();
+      }
+
+      const response = await api.getAllJournalOrders(filters);
+
       if (response.error) {
         throw new Error(response.error);
       }
 
-      setData(
-        (response.data.orders || []).map((order: JournalOrder) => ({
+      // Transform the data to match OrderElement interface
+      const transformedData = (response.data.orders || []).map(
+        (order: JournalOrder) => ({
           ...order,
           time_condition: order.time_condition ?? "",
           quantitative_condition: order.quantitative_condition ?? "",
-        }))
+          price_condition: order.price_condition ?? undefined,
+          validity: order.validity ?? undefined,
+        })
       );
 
-      //   if (!restToken) {
-      //     setError("No authentication token available");
-      //     setLoading(false);
-      //     return;
-      //   }
-
-      //   const result = await orderService.fetchOrders(
-      //     restToken,
-      //     taskID,
-      //     marketType
-      //   );
-
-      //   setLoading(false);
-
-      //   if (result.error) {
-      //     setError(result.error);
-      //   } else {
-      //     const elements = result.data?.elements || [];
-      //     setData(elements);
-
-      // Extract unique stock IDs and client IDs
-      // const stockIds = Array.from(
-      //   new Set(
-      //     elements
-      //       .map((order: OrderElement) => order.stock_id)
-      //       .filter(Boolean)
-      //   )
-      // ) as string[];
-      // const clientIds = Array.from(
-      //   new Set(
-      //     elements
-      //       .map((order: OrderElement) => order.client_id)
-      //       .filter(Boolean)
-      //   )
-      // ) as string[];
-
-      // if (stockIds.length > 0) {
-      //   fetchStockDetails(stockIds, restToken);
-      // }
-
-      // if (clientIds.length > 0) {
-      //   fetchClientDetails(clientIds, restToken);
-      // }
+      setData(transformedData);
+      setTotalCount(transformedData.length);
     } catch (err) {
       console.error("Error fetching orders:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
-      const errorMessage =
-        typeof err === "object" && err !== null && "message" in err
-          ? String((err as { message?: unknown }).message)
-          : "Failed to fetch stocks";
+      setError(err instanceof Error ? err.message : "Failed to fetch orders");
+
       toast({
         title: "Error",
-        description: errorMessage,
+        description:
+          err instanceof Error ? err.message : "Failed to fetch orders",
         variant: "destructive",
       });
+
       setData([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  }, [api, marketType, toast]);
+  }, [api, marketType, searchquery, toast]);
 
   useEffect(() => {
+    // Debounce the search and fetch data
+    const timeoutId = setTimeout(() => {
+      fetchOrdersData();
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchquery, marketType]); // Re-run when search query or market type changes
+
+  // Initial fetch when component mounts
+  useEffect(() => {
     fetchOrdersData();
-  }, [fetchOrdersData]);
-  // Fetch stock details
-  //   const fetchStockDetails = async (stockIds: string[], token: string) => {
-  //     try {
-  //       const stocksData: Record<string, StockDetails> = {};
+  }, []); // Only run once on mount
 
-  //       await Promise.all(
-  //         stockIds.map(async (stockId) => {
-  //           if (!stockId) return;
-
-  //           try {
-  //             const backendUrl =
-  //               process.env.NEXT_PUBLIC_BACKEND_URL ||
-  //               "https://kh.finnetude.com/api/v1";
-  //             const response = await fetch(`${backendUrl}/stock/${stockId}`, {
-  //               headers: {
-  //                 Authorization: `Bearer ${token}`,
-  //               },
-  //             });
-
-  //             if (response.ok) {
-  //               const stockData = await response.json();
-  //               stocksData[stockId] = {
-  //                 id: stockId,
-  //                 code: stockData.code || "N/A",
-  //                 name: stockData.name || "Unknown Stock",
-  //                 type: stockData.type,
-  //               };
-  //             } else {
-  //               stocksData[stockId] = {
-  //                 id: stockId,
-  //                 code: "Error",
-  //                 name: "Failed to load",
-  //               };
-  //             }
-  //           } catch (error) {
-  //             console.error(`Error fetching stock ${stockId}:`, error);
-  //             stocksData[stockId] = {
-  //               id: stockId,
-  //               code: "Error",
-  //               name: "Failed to load",
-  //             };
-  //           }
-  //         })
-  //       );
-
-  //       setStocksMap(stocksData);
-  //     } catch (error) {
-  //       console.error("Error fetching stock details:", error);
-  //     }
-  //   };
-
-  // Fetch client details
-  //   const fetchClientDetails = async (clientIds: string[], token: string) => {
-  //     try {
-  //       const clientsData: Record<string, ClientDetails> = {};
-
-  //       await Promise.all(
-  //         clientIds.map(async (clientId) => {
-  //           if (!clientId) return;
-
-  //           try {
-  //             const backendUrl =
-  //               process.env.NEXT_PUBLIC_BACKEND_URL ||
-  //               "https://kh.finnetude.com/api/v1";
-  //             const response = await fetch(`${backendUrl}/client/${clientId}`, {
-  //               headers: {
-  //                 Authorization: `Bearer ${token}`,
-  //               },
-  //             });
-
-  //             if (response.ok) {
-  //               const clientData = await response.json();
-  //               clientsData[clientId] = {
-  //                 id: clientId,
-  //                 name: clientData.name || "Unknown Client",
-  //                 email: clientData.email,
-  //               };
-  //             } else {
-  //               clientsData[clientId] = {
-  //                 id: clientId,
-  //                 name: "Failed to load",
-  //               };
-  //             }
-  //           } catch (error) {
-  //             console.error(`Error fetching client ${clientId}:`, error);
-  //             clientsData[clientId] = {
-  //               id: clientId,
-  //               name: "Failed to load",
-  //             };
-  //           }
-  //         })
-  //       );
-
-  //       setClientsMap(clientsData);
-  //     } catch (error) {
-  //       console.error("Error fetching client details:", error);
-  //     }
-  //   };
-
-  // Define columns
-  const columns = [
+  // Define columns with proper typing
+  const columns: ColumnDef<OrderElement>[] = [
     {
       accessorKey: "id",
       header: "ID",
-      cell: ({ row }: any) => <div>{row.original.id}</div>,
+      cell: ({ row }) => <div>{row.original.id}</div>,
     },
     {
       accessorKey: "stock_code",
       header: "Titre",
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="font-medium">{row.original.stock_code}</span>
           <span className="text-xs text-gray-500">
@@ -278,12 +152,12 @@ export default function OrdresTableHistory({
     {
       accessorKey: "client_nom",
       header: t("myOrders.client"),
-      cell: ({ row }: any) => <div>{row.original.client_nom}</div>,
+      cell: ({ row }) => <div>{row.original.client_nom}</div>,
     },
     {
       accessorKey: "market_type",
       header: t("myOrders.marketType"),
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <div className="capitalize">
           {row.original.market_type === "P" ? "Primaire" : "Secondaire"}
         </div>
@@ -292,28 +166,27 @@ export default function OrdresTableHistory({
     {
       accessorKey: "quantity",
       header: t("myOrders.quantity"),
-      cell: ({ row }: any) => <div>{row.original.quantity}</div>,
+      cell: ({ row }) => <div>{row.original.quantity}</div>,
     },
     {
       accessorKey: "price",
       header: t("myOrders.price"),
-      cell: ({ row }: any) => <div>{row.original.price} DA</div>,
+      cell: ({ row }) => <div>{row.original.price} DA</div>,
     },
-
     {
       accessorKey: "time_condition",
       header: t("myOrders.timeCondition"),
-      cell: ({ row }: any) => <div>{row.original.time_condition}</div>,
+      cell: ({ row }) => <div>{row.original.time_condition}</div>,
     },
     {
       accessorKey: "quantitative_condition",
       header: t("myOrders.executionType"),
-      cell: ({ row }: any) => <div>{row.original.quantitative_condition}</div>,
+      cell: ({ row }) => <div>{row.original.quantitative_condition}</div>,
     },
     {
       accessorKey: "status",
       header: t("myOrders.status.status"),
-      cell: ({ row }: any) => {
+      cell: ({ row }) => {
         const statusMap: Record<string, { text: string; color: string }> = {
           "premiere-validation": {
             text: t("myOrders.status.premiereValidation"),
@@ -372,6 +245,11 @@ export default function OrdresTableHistory({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
   });
 
   return (
@@ -383,13 +261,7 @@ export default function OrdresTableHistory({
             variant={marketType === "S" ? "default" : "outline"}
             size="sm"
             className="rounded-r-none"
-            onClick={() => {
-              const params = new URLSearchParams(window.location.search);
-              params.set("tab", "all");
-              params.set("marketType", "S");
-              params.set("page", "0");
-              window.location.search = params.toString();
-            }}
+            onClick={() => handleTabChange("S", "all")}
           >
             Carnet d'ordres
           </Button>
@@ -397,13 +269,7 @@ export default function OrdresTableHistory({
             variant={marketType === "P" ? "default" : "outline"}
             size="sm"
             className="rounded-l-none"
-            onClick={() => {
-              const params = new URLSearchParams(window.location.search);
-              params.set("tab", "souscriptions");
-              params.set("marketType", "P");
-              params.set("page", "0");
-              window.location.search = params.toString();
-            }}
+            onClick={() => handleTabChange("P", "souscriptions")}
           >
             Souscriptions
           </Button>
@@ -412,12 +278,12 @@ export default function OrdresTableHistory({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => fetchOrdersData()}
+          onClick={fetchOrdersData}
           disabled={loading}
           className="flex items-center gap-1"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          Refresh
+          {loading ? "Actualisation..." : "Actualiser"}
         </Button>
       </div>
       {loading ? (
@@ -445,8 +311,17 @@ export default function OrdresTableHistory({
       ) : error ? (
         <div className="text-center p-10 flex flex-col items-center justify-center text-gray-500">
           <AlertTriangle className="h-10 w-10 mb-2" />
-          <h3 className="text-lg font-medium">Error loading orders</h3>
+          <h3 className="text-lg font-medium">Erreur lors du chargement</h3>
           <p className="text-sm max-w-xs mx-auto mt-1">{error}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchOrdersData}
+            className="mt-3"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Réessayer
+          </Button>
         </div>
       ) : data.length === 0 ? (
         <div className="text-center p-10 flex flex-col items-center justify-center text-gray-500">
@@ -516,6 +391,46 @@ export default function OrdresTableHistory({
           </TableBody>
         </Table>
       )}
+
+      {/* Pagination Controls */}
+      {data.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm text-gray-700">
+              Affichage de{" "}
+              {table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+                1}{" "}
+              à{" "}
+              {Math.min(
+                (table.getState().pagination.pageIndex + 1) *
+                  table.getState().pagination.pageSize,
+                totalCount
+              )}{" "}
+              sur {totalCount} résultats
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Précédent
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Suivant
+            </Button>
+          </div>
+        </div>
+      )}
+
       <OrderDetailsDialog
         order={selectedOrder}
         open={dialogOpen}

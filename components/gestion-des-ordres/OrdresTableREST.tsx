@@ -63,6 +63,40 @@ const API_BASE =
 
 console.log("Using API Base URL:", API_BASE);
 
+interface OrderHistoryItem {
+  action: string;
+  motif: string;
+  created_by: string;
+  created_date: string;
+}
+
+interface DetailedOrderResponse {
+  error: string | null;
+  data: {
+    order_history: OrderHistoryItem[];
+    actions: string[];
+    order: OrderElement & {
+      client_nom: string;
+      stock_code: string;
+      stock_issuer_nom: string;
+      operation_type: string;
+      price_condition: string;
+      minQuantity: number;
+      validity: string | null;
+      souscripteur: {
+        qualite_souscripteur: string;
+        nom_prenom: string;
+        adresse: string;
+        wilaya: string;
+        date_naissance: string;
+        num_cni_pc: string;
+        nationalite: string;
+      };
+      created_by: string;
+    };
+  };
+}
+
 interface OrdresTableRESTProps {
   searchquery?: string;
   taskID: string;
@@ -105,6 +139,11 @@ export default function OrdresTableREST({
   >([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
+  // State for detailed order information
+  const [detailedOrderData, setDetailedOrderData] =
+    useState<DetailedOrderResponse | null>(null);
+  const [fetchingOrderDetails, setFetchingOrderDetails] = useState(false);
+
   // State pour la sélection multiple
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
 
@@ -133,6 +172,16 @@ export default function OrdresTableREST({
   >(null);
   const [bulkMotif, setBulkMotif] = useState("");
   const motifInputRef = useRef<HTMLInputElement | null>(null);
+
+  // State for results submission dialog
+  const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
+  const [selectedOrderForResults, setSelectedOrderForResults] =
+    useState<OrderElement | null>(null);
+  const [responseForm, setResponseForm] = useState({
+    quantity: "",
+    price: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handler pour valider/refuser la sélection avec motif
   const handleBulkConfirm = async () => {
@@ -231,16 +280,6 @@ export default function OrdresTableREST({
     motif: string;
   }>({ orderId: 0, action: "", motif: "" });
 
-  // Results submission dialog state (for execution page)
-  const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
-  const [selectedOrderForResults, setSelectedOrderForResults] =
-    useState<OrderElement | null>(null);
-  const [responseForm, setResponseForm] = useState({
-    quantite: "",
-    prix: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Initial fetch on component mount
   useEffect(() => {
     // Always fetch actual data from API regardless of page type
@@ -287,12 +326,16 @@ export default function OrdresTableREST({
             // Handle nested structure
             setData(directData.data.elements);
             setActions(directData.data.actions || []);
+
+            // No need to fetch stock and client details since they're included in the response
             setLoading(false);
             return;
           } else if (directData && directData.elements) {
             // Handle flat structure
             setData(directData.elements);
             setActions(directData.actions || []);
+
+            // No need to fetch stock and client details since they're included in the response
             setLoading(false);
             return;
           }
@@ -330,11 +373,13 @@ export default function OrdresTableREST({
           setActions(
             Array.isArray(result.data.actions) ? result.data.actions : []
           );
+
+          // No need to fetch stock and client details since they're included in the response
         }
       }
     } catch (err) {
       console.error("Error in fetchOrdersData:", err);
-      // Use example data on error
+      // Utiliser les données d'exemple en cas d'erreur générale
       setData(exampleOrders);
       setActions(["validate", "reject"]);
       setLoading(false);
@@ -344,25 +389,25 @@ export default function OrdresTableREST({
   // Open action dialog
   const openActionDialog = (orderId: number, action: string) => {
     if (action === "submit") {
-      // Find the order for results submission
+      // For submit action, open results dialog instead
       const order = data.find((o) => o.id === orderId);
       if (order) {
         setSelectedOrderForResults(order);
         setResponseForm({
-          quantite: order.quantity?.toString() || "",
-          prix: order.price?.toString() || "",
+          quantity: order.quantity?.toString() || "",
+          price: order.price?.toString() || "",
         });
         setIsResultsDialogOpen(true);
       }
-    } else {
-      // Handle regular actions (validate/reject)
-      setCurrentAction({
-        orderId,
-        action,
-        motif: "",
-      });
-      setActionDialogOpen(true);
+      return;
     }
+
+    setCurrentAction({
+      orderId,
+      action,
+      motif: "",
+    });
+    setActionDialogOpen(true);
   };
 
   // Handle action with reason
@@ -416,12 +461,14 @@ export default function OrdresTableREST({
     }
   };
 
-  // Handle results submission for execution page
+  // Handle results submission
   const handleResultsSubmit = async () => {
-    try {
-      if (!selectedOrderForResults) return;
+    if (!selectedOrderForResults) return;
 
+    try {
+      setIsSubmitting(true);
       const restToken = (session.data?.user as any)?.restToken;
+
       if (!restToken) {
         toast({
           title: "Error",
@@ -431,44 +478,50 @@ export default function OrdresTableREST({
         return;
       }
 
-      setIsSubmitting(true);
-
-      // Here you would call the API to submit the execution results
-      // For now, I'll use a placeholder API call structure
-      const BACKEND_API =
-        (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
-        "/api/v1";
-
-      const response = await fetch(`${BACKEND_API}/order/submit-results`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${restToken}`,
-        },
-        body: JSON.stringify({
-          orderId: selectedOrderForResults.id,
-          executedQuantity: parseInt(responseForm.quantite),
-          executionPrice: parseFloat(responseForm.prix),
-          taskID,
-        }),
-      });
+      const API_URL =
+        process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
+      const response = await fetch(
+        `${API_URL}/api/v1/order/submit-order-result`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${restToken}`,
+          },
+          body: JSON.stringify({
+            orderID: selectedOrderForResults.id,
+            taskID: "execution",
+            action: "validate",
+            quantity: parseInt(responseForm.quantity),
+            price: parseFloat(responseForm.price),
+          }),
+        }
+      );
 
       if (response.ok) {
         toast({
           title: "Success",
-          description: "Résultats d'exécution soumis avec succès",
+          description: "Résultats soumis avec succès",
         });
         setIsResultsDialogOpen(false);
-        setResponseForm({ quantite: "", prix: "" });
+        setSelectedOrderForResults(null);
+        setResponseForm({ quantity: "", price: "" });
+
+        // Refresh orders
         await fetchOrdersData();
       } else {
-        throw new Error("Failed to submit results");
+        const errorData = await response.json();
+        toast({
+          title: "Error",
+          description: errorData.message || "Erreur lors de la soumission",
+          variant: "destructive",
+        });
       }
-    } catch (err) {
-      console.error("Error submitting results:", err);
+    } catch (error) {
+      console.error("Error submitting results:", error);
       toast({
         title: "Error",
-        description: "Échec de soumission des résultats",
+        description: "Erreur lors de la soumission",
         variant: "destructive",
       });
     } finally {
@@ -484,25 +537,32 @@ export default function OrdresTableREST({
       cell: ({ row }: any) => <div>{row.original.id}</div>,
     },
     {
-      accessorKey: "stock_code",
+      accessorKey: "stock_id",
       header: "Titre",
       cell: ({ row }: any) => {
-        const stockCode = row.original.stock_code;
-        const issuerName = row.original.stock_issuer_nom;
+        const order = row.original;
         return (
           <div className="flex flex-col">
-            <span className="font-medium">{stockCode || "N/A"}</span>
-            <span className="text-xs text-gray-500">{issuerName || "N/A"}</span>
+            <span className="font-medium">
+              {order.stock_code || `ID: ${order.stock_id || "N/A"}`}
+            </span>
+            <span className="text-xs text-gray-500">
+              {order.stock_issuer_nom || "Loading..."}
+            </span>
           </div>
         );
       },
     },
     {
-      accessorKey: "client_nom",
+      accessorKey: "client_id",
       header: "Client",
       cell: ({ row }: any) => {
-        const clientName = row.original.client_nom;
-        return <div>{clientName || "N/A"}</div>;
+        const order = row.original;
+        return (
+          <div>
+            {order.client_nom || `Client ID: ${order.client_id || "N/A"}`}
+          </div>
+        );
       },
     },
     {
@@ -513,54 +573,6 @@ export default function OrdresTableREST({
           {row.original.market_type === "P" ? "Primaire" : "Secondaire"}
         </div>
       ),
-    },
-    {
-      accessorKey: "status",
-      header: "Statut",
-      cell: ({ row }: any) => {
-        const status = row.original.status;
-        const getStatusLabel = (status: string) => {
-          switch (status) {
-            case "E":
-              return "En attente";
-            case "F":
-              return "Finalisé";
-            case "pending":
-              return "En attente";
-            case "validated":
-              return "Validé";
-            case "rejected":
-              return "Rejeté";
-            default:
-              return status;
-          }
-        };
-
-        const getStatusColor = (status: string) => {
-          switch (status) {
-            case "E":
-            case "pending":
-              return "bg-yellow-100 text-yellow-800";
-            case "F":
-            case "validated":
-              return "bg-green-100 text-green-800";
-            case "rejected":
-              return "bg-red-100 text-red-800";
-            default:
-              return "bg-gray-100 text-gray-800";
-          }
-        };
-
-        return (
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-              status
-            )}`}
-          >
-            {getStatusLabel(status)}
-          </span>
-        );
-      },
     },
     {
       accessorKey: "quantity",
@@ -590,12 +602,15 @@ export default function OrdresTableREST({
         const isReturnValidationPage =
           pageType === "validationRetourFinale" ||
           pageType === "tccvalidationRetour";
-        const isExecutionPage = pageType === "orderExecution";
+
+        // Special handling for execution page with souscriptions tab
+        const isExecutionSouscriptions =
+          taskID === "execution" && activeTab === "souscriptions";
 
         return (
           <div className="flex items-center space-x-2">
-            {/* For execution page with souscriptions, handle status-based buttons */}
-            {isExecutionPage && marketType === "P" ? (
+            {isExecutionSouscriptions ? (
+              // Status-based buttons for execution souscriptions
               <>
                 {order.status === "E" && (
                   <Button
@@ -619,7 +634,7 @@ export default function OrdresTableREST({
                 )}
               </>
             ) : (
-              /* Default action buttons for other pages */
+              // Regular action buttons for other pages
               <>
                 {actions.includes("validate") && (
                   <Button
@@ -678,18 +693,18 @@ export default function OrdresTableREST({
   ): TitreFormValues {
     return {
       id: order.id.toString(),
-      name: order.stock_issuer_nom || "N/A",
-      issuer: order.stock_issuer_nom || "N/A",
-      isinCode: order.stock_code || "N/A",
-      code: order.stock_code || "N/A",
+      name: order.stock_issuer_nom || order.stock_id || "",
+      issuer: order.stock_issuer_nom || order.stock_id || "",
+      isinCode: order.stock_code || order.stock_id || "",
+      code: order.stock_code || order.stock_id || "",
       faceValue: 0,
       quantity: order.quantity || 0,
       emissionDate: new Date(),
       closingDate: new Date(),
       enjoymentDate: new Date(),
       marketListing: "ALG",
-      type: "action",
-      stockType: "action",
+      type: "action", // Default since we don't have stock type in the new structure
+      stockType: "action", // Default since we don't have stock type in the new structure
       status: "activated",
       dividendRate: undefined,
       capitalOperation: undefined,
@@ -725,9 +740,57 @@ export default function OrdresTableREST({
     }, 500);
   }, []);
 
-  const handleDetailsClick = (order: OrderElement) => {
+  const handleDetailsClick = async (order: OrderElement) => {
     setSelectedOrderForDetails(order);
     setIsDetailsModalOpen(true);
+    setFetchingOrderDetails(true);
+    setDetailedOrderData(null);
+
+    try {
+      const restToken = (session.data?.user as any)?.restToken;
+
+      if (!restToken) {
+        toast({
+          title: "Error",
+          description: "No authentication token available",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const API_URL =
+        process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
+      const response = await fetch(
+        `${API_URL}/api/v1/order/fetch/${order.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${restToken}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const detailedData: DetailedOrderResponse = await response.json();
+        setDetailedOrderData(detailedData);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to fetch order details",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      toast({
+        title: "Error",
+        description: "Error fetching order details",
+        variant: "destructive",
+      });
+    } finally {
+      setFetchingOrderDetails(false);
+    }
   };
 
   // Données d'exemple pour les tests
@@ -736,6 +799,9 @@ export default function OrdresTableREST({
       id: 1,
       stock_id: "STOCK001",
       client_id: "CLIENT001",
+      client_nom: "Ahmed Benali",
+      stock_code: "SNDP",
+      stock_issuer_nom: "Sonatrach",
       market_type: "P",
       quantity: 1000,
       price: 1500.5,
@@ -747,6 +813,9 @@ export default function OrdresTableREST({
       id: 2,
       stock_id: "STOCK002",
       client_id: "CLIENT002",
+      client_nom: "Fatima Zohra",
+      stock_code: "CRBP",
+      stock_issuer_nom: "Crédit Populaire d'Algérie",
       market_type: "S",
       quantity: 500,
       price: 2750.75,
@@ -758,6 +827,9 @@ export default function OrdresTableREST({
       id: 3,
       stock_id: "STOCK003",
       client_id: "CLIENT003",
+      client_nom: "Mohammed Boudiaf",
+      stock_code: "BNA",
+      stock_issuer_nom: "Banque Nationale d'Algérie",
       market_type: "P",
       quantity: 2000,
       price: 890.25,
@@ -769,6 +841,9 @@ export default function OrdresTableREST({
       id: 4,
       stock_id: "STOCK004",
       client_id: "CLIENT004",
+      client_nom: "Karim Messaoudi",
+      stock_code: "ALG",
+      stock_issuer_nom: "Air Algérie",
       market_type: "S",
       quantity: 750,
       price: 3200.0,
@@ -780,6 +855,9 @@ export default function OrdresTableREST({
       id: 5,
       stock_id: "STOCK005",
       client_id: "CLIENT005",
+      client_nom: "Amina Benali",
+      stock_code: "SNVI",
+      stock_issuer_nom: "SNVI",
       market_type: "P",
       quantity: 1500,
       price: 1200.75,
@@ -994,8 +1072,6 @@ export default function OrdresTableREST({
                 ? "Valider l'ordre"
                 : currentAction.action === "reject"
                 ? "Rejeter l'ordre"
-                : currentAction.action === "submit"
-                ? "Soumettre les résultats"
                 : "Rejeter l'ordre"}
             </DialogTitle>
             <DialogDescription>
@@ -1003,23 +1079,15 @@ export default function OrdresTableREST({
                 ? "Veuillez fournir un motif pour la validation de cet ordre."
                 : currentAction.action === "reject"
                 ? "Veuillez fournir un motif pour le rejet de cet ordre."
-                : currentAction.action === "submit"
-                ? "Veuillez fournir les détails des résultats à soumettre."
                 : "Veuillez fournir un motif pour le rejet de cet ordre."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="motif">
-                {currentAction.action === "submit" ? "Résultats" : "Motif"}
-              </Label>
+              <Label htmlFor="motif">Motif</Label>
               <Textarea
                 id="motif"
-                placeholder={
-                  currentAction.action === "submit"
-                    ? "Entrez les résultats ici..."
-                    : "Entrez le motif ici..."
-                }
+                placeholder="Entrez le motif ici..."
                 value={currentAction.motif}
                 onChange={(e) =>
                   setCurrentAction({ ...currentAction, motif: e.target.value })
@@ -1098,47 +1166,40 @@ export default function OrdresTableREST({
         </DialogContent>
       </Dialog>
 
-      {/* Results Submission Dialog (for execution page) */}
+      {/* Results Submission Dialog */}
       <Dialog open={isResultsDialogOpen} onOpenChange={setIsResultsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Soumettre le résultat d'exécution</DialogTitle>
+            <DialogTitle>Soumettre les résultats</DialogTitle>
             <DialogDescription>
-              Ordre ID: {selectedOrderForResults?.id}
+              Veuillez entrer la quantité et le prix pour l'ordre #
+              {selectedOrderForResults?.id}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="quantite" className="text-right">
-                Quantité exécutée
-              </Label>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="result-quantity">Quantité</Label>
               <Input
-                id="quantite"
+                id="result-quantity"
                 type="number"
-                value={responseForm.quantite}
+                placeholder="Entrez la quantité"
+                value={responseForm.quantity}
                 onChange={(e) =>
-                  setResponseForm({ ...responseForm, quantite: e.target.value })
-                }
-                className="col-span-3"
-                placeholder={
-                  selectedOrderForResults?.quantity?.toString() || ""
+                  setResponseForm({ ...responseForm, quantity: e.target.value })
                 }
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="prix" className="text-right">
-                Prix d'exécution
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="result-price">Prix</Label>
               <Input
-                id="prix"
+                id="result-price"
                 type="number"
                 step="0.01"
-                value={responseForm.prix}
+                placeholder="Entrez le prix"
+                value={responseForm.price}
                 onChange={(e) =>
-                  setResponseForm({ ...responseForm, prix: e.target.value })
+                  setResponseForm({ ...responseForm, price: e.target.value })
                 }
-                className="col-span-3"
-                placeholder={selectedOrderForResults?.price?.toString() || ""}
               />
             </div>
           </div>
@@ -1146,14 +1207,22 @@ export default function OrdresTableREST({
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setIsResultsDialogOpen(false)}
+              onClick={() => {
+                setIsResultsDialogOpen(false);
+                setSelectedOrderForResults(null);
+                setResponseForm({ quantity: "", price: "" });
+              }}
             >
               Annuler
             </Button>
             <Button
-              type="submit"
+              type="button"
               onClick={handleResultsSubmit}
-              disabled={isSubmitting}
+              disabled={
+                isSubmitting ||
+                !responseForm.quantity.trim() ||
+                !responseForm.price.trim()
+              }
             >
               {isSubmitting ? "Soumission..." : "Soumettre"}
             </Button>
@@ -1161,19 +1230,292 @@ export default function OrdresTableREST({
         </DialogContent>
       </Dialog>
 
-      {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
-        <OrderDetailsDialog
-          order={selectedOrderForDetails}
-          open={isDetailsModalOpen}
-          onOpenChange={setIsDetailsModalOpen}
-        />
-      )}
-      {isDetailsModalOpen && loadingDetails && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative text-center">
-            Chargement des détails...
-          </div>
-        </div>
+      {isDetailsModalOpen && selectedOrderForDetails && (
+        <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Détails de l'ordre #{selectedOrderForDetails.id}
+              </DialogTitle>
+              <DialogDescription>
+                Informations complètes sur l'ordre et son historique
+              </DialogDescription>
+            </DialogHeader>
+
+            {fetchingOrderDetails ? (
+              <div className="py-20 text-center">
+                <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+                <p>Chargement des détails...</p>
+              </div>
+            ) : detailedOrderData?.error ? (
+              <div className="py-20 text-center text-red-500">
+                <AlertTriangle className="h-8 w-8 mx-auto mb-4" />
+                <p>Erreur: {detailedOrderData.error}</p>
+              </div>
+            ) : detailedOrderData?.data ? (
+              <div className="space-y-6">
+                {/* Order Information */}
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-3">
+                    Informations de l'ordre
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">ID</p>
+                      <p>{detailedOrderData.data.order.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Status
+                      </p>
+                      <p>{detailedOrderData.data.order.status}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Client
+                      </p>
+                      <p>{detailedOrderData.data.order.client_nom}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Titre</p>
+                      <p>
+                        {detailedOrderData.data.order.stock_code} -{" "}
+                        {detailedOrderData.data.order.stock_issuer_nom}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Quantité
+                      </p>
+                      <p>{detailedOrderData.data.order.quantity}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Prix</p>
+                      <p>{detailedOrderData.data.order.price} DA</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Type de marché
+                      </p>
+                      <p>
+                        {detailedOrderData.data.order.market_type === "P"
+                          ? "Primaire"
+                          : "Secondaire"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Type d'opération
+                      </p>
+                      <p>
+                        {detailedOrderData.data.order.operation_type === "A"
+                          ? "Achat"
+                          : "Vente"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Condition de temps
+                      </p>
+                      <p>{detailedOrderData.data.order.time_condition}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Condition de prix
+                      </p>
+                      <p>{detailedOrderData.data.order.price_condition}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Condition quantitative
+                      </p>
+                      <p>
+                        {detailedOrderData.data.order.quantitative_condition}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">
+                        Créé par
+                      </p>
+                      <p>{detailedOrderData.data.order.created_by}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subscriber Information */}
+                {detailedOrderData.data.order.souscripteur && (
+                  <div className="border rounded-lg p-4">
+                    <h3 className="text-lg font-semibold mb-3">
+                      Informations du souscripteur
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Nom et prénom
+                        </p>
+                        <p>
+                          {detailedOrderData.data.order.souscripteur.nom_prenom}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Qualité
+                        </p>
+                        <p>
+                          {
+                            detailedOrderData.data.order.souscripteur
+                              .qualite_souscripteur
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Adresse
+                        </p>
+                        <p>
+                          {detailedOrderData.data.order.souscripteur.adresse}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Wilaya
+                        </p>
+                        <p>
+                          {detailedOrderData.data.order.souscripteur.wilaya}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Date de naissance
+                        </p>
+                        <p>
+                          {
+                            detailedOrderData.data.order.souscripteur
+                              .date_naissance
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          CNI/Passeport
+                        </p>
+                        <p>
+                          {detailedOrderData.data.order.souscripteur.num_cni_pc}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">
+                          Nationalité
+                        </p>
+                        <p>
+                          {
+                            detailedOrderData.data.order.souscripteur
+                              .nationalite
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Order History */}
+                {detailedOrderData.data.order_history &&
+                  detailedOrderData.data.order_history.length > 0 && (
+                    <div className="border rounded-lg p-4">
+                      <h3 className="text-lg font-semibold mb-3">
+                        Historique de l'ordre
+                      </h3>
+                      <div className="space-y-3">
+                        {detailedOrderData.data.order_history.map(
+                          (historyItem, index) => (
+                            <div
+                              key={index}
+                              className="border-b pb-3 last:border-b-0"
+                            >
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span
+                                      className={`px-2 py-1 rounded text-xs font-medium ${
+                                        historyItem.action === "validate"
+                                          ? "bg-green-100 text-green-800"
+                                          : historyItem.action === "reject"
+                                          ? "bg-red-100 text-red-800"
+                                          : "bg-gray-100 text-gray-800"
+                                      }`}
+                                    >
+                                      {historyItem.action === "validate"
+                                        ? "Validé"
+                                        : historyItem.action === "reject"
+                                        ? "Rejeté"
+                                        : historyItem.action}
+                                    </span>
+                                    <span className="text-sm text-gray-500">
+                                      {historyItem.created_date}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    Par: {historyItem.created_by}
+                                  </p>
+                                  {historyItem.motif && (
+                                    <p className="text-sm mt-1">
+                                      <span className="font-medium">
+                                        Motif:
+                                      </span>{" "}
+                                      {historyItem.motif}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Available Actions */}
+                {detailedOrderData.data.actions &&
+                  detailedOrderData.data.actions.length > 0 && (
+                    <div className="border rounded-lg p-4">
+                      <h3 className="text-lg font-semibold mb-3">
+                        Actions disponibles
+                      </h3>
+                      <div className="flex gap-2">
+                        {detailedOrderData.data.actions.map((action) => (
+                          <span
+                            key={action}
+                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm"
+                          >
+                            {action === "validate"
+                              ? "Valider"
+                              : action === "reject"
+                              ? "Rejeter"
+                              : action}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            ) : (
+              <div className="py-20 text-center text-gray-500">
+                <List className="h-8 w-8 mx-auto mb-4" />
+                <p>Aucun détail disponible</p>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsDetailsModalOpen(false)}
+              >
+                Fermer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
