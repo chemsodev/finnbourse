@@ -5,7 +5,14 @@ import MyMarquee from "@/components/MyMarquee";
 import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
 import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
 import Link from "next/link";
-import { ArrowLeft, CalendarClock, Filter, Download, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarClock,
+  Filter,
+  Download,
+  FileText,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TabSearch from "@/components/TabSearch";
 import MyPagination from "@/components/navigation/MyPagination";
@@ -59,22 +66,25 @@ export default async function PremiereValidationPage({
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                   <span>
-                    {activeAction === "validation" ? "Premier validation" : "Réponse"}
+                    {activeAction === "validation"
+                      ? "Premier validation"
+                      : "Réponse"}
                   </span>
                   {activeTab === "souscriptions" && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/10 text-primary border-primary/20"
+                    >
                       {tOrders("marcheprimaire")}
                     </Badge>
                   )}
                 </h1>
               </div>
             </div>
-
-                          
           </div>
 
           <p className="text-gray-600 text-sm leading-relaxed max-w-3xl">
-            {activeAction === "validation" 
+            {activeAction === "validation"
               ? t("firstValidationDescription")
               : "Gestion des réponses aux ordres et suivi des interactions"}
           </p>
@@ -94,12 +104,76 @@ export default async function PremiereValidationPage({
 
           <CardContent className="pt-0">
             <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+              {/* Tabs for Carnet d'ordres and Souscriptions */}
+              <div className="flex flex-wrap gap-2 mb-6 items-center justify-between p-4 border-b border-gray-100">
+                <div className="flex">
+                  <Link
+                    href={`/ordres/premiere-validation?${new URLSearchParams({
+                      ...Object.fromEntries(
+                        new URLSearchParams(searchParams?.toString() || "")
+                      ),
+                      marketType: "secondaire",
+                      page: "0",
+                    }).toString()}`}
+                  >
+                    <Button
+                      variant={
+                        marketType === "S" || marketType === "secondaire"
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      className="rounded-r-none"
+                    >
+                      Carnet d'ordres
+                    </Button>
+                  </Link>
+                  <Link
+                    href={`/ordres/premiere-validation?${new URLSearchParams({
+                      ...Object.fromEntries(
+                        new URLSearchParams(searchParams?.toString() || "")
+                      ),
+                      marketType: "primaire",
+                      page: "0",
+                    }).toString()}`}
+                  >
+                    <Button
+                      variant={
+                        marketType === "P" || marketType === "primaire"
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      className="rounded-l-none"
+                    >
+                      Souscriptions
+                    </Button>
+                  </Link>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
+                </Button>
+              </div>
+
               <OrdresTableREST
                 key={`orders-table-${activeAction}-${activeTab}-${marketType}-${state}-${currentPage}`}
                 searchquery={searchquery}
-                taskID={activeAction === "validation" ? "premiere-validation" : "reponse"}
-                marketType={activeTab === "souscriptions" ? "P" : marketType}
-                pageType={activeAction === "validation" ? "firstValidation" : "reponse"}
+                taskID={
+                  activeAction === "validation"
+                    ? "premiere-validation"
+                    : "reponse"
+                }
+                marketType={
+                  marketType === "primaire" || marketType === "P" ? "P" : "S"
+                }
+                pageType={
+                  activeAction === "validation" ? "firstValidation" : "reponse"
+                }
                 activeTab={activeTab}
                 activeAction={activeAction}
                 searchqueryParam={searchquery}
@@ -108,7 +182,9 @@ export default async function PremiereValidationPage({
             </div>
 
             <div className="flex justify-end mt-8 pt-6 border-t border-gray-100">
-              <MyPagination preserveParams={["tab", "action", "marketType", "state"]} />
+              <MyPagination
+                preserveParams={["tab", "action", "marketType", "state"]}
+              />
             </div>
           </CardContent>
         </Card>

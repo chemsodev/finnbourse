@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { createPortal } from "react-dom";
 import { TitreDetails } from "@/components/titres/TitreDetails";
 import { OrderDetailsDialog } from "@/components/order-history/OrderDetailsDialog";
@@ -61,19 +62,6 @@ const API_BASE =
   "/api/v1";
 
 console.log("Using API Base URL:", API_BASE);
-
-interface StockDetails {
-  id: string;
-  code: string;
-  name: string;
-  type?: string;
-}
-
-interface ClientDetails {
-  id: string;
-  name: string;
-  email?: string;
-}
 
 interface OrdresTableRESTProps {
   searchquery?: string;
@@ -106,10 +94,6 @@ export default function OrdresTableREST({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const [stocksMap, setStocksMap] = useState<Record<string, StockDetails>>({});
-  const [clientsMap, setClientsMap] = useState<Record<string, ClientDetails>>(
-    {}
-  );
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedOrderForDetails, setSelectedOrderForDetails] =
     useState<OrderElement | null>(null);
@@ -247,23 +231,20 @@ export default function OrdresTableREST({
     motif: string;
   }>({ orderId: 0, action: "", motif: "" });
 
+  // Results submission dialog state (for execution page)
+  const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
+  const [selectedOrderForResults, setSelectedOrderForResults] =
+    useState<OrderElement | null>(null);
+  const [responseForm, setResponseForm] = useState({
+    quantite: "",
+    prix: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Initial fetch on component mount
   useEffect(() => {
-    const isReturnValidationPage =
-      taskID === "validation-retour-finale" ||
-      taskID === "validation-tcc-retour";
-    if (isReturnValidationPage) {
-      console.log(
-        "Chargement automatique des exemples pour la page de validation du retour"
-      );
-      setData(exampleOrders);
-      setStocksMap(exampleStocks);
-      setClientsMap(exampleClients);
-      setActions(["validate", "reject"]);
-      setLoading(false);
-    } else {
-      fetchOrdersData();
-    }
+    // Always fetch actual data from API regardless of page type
+    fetchOrdersData();
   }, [session, taskID, marketType, toast]);
 
   // Fetch orders from API
@@ -306,56 +287,12 @@ export default function OrdresTableREST({
             // Handle nested structure
             setData(directData.data.elements);
             setActions(directData.data.actions || []);
-
-            // Process stock and client IDs
-            const elements = directData.data.elements || [];
-            const stockIds = Array.from(
-              new Set(
-                elements.map((order: any) => order.stock_id).filter(Boolean)
-              )
-            ) as string[];
-            const clientIds = Array.from(
-              new Set(
-                elements.map((order: any) => order.client_id).filter(Boolean)
-              )
-            ) as string[];
-
-            if (stockIds.length > 0) {
-              fetchStockDetails(stockIds, restToken);
-            }
-
-            if (clientIds.length > 0) {
-              fetchClientDetails(clientIds, restToken);
-            }
-
             setLoading(false);
             return;
           } else if (directData && directData.elements) {
             // Handle flat structure
             setData(directData.elements);
             setActions(directData.actions || []);
-
-            // Process stock and client IDs
-            const elements = directData.elements || [];
-            const stockIds = Array.from(
-              new Set(
-                elements.map((order: any) => order.stock_id).filter(Boolean)
-              )
-            ) as string[];
-            const clientIds = Array.from(
-              new Set(
-                elements.map((order: any) => order.client_id).filter(Boolean)
-              )
-            ) as string[];
-
-            if (stockIds.length > 0) {
-              fetchStockDetails(stockIds, restToken);
-            }
-
-            if (clientIds.length > 0) {
-              fetchClientDetails(clientIds, restToken);
-            }
-
             setLoading(false);
             return;
           }
@@ -393,155 +330,39 @@ export default function OrdresTableREST({
           setActions(
             Array.isArray(result.data.actions) ? result.data.actions : []
           );
-
-          // Extract unique stock IDs and client IDs
-          const stockIdsSet = new Set(
-            elements
-              .map((order: OrderElement) => order.stock_id)
-              .filter(Boolean)
-          );
-          const clientIdsSet = new Set(
-            elements
-              .map((order: OrderElement) => order.client_id)
-              .filter(Boolean)
-          );
-
-          const stockIds = Array.from(stockIdsSet);
-          const clientIds = Array.from(clientIdsSet);
-
-          // Fetch stock details
-          if (stockIds.length > 0) {
-            fetchStockDetails(stockIds, restToken);
-          }
-
-          // Fetch client details
-          if (clientIds.length > 0) {
-            fetchClientDetails(clientIds, restToken);
-          }
         }
       }
     } catch (err) {
       console.error("Error in fetchOrdersData:", err);
-      // Utiliser les données d'exemple en cas d'erreur générale
+      // Use example data on error
       setData(exampleOrders);
-      setStocksMap(exampleStocks);
-      setClientsMap(exampleClients);
       setActions(["validate", "reject"]);
       setLoading(false);
     }
   };
 
-  // Fetch stock details
-  const fetchStockDetails = async (stockIds: string[], token: string) => {
-    try {
-      const stocksData: Record<string, StockDetails> = {};
-
-      // For each stock ID, fetch details
-      await Promise.all(
-        stockIds.map(async (stockId) => {
-          if (!stockId) return; // Skip if stockId is null or undefined
-
-          try {
-            // Direct fetch from backend API
-            const backendUrl =
-              process.env.NEXT_PUBLIC_BACKEND_URL ||
-              "https://kh.finnetude.com/api/v1";
-            const response = await fetch(`${backendUrl}/stock/${stockId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            if (response.ok) {
-              const stockData = await response.json();
-              stocksData[stockId] = {
-                id: stockId,
-                code: stockData.code || "N/A",
-                name: stockData.name || "Unknown Stock",
-                type: stockData.type,
-              };
-            } else {
-              stocksData[stockId] = {
-                id: stockId,
-                code: "Error",
-                name: "Failed to load",
-              };
-            }
-          } catch (error) {
-            console.error(`Error fetching stock ${stockId}:`, error);
-            stocksData[stockId] = {
-              id: stockId,
-              code: "Error",
-              name: "Failed to load",
-            };
-          }
-        })
-      );
-
-      setStocksMap(stocksData);
-    } catch (error) {
-      console.error("Error fetching stock details:", error);
-    }
-  };
-
-  // Fetch client details
-  const fetchClientDetails = async (clientIds: string[], token: string) => {
-    try {
-      const clientsData: Record<string, ClientDetails> = {};
-
-      // For each client ID, fetch details
-      await Promise.all(
-        clientIds.map(async (clientId) => {
-          if (!clientId) return; // Skip if clientId is null or undefined
-
-          try {
-            // Direct fetch from backend API
-            const backendUrl =
-              process.env.NEXT_PUBLIC_BACKEND_URL ||
-              "https://kh.finnetude.com/api/v1";
-            const response = await fetch(`${backendUrl}/client/${clientId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            if (response.ok) {
-              const clientData = await response.json();
-              clientsData[clientId] = {
-                id: clientId,
-                name: clientData.name || "Unknown Client",
-                email: clientData.email,
-              };
-            } else {
-              clientsData[clientId] = {
-                id: clientId,
-                name: "Failed to load",
-              };
-            }
-          } catch (error) {
-            console.error(`Error fetching client ${clientId}:`, error);
-            clientsData[clientId] = {
-              id: clientId,
-              name: "Failed to load",
-            };
-          }
-        })
-      );
-
-      setClientsMap(clientsData);
-    } catch (error) {
-      console.error("Error fetching client details:", error);
-    }
-  };
-
   // Open action dialog
   const openActionDialog = (orderId: number, action: string) => {
-    setCurrentAction({
-      orderId,
-      action,
-      motif: "",
-    });
-    setActionDialogOpen(true);
+    if (action === "submit") {
+      // Find the order for results submission
+      const order = data.find((o) => o.id === orderId);
+      if (order) {
+        setSelectedOrderForResults(order);
+        setResponseForm({
+          quantite: order.quantity?.toString() || "",
+          prix: order.price?.toString() || "",
+        });
+        setIsResultsDialogOpen(true);
+      }
+    } else {
+      // Handle regular actions (validate/reject)
+      setCurrentAction({
+        orderId,
+        action,
+        motif: "",
+      });
+      setActionDialogOpen(true);
+    }
   };
 
   // Handle action with reason
@@ -595,6 +416,66 @@ export default function OrdresTableREST({
     }
   };
 
+  // Handle results submission for execution page
+  const handleResultsSubmit = async () => {
+    try {
+      if (!selectedOrderForResults) return;
+
+      const restToken = (session.data?.user as any)?.restToken;
+      if (!restToken) {
+        toast({
+          title: "Error",
+          description: "No authentication token available",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      // Here you would call the API to submit the execution results
+      // For now, I'll use a placeholder API call structure
+      const BACKEND_API =
+        (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
+        "/api/v1";
+
+      const response = await fetch(`${BACKEND_API}/order/submit-results`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${restToken}`,
+        },
+        body: JSON.stringify({
+          orderId: selectedOrderForResults.id,
+          executedQuantity: parseInt(responseForm.quantite),
+          executionPrice: parseFloat(responseForm.prix),
+          taskID,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Résultats d'exécution soumis avec succès",
+        });
+        setIsResultsDialogOpen(false);
+        setResponseForm({ quantite: "", prix: "" });
+        await fetchOrdersData();
+      } else {
+        throw new Error("Failed to submit results");
+      }
+    } catch (err) {
+      console.error("Error submitting results:", err);
+      toast({
+        title: "Error",
+        description: "Échec de soumission des résultats",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Define columns
   const columns = [
     {
@@ -603,30 +484,25 @@ export default function OrdresTableREST({
       cell: ({ row }: any) => <div>{row.original.id}</div>,
     },
     {
-      accessorKey: "stock_id",
+      accessorKey: "stock_code",
       header: "Titre",
       cell: ({ row }: any) => {
-        const stockId = row.original.stock_id;
-        const stock = stocksMap[stockId];
+        const stockCode = row.original.stock_code;
+        const issuerName = row.original.stock_issuer_nom;
         return (
           <div className="flex flex-col">
-            <span className="font-medium">
-              {stock?.code || `ID: ${stockId || "N/A"}`}
-            </span>
-            <span className="text-xs text-gray-500">
-              {stock?.name || "Loading..."}
-            </span>
+            <span className="font-medium">{stockCode || "N/A"}</span>
+            <span className="text-xs text-gray-500">{issuerName || "N/A"}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "client_id",
+      accessorKey: "client_nom",
       header: "Client",
       cell: ({ row }: any) => {
-        const clientId = row.original.client_id;
-        const client = clientsMap[clientId];
-        return <div>{client?.name || `Client ID: ${clientId || "N/A"}`}</div>;
+        const clientName = row.original.client_nom;
+        return <div>{clientName || "N/A"}</div>;
       },
     },
     {
@@ -637,6 +513,54 @@ export default function OrdresTableREST({
           {row.original.market_type === "P" ? "Primaire" : "Secondaire"}
         </div>
       ),
+    },
+    {
+      accessorKey: "status",
+      header: "Statut",
+      cell: ({ row }: any) => {
+        const status = row.original.status;
+        const getStatusLabel = (status: string) => {
+          switch (status) {
+            case "E":
+              return "En attente";
+            case "F":
+              return "Finalisé";
+            case "pending":
+              return "En attente";
+            case "validated":
+              return "Validé";
+            case "rejected":
+              return "Rejeté";
+            default:
+              return status;
+          }
+        };
+
+        const getStatusColor = (status: string) => {
+          switch (status) {
+            case "E":
+            case "pending":
+              return "bg-yellow-100 text-yellow-800";
+            case "F":
+            case "validated":
+              return "bg-green-100 text-green-800";
+            case "rejected":
+              return "bg-red-100 text-red-800";
+            default:
+              return "bg-gray-100 text-gray-800";
+          }
+        };
+
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+              status
+            )}`}
+          >
+            {getStatusLabel(status)}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "quantity",
@@ -666,28 +590,58 @@ export default function OrdresTableREST({
         const isReturnValidationPage =
           pageType === "validationRetourFinale" ||
           pageType === "tccvalidationRetour";
+        const isExecutionPage = pageType === "orderExecution";
 
         return (
           <div className="flex items-center space-x-2">
-            {actions.includes("validate") && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
-                onClick={() => openActionDialog(order.id, "validate")}
-              >
-                <CheckCircle className="h-4 w-4" />
-              </Button>
-            )}
-            {actions.includes("reject") && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
-                onClick={() => openActionDialog(order.id, "reject")}
-              >
-                <XCircle className="h-4 w-4" />
-              </Button>
+            {/* For execution page with souscriptions, handle status-based buttons */}
+            {isExecutionPage && marketType === "P" ? (
+              <>
+                {order.status === "E" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
+                    onClick={() => openActionDialog(order.id, "validate")}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                  </Button>
+                )}
+                {order.status === "F" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300 hover:border-blue-400 transition-colors"
+                    onClick={() => openActionDialog(order.id, "submit")}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
+                )}
+              </>
+            ) : (
+              /* Default action buttons for other pages */
+              <>
+                {actions.includes("validate") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300 hover:border-green-400 transition-colors"
+                    onClick={() => openActionDialog(order.id, "validate")}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                  </Button>
+                )}
+                {actions.includes("reject") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 hover:border-red-400 transition-colors"
+                    onClick={() => openActionDialog(order.id, "reject")}
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                )}
+              </>
             )}
           </div>
         );
@@ -722,26 +676,20 @@ export default function OrdresTableREST({
   function mapOrderElementToTitreFormValues(
     order: OrderElement
   ): TitreFormValues {
-    const stockId = order.stock_id;
-    const stock = stocksMap[stockId];
     return {
       id: order.id.toString(),
-      name: stock?.name || order.stock_id || "",
-      issuer: stock?.name || order.stock_id || "",
-      isinCode: stock?.code || order.stock_id || "",
-      code: stock?.code || order.stock_id || "",
+      name: order.stock_issuer_nom || "N/A",
+      issuer: order.stock_issuer_nom || "N/A",
+      isinCode: order.stock_code || "N/A",
+      code: order.stock_code || "N/A",
       faceValue: 0,
       quantity: order.quantity || 0,
       emissionDate: new Date(),
       closingDate: new Date(),
       enjoymentDate: new Date(),
       marketListing: "ALG",
-      type:
-        (stock?.type as "action" | "obligation" | "sukuk" | "participatif") ||
-        "action",
-      stockType:
-        (stock?.type as "action" | "obligation" | "sukuk" | "participatif") ||
-        "action",
+      type: "action",
+      stockType: "action",
       status: "activated",
       dividendRate: undefined,
       capitalOperation: undefined,
@@ -841,67 +789,6 @@ export default function OrdresTableREST({
     },
   ];
 
-  const exampleStocks: Record<string, StockDetails> = {
-    STOCK001: {
-      id: "STOCK001",
-      code: "SNDP",
-      name: "Sonatrach",
-      type: "action",
-    },
-    STOCK002: {
-      id: "STOCK002",
-      code: "CRBP",
-      name: "Crédit Populaire d'Algérie",
-      type: "obligation",
-    },
-    STOCK003: {
-      id: "STOCK003",
-      code: "BNA",
-      name: "Banque Nationale d'Algérie",
-      type: "sukuk",
-    },
-    STOCK004: {
-      id: "STOCK004",
-      code: "ALG",
-      name: "Air Algérie",
-      type: "action",
-    },
-    STOCK005: {
-      id: "STOCK005",
-      code: "SNVI",
-      name: "SNVI",
-      type: "obligation",
-    },
-  };
-
-  const exampleClients: Record<string, ClientDetails> = {
-    CLIENT001: {
-      id: "CLIENT001",
-      name: "Ahmed Benali",
-      email: "ahmed.benali@email.com",
-    },
-    CLIENT002: {
-      id: "CLIENT002",
-      name: "Fatima Zohra",
-      email: "fatima.zohra@email.com",
-    },
-    CLIENT003: {
-      id: "CLIENT003",
-      name: "Mohammed Boudiaf",
-      email: "mohammed.boudiaf@email.com",
-    },
-    CLIENT004: {
-      id: "CLIENT004",
-      name: "Karim Messaoudi",
-      email: "karim.messaoudi@email.com",
-    },
-    CLIENT005: {
-      id: "CLIENT005",
-      name: "Amina Benali",
-      email: "amina.benali@email.com",
-    },
-  };
-
   return (
     <>
       <div className="rounded-md border">
@@ -993,8 +880,6 @@ export default function OrdresTableREST({
                 size="sm"
                 onClick={() => {
                   setData(exampleOrders);
-                  setStocksMap(exampleStocks);
-                  setClientsMap(exampleClients);
                   setActions(["validate", "reject"]);
                   setError(null);
                 }}
@@ -1016,8 +901,6 @@ export default function OrdresTableREST({
                 size="sm"
                 onClick={() => {
                   setData(exampleOrders);
-                  setStocksMap(exampleStocks);
-                  setClientsMap(exampleClients);
                   setActions(["validate", "reject"]);
                 }}
               >
@@ -1111,6 +994,8 @@ export default function OrdresTableREST({
                 ? "Valider l'ordre"
                 : currentAction.action === "reject"
                 ? "Rejeter l'ordre"
+                : currentAction.action === "submit"
+                ? "Soumettre les résultats"
                 : "Rejeter l'ordre"}
             </DialogTitle>
             <DialogDescription>
@@ -1118,15 +1003,23 @@ export default function OrdresTableREST({
                 ? "Veuillez fournir un motif pour la validation de cet ordre."
                 : currentAction.action === "reject"
                 ? "Veuillez fournir un motif pour le rejet de cet ordre."
+                : currentAction.action === "submit"
+                ? "Veuillez fournir les détails des résultats à soumettre."
                 : "Veuillez fournir un motif pour le rejet de cet ordre."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="motif">Motif</Label>
+              <Label htmlFor="motif">
+                {currentAction.action === "submit" ? "Résultats" : "Motif"}
+              </Label>
               <Textarea
                 id="motif"
-                placeholder="Entrez le motif ici..."
+                placeholder={
+                  currentAction.action === "submit"
+                    ? "Entrez les résultats ici..."
+                    : "Entrez le motif ici..."
+                }
                 value={currentAction.motif}
                 onChange={(e) =>
                   setCurrentAction({ ...currentAction, motif: e.target.value })
@@ -1205,13 +1098,74 @@ export default function OrdresTableREST({
         </DialogContent>
       </Dialog>
 
+      {/* Results Submission Dialog (for execution page) */}
+      <Dialog open={isResultsDialogOpen} onOpenChange={setIsResultsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Soumettre le résultat d'exécution</DialogTitle>
+            <DialogDescription>
+              Ordre ID: {selectedOrderForResults?.id}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="quantite" className="text-right">
+                Quantité exécutée
+              </Label>
+              <Input
+                id="quantite"
+                type="number"
+                value={responseForm.quantite}
+                onChange={(e) =>
+                  setResponseForm({ ...responseForm, quantite: e.target.value })
+                }
+                className="col-span-3"
+                placeholder={
+                  selectedOrderForResults?.quantity?.toString() || ""
+                }
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="prix" className="text-right">
+                Prix d'exécution
+              </Label>
+              <Input
+                id="prix"
+                type="number"
+                step="0.01"
+                value={responseForm.prix}
+                onChange={(e) =>
+                  setResponseForm({ ...responseForm, prix: e.target.value })
+                }
+                className="col-span-3"
+                placeholder={selectedOrderForResults?.price?.toString() || ""}
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-between">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsResultsDialogOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              onClick={handleResultsSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Soumission..." : "Soumettre"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {isDetailsModalOpen && selectedOrderForDetails && !loadingDetails && (
         <OrderDetailsDialog
           order={selectedOrderForDetails}
           open={isDetailsModalOpen}
           onOpenChange={setIsDetailsModalOpen}
-          stocksMap={stocksMap}
-          clientsMap={clientsMap}
         />
       )}
       {isDetailsModalOpen && loadingDetails && (

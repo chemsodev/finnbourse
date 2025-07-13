@@ -7,6 +7,7 @@ import TabSearch from "@/components/TabSearch";
 import Link from "next/link";
 import { CalendarClock, RefreshCw, Printer } from "lucide-react";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
+import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -394,9 +395,12 @@ const ExecutionPage = () => {
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
         <div className="flex items-center justify-between w-full pr-8">
           <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">
-            Carnet d'Ordres
+            {marketType === "primaire"
+              ? "Exécution - Souscriptions"
+              : "Carnet d'Ordres"}
           </div>
-          {sessionData && (
+          {/* Only show session info for Carnet d'ordres (secondary market) */}
+          {marketType !== "primaire" && sessionData && (
             <div
               className={`text-lg font-semibold uppercase tracking-wide flex flex-col items-end ${getSessionCardStyle(
                 sessionData.session_closed
@@ -428,7 +432,9 @@ const ExecutionPage = () => {
           )}
         </div>
         <div className="text-xs text-gray-500 md:w-[50%] text-center md:ltr:text-left md:rtl:text-right">
-          Gestion et suivi des ordres de bourse
+          {marketType === "primaire"
+            ? "Gestion et exécution des ordres de souscription"
+            : "Gestion et suivi des ordres de bourse"}
         </div>
       </div>
       {/* Zone de recherche et actions globales */}
@@ -487,7 +493,20 @@ const ExecutionPage = () => {
           </Button>
         </div>
         <div className="my-8">
-          {loading ? (
+          {marketType === "primaire" ? (
+            // Use OrdresTableREST for Souscriptions (primary market)
+            <OrdresTableREST
+              key={`orders-table-execution-primaire-${refreshKey}`}
+              searchquery={searchquery}
+              taskID="execution"
+              marketType="P"
+              pageType="orderExecution"
+              activeTab="souscriptions"
+              activeAction="execution"
+              searchqueryParam={searchquery}
+              stateParam={state}
+            />
+          ) : loading ? (
             <div className="py-20 text-center">Chargement des données...</div>
           ) : (
             <>
@@ -496,6 +515,7 @@ const ExecutionPage = () => {
                   Aucun ordre trouvé
                 </div>
               ) : (
+                // Use session-based OrdresTable for Carnet d'ordres (secondary market)
                 <OrdresTable
                   searchquery={searchquery}
                   skip={currentPage}
@@ -516,53 +536,61 @@ const ExecutionPage = () => {
           )}
         </div>
         <div className="flex justify-between items-center">
-          <MyPagination />
-          <div className="flex justify-end gap-2">
-            {/* Add print button if can_download is true */}
-            {sessionData?.can_download && (
-              <Button
-                className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md shadow text-sm flex gap-2 items-center"
-                onClick={handlePrintSession}
-                disabled={isPrinting}
-              >
-                <Printer
-                  className={`h-4 w-4 ${isPrinting ? "animate-spin" : ""}`}
-                />
-                {isPrinting ? "Téléchargement..." : "Imprimer les résultats"}
-              </Button>
-            )}
+          {/* Only show pagination and session controls for Carnet d'ordres (secondary market) */}
+          {marketType !== "primaire" && (
+            <>
+              <MyPagination />
+              <div className="flex justify-end gap-2">
+                {/* Add print button if can_download is true */}
+                {sessionData?.can_download && (
+                  <Button
+                    className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md shadow text-sm flex gap-2 items-center"
+                    onClick={handlePrintSession}
+                    disabled={isPrinting}
+                  >
+                    <Printer
+                      className={`h-4 w-4 ${isPrinting ? "animate-spin" : ""}`}
+                    />
+                    {isPrinting
+                      ? "Téléchargement..."
+                      : "Imprimer les résultats"}
+                  </Button>
+                )}
 
-            {/* Show close button only if session is not closed */}
-            {sessionData && !sessionData.session_closed && (
-              <Button
-                className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
-                onClick={() => setIsConfirmDialogOpen(true)}
-              >
-                Fermer la session
-              </Button>
-            )}
-            <AlertDialog
-              open={isConfirmDialogOpen}
-              onOpenChange={setIsConfirmDialogOpen}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Êtes-vous sûr de vouloir fermer la session ?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Tout nouvel ordre sera redirigé vers la session suivante.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleCloseSession}>
-                    Oui
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+                {/* Show close button only if session is not closed */}
+                {sessionData && !sessionData.session_closed && (
+                  <Button
+                    className="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-md shadow text-sm flex gap-2 items-center"
+                    onClick={() => setIsConfirmDialogOpen(true)}
+                  >
+                    Fermer la session
+                  </Button>
+                )}
+                <AlertDialog
+                  open={isConfirmDialogOpen}
+                  onOpenChange={setIsConfirmDialogOpen}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Êtes-vous sûr de vouloir fermer la session ?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tout nouvel ordre sera redirigé vers la session
+                        suivante.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleCloseSession}>
+                        Oui
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

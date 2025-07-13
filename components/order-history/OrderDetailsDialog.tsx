@@ -10,8 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-
-
 import {
   Clock,
   ArrowRight,
@@ -33,16 +31,12 @@ interface OrderDetailsDialogProps {
   order: OrderElement | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  stocksMap: Record<string, { code: string; name: string }>;
-  clientsMap: Record<string, { name: string }>;
 }
 
 export function OrderDetailsDialog({
   order,
   open,
   onOpenChange,
-  stocksMap,
-  clientsMap,
 }: OrderDetailsDialogProps) {
   const t = useTranslations("orderHistory.orderDetails");
 
@@ -101,15 +95,17 @@ export function OrderDetailsDialog({
     </div>
   );
 
-  // Get stock name
+  // Get stock name from direct API fields
   const getStockName = (stockId: string) => {
-    const stock = stocksMap[stockId];
-    return stock ? `${stock.code} - ${stock.name}` : stockId;
+    if (order?.stock_code && order?.stock_issuer_nom) {
+      return `${order.stock_code} - ${order.stock_issuer_nom}`;
+    }
+    return stockId;
   };
 
-  // Get client name
+  // Get client name from direct API field
   const getClientName = (clientId: string) => {
-    return clientsMap[clientId]?.name || clientId;
+    return order?.client_nom || clientId;
   };
 
   return (
@@ -209,17 +205,9 @@ export function OrderDetailsDialog({
             order={order}
             open={open}
             onOpenChange={onOpenChange}
-            stocksMap={stocksMap}
-            clientsMap={clientsMap}
           />
 
-          <OrderTrack
-            order={order}
-            open={open}
-            onOpenChange={onOpenChange}
-            stocksMap={stocksMap}
-            clientsMap={clientsMap}
-          />
+          <OrderTrack order={order} open={open} onOpenChange={onOpenChange} />
         </div>
 
         {/* <div className="flex justify-end pt-4">

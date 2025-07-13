@@ -10,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-
 import {
   Clock,
   ArrowRight,
@@ -30,16 +29,12 @@ interface OrderDetailsReponseProps {
   order: OrderElement | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  stocksMap: Record<string, { code: string; name: string }>;
-  clientsMap: Record<string, { name: string }>;
 }
 
 export function OrderDetailsReponse({
   order,
   open,
   onOpenChange,
-  stocksMap,
-  clientsMap,
 }: OrderDetailsReponseProps) {
   const t = useTranslations("orderHistory.orderDetails");
 

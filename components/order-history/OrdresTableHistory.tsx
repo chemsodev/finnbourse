@@ -586,8 +586,6 @@ export default function OrdresTableHistory({
         order={selectedOrder}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        stocksMap={stocksMap}
-        clientsMap={clientsMap}
       />
     </div>
   );

@@ -515,14 +515,24 @@ export default function OrdresTable({
       emissionDate: new Date(),
       closingDate: new Date(),
       enjoymentDate: new Date(),
-      marketListing: "secondary",
-      type: order.securitytype || "",
+      marketListing: "ALG",
+      type:
+        (order.securitytype as
+          | "action"
+          | "obligation"
+          | "sukuk"
+          | "participatif") || "action",
+      stockType:
+        (order.securitytype as
+          | "action"
+          | "obligation"
+          | "sukuk"
+          | "participatif") || "action",
       status: "activated",
       dividendRate: undefined,
       capitalOperation: undefined,
       maturityDate: undefined,
       durationYears: undefined,
-      paymentSchedule: undefined,
       commission: undefined,
       shareClass: undefined,
       votingRights: undefined,
@@ -533,6 +543,8 @@ export default function OrdresTable({
         date: new Date(),
         gap: 0,
       },
+      capitalRepaymentSchedule: [],
+      couponSchedule: [],
     };
   }
 
@@ -897,8 +909,6 @@ export default function OrdresTable({
           }
           open={isDetailsModalOpen}
           onOpenChange={setIsDetailsModalOpen}
-          stocksMap={stocksMap}
-          clientsMap={clientsMap}
         />
       )}
       {isDetailsModalOpen && loadingDetails && (

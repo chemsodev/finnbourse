@@ -25,6 +25,10 @@ export interface OrderElement {
   market_type: string;
   client_id: string;
   status: string;
+  // New fields from API response
+  client_nom?: string;
+  stock_code?: string;
+  stock_issuer_nom?: string;
 }
 
 export interface OrderResponse {
