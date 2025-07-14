@@ -325,11 +325,15 @@ export function OrderDetailsDialog({
           )}
 
           <OrderDetailsReponse
-            order={order}
+            order={order as any}
             open={open}
             onOpenChange={onOpenChange}
           />
-          <OrderTrack order={order} open={open} onOpenChange={onOpenChange} />
+          <OrderTrack
+            order={order as any}
+            open={open}
+            onOpenChange={onOpenChange}
+          />
         </div>
       </DialogContent>
     </Dialog>
