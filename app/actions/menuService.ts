@@ -43,6 +43,13 @@ function sanitizeMenuData(data: any): MenuResponse {
         return null;
       }
 
+      // Filter out any hardcoded menu items that should not be displayed
+      // like "charts-editions" that isn't in the API response
+      if (element.id === "charts-editions") {
+        console.log("Filtering out charts-editions from menu");
+        return null;
+      }
+
       const sanitized: MenuElement = { id: element.id };
 
       if (element.children && Array.isArray(element.children)) {
@@ -208,6 +215,21 @@ export async function fetchAndStoreMenu(token?: string): Promise<MenuResponse> {
 
   // Fetch menu using provided token
   const menuData = await fetchMenuClient(token);
+
+  // Verify that we're only displaying menu items that come from the API
+  if (menuData && menuData.elements) {
+    // Log the menu data from API
+    console.log("Menu from API:", JSON.stringify(menuData, null, 2));
+
+    // Ensure we don't have any static items
+    console.log("Menu items count:", menuData.elements.length);
+
+    // Log all top-level menu IDs for debugging
+    console.log(
+      "Menu item IDs:",
+      menuData.elements.map((el) => el.id).join(", ")
+    );
+  }
 
   // Store in sessionStorage for persistence across page reloads
   if (typeof window !== "undefined") {

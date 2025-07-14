@@ -8,7 +8,11 @@
 "use client";
 
 import React from "react";
-import { MenuElement, getMenuItemInfo, menuItemMap } from "@/app/actions/menuService";
+import {
+  MenuElement,
+  getMenuItemInfo,
+  menuItemMap,
+} from "@/app/actions/menuService";
 import DynamicNavbarLink from "@/components/navigation/DynamicNavbarLink";
 import DynamicDropdownMenu from "@/components/navigation/DynamicDropdownMenu";
 import { useTranslations } from "next-intl";
@@ -22,8 +26,32 @@ const DynamicMenuItems = ({ elements }: DynamicMenuItemsProps) => {
 
   // Debug logging
   React.useEffect(() => {
-    console.log("DynamicMenuItems - Elements received:", elements);
+    console.log(
+      "DynamicMenuItems - Elements received:",
+      JSON.stringify(elements, null, 2)
+    );
     console.log("DynamicMenuItems - Elements length:", elements?.length);
+
+    // Log all menu item IDs for verification
+    const menuIds = elements.map((element) => element.id);
+    console.log("Menu IDs in sidebar:", menuIds.join(", "));
+
+    // Check for pages that should be hidden
+    elements.forEach((element) => {
+      if (element.id === "charts-editions") {
+        console.warn(
+          "WARNING: charts-editions found in menu elements when it should be removed"
+        );
+      }
+
+      // Log dropdown children for debugging
+      if (element.children && element.children.length > 0) {
+        console.log(
+          `Children of ${element.id}:`,
+          element.children.map((child) => child.id).join(", ")
+        );
+      }
+    });
   }, [elements]);
 
   if (!elements || elements.length === 0) {

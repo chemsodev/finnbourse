@@ -31,6 +31,16 @@ const DynamicDropdownMenu = ({
   const pathname = usePathname();
   const t = useTranslations("SideBar");
 
+  // Debug the children items
+  React.useEffect(() => {
+    if (id === "orders-dropdown") {
+      console.log(
+        `DynamicDropdownMenu ${id} children:`,
+        JSON.stringify(children, null, 2)
+      );
+    }
+  }, [id, children]);
+
   // Check if any child is active to determine dropdown state
   const isActive = children.some((child) => {
     const childInfo = getMenuItemInfo(child.id);
