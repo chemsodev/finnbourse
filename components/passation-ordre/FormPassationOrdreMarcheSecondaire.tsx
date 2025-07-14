@@ -127,6 +127,7 @@ const FormPassationOrdreMarcheSocondaire = ({
   const { stocks: stockData, loading: stocksLoading } =
     useStocksREST(stockType);
   const { stock: data, loading } = useStockREST(titreId, stockType);
+
   const {
     clients,
     loading: clientsLoading,
@@ -310,13 +311,13 @@ const FormPassationOrdreMarcheSocondaire = ({
           Authorization: `Bearer ${restToken}`,
         },
         body: JSON.stringify({
-          stock_id: formData.selectedTitreId,
+          stock_id: formData.selectedTitreId || titreId,
           client_id: formData.selectedClientId,
           quantity: formData.quantite,
           price:
             formData.conditionPrix === "prixLimite"
               ? formData.coursLimite
-              : selectedPrice,
+              : selectedPrice || data?.faceValue || 0,
           market_type: "S", // Ensure this is "S" for Secondary market to link with the same tables as IOB Secondary Market
           operation_type: formData.buyTransaction ? "A" : "V", // A for Achat (buy), V for Vente (sell)
           conditionDuree: formData.conditionDuree,

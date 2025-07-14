@@ -463,7 +463,7 @@ export default function OrdresTableHistory({
           },
           execution: {
             text: t("myOrders.status.execution"),
-            color: "text-purple-600",
+            color: "text-orange-600",
           },
           resultats: {
             text: t("myOrders.status.resultats"),
@@ -471,7 +471,7 @@ export default function OrdresTableHistory({
           },
           "final-state": {
             text: t("myOrders.status.finalState"),
-            color: "text-green-600",
+            color: "text-red-600",
           },
         };
 
@@ -668,7 +668,7 @@ export default function OrdresTableHistory({
         </Table>
       )}
       <OrderDetailsDialog
-        order={selectedOrder}
+        order={selectedOrder as JournalOrder}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
       />
