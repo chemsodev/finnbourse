@@ -13,23 +13,23 @@ const nextConfig = {
     // Disable TypeScript during production builds
     ignoreBuildErrors: true,
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/v1/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/:path*`,
-      },
-      // {
-      //   // Add specific rewrite for client API
-      //   source: "/api/client/:path*",
-      //   destination: "/api/client/:path*", // This ensures our API route is used
-      // },
-      {
-        source: "/api/v1/:path*",
-        destination: `${process.env.NEXT_PUBLIC_MENU_ORDER}/api/v1/:path*`,
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: "/api/v1/:path*",
+  //       destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/:path*`,
+  //     },
+  //     {
+  //       // Add specific rewrite for client API
+  //       source: "/api/client/:path*",
+  //       destination: "/api/client/:path*", // This ensures our API route is used
+  //     },
+  //     {
+  //       source: "/api/v1/:path*",
+  //       destination: `${process.env.NEXT_PUBLIC_MENU_ORDER}/api/v1/:path*`,
+  //     },
+  //   ];
+  // },
 };
 
 export default withNextIntl(nextConfig);
