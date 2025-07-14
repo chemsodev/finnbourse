@@ -95,7 +95,6 @@ export function OrderDetailsDialog({
     </div>
   );
 
-
   const getStockName = (stockId: string) => {
     if (order?.stock_code && order?.stock_issuer_nom) {
       return `${order.stock_code} - ${order.stock_issuer_nom}`;

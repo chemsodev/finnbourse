@@ -1,6 +1,5 @@
 "use client";
 
-
 import MyMarquee from "@/components/MyMarquee";
 import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
 import { TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
@@ -72,6 +71,7 @@ const SecondaryMarketPage = ({ params }: { params: { type: string } }) => {
       </div>
 
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
+        {/* Use the same tables as Marché Secondaire */}
         {type === "action" ? (
           <TitresTableREST type={type} isPrimary={false} />
         ) : (

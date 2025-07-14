@@ -43,43 +43,7 @@ export function useMenu(): UseMenuReturn {
     },
   });
 
-  // Static complete menu for testing/development
-  const getCompleteStaticMenu = (): MenuResponse => ({
-    elements: [
-      { id: "dashboard" },
-      { id: "place-order" },
-      { id: "order-history" },
-      {
-        id: "orders-dropdown",
-        children: [
-          { id: "premiere-validation" },
-          { id: "validation-finale" },
-          { id: "validation-retour-premiere" }, 
-          { id: "validation-retour-finale" },     
-          { id: "validation-tcc-premiere" },
-          { id: "validation-tcc-finale" },
-          { id: "validation-tcc-retour-premiere" },
-          { id: "validation-tcc-retour-finale" },
-          { id: "execution" },
-          { id: "resultats" },
-        ],
-      },
-      {
-        id: "titles-emetteurs-dropdown",
-        children: [
-          { id: "emetteurs" },
-          { id: "gestion-titres" },
-          { id: "iob-secondary-market" },
-        ],
-      },
-      {
-        id: "actors-management-dropdown",
-        children: [{ id: "iob" }, { id: "tcc" }, { id: "agence" }],
-      },
-      { id: "clients" },
-      { id: "charts-editions" },
-    ],
-  });
+  // Removed static menu - only using dynamic menu from API
 
   // Function to handle token validation errors
   const handleTokenError = (errorMessage: string) => {
@@ -108,16 +72,7 @@ export function useMenu(): UseMenuReturn {
         return; // Still loading session
       }
 
-      // DEVELOPMENT MODE: Use complete static menu
-      // Comment out this block when you want to use dynamic API-based menu again
-      console.log("useMenu: Using complete static menu for testing");
-      setMenu(getCompleteStaticMenu());
-      setIsLoading(false);
-      return;
-
-      // PRODUCTION MODE: Dynamic menu from API (currently disabled for testing)
-      // Uncomment this block when you want to use API-based menu again
-      /*
+      // PRODUCTION MODE: Dynamic menu from API
       // If no session, redirect to login
       if (status === "unauthenticated" || !session) {
         console.log("useMenu: No session, redirecting to login");
@@ -150,14 +105,17 @@ export function useMenu(): UseMenuReturn {
           setMenu(fetchedMenu);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to load menu";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load menu";
 
         // Check if error is related to token validation
-        if (errorMessage.includes("401") ||
-            errorMessage.includes("403") ||
-            errorMessage.includes("Unauthorized") ||
-            errorMessage.includes("token") ||
-            errorMessage.includes("expired")) {
+        if (
+          errorMessage.includes("401") ||
+          errorMessage.includes("403") ||
+          errorMessage.includes("Unauthorized") ||
+          errorMessage.includes("token") ||
+          errorMessage.includes("expired")
+        ) {
           handleTokenError(errorMessage);
         } else {
           // Non-token related error
@@ -171,7 +129,8 @@ export function useMenu(): UseMenuReturn {
           setIsLoading(false);
         }
       }
-      */
+
+      // No static menu fallback - using only dynamic menu from API
     };
 
     loadMenu();

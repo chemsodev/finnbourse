@@ -115,44 +115,77 @@ export default function ClientView() {
     const fetchPortfolio = async () => {
       try {
         setLoadingPortfolio(true);
-        // Fetch from the Mockoon API
-        const response = await fetch(
-          `http://localhost:8081/portfolio/${clientId}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch portfolio data");
+
+        // Get the session token for API authentication
+        const session = await fetch('/api/auth/session');
+        const sessionData = await session.json();
+        const token = sessionData?.user?.restToken;
+
+        if (!token) {
+          throw new Error("No authentication token available");
         }
-        const apiData = await response.json();
+
+        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://kh.finnetude.com";
+
+        // Fetch client portfolio and transactions in parallel
+        const [portfolioResponse, transactionsResponse] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/v1/portfolio/client/${clientId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }),
+          fetch(`${BACKEND_URL}/api/v1/portfolio/transactions`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          })
+        ]);
+
+        if (!portfolioResponse.ok) {
+          throw new Error(`Failed to fetch portfolio data: ${portfolioResponse.status}`);
+        }
+
+        const portfolioData = await portfolioResponse.json();
+
+        // Transactions endpoint might not be available for all users, so handle gracefully
+        let transactionsData = [];
+        if (transactionsResponse.ok) {
+          transactionsData = await transactionsResponse.json();
+        } else {
+          console.warn("Failed to fetch transactions, using empty array");
+        }
 
         // Transform the API data to match the expected structure
         const transformedData = {
           myPortfolio: {
-            holdings: apiData.myPortfolio.holdings.map((holding: any) => ({
-              name: holding.stockName,
-              symbol: holding.stockCode,
-              quantity: holding.quantity,
-              currentValue: holding.currentValue,
-              investmentValue: holding.totalInvestment,
-              profit: holding.totalProfit,
-              profitPercentage: holding.profitPercentage,
-            })),
-            totalInvestment: apiData.myPortfolio.totalInvestment,
-            totalCurrentValue: apiData.myPortfolio.totalCurrentValue,
-            totalProfit: apiData.myPortfolio.totalProfit,
-            totalProfitPercentage: apiData.myPortfolio.totalProfitPercentage,
+            holdings: portfolioData.holdings?.map((holding: any) => ({
+              name: holding.stockName || holding.name || "Unknown Stock",
+              symbol: holding.stockCode || holding.symbol || "N/A",
+              quantity: holding.quantity || 0,
+              currentValue: holding.currentValue || 0,
+              investmentValue: holding.totalInvestment || holding.investmentValue || 0,
+              profit: holding.totalProfit || holding.profit || 0,
+              profitPercentage: holding.profitPercentage || 0,
+            })) || [],
+            totalInvestment: portfolioData.totalInvestment || 0,
+            totalCurrentValue: portfolioData.totalCurrentValue || 0,
+            totalProfit: portfolioData.totalProfit || 0,
+            totalProfitPercentage: portfolioData.totalProfitPercentage || 0,
           },
-          transactionHistoryExample: apiData.transactionHistoryExample.map(
+          transactionHistoryExample: transactionsData.map(
             (transaction: any, index: number) => ({
-              id: `TX${String(index + 1).padStart(3, "0")}`,
-              date: transaction.createdAt,
-              type: transaction.status === "completed" ? "BUY" : "PENDING",
-              symbol: transaction.stockCode,
-              name: transaction.stockName,
-              quantity: transaction.quantity,
-              price: transaction.price,
-              total: transaction.quantity * transaction.price,
+              id: transaction.id || `TX${String(index + 1).padStart(3, "0")}`,
+              date: transaction.createdAt || transaction.date || new Date().toISOString(),
+              type: transaction.operationType === "A" ? "BUY" : transaction.operationType === "V" ? "SELL" : "UNKNOWN",
+              symbol: transaction.stockCode || transaction.symbol || "N/A",
+              name: transaction.stockName || transaction.name || "Unknown Stock",
+              quantity: transaction.quantity || 0,
+              price: transaction.price || 0,
+              total: (transaction.quantity || 0) * (transaction.price || 0),
             })
-          ),
+          ) || [],
         };
 
         setPortfolio(transformedData);

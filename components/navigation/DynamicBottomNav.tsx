@@ -27,6 +27,16 @@ const DynamicBottomNav = () => {
   const pathname = usePathname();
   const t = useTranslations("SideBar");
 
+  // Debug the menu items in the bottom nav
+  React.useEffect(() => {
+    if (menu && menu.elements) {
+      console.log(
+        "DynamicBottomNav - Menu elements:",
+        menu.elements.map((el) => el.id).join(", ")
+      );
+    }
+  }, [menu]);
+
   // Select first 4 menu items for bottom nav (excluding dropdowns)
   const bottomNavItems = menu.elements
     .filter((element) => !element.children || element.children.length === 0)

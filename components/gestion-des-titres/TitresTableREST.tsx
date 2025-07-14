@@ -37,7 +37,7 @@ import { useTranslations } from "next-intl";
 import { formatDate, formatPrice } from "@/lib/utils";
 import { Suspense, useState, useEffect } from "react";
 import { Stock } from "@/lib/services/stockService";
-import { useStocksREST } from "@/hooks/useStockREST";
+import { useStockApi } from "@/hooks/useStockApi";
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
@@ -49,10 +49,10 @@ import { createPortal } from "react-dom";
 
 interface TitresTableProps {
   type: string;
-  // isPrimary?: boolean; // supprimé
+  isPrimary?: boolean; // Added back for compatibility with passation ordre tables
 }
 
-export function TitresTableREST({ type }: TitresTableProps) {
+export function TitresTableREST({ type, isPrimary = true }: TitresTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -67,12 +67,64 @@ export function TitresTableREST({ type }: TitresTableProps) {
   const pathname = usePathname();
   const [selectedStock, setSelectedStock] = React.useState<Stock | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
-  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
-  const [institutions, setInstitutions] = useState<{ id: string; name: string }[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [institutions, setInstitutions] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
-  const stockType: "action" = "action";
-  const { stocks, loading, error } = useStocksREST(stockType);
+  // Determine the stock type based on the 'type' prop and 'isPrimary'
+  let stockType: "action" = "action";
+
+  // Map common types to API stock types
+  if (type === "opv" || type === "action") {
+    stockType = "action";
+  }
+
+  /**
+   * This component now uses the same data fetching mechanism as MarketTable.
+   * It calls api.filterStocks with the same parameters, ensuring data consistency
+   * between this component and the MarketTable component used in Gestion des Titres.
+   */
+  const api = useStockApi();
+  const [stocks, setStocks] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // Fetch stocks using the same API as MarketTable
+  React.useEffect(() => {
+    const fetchStocks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Use the same filterStocks API as MarketTable
+        const marketType = isPrimary ? "primaire" : "secondaire";
+        const response = await api.filterStocks({
+          marketType,
+          stockType: stockType,
+        });
+
+        setStocks(response || []);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch stocks";
+        setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Error loading stocks",
+          description: errorMessage,
+        });
+        setStocks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStocks();
+  }, [api, stockType, isPrimary, toast]);
 
   // Extract roleId with type assertion
   const roleId = (session?.user as any)?.roleid;
@@ -231,11 +283,7 @@ export function TitresTableREST({ type }: TitresTableProps) {
                 {t("voirDetails")}
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link
-                  href={`${pathname}/${stock.id}`}
-                >
-                  {t("passerOrdre")}
-                </Link>
+                <Link href={`${pathname}/${stock.id}`}>{t("passerOrdre")}</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -456,7 +504,15 @@ export function TitresTableREST({ type }: TitresTableProps) {
             <TitreDetails
               data={mapStockToTitreFormValues(selectedStock)}
               companies={companies}
-              institutions={institutions}
+              institutions={institutions.map((inst) => ({
+                id: inst.id,
+                institutionName: inst.name,
+                taxIdentificationNumber: "",
+                agreementNumber: "",
+                legalForm: "",
+                establishmentDate: "",
+                fullAddress: "",
+              }))}
               isValidationReturnPage={false}
               orderResponse={undefined}
             />
@@ -478,6 +534,7 @@ function mapStockToTitreFormValues(stock: Stock): TitreFormValues {
     code: s.code || "",
     faceValue: s.faceValue ?? s.facevalue ?? 0,
     quantity: s.quantity ?? 0,
+    stockType: s.stockType || "action", // Added missing required property
     emissionDate: s.emissionDate
       ? new Date(s.emissionDate)
       : s.emissiondate
@@ -493,10 +550,10 @@ function mapStockToTitreFormValues(stock: Stock): TitreFormValues {
       : s.enjoymentdate
       ? new Date(s.enjoymentdate)
       : new Date(),
-    marketListing: "primary",
+    marketListing: "CAS", // Changed from "primary" to "CAS" to match the expected MarketListing type
     type: s.type || "",
-    status: ["activated", "suspended", "expired"].includes(s.status as string)
-      ? (s.status as "activated" | "suspended" | "expired")
+    status: ["activated", "suspended", "delisted"].includes(s.status as string)
+      ? (s.status as "activated" | "suspended" | "delisted")
       : "activated",
     dividendRate: s.dividendRate,
     capitalOperation: undefined,
@@ -506,7 +563,7 @@ function mapStockToTitreFormValues(stock: Stock): TitreFormValues {
       ? new Date(s.maturitydate)
       : undefined,
     durationYears: undefined,
-    paymentSchedule: undefined,
+    // Removed paymentSchedule as it doesn't exist in the target type
     commission: s.commission,
     shareClass: undefined,
     votingRights: undefined,
@@ -517,11 +574,22 @@ function mapStockToTitreFormValues(stock: Stock): TitreFormValues {
       date: new Date(),
       gap: 0,
     },
+    // Add missing required properties
+    capitalRepaymentSchedule: s.capitalRepaymentSchedule || [],
+    couponSchedule: s.couponSchedule || [],
   };
 }
 
 // Composant Modal utilisant un portail pour couvrir tout l'écran
-function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+function Modal({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
   if (!open) return null;
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60">
@@ -535,6 +603,6 @@ function Modal({ open, onClose, children }: { open: boolean; onClose: () => void
         {children}
       </div>
     </div>,
-    typeof window !== 'undefined' ? document.body : (null as any)
+    typeof window !== "undefined" ? document.body : (null as any)
   );
 }

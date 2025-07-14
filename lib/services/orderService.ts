@@ -29,6 +29,20 @@ export interface OrderElement {
   client_nom?: string;
   stock_code?: string;
   stock_issuer_nom?: string;
+  operation_type?: string;
+  price_condition?: string;
+  minQuantity?: number;
+  validity?: string | null;
+  souscripteur?: {
+    qualite_souscripteur: string;
+    nom_prenom: string;
+    adresse: string;
+    wilaya: string;
+    date_naissance: string;
+    num_cni_pc: string;
+    nationalite: string;
+  };
+  created_by?: string;
 }
 
 export interface OrderResponse {

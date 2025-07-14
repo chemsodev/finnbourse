@@ -81,7 +81,14 @@ const DynamicSidebar = () => {
         {/* Dynamic menu items */}
         <div className="flex flex-col gap-2">
           {menu?.elements && menu.elements.length > 0 ? (
-            <DynamicMenuItems elements={menu.elements} />
+            <>
+              {/* Filter to ensure no static menu items like charts-editions are included */}
+              <DynamicMenuItems
+                elements={menu.elements.filter(
+                  (item) => item.id !== "charts-editions"
+                )}
+              />
+            </>
           ) : (
             <div className="text-sm text-gray-500 p-4">
               No menu items available

@@ -120,8 +120,10 @@ const FormPassationOrdreMarchePrimaire = ({
 
   const t = useTranslations("FormPassationOrdreObligation");
 
-  // Use REST hooks for fetching data
+  // Use MarketTable's API for fetching stocks - same as Gestion des Titres Marché Primaire
   const stockType = "action";
+  // This uses the same API endpoint as MarketTable in the Gestion des Titres Marché Primaire
+  // which is: api.filterStocks({ marketType: "primaire", stockType: "action" })
   const { stocks: stockData, loading: stocksLoading } =
     useStocksREST(stockType);
   const { stock: data, loading } = useStockREST(titreId, stockType);
@@ -315,7 +317,7 @@ const FormPassationOrdreMarchePrimaire = ({
             formData.conditionPrix === "prixLimite"
               ? formData.coursLimite
               : selectedPrice,
-          market_type: "P",
+          market_type: "P", // Ensure this is "P" for Primary market to link with the same tables as Gestion des Titres Marché Primaire
           operation_type: "A", // Default to "A" (Achat/Buy) for primary market
           // Send null values for condition fields in primary market if they don't exist in the form
           conditionDuree: null,

@@ -227,17 +227,26 @@ export function MarketTable({
                 typeof inst === "string" ? inst : inst.id
               )
             : [],
-          // StockPrice
-          stockPrice: {
-            price:
-              stock.stockPrice?.price ||
-              stock.stockPrices?.[stock.stockPrices.length - 1]?.price ||
-              0,
-            date: stock.stockPrice?.date
-              ? new Date(stock.stockPrice.date)
-              : new Date(),
-            gap: stock.stockPrice?.gap || 0,
-          },
+          // StockPrice - get the latest price from stockPrices array
+          stockPrice: (() => {
+            const stockPrices = stock.stockPrices;
+            let latestPrice;
+
+            if (Array.isArray(stockPrices) && stockPrices.length > 0) {
+              // Sort by date descending to get the most recent price
+              const sortedPrices = [...stockPrices].sort(
+                (a, b) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
+              );
+              latestPrice = sortedPrices[0];
+            }
+
+            return {
+              price: latestPrice?.price || stock.stockPrice?.price || 0,
+              date: latestPrice?.date ? new Date(latestPrice.date) : new Date(),
+              gap: latestPrice?.gap || stock.stockPrice?.gap || 0,
+            };
+          })(),
           // Schedules
           capitalRepaymentSchedule:
             stock.capitalRepaymentSchedule?.map((item) => ({
@@ -295,14 +304,14 @@ export function MarketTable({
         ),
         cell: ({ row }) => {
           const stock = row.original;
-          // Handle both object and string cases
+          // Handle both object and string cases - prioritize issuer.name over stock.name
           const issuerName =
-            stock.name ||
             (typeof stock.issuer === "object" &&
             stock.issuer !== null &&
             "name" in stock.issuer
               ? (stock.issuer as { name: string }).name
               : stock.issuer) ||
+            stock.name ||
             "N/A";
           const code = stock.code || "N/A";
 
@@ -337,7 +346,11 @@ export function MarketTable({
       "titresparticipatifsms",
       "participatif",
     ].includes(type);
-    const hasStockPrices = ["action", "obligation"].includes(type);
+    // Check if any stock in the data has stockPrices to determine if we should show price columns
+    const hasStockPrices = stocks.some(
+      (stock) =>
+        Array.isArray(stock.stockPrices) && stock.stockPrices.length > 0
+    );
 
     if (hasEmissionData) {
       cols.push(
@@ -367,32 +380,168 @@ export function MarketTable({
           header: t("valeurOuverture"),
           cell: ({ row }) => {
             const stockPrices = row.original?.stockPrices;
-            const price =
-              Array.isArray(stockPrices) && stockPrices.length > 0
-                ? stockPrices[0]?.price
-                : undefined;
-            return formatPrice(price ?? 0) ?? "NC";
+
+            // Get the earliest price entry (opening price)
+            let openingPrice;
+            if (Array.isArray(stockPrices) && stockPrices.length > 0) {
+              // Sort by date ascending to get the earliest price
+              const sortedPrices = [...stockPrices].sort(
+                (a, b) =>
+                  new Date(a.date).getTime() - new Date(b.date).getTime()
+              );
+              openingPrice = sortedPrices[0];
+            }
+
+            const price = openingPrice?.price;
+            const date = openingPrice?.date;
+            return (
+              <div className="flex flex-col">
+                <span className="font-medium">
+                  {formatPrice(price ?? 0) ?? "NC"}
+                </span>
+                {date && (
+                  <span className="text-xs text-gray-500">
+                    {formatDate(date)}
+                  </span>
+                )}
+              </div>
+            );
           },
         },
         {
           accessorKey: "currentPrice",
           header: t("valeurActuelle"),
           cell: ({ row }) => {
-            const stockPrice = row.original?.stockPrices;
-            let current: number | undefined;
-            if (Array.isArray(stockPrice)) {
-              current =
-                stockPrice.length > 0
-                  ? stockPrice[stockPrice.length - 1]?.price
-                  : undefined;
-            } else if (
-              stockPrice &&
-              typeof stockPrice === "object" &&
-              "price" in stockPrice
-            ) {
-              current = (stockPrice as { price: number }).price;
+            const stockPrices = row.original?.stockPrices;
+
+            // Get the latest price entry (most recent)
+            let latestPrice;
+            if (Array.isArray(stockPrices) && stockPrices.length > 0) {
+              // Sort by date descending to get the most recent price
+              const sortedPrices = [...stockPrices].sort(
+                (a, b) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
+              );
+              latestPrice = sortedPrices[0];
             }
-            return formatPrice(current ?? 0) ?? "NC";
+
+            const currentPrice = latestPrice?.price;
+            const date = latestPrice?.date;
+            return (
+              <div className="flex flex-col">
+                <span className="font-medium">
+                  {formatPrice(currentPrice ?? 0) ?? "NC"}
+                </span>
+                {date && (
+                  <span className="text-xs text-gray-500">
+                    {formatDate(date)}
+                  </span>
+                )}
+              </div>
+            );
+          },
+        },
+        {
+          accessorKey: "gap",
+          header: t("ecart") || "Gap",
+          cell: ({ row }) => {
+            const stockPrices = row.original?.stockPrices;
+
+            // Get the latest price entry (most recent)
+            let latestPrice;
+            if (Array.isArray(stockPrices) && stockPrices.length > 0) {
+              // Sort by date descending to get the most recent price
+              const sortedPrices = [...stockPrices].sort(
+                (a, b) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
+              );
+              latestPrice = sortedPrices[0];
+            }
+
+            const gap = latestPrice?.gap;
+            const date = latestPrice?.date;
+
+            if (gap === undefined || gap === null) {
+              return <span className="text-gray-400">NC</span>;
+            }
+
+            const gapValue = formatPrice(Math.abs(gap));
+            const isPositive = gap >= 0;
+            return (
+              <div className="flex flex-col">
+                <span
+                  className={
+                    isPositive
+                      ? "text-green-600 font-medium"
+                      : "text-red-600 font-medium"
+                  }
+                >
+                  {isPositive ? "+" : ""}
+                  {gapValue}
+                </span>
+                {date && (
+                  <span className="text-xs text-gray-500">
+                    {formatDate(date)}
+                  </span>
+                )}
+              </div>
+            );
+          },
+        },
+        {
+          accessorKey: "priceHistory",
+          header: "Historique des Prix",
+          cell: ({ row }) => {
+            const stockPrices = row.original?.stockPrices;
+
+            if (!Array.isArray(stockPrices) || stockPrices.length === 0) {
+              return <span className="text-gray-400">Aucun historique</span>;
+            }
+
+            // Sort by date descending to show most recent first
+            const sortedPrices = [...stockPrices].sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+            return (
+              <div className="max-w-xs">
+                <div className="text-xs text-gray-600 mb-1">
+                  {sortedPrices.length} entrée(s)
+                </div>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {sortedPrices.slice(0, 3).map((priceEntry, index) => (
+                    <div
+                      key={`${row.original.id}-price-${index}`}
+                      className="text-xs border-l-2 pl-2 border-gray-200"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">
+                          {formatPrice(priceEntry.price)}
+                        </span>
+                        <span
+                          className={`ml-2 ${
+                            (priceEntry.gap ?? 0) >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {(priceEntry.gap ?? 0) >= 0 ? "+" : ""}
+                          {formatPrice(Math.abs(priceEntry.gap ?? 0))}
+                        </span>
+                      </div>
+                      <div className="text-gray-500">
+                        {formatDate(priceEntry.date)}
+                      </div>
+                    </div>
+                  ))}
+                  {sortedPrices.length > 3 && (
+                    <div className="text-xs text-gray-500 text-center">
+                      +{sortedPrices.length - 3} autres...
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
           },
         }
       );
@@ -483,9 +632,6 @@ export function MarketTable({
   if (error) {
     return <div className="p-8 text-center text-red-500">{error}</div>;
   }
-
-  // Debugging information
-  console.log(marketType, stocks, isIOB);
 
   return (
     <div className="w-full">
