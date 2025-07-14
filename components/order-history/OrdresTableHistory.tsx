@@ -19,7 +19,7 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { List, AlertTriangle, RefreshCw } from "lucide-react";
-import { OrderElement } from "@/lib/services/orderService";
+import orderService, { OrderElement } from "@/lib/services/orderService";
 import { useToast } from "@/hooks/use-toast";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
 import { useJournalOrdersApi } from "@/hooks/useOrdersApi";
@@ -53,6 +53,7 @@ export default function OrdresTableHistory({
 }: OrdresTableHistoryProps) {
   const t = useTranslations("orderHistory");
   const api = useJournalOrdersApi();
+  const session = useSession();
   const [data, setData] = useState<OrderElement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,90 +74,203 @@ export default function OrdresTableHistory({
   // Initial fetch on component mount
 
   // Fetch orders from API
-  const fetchOrdersData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await api.getAllJournalOrders({
-        market_type: marketType,
-      });
-      console.log(response);
-      if (response.error) {
-        throw new Error(response.error);
-      }
+  // const fetchOrdersData = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     const response = await api.getAllJournalOrders({
+  //       market_type: marketType,
+  //     });
+  //     console.log(response);
+  //     if (response.error) {
+  //       throw new Error(response.error);
+  //     }
 
-      setData(
-        (response.data.orders || []).map((order: JournalOrder) => ({
-          ...order,
-          time_condition: order.time_condition ?? "",
-          quantitative_condition: order.quantitative_condition ?? "",
-        }))
-      );
+  //     setData(
+  //       (response.data.orders || []).map((order: JournalOrder) => ({
+  //         ...order,
+  //         time_condition: order.time_condition ?? "",
+  //         quantitative_condition: order.quantitative_condition ?? "",
+  //       }))
+  //     );
 
-      //   if (!restToken) {
-      //     setError("No authentication token available");
-      //     setLoading(false);
-      //     return;
-      //   }
+  //     //   if (!restToken) {
+  //     //     setError("No authentication token available");
+  //     //     setLoading(false);
+  //     //     return;
+  //     //   }
 
-      //   const result = await orderService.fetchOrders(
-      //     restToken,
-      //     taskID,
-      //     marketType
-      //   );
+  //     //   const result = await orderService.fetchOrders(
+  //     //     restToken,
+  //     //     taskID,
+  //     //     marketType
+  //     //   );
 
-      //   setLoading(false);
+  //     //   setLoading(false);
 
-      //   if (result.error) {
-      //     setError(result.error);
-      //   } else {
-      //     const elements = result.data?.elements || [];
-      //     setData(elements);
+  //     //   if (result.error) {
+  //     //     setError(result.error);
+  //     //   } else {
+  //     //     const elements = result.data?.elements || [];
+  //     //     setData(elements);
 
-      // Extract unique stock IDs and client IDs
-      // const stockIds = Array.from(
-      //   new Set(
-      //     elements
-      //       .map((order: OrderElement) => order.stock_id)
-      //       .filter(Boolean)
-      //   )
-      // ) as string[];
-      // const clientIds = Array.from(
-      //   new Set(
-      //     elements
-      //       .map((order: OrderElement) => order.client_id)
-      //       .filter(Boolean)
-      //   )
-      // ) as string[];
+  //     // Extract unique stock IDs and client IDs
+  //     // const stockIds = Array.from(
+  //     //   new Set(
+  //     //     elements
+  //     //       .map((order: OrderElement) => order.stock_id)
+  //     //       .filter(Boolean)
+  //     //   )
+  //     // ) as string[];
+  //     // const clientIds = Array.from(
+  //     //   new Set(
+  //     //     elements
+  //     //       .map((order: OrderElement) => order.client_id)
+  //     //       .filter(Boolean)
+  //     //   )
+  //     // ) as string[];
 
-      // if (stockIds.length > 0) {
-      //   fetchStockDetails(stockIds, restToken);
-      // }
+  //     // if (stockIds.length > 0) {
+  //     //   fetchStockDetails(stockIds, restToken);
+  //     // }
 
-      // if (clientIds.length > 0) {
-      //   fetchClientDetails(clientIds, restToken);
-      // }
-    } catch (err) {
-      console.error("Error fetching orders:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
-      const errorMessage =
-        typeof err === "object" && err !== null && "message" in err
-          ? String((err as { message?: unknown }).message)
-          : "Failed to fetch stocks";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [api, marketType, toast]);
+  //     // if (clientIds.length > 0) {
+  //     //   fetchClientDetails(clientIds, restToken);
+  //     // }
+  //   } catch (err) {
+  //     console.error("Error fetching orders:", err);
+  //     setError(err instanceof Error ? err.message : "Unknown error");
+  //     const errorMessage =
+  //       typeof err === "object" && err !== null && "message" in err
+  //         ? String((err as { message?: unknown }).message)
+  //         : "Failed to fetch stocks";
+  //     toast({
+  //       title: "Error",
+  //       description: errorMessage,
+  //       variant: "destructive",
+  //     });
+  //     setData([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [api, marketType, toast]);
+
+  // useEffect(() => {
+  //   fetchOrdersData();
+  // }, [fetchOrdersData]);
 
   useEffect(() => {
     fetchOrdersData();
-  }, [fetchOrdersData]);
+  }, [session, taskID, marketType, toast]);
+
+  const fetchOrdersData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const restToken = (session.data?.user as any)?.restToken;
+
+      if (!restToken) {
+        setError("No authentication token available");
+        setLoading(false);
+        return;
+      }
+
+      // For debugging, directly fetch from the API
+      const BACKEND_API =
+        (process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com") +
+        "/api/v1";
+
+      try {
+        const directResponse = await fetch(
+          `${BACKEND_API}/journal/orders/all`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${restToken}`,
+            },
+            body: JSON.stringify({
+              market_type: marketType,
+            }),
+          }
+        );
+
+        // try {
+        //   const text = await directResponse.text();
+        //   console.log("📦 Raw response text:", text);
+
+        //   try {
+        //     const json = JSON.parse(text);
+        //     console.log("✅ Parsed JSON:", json);
+        //   } catch (jsonErr) {
+        //     console.warn("⚠️ Not valid JSON response.");
+        //   }
+        // } catch (err) {
+        //   console.error("❌ Error reading response body:", err);
+        // }
+
+        if (directResponse.ok) {
+          const directData = await directResponse.json();
+          console.log("✅ Full API response data:", directData);
+
+          // Process the direct response
+          if (directData?.data?.orders) {
+            // Handle nested structure
+            setData(directData.data.orders);
+          } else if (directData?.orders) {
+            setData(directData.orders);
+          } else if (directData?.data?.elements) {
+            setData(directData.data.elements);
+          } else if (directData?.elements) {
+            setData(directData.elements);
+          } else {
+            console.warn("Unexpected data structure:", directData);
+            setData([]);
+          }
+          // setLoading(false);
+          // return;
+        }
+      } catch (directError) {
+        console.error("Error in direct API call:", directError);
+      }
+
+      //If direct fetch failed, try using the service
+      const result = await orderService.fetchOrdersJournal(
+        restToken,
+        marketType
+      );
+
+      setLoading(false);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        // Data validation check - properly handle the nested structure
+        if (!result.data) {
+          console.error(
+            "Invalid data structure - missing data property:",
+            result
+          );
+          setError("Invalid data structure received from API");
+          setData([]);
+          // setActions([]);
+        } else {
+          // Force data to be set even if elements appears to be empty
+          const elements = result.data.elements || [];
+          setData(elements);
+          // setActions(
+          // //   Array.isArray(result.data.actions) ? result.data.actions : []
+          // );
+        }
+      }
+    } catch (err) {
+      console.error("Error in fetchOrdersData:", err);
+      // Use example data on error
+      // setData(exampleOrders);
+      setLoading(false);
+    }
+  };
+
   // Fetch stock details
   //   const fetchStockDetails = async (stockIds: string[], token: string) => {
   //     try {
@@ -257,7 +371,7 @@ export default function OrdresTableHistory({
   //   };
 
   // Define columns
-  const columns = [
+  const baseColumns = [
     {
       accessorKey: "id",
       header: "ID",
@@ -300,16 +414,16 @@ export default function OrdresTableHistory({
       cell: ({ row }: any) => <div>{row.original.price} DA</div>,
     },
 
-    {
-      accessorKey: "time_condition",
-      header: t("myOrders.timeCondition"),
-      cell: ({ row }: any) => <div>{row.original.time_condition}</div>,
-    },
-    {
-      accessorKey: "quantitative_condition",
-      header: t("myOrders.executionType"),
-      cell: ({ row }: any) => <div>{row.original.quantitative_condition}</div>,
-    },
+    // {
+    //   accessorKey: "time_condition",
+    //   header: t("myOrders.timeCondition"),
+    //   cell: ({ row }: any) => <div>{row.original.time_condition}</div>,
+    // },
+    // {
+    //   accessorKey: "quantitative_condition",
+    //   header: t("myOrders.executionType"),
+    //   cell: ({ row }: any) => <div>{row.original.quantitative_condition}</div>,
+    // },
     {
       accessorKey: "status",
       header: t("myOrders.status.status"),
@@ -325,7 +439,7 @@ export default function OrdresTableHistory({
           },
           "validation-retour-premiere": {
             text: t("myOrders.status.validationRetourPremiere"),
-            color: "text-yellow-600",
+            color: "text-amber-600",
           },
           "validation-retour-finale": {
             text: t("myOrders.status.validationRetourFinale"),
@@ -333,15 +447,15 @@ export default function OrdresTableHistory({
           },
           "validation-tcc-premiere": {
             text: t("myOrders.status.validationTccPremiere"),
-            color: "text-blue-600",
+            color: "text-cyan-600",
           },
           "validation-tcc-finale": {
             text: t("myOrders.status.validationTccFinale"),
-            color: "text-green-600",
+            color: "text-pink-600",
           },
           "validation-tcc-retour-premiere": {
             text: t("myOrders.status.validationTccRetourPremiere"),
-            color: "text-yellow-600",
+            color: "text-purple-600",
           },
           "validation-tcc-retour-finale": {
             text: t("myOrders.status.validationTccRetourFinale"),
@@ -351,9 +465,13 @@ export default function OrdresTableHistory({
             text: t("myOrders.status.execution"),
             color: "text-purple-600",
           },
+          resultats: {
+            text: t("myOrders.status.resultats"),
+            color: "text-gray-600",
+          },
           "final-state": {
             text: t("myOrders.status.finalState"),
-            color: "text-gray-600",
+            color: "text-green-600",
           },
         };
 
@@ -367,9 +485,42 @@ export default function OrdresTableHistory({
     },
   ];
 
+  // Define market-specific columns
+  const primaryMarketColumns = [
+    {
+      accessorKey: "operation_type",
+      header: t("myOrders.operationType"),
+      cell: ({ row }: any) => (
+        <div className="capitalize">
+          {row.original.operation_type === "A" ? "Achat" : "Vente"}
+        </div>
+      ),
+    },
+  ];
+
+  const secondaryMarketColumns = [
+    {
+      accessorKey: "time_condition",
+      header: t("myOrders.timeCondition"),
+      cell: ({ row }: any) => <div>{row.original.time_condition}</div>,
+    },
+    {
+      accessorKey: "quantitative_condition",
+      header: t("myOrders.executionType"),
+      cell: ({ row }: any) => <div>{row.original.quantitative_condition}</div>,
+    },
+  ];
+
+  const getColumns = () => {
+    if (marketType === "P") {
+      return [...baseColumns, ...primaryMarketColumns];
+    }
+    return [...baseColumns, ...secondaryMarketColumns];
+  };
+
   const table = useReactTable({
     data,
-    columns,
+    columns: getColumns(),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
@@ -503,7 +654,7 @@ export default function OrdresTableHistory({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={table.getVisibleLeafColumns().length}
                   className="h-24 text-center"
                 >
                   <div className="flex items-center justify-center">
