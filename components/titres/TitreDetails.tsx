@@ -159,6 +159,19 @@ export function TitreDetails({
                 {formatCurrency(data.stockPrice.price)}
               </div>
               <div className="text-sm text-gray-500">{t("currentPrice")}</div>
+              {data.stockPrice.gap !== undefined &&
+                data.stockPrice.gap !== null && (
+                  <div
+                    className={`text-sm font-medium ${
+                      data.stockPrice.gap >= 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {data.stockPrice.gap >= 0 ? "+" : ""}
+                    {formatCurrency(data.stockPrice.gap)} ({t("gap") || "Gap"})
+                  </div>
+                )}
             </div>
           )}
         </div>
@@ -197,6 +210,24 @@ export function TitreDetails({
           <CardContent className="space-y-0">
             {renderDetail(t("faceValue"), formatCurrency(data.faceValue))}
             {renderDetail(t("quantity"), data.quantity?.toLocaleString())}
+            {data.stockPrice?.price &&
+              renderDetail(
+                t("currentPrice"),
+                formatCurrency(data.stockPrice.price)
+              )}
+            {data.stockPrice?.gap !== undefined &&
+              data.stockPrice?.gap !== null &&
+              renderDetail(
+                t("gap") || "Gap",
+                <span
+                  className={
+                    data.stockPrice.gap >= 0 ? "text-green-600" : "text-red-600"
+                  }
+                >
+                  {data.stockPrice.gap >= 0 ? "+" : ""}
+                  {formatCurrency(data.stockPrice.gap)}
+                </span>
+              )}
             {renderDetail(
               t("votingRights"),
               data.votingRights ? t("yes") : t("no")

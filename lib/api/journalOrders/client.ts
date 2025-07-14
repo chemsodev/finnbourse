@@ -6,19 +6,11 @@ import {
 
 // Function to get the correct base URL based on environment
 const getBaseUrl = () => {
-  // For client-side requests (browser), check if we should use proxy to avoid CORS
+  // For client-side requests (browser), use the proxy to avoid CORS
   if (typeof window !== "undefined") {
-    // If running in development, use the proxy
-    if (process.env.NODE_ENV === "development") {
-      return "/api/proxy";
-    }
-    // In production, use the direct URL but ensure CORS is handled
-    const baseUrl =
-      process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
-    return `${baseUrl}/api/v1`;
+    return "/api/proxy";
   }
-
-  // For server-side requests, use the direct backend URL
+  // For server-side requests, use the direct backend URL and add /api/v1
   const baseUrl =
     process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
   return `${baseUrl}/api/v1`;
@@ -30,7 +22,11 @@ const createJournalOrdersClient = (getToken: () => string | null) => {
     options: RequestInit = {}
   ): Promise<T> => {
     const baseUrl = getBaseUrl();
-    const url = `${baseUrl}${endpoint}`;
+    // Ensure endpoint starts with slash
+    const formattedEndpoint = endpoint.startsWith("/")
+      ? endpoint
+      : `/${endpoint}`;
+    const url = `${baseUrl}${formattedEndpoint}`;
     const token = getToken();
 
     console.log("Making API request:");
@@ -39,42 +35,41 @@ const createJournalOrdersClient = (getToken: () => string | null) => {
     console.log("- Environment:", process.env.NODE_ENV);
     console.log("- Has token:", !!token);
 
+    // Log request body if present
+    if (options.body) {
+      console.log("- Request body:", options.body);
+    }
+
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      Accept: "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     };
 
-    const requestConfig: RequestInit = {
-      ...options,
-      headers,
-    };
-
-    // Configure based on whether we're using proxy or direct connection
-    if (url.startsWith("/api/proxy")) {
-      // Using proxy - use same-origin credentials and no mode
-      requestConfig.credentials = "same-origin";
-      console.log("Using proxy configuration");
-    } else {
-      // Direct connection - use CORS mode
-      requestConfig.mode = "cors";
-      requestConfig.credentials = "include";
-      console.log("Using direct connection configuration");
-    }
-
     try {
       console.log("Sending request with config:", {
         url,
-        method: requestConfig.method,
-        mode: requestConfig.mode,
-        credentials: requestConfig.credentials,
+        method: options.method || "GET",
+        headers: Object.fromEntries(new Headers(headers)),
+      });
+
+      // For POST requests, ensure mode is cors and proper credentials
+      const fetchOptions: RequestInit = {
+        ...options,
+        headers,
+        mode: "cors",
+        // Add credentials for proxy requests
+        credentials: typeof window !== "undefined" ? "include" : "omit",
+      };
+
+      console.log("Fetch options:", {
+        ...fetchOptions,
         headers: Object.fromEntries(
-          new Headers(requestConfig.headers as HeadersInit)
+          new Headers(fetchOptions.headers || {}).entries()
         ),
       });
 
-      const response = await fetch(url, requestConfig);
+      const response = await fetch(url, fetchOptions);
 
       console.log("Response received:", {
         status: response.status,
@@ -94,9 +89,7 @@ const createJournalOrdersClient = (getToken: () => string | null) => {
         console.error("API Error Response:", errorData);
 
         throw {
-          message:
-            errorData.message ||
-            `HTTP ${response.status}: ${response.statusText}`,
+          message: errorData.message || "API request failed",
           status: response.status,
           errors: errorData.errors,
         } as ApiError;
@@ -106,11 +99,17 @@ const createJournalOrdersClient = (getToken: () => string | null) => {
     } catch (error) {
       console.error("API Request Error:", error);
 
-      if (error instanceof TypeError && error.message.includes("fetch")) {
+      if (error instanceof TypeError) {
+        console.error("Network error details:", {
+          error,
+          message: error.message,
+          endpoint,
+          baseUrl,
+        });
         throw {
-          message:
-            "Network error - Unable to connect to server. Please check if the server is running and CORS is properly configured.",
+          message: `Network error: ${error.message}`,
           status: 0,
+          details: `Failed connecting to ${baseUrl}${endpoint}`,
         } as ApiError;
       }
       throw error;
@@ -121,20 +120,68 @@ const createJournalOrdersClient = (getToken: () => string | null) => {
     /**
      * Get all journal orders
      */
-    getAllJournalOrders: (filters: JournalOrdersFilter = {}) => {
-      const endpoint =
-        typeof window !== "undefined" && process.env.NODE_ENV === "development"
-          ? "/journal/orders/all"
-          : "/journal/orders/all";
+    getAllJournalOrders: async (filters: JournalOrdersFilter = {}) => {
+      // Ensure market_type is included as required by the API
+      const requestBody = {
+        market_type: filters.market_type || "P",
+        ...filters,
+      };
 
-      return makeRequest<JournalOrdersResponse>(endpoint, {
-        method: "POST",
-        body: JSON.stringify(filters),
-        headers: {
-          "Content-Type": "application/json",
-          ...(getToken() && { Authorization: `Bearer ${getToken()}` }),
-        },
-      });
+      console.log("Journal orders request body:", requestBody);
+
+      // Handle browser environment differently due to redirect issues
+      if (typeof window !== "undefined") {
+        // In browser, make a direct request to avoid proxy redirect issues
+        try {
+          const baseUrl =
+            process.env.NEXT_PUBLIC_MENU_ORDER || "https://poc.finnetude.com";
+          const url = `${baseUrl}/api/v1/journal/orders/all`;
+          const token = getToken();
+
+          console.log("Making direct API request to:", url);
+
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+            credentials: "include",
+            body: JSON.stringify(requestBody),
+          });
+
+          if (!response.ok) {
+            let errorData: any;
+            try {
+              errorData = await response.json();
+            } catch {
+              errorData = { message: await response.text() };
+            }
+
+            throw {
+              message: errorData.message || "API request failed",
+              status: response.status,
+              errors: errorData.errors,
+            } as ApiError;
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error("Direct API Request Error:", error);
+          throw error;
+        }
+      } else {
+        // On server side, use the makeRequest function
+        return makeRequest<JournalOrdersResponse>("/journal/orders/all", {
+          method: "POST",
+          body: JSON.stringify(requestBody),
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+      }
     },
   };
 };
