@@ -120,8 +120,10 @@ const FormPassationOrdreMarcheSocondaire = ({
 
   const t = useTranslations("FormPassationOrdreObligation");
 
-  // Use REST hooks for fetching data
+  // Use MarketTable's API for fetching stocks - same as Marché Secondaire Tables
   const stockType = "action";
+  // This uses the same API endpoint as MarketTable in the Marché Secondaire
+  // which is: api.filterStocks({ marketType: "secondaire", stockType: "action" })
   const { stocks: stockData, loading: stocksLoading } =
     useStocksREST(stockType);
   const { stock: data, loading } = useStockREST(titreId, stockType);
@@ -315,7 +317,7 @@ const FormPassationOrdreMarcheSocondaire = ({
             formData.conditionPrix === "prixLimite"
               ? formData.coursLimite
               : selectedPrice,
-          market_type: "S", // Secondary market
+          market_type: "S", // Ensure this is "S" for Secondary market to link with the same tables as IOB Secondary Market
           operation_type: formData.buyTransaction ? "A" : "V", // A for Achat (buy), V for Vente (sell)
           conditionDuree: formData.conditionDuree,
           conditionPrix: formData.conditionPrix,

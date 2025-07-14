@@ -4,6 +4,7 @@ import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmett
 import AjoutTitre from "@/components/AjoutTitre";
 import MyMarquee from "@/components/MyMarquee";
 import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
+import { TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -12,7 +13,6 @@ import React, { useEffect } from "react";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
 import FormPassationOrdreMarchePrimaire from "@/components/passation-ordre/FormPassationOrdreMarchePrimaire";
-import { TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
 
 const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
   const { type } = params;
@@ -79,6 +79,7 @@ const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
         </div>
       )}{" "}
       <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
+        {/* Use the same tables as Gestion des Titres Marché Primaire */}
         {type === "opv" ? (
           <TitresTableREST type={type} isPrimary={true} />
         ) : (
