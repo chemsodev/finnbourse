@@ -19,11 +19,11 @@ const nextConfig = {
         source: "/api/v1/:path*",
         destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/:path*`,
       },
-      {
-        // Add specific rewrite for client API
-        source: "/api/client/:path*",
-        destination: "/api/client/:path*", // This ensures our API route is used
-      },
+      // {
+      //   // Add specific rewrite for client API
+      //   source: "/api/client/:path*",
+      //   destination: "/api/client/:path*", // This ensures our API route is used
+      // },
       {
         source: "/api/v1/:path*",
         destination: `${process.env.NEXT_PUBLIC_MENU_ORDER}/api/v1/:path*`,
