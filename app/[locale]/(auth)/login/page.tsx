@@ -82,10 +82,12 @@ export default function Login() {
       password: "",
     },
   });
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+ async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
-      setSessionState("logging_in");
+      setError(undefined);
+
+      console.log("Attempting login with:", values.email);
 
       const result = await signIn("credentials", {
         email: values.email,
@@ -94,50 +96,33 @@ export default function Login() {
       });
 
       if (result?.error) {
-        // Handle rate limiting errors gracefully
-        if (
-          result.error.includes("rate limit") ||
-          result.error.includes("429")
-        ) {
-          // Silently handle rate limiting without showing toast
-          setError("Please wait and try again.");
-        } else {
-          setError(result.error);
-        }
-        setSessionState("error");
-        setLoading(false);
+        console.error("Login error:", result.error);
+        setError(t("wrongEmailOrPassword"));
+        toast({
+          variant: "destructive",
+          title: t("loginFailed"),
+          description: t("wrongEmailOrPassword"),
+        });
       } else {
-        // Login successful, set grace period and mark recent login
-        setSessionState("clean");
+        toast({
+          title: t("loginSuccessful"),
+          description: t("welcomeBack"),
+        });
 
-        try {
-          await fetch("/api/set-login-grace", { method: "POST" });
-        } catch (error) {
-          console.log("Warning: Could not set grace period cookie:", error);
-        }
-
-        markRecentLogin();
-
-        console.log("✅ Login successful, redirecting to:", callbackUrl);
-
-        // Longer delay to ensure session is established before redirect
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setLoading(false);
-
-        // Use the callback URL if provided, otherwise go to root
+        // Fix for duplicate locale in path - always redirect to root
         router.push(callbackUrl);
       }
     } catch (error) {
       console.error("Form submission error", error);
-      setSessionState("error");
-      setLoading(false);
+      setError(error instanceof Error ? error.message : "An error occurred");
       toast({
         variant: "destructive",
         title: t("failedToSubmitTheForm"),
         description:
           error instanceof Error ? error.message : "An error occurred",
       });
+    } finally {
+      setLoading(false);
     }
   }
 
