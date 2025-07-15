@@ -1,18 +1,14 @@
 "use client";
 
-import MyMarquee from "@/components/MyMarquee";
 import { useTranslations } from "next-intl";
 import MyPagination from "@/components/navigation/MyPagination";
 import TabSearch from "@/components/TabSearch";
-import Link from "next/link";
 import { CalendarClock, RefreshCw, Printer } from "lucide-react";
 import OrdresTable from "@/components/gestion-des-ordres/OrdresTable";
 import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-
-import type { Order } from "@/lib/interfaces";
 import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -389,9 +385,6 @@ const ExecutionPage = () => {
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
         <div className="flex items-center justify-between w-full pr-8">
           <div className="text-3xl font-bold text-primary text-center md:ltr:text-left md:rtl:text-right">

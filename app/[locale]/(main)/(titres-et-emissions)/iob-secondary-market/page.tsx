@@ -1,4 +1,3 @@
-import MyMarquee from "@/components/MyMarquee";
 import { getTranslations } from "next-intl/server";
 import { BondIcon2, OPVIcon } from "@/components/icons/PrimaryMarketTypesIcons";
 import { MarketCardProps } from "@/types/gestionTitres";
@@ -29,9 +28,6 @@ export default async function IOBSecondaryMarketPage() {
 
   return (
     <div className=" motion-preset-focus motion-duration-2000 ">
-      <div className="mt-3 flex flex-col gap-4">
-        <MyMarquee />
-      </div>
       <Link
         href="/gestion-des-titres"
         className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-10"

@@ -3,6 +3,7 @@ import { SVGProps } from "react";
 export interface MarketCardProps {
   title: string;
   description: string;
+  text?: string[];
   listItems?: string[];
   href: string;
   Icon: React.FC<SVGProps<SVGSVGElement>>;
@@ -72,15 +73,16 @@ export interface CouponSchedule {
   amount: number;
 }
 
-export type StockStatus = "activated" | "suspended" | "delisted";
+export type StockStatus = "activated" | "deactivated" | "delisted";
 export type StockType =
   | "obligation"
   | "action"
   | "sukuk"
-  | "participatif"
+  | "obligationsOrdinaires"
+  | "oat"
   | string;
 export type MarketType = "primaire" | "secondaire";
-export type MarketListing = "ALG" | "TUN" | "CAS";
+export type MarketListing = "PME" | "PRINCIPAL";
 export type ShareClass = "A" | "B" | "C" | null;
 export type RepaymentMethod = "amortization" | "bullet" | "callable" | null;
 
@@ -127,11 +129,17 @@ export interface Stock {
   issuer: string;
   master: string;
   status: StockStatus;
+  price?: number;
   // isPrimary: boolean;
   stockPrice?: StockPrice;
   // institutions: FinancialInstitution[];
   institutions: string[];
-  capitalOperation?: "augmentation" | "ouverture";
+  capitalOperation?:
+    | "augmentation"
+    | "ouverture"
+    | "empruntObligatairePublic"
+    | "empruntObligataireInstitutionnel"
+    | "placementOrganise";
   createdAt?: string;
   updatedAt?: string;
   durationYears?: number;

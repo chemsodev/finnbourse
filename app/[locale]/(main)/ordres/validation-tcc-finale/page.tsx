@@ -1,27 +1,11 @@
 import { getTranslations } from "next-intl/server";
-import { getServerSession } from "next-auth/next";
-import auth from "@/auth";
-import MyMarquee from "@/components/MyMarquee";
-import OrderManagementNav from "@/components/gestion-des-ordres/OrderManagementNav";
 import OrdresTableREST from "@/components/gestion-des-ordres/OrdresTableREST";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  CalendarClock,
-  CheckCircle,
-  MessageSquare,
-  Filter,
-  Download,
-  FileText,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TabSearch from "@/components/TabSearch";
 import MyPagination from "@/components/navigation/MyPagination";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExportButton } from "@/components/ExportButton";
-import PDFDropdownMenu from "@/components/gestion-des-ordres/PDFDropdownMenu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default async function TCCFinalValidationPage({
   searchParams,
@@ -34,10 +18,6 @@ export default async function TCCFinalValidationPage({
     tab?: string;
   };
 }) {
-  const session = await getServerSession(auth);
-  const userRole = (session as any)?.user?.roleid;
-  const userType = (session as any)?.user?.type;
-
   const currentPage = Number(searchParams?.page) || 0;
   const searchquery = searchParams?.searchquery || "";
   const state = searchParams?.state || "99";
@@ -49,13 +29,6 @@ export default async function TCCFinalValidationPage({
 
   return (
     <div className="min-h-screen">
-      {/* Header with Marquee */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
-        <div className="">
-          <MyMarquee />
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="mt-16">
         {/* Page Header */}

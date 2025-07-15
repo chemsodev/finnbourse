@@ -86,7 +86,7 @@ TitreFormDialogProps) {
   const { toast } = useToast();
   const locale = useLocale();
   const api = useStockApi();
-  // const obligations = ["empruntobligataire", "titresparticipatifs", "sukukmp"];
+  const obligations = ["oat", "obligationsOrdinaires", "sukuk"];
   const t = useTranslations(
     isEdit ? "GestionDesTitres.EditTitre" : "GestionDesTitres.CreateTitre"
   );
@@ -111,7 +111,8 @@ TitreFormDialogProps) {
         | "action"
         | "obligation"
         | "sukuk"
-        | "participatif"
+        | "obligationsOrdinaires"
+        | "oat"
         | undefined,
       issuer: "",
       isinCode: "",
@@ -122,16 +123,16 @@ TitreFormDialogProps) {
       closingDate: new Date(),
       enjoymentDate: new Date(),
       maturityDate: new Date(),
-      marketListing: "ALG",
-      capitalOperation: "ouverture",
+      marketListing: "PME",
+      capitalOperation:
+        type === "action" ? "ouverture" : "empruntObligatairePublic",
       votingRights: false,
       master: "",
       institutions: [],
       capitalRepaymentSchedule: [],
       couponSchedule: [],
-      type: "participatif",
       status: "activated",
-
+      price: 0,
       stockPrice: {
         price: 0,
         date: new Date(),
@@ -153,6 +154,7 @@ TitreFormDialogProps) {
   // Watch for changes in the form
   const durationYears = form.watch("durationYears");
   const watchedType = form.watch("stockType");
+  console.log(watchedType);
   const watchedMaster = form.watch("institutions.0");
 
   const { replace: replaceCapitalRepayment } = useFieldArray({
@@ -166,7 +168,12 @@ TitreFormDialogProps) {
   });
 
   React.useEffect(() => {
-    if (watchedType !== "obligation" || !durationYears || durationYears <= 0) {
+    if (
+      watchedType !== "obligation" ||
+      obligations.includes(watchedType) ||
+      !durationYears ||
+      durationYears <= 0
+    ) {
       // Clear schedules if not obligation or no duration
       replaceCapitalRepayment([]);
       replaceCoupon([]);
@@ -213,9 +220,11 @@ TitreFormDialogProps) {
         emissionDate: new Date(values.emissionDate),
         closingDate: new Date(values.closingDate),
         enjoymentDate: new Date(values.enjoymentDate),
-        maturityDate: values.maturityDate
-          ? new Date(values.maturityDate)
-          : undefined,
+
+        ...(watchedType === "obligation" && values.maturityDate
+          ? { maturityDate: new Date(values.maturityDate) }
+          : {}),
+
         // isPrimary: values.isPrimary ?? false,
         // paymentSchedule: values?.paymentSchedule?.map((item) => ({
         //   ...item,
@@ -227,6 +236,7 @@ TitreFormDialogProps) {
           date: new Date(values.stockPrice.date),
         },
         // payment schedule arrays
+        // type == "obligation"
         capitalRepaymentSchedule:
           values.capitalRepaymentSchedule?.map((item) => ({
             date: new Date(item.date),
@@ -457,11 +467,11 @@ TitreFormDialogProps) {
                             <SelectItem value="activated">
                               {t("form.active")}
                             </SelectItem>
-                            <SelectItem value="suspended">
-                              {t("form.suspended")}
+                            <SelectItem value="deactivated">
+                              {t("form.inactive")}
                             </SelectItem>
                             <SelectItem value="delisted">
-                              {t("form.expired")}
+                              {t("form.delisted")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -475,7 +485,7 @@ TitreFormDialogProps) {
                     name="capitalOperation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Capital Operation</FormLabel>
+                        <FormLabel>{t("form.operation")}</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
@@ -485,12 +495,28 @@ TitreFormDialogProps) {
                               <SelectValue placeholder="Select operation type" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="augmentation">
-                              Augmentation
-                            </SelectItem>
-                            <SelectItem value="ouverture">Ouverture</SelectItem>
-                          </SelectContent>
+                          {watchedType === "action" ? (
+                            <SelectContent>
+                              <SelectItem value="augmentation">
+                                {t("form.augmentation")}
+                              </SelectItem>
+                              <SelectItem value="ouverture">
+                                {t("form.ouverture")}
+                              </SelectItem>
+                            </SelectContent>
+                          ) : (
+                            <SelectContent>
+                              <SelectItem value="empruntObligatairePublic">
+                                {t("form.empruntObligatairePublic")}
+                              </SelectItem>
+                              <SelectItem value="empruntObligataireInstitutionnel">
+                                {t("form.empruntObligataireInstitutionnel")}
+                              </SelectItem>
+                              <SelectItem value="placementOrganise">
+                                {t("form.placementOrganise")}
+                              </SelectItem>
+                            </SelectContent>
+                          )}
                         </Select>
                         <FormMessage />
                       </FormItem>
@@ -566,14 +592,11 @@ TitreFormDialogProps) {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="ALG">
-                                {t("form.algeriaMarket")}
+                              <SelectItem value="PME">
+                                {t("form.pme")}
                               </SelectItem>
-                              <SelectItem value="TUN">
-                                {t("form.tunisianMarket")}
-                              </SelectItem>
-                              <SelectItem value="CAS">
-                                {t("form.cassablancaMarket")}
+                              <SelectItem value="PRINCIPAL">
+                                {t("form.principal")}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -624,7 +647,7 @@ TitreFormDialogProps) {
                           <FormControl>
                             <Input
                               type="number"
-                              min="0"
+                              min=""
                               // step="0.01"
                               {...field}
                               onChange={(e) =>
@@ -699,15 +722,14 @@ TitreFormDialogProps) {
                     {/* Institutions Section */}
                     <div className="space-y-6 md:col-span-2">
                       <h3 className="text-lg font-semibold border-b pb-2">
-                        {/* {t("form.institutionsSection")}  */} Participating
-                        Institutions
+                        {t("form.institutionsSection")}
                       </h3>
                       <FormField
                         control={form.control}
                         name="institutions"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Institutions</FormLabel>
+                            <FormLabel>{t("form.institutions")}</FormLabel>
                             <MultiSelect
                               options={financialInstitutions.map((inst) => ({
                                 value: inst.id,
@@ -715,7 +737,7 @@ TitreFormDialogProps) {
                               }))}
                               selected={field.value || []}
                               onChange={field.onChange}
-                              placeholder="Select institutions..."
+                              placeholder={t("form.selectInstitution")}
                             />
                             <FormMessage />
                           </FormItem>
@@ -869,39 +891,42 @@ TitreFormDialogProps) {
                 </div>
 
                 {/* Conditional Fields for obligations */}
-                {watchedType === "obligation" && (
+                {(watchedType === "obligation" ||
+                  obligations.includes(watchedType)) && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-semibold border-b pb-2">
-                      Bond Specific Details
+                      {t("form.bondSpecificDetails")}
                     </h3>
 
                     {/* Obligation Type  */}
                     <FormField
                       control={form.control}
-                      name="type"
+                      name="stockType"
                       render={({ field }) => (
                         <FormItem className="space-y-3">
                           <FormLabel className="text-base font-medium">
-                            Obligation Type
+                            {t("form.obligationType")}
                           </FormLabel>
                           <FormControl>
                             <div className="flex items-center space-x-6">
                               <div className="flex items-center space-x-2">
                                 <Input
                                   type="radio"
-                                  id="participatif"
-                                  value="participatif"
-                                  checked={field.value === "participatif"}
+                                  id="obligationsOrdinaires"
+                                  value="obligationsOrdinaires"
+                                  checked={
+                                    field.value === "obligationsOrdinaires"
+                                  }
                                   onChange={() =>
-                                    field.onChange("participatif")
+                                    field.onChange("obligationsOrdinaires")
                                   }
                                   className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                                 />
                                 <Label
-                                  htmlFor="participatif"
+                                  htmlFor="obligationsOrdinaires"
                                   className="text-sm font-medium text-gray-700 cursor-pointer"
                                 >
-                                  Participatif
+                                  {t("form.obligationsOrdinaires")}
                                 </Label>
                               </div>
                               <div className="flex items-center space-x-2">
@@ -917,7 +942,23 @@ TitreFormDialogProps) {
                                   htmlFor="sukuk"
                                   className="text-sm font-medium text-gray-700 cursor-pointer"
                                 >
-                                  Sukuk
+                                  {t("form.sukuk")}
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Input
+                                  type="radio"
+                                  id="oat"
+                                  value="oat"
+                                  checked={field.value === "oat"}
+                                  onChange={() => field.onChange("oat")}
+                                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                                />
+                                <Label
+                                  htmlFor="oat"
+                                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                                >
+                                  {t("form.vt")}
                                 </Label>
                               </div>
                             </div>
@@ -979,7 +1020,7 @@ TitreFormDialogProps) {
                         name="durationYears"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Duration (Years)</FormLabel>
+                            <FormLabel>{t("form.duration")}</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
@@ -998,25 +1039,47 @@ TitreFormDialogProps) {
                     </div>
                   </div>
                 )}
-                {watchedType === "obligation" &&
+                {(watchedType === "obligation" ||
+                  obligations.includes(watchedType)) &&
                   durationYears &&
                   durationYears > 0 && (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold border-b pb-2">
-                        Payment Schedule
+                        {t("form.payementSchedule")}
                       </h3>
+                      <FormField
+                        control={form.control}
+                        name="durationYears"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("form.nombreDeTranches")}</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="1"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                                onKeyDown={preventNonNumericInput}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Date
+                                {t("form.date")}
                               </th>
                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Coupon Rate (%)
+                                {t("form.couponRate")}
                               </th>
                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Capital Rate (%)
+                                {t("form.capitalRate")}
                               </th>
                             </tr>
                           </thead>

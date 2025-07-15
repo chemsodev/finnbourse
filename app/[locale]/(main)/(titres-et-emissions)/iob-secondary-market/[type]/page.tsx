@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { ArrowLeft } from "lucide-react";
 
-import MyMarquee from "@/components/MyMarquee";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
 import Link from "next/link";
@@ -73,10 +72,6 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
-
       <Link
         href="/iob-secondary-market"
         className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-4"
