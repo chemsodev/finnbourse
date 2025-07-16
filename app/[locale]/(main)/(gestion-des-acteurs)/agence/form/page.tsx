@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAgence } from "@/hooks/useAgence";
 import { AgenceService } from "@/lib/services/agenceService";
+import { useRestToken } from "@/hooks/useRestToken";
 
 interface FormPageProps {
   params: {
@@ -28,6 +29,7 @@ export default function FormPage({ params }: FormPageProps) {
   const router = useRouter();
   const t = useTranslations("AgencyPage");
   const { toast } = useToast();
+  const { restToken } = useRestToken();
   const [currentStep, setCurrentStep] = useState(0);
   const [isCreatingAgence, setIsCreatingAgence] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,9 +41,9 @@ export default function FormPage({ params }: FormPageProps) {
       code: "",
       address: "",
       code_swift: "",
-      agency_name: "",
-      agency_email: "",
-      agency_phone: "",
+      agence_name: "",
+      agence_email: "",
+      agence_phone: "",
       financialInstitutionId: "",
     },
     relatedUsers: [],
@@ -53,13 +55,15 @@ export default function FormPage({ params }: FormPageProps) {
   // Load existing agence data on mount for editing
   useEffect(() => {
     loadExistingAgenceData();
-  }, []);
+  }, [params.id, isEditMode]); // Removed restToken dependency since we're not making separate API calls
 
   const loadExistingAgenceData = async () => {
     if (isLoadingData || !isEditMode || !params.id) return;
 
     try {
       setIsLoadingData(true);
+      console.log("🔍 Starting to load agency data for ID:", params.id);
+
       const currentAgence = await getAgence(params.id);
 
       if (currentAgence) {
@@ -72,38 +76,127 @@ export default function FormPage({ params }: FormPageProps) {
         const transformedData =
           AgenceService.transformAPIDataToForm(currentAgence);
 
-        // Ensure financial institution ID is properly set
+        // Ensure financial institution ID is properly set with more thorough checking
         if (currentAgence.financialInstitution?.id) {
           transformedData.financialInstitutionId =
             currentAgence.financialInstitution.id;
+          console.log(
+            "✅ Financial institution ID set from financialInstitution.id:",
+            transformedData.financialInstitutionId
+          );
         } else if (currentAgence.financialInstitutionId) {
           transformedData.financialInstitutionId =
             currentAgence.financialInstitutionId;
+          console.log(
+            "✅ Financial institution ID set from financialInstitutionId:",
+            transformedData.financialInstitutionId
+          );
+        } else {
+          console.warn("⚠️ No financial institution ID found in agency data");
+          // Try to extract from the API data structure if available
+          const agencyAsAny = currentAgence as any;
+          if (agencyAsAny.financialInstitution?.id) {
+            transformedData.financialInstitutionId =
+              agencyAsAny.financialInstitution.id;
+            console.log(
+              "✅ Financial institution ID found via fallback:",
+              transformedData.financialInstitutionId
+            );
+          }
+        }
+
+        // Load existing users for this agency from the agency data itself
+        let existingUsers: RelatedUserFormValues[] = [];
+
+        // Check if the agency data already contains users (which it should)
+        const agencyWithUsers = currentAgence as any;
+        if (agencyWithUsers.users && Array.isArray(agencyWithUsers.users)) {
+          console.log(
+            "🔍 Loading users from agency data:",
+            agencyWithUsers.users
+          );
+
+          try {
+            existingUsers = agencyWithUsers.users.map(
+              (user: any, index: number) => {
+                console.log(`🔍 Transforming user ${index}:`, user);
+
+                const transformedUser = {
+                  fullName: `${user.firstname || ""} ${
+                    user.lastname || ""
+                  }`.trim(),
+                  email: user.email || "",
+                  password: "", // Don't load existing passwords
+                  phone: user.telephone || "",
+                  position: user.positionAgence || user.position || "",
+                  matricule: user.matriculeAgence || user.matricule || "",
+                  organization:
+                    user.organisationIndividu || user.organisation || "",
+                  status: (user.status === "actif" ? "active" : "inactive") as
+                    | "active"
+                    | "inactive",
+                  roles: Array.isArray(user.role)
+                    ? user.role
+                    : user.role
+                    ? [user.role]
+                    : [],
+                };
+
+                console.log(`✅ Transformed user ${index}:`, transformedUser);
+                return transformedUser;
+              }
+            );
+
+            console.log("✅ All transformed users for form:", existingUsers);
+          } catch (transformError) {
+            console.error("❌ Error transforming users:", transformError);
+            existingUsers = [];
+          }
+        } else {
+          console.log("🔍 No users found in agency data");
         }
 
         console.log("Transformed Agence data for form:", transformedData);
         console.log(
-          "Financial Institution ID:",
+          "Financial Institution ID for form:",
           transformedData.financialInstitutionId
         );
+        console.log("Raw agency financial institution data:", {
+          "currentAgence.financialInstitution":
+            currentAgence.financialInstitution,
+          "currentAgence.financialInstitutionId":
+            currentAgence.financialInstitutionId,
+        });
 
         // Force a re-render with the new data by creating a new object
-        setFormValues({
+        const newFormValues = {
           agence: transformedData,
-          relatedUsers: [], // Keep existing related users if needed
+          relatedUsers: existingUsers, // Load existing users
           agenceId: currentAgence.id,
-        });
+        };
 
-        toast({
-          title: "Data Loaded",
-          description: "Existing Agence data loaded for editing",
-        });
+        console.log("🔄 Setting new form values:", newFormValues);
+        console.log("🔄 Agency form data being set:", newFormValues.agence);
+        setFormValues(newFormValues);
+
+        // Data loaded successfully - no toast needed to avoid UI noise
+        console.log(
+          `✅ Agency data loaded successfully${
+            existingUsers.length > 0
+              ? ` with ${existingUsers.length} user(s)`
+              : ""
+          }`
+        );
       } else {
         console.log("🔍 No existing Agence found, form will be for creation");
       }
     } catch (error) {
-      console.error("Failed to load Agence data:", error);
-      // Don't show error toast for this as it's not critical
+      console.error("❌ Failed to load Agence data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load agency data. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingData(false);
     }
@@ -249,7 +342,23 @@ export default function FormPage({ params }: FormPageProps) {
             <p className="text-muted-foreground mb-4">
               {t("addUsersInstruction")}
             </p>
+            {/* Debug info - remove in production */}
+            {process.env.NODE_ENV === "development" && (
+              <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+                <strong>Debug:</strong> Current users count:{" "}
+                {formValues.relatedUsers.length}
+                {formValues.relatedUsers.length > 0 && (
+                  <details className="mt-1">
+                    <summary>Show users</summary>
+                    <pre className="mt-1 text-xs overflow-auto max-h-40">
+                      {JSON.stringify(formValues.relatedUsers, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            )}
             <EnhancedAgenceUsersForm
+              key={`users-${formValues.relatedUsers.length}-${Date.now()}`} // Force re-render
               users={formValues.relatedUsers}
               onUsersChange={handleUpdateRelatedUsers}
               agenceId={formValues.agenceId}
@@ -272,11 +381,20 @@ export default function FormPage({ params }: FormPageProps) {
           <span className="sr-only">{t("back")}</span>
         </Button>
         <h1 className="text-3xl font-bold text-gray-800">
-          {isEditMode ? "Edit Agency" : "Create New Agency"}
+          {isEditMode ? t("editAgency") : t("addNewAgency")}
         </h1>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6">
+        {isLoadingData && isEditMode && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span className="text-blue-700">Loading agency data...</span>
+            </div>
+          </div>
+        )}
+
         <MultiStepForm
           steps={renderSteps()}
           currentStep={currentStep}

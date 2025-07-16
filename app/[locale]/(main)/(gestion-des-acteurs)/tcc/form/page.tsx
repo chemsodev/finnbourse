@@ -98,8 +98,8 @@ export default function FormPage({ params }: FormPageProps) {
     } catch (error) {
       console.error("Failed to load TCC data:", error);
       toast({
-        title: "Error",
-        description: "Failed to load TCC data",
+        title: t("error"),
+        description: t("failedToLoadTCC"),
         variant: "destructive",
       });
     } finally {
@@ -117,16 +117,9 @@ export default function FormPage({ params }: FormPageProps) {
       pays: "Algeria",
       telephone: "",
       email: "",
-      swift: "",
-      iban: "",
-      numeroCompte: "",
-      devise: "DZD",
       numeroAgrement: "",
       dateAgrement: "",
       autoriteSurveillance: "",
-      commissionFixe: "",
-      commissionVariable: "",
-      tauxTva: "",
       financialInstitutionId: "", // Will be selected by user
     },
     relatedUsers: [],
@@ -160,8 +153,8 @@ export default function FormPage({ params }: FormPageProps) {
         );
         if (!validationResult.success) {
           toast({
-            title: "Validation Error",
-            description: "Please fill in all required fields correctly",
+            title: t("validationError"),
+            description: t("fillRequiredFields"),
             variant: "destructive",
           });
           return;
@@ -187,8 +180,8 @@ export default function FormPage({ params }: FormPageProps) {
       } catch (error) {
         console.error("Error creating TCC:", error);
         toast({
-          title: "Error",
-          description: "Failed to create TCC. Please check the form data.",
+          title: t("error"),
+          description: t("failedToCreateTCC"),
           variant: "destructive",
         });
         return; // Don't proceed to next step if creation failed
@@ -239,11 +232,7 @@ export default function FormPage({ params }: FormPageProps) {
               telephone: user.phone || "",
               positionTcc: user.position,
               role: user.roles || [],
-              status: (user.status === "active"
-                ? "actif"
-                : user.status === "inactive"
-                ? "inactif"
-                : user.status || "actif") as "actif" | "inactif",
+              status: "actif" as "actif", // Default value since status field was removed
             };
 
             console.log(`User ${index + 1} data:`, apiUserData);
@@ -269,18 +258,18 @@ export default function FormPage({ params }: FormPageProps) {
 
         if (errorCount > 0 && successCount === 0) {
           toast({
-            title: "User Creation Failed",
-            description: "Failed to create any users. Please try again.",
+            title: t("userCreationFailed"),
+            description: t("failedToCreateUsers"),
             variant: "destructive",
           });
         }
       } else {
         console.log("No users to create, workflow complete");
         toast({
-          title: "Process Complete",
+          title: t("processComplete"),
           description: isEditMode
-            ? "TCC updated successfully"
-            : "TCC created successfully",
+            ? t("tccUpdatedSuccessfully")
+            : t("tccCreatedSuccessfully"),
         });
       }
 
@@ -290,11 +279,9 @@ export default function FormPage({ params }: FormPageProps) {
     } catch (error) {
       console.error("Error in submit handler:", error);
       toast({
-        title: "Error",
+        title: t("error"),
         description:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again.",
+          error instanceof Error ? error.message : t("somethingWentWrong"),
         variant: "destructive",
       });
     }

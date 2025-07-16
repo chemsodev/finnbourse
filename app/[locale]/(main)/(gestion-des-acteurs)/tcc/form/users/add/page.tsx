@@ -64,7 +64,6 @@ const userSchema = z
     role: z
       .array(z.enum(VALID_TCC_ROLES as [ValidTCCRole, ...ValidTCCRole[]]))
       .min(1, "At least one role is required"),
-    status: z.enum(["actif", "inactif"]),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -109,7 +108,6 @@ export default function AddTCCUserPage({
     telephone: "",
     positionTcc: "",
     role: [],
-    status: "actif",
     password: "",
     confirmPassword: "",
   };
@@ -128,11 +126,15 @@ export default function AddTCCUserPage({
     try {
       console.log("Adding new user:", values);
 
-      // Prepare user data for API (exclude confirmPassword)
+      // Prepare user data for API (exclude confirmPassword and add default status)
       const { confirmPassword, ...userData } = values;
+      const userDataWithStatus = {
+        ...userData,
+        status: "actif" as "actif", // Add default status since field was removed from UI
+      };
 
       // Call API to add user
-      await createUser(userData);
+      await createUser(userDataWithStatus);
 
       toast({
         title: t("success"),
@@ -243,33 +245,6 @@ export default function AddTCCUserPage({
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("status")}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("selectStatus")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="actif">{t("active")}</SelectItem>
-                          <SelectItem value="inactif">
-                            {t("inactive")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

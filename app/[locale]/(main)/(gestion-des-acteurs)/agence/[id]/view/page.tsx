@@ -42,6 +42,7 @@ import {
 import { useTranslations } from "next-intl";
 import { agencyData, type AgencyData } from "@/lib/exportables";
 import { useRestToken } from "@/hooks/useRestToken";
+import { getRoleTranslationKey } from "@/lib/types/roles";
 
 // Agency user interface
 export interface ExtendedAgencyUser {
@@ -108,7 +109,7 @@ export default function ViewAgencyPage() {
 
       if (!agencyId) {
         toast({
-          title: "Error",
+          title: t("error"),
           description: t("agencyNotFound"),
           variant: "destructive",
         });
@@ -124,7 +125,7 @@ export default function ViewAgencyPage() {
 
       if (!agencyData) {
         toast({
-          title: "Error",
+          title: t("error"),
           description: t("agencyNotFound"),
           variant: "destructive",
         });
@@ -156,7 +157,7 @@ export default function ViewAgencyPage() {
     } catch (error) {
       console.error("Error fetching agency data:", error);
       toast({
-        title: "Error",
+        title: t("error"),
         description: t("failedToLoadAgency"),
         variant: "destructive",
       });
@@ -324,23 +325,19 @@ export default function ViewAgencyPage() {
                       </div>
                       <div>
                         <p className="font-semibold">{t("codeAgence")}</p>
-                        <p>{agency.code || agency.agenceCode || "N/A"}</p>
+                        <p>{agency.code || "N/A"}</p>
                       </div>
                       <div>
                         <p className="font-semibold">{t("codeSwiftBic")}</p>
-                        <p>
-                          {agency.code_swift || agency.codeSwiftBic || "N/A"}
-                        </p>
+                        <p>{agency.code_swift || "N/A"}</p>
                       </div>
                       <div>
-                        <p className="font-semibold">{t("devise")}</p>
-                        <p>{agency.currency || agency.devise || "N/A"}</p>
+                        <p className="font-semibold">{t("agencyName")}</p>
+                        <p>{agency.agence_name || "N/A"}</p>
                       </div>
                       <div className="col-span-2">
                         <p className="font-semibold">{t("adresseComplete")}</p>
-                        <p>
-                          {agency.address || agency.adresseComplete || "N/A"}
-                        </p>
+                        <p>{agency.address || "N/A"}</p>
                       </div>
                     </div>
                   </div>
@@ -352,15 +349,15 @@ export default function ViewAgencyPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="font-semibold">{t("agencyName")}</p>
-                        <p>{agency.agency_name || "N/A"}</p>
+                        <p>{agency.agence_name || "N/A"}</p>
                       </div>
                       <div>
                         <p className="font-semibold">{t("agencyPhone")}</p>
-                        <p>{agency.agency_phone || "N/A"}</p>
+                        <p>{agency.agence_phone || "N/A"}</p>
                       </div>
                       <div className="col-span-2">
                         <p className="font-semibold">{t("agencyEmail")}</p>
-                        <p>{agency.agency_email || "N/A"}</p>
+                        <p>{agency.agence_email || "N/A"}</p>
                       </div>
                     </div>
                   </div>
@@ -401,7 +398,7 @@ export default function ViewAgencyPage() {
                     </TableHead>
                     <TableHead className="whitespace-nowrap">Email</TableHead>
                     <TableHead className="whitespace-nowrap">
-                      Téléphone
+                      {t("phone")}
                     </TableHead>
                     <TableHead className="whitespace-nowrap">
                       {t("status")}
@@ -415,7 +412,7 @@ export default function ViewAgencyPage() {
                         colSpan={9}
                         className="text-center py-4 text-muted-foreground"
                       >
-                        Aucun utilisateur assigné
+                        {t("noUsersAssigned")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -423,7 +420,10 @@ export default function ViewAgencyPage() {
                       <TableRow key={user.id}>
                         <TableCell className="whitespace-nowrap">
                           {user.fullname ||
-                            `${user.firstname} ${user.lastname}`}
+                            `${user.firstname || ""} ${
+                              user.lastname || ""
+                            }`.trim() ||
+                            "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           {user.position || user.positionAgence || "-"}
@@ -432,24 +432,50 @@ export default function ViewAgencyPage() {
                           {user.matricule || user.matriculeAgence || "-"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
-                          {Array.isArray(user.role) && user.role.length > 0
-                            ? user.role
-                                .map((r) =>
-                                  r.includes("validator_2") ||
-                                  r === "Validator 2" ||
-                                  r.includes("manager_2")
-                                    ? t("validator2")
-                                    : r.includes("validator_1") ||
-                                      r === "Validator 1" ||
-                                      r.includes("manager_1")
-                                    ? t("validator1")
-                                    : r.includes("initiator") ||
-                                      r === "Initiator"
-                                    ? t("initiator")
-                                    : t("consultation")
-                                )
-                                .join(", ")
-                            : t("consultation")}
+                          <div className="flex flex-wrap gap-1">
+                            {Array.isArray(user.role) &&
+                            user.role.length > 0 ? (
+                              user.role.map((r, roleIndex) => {
+                                // Use the same translation logic as the form
+                                const translationKey = getRoleTranslationKey(r);
+                                // If the translation key is the same as the role, it means no translation was found
+                                // Try to translate it, and if it's not found, show the original role name
+                                let translatedRole;
+                                try {
+                                  translatedRole = t(translationKey);
+                                  // If translation key equals the original role, it means no translation exists
+                                  if (
+                                    translatedRole === translationKey &&
+                                    translationKey === r
+                                  ) {
+                                    // Try some common fallback translations
+                                    translatedRole = r
+                                      .replace(/_/g, " ")
+                                      .replace(/\b\w/g, (l) => l.toUpperCase());
+                                  }
+                                } catch (e) {
+                                  // Fallback to a readable format
+                                  translatedRole = r
+                                    .replace(/_/g, " ")
+                                    .replace(/\b\w/g, (l) => l.toUpperCase());
+                                }
+
+                                return (
+                                  <Badge
+                                    key={roleIndex}
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    {translatedRole}
+                                  </Badge>
+                                );
+                              })
+                            ) : (
+                              <Badge variant="outline" className="text-xs">
+                                {t("consultation")}
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           {user.type === "admin" ? t("admin") : t("member")}
@@ -514,17 +540,17 @@ export default function ViewAgencyPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Modifier le statut</AlertDialogTitle>
+            <AlertDialogTitle>{t("changeUserStatus")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir changer le statut de cet utilisateur ?
+              {t("changeUserStatusConfirmation")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={cancelToggleStatus}>
-              Annuler
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmToggleStatus}>
-              Confirmer
+              {t("confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

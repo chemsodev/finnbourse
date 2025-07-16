@@ -199,7 +199,7 @@ export class ClientService {
       type: apiData.type,
       clientType: clientType,
       agence: apiData.agence,
-      agencyName: apiData.agency_name,
+      agencyName: apiData.agence_name,
       selectedAgence: apiData.agence,
       client_code: apiData.client_code,
       clientCode: apiData.client_code,

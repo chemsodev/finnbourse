@@ -467,7 +467,7 @@ const FormPassationOrdreMarchePrimaire = ({
                     {client.client_code}
                   </TableCell>
                   <TableCell className="text-center">
-                    {client.name || client.agency_name}
+                    {client.name || client.agence_name}
                   </TableCell>
                   <TableCell className="text-center">{client.email}</TableCell>
                   <TableCell className="text-center">{client.type}</TableCell>

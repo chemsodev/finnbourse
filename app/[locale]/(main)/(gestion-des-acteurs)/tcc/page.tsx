@@ -402,7 +402,6 @@ export default function TCCPage({ params }: TCCPageProps) {
                         <TableHead>{t("phone")}</TableHead>
                         <TableHead>{t("position")}</TableHead>
                         <TableHead>{t("role")}</TableHead>
-                        <TableHead>{t("status")}</TableHead>
                         <TableHead>{t("createdAt")}</TableHead>
                         <TableHead className="text-right">
                           {t("actions")}
@@ -431,19 +430,6 @@ export default function TCCPage({ params }: TCCPageProps) {
                               ))}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                user.status === "actif"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                            >
-                              {user.status === "actif"
-                                ? t("active")
-                                : t("inactive")}
-                            </Badge>
-                          </TableCell>
                           <TableCell className="text-sm text-gray-500">
                             {user.createdAt
                               ? new Date(user.createdAt).toLocaleDateString()
@@ -470,28 +456,6 @@ export default function TCCPage({ params }: TCCPageProps) {
                               >
                                 <Edit className="h-4 w-4" />
                                 <span className="sr-only">{t("editUser")}</span>
-                              </Button>
-                              <Button
-                                variant={
-                                  user.status === "actif"
-                                    ? "destructive"
-                                    : "outline"
-                                }
-                                size="sm"
-                                onClick={() =>
-                                  user.id ? handleToggleStatus(user.id) : null
-                                }
-                              >
-                                {user.status === "actif" ? (
-                                  <XCircle className="h-4 w-4" />
-                                ) : (
-                                  <CheckCircle className="h-4 w-4" />
-                                )}
-                                <span className="sr-only">
-                                  {user.status === "actif"
-                                    ? t("deactivateUser")
-                                    : t("activateUser")}
-                                </span>
                               </Button>
                             </div>
                           </TableCell>
@@ -534,25 +498,6 @@ export default function TCCPage({ params }: TCCPageProps) {
                     {t("phone")}
                   </p>
                   <p className="text-lg">{selectedUser.telephone || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-500">
-                    {t("status")}
-                  </p>
-                  <Badge
-                    variant={
-                      selectedUser.status === "actif" ? "secondary" : "outline"
-                    }
-                    className={
-                      selectedUser.status === "actif"
-                        ? "bg-green-100 text-green-800 hover:bg-green-200"
-                        : "bg-red-100 text-red-800 hover:bg-red-200"
-                    }
-                  >
-                    {selectedUser.status === "actif"
-                      ? t("active")
-                      : t("inactive")}
-                  </Badge>
                 </div>
                 {selectedUser.poste && (
                   <div>

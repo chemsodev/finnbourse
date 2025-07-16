@@ -62,9 +62,15 @@ export function AgenceForm({
       "Financial Institution ID in defaultValues:",
       defaultValues?.financialInstitutionId
     );
+    console.log(
+      "Institutions loaded:",
+      institutions.length,
+      "Loading:",
+      loadingFIs
+    );
 
-    if (defaultValues) {
-      // Reset the form with the new default values
+    if (defaultValues && !loadingFIs && institutions.length > 0) {
+      // Reset the form with the new default values only after institutions are loaded
       console.log("Resetting Agence form with values:", defaultValues);
       form.reset(defaultValues);
 
@@ -75,9 +81,49 @@ export function AgenceForm({
           "Current FI value:",
           form.getValues().financialInstitutionId
         );
+        // Check if the FI ID exists in the institutions list
+        const fiExists = institutions.find(
+          (fi) => fi.id === form.getValues().financialInstitutionId
+        );
+        console.log(
+          "Financial institution exists in list:",
+          !!fiExists,
+          fiExists?.institutionName
+        );
       }, 100);
+    } else if (defaultValues && loadingFIs) {
+      console.log(
+        "⏳ Waiting for financial institutions to load before resetting form"
+      );
     }
-  }, [defaultValues, form]);
+  }, [defaultValues, form, loadingFIs, institutions]);
+
+  // Additional effect to handle when institutions finish loading after defaultValues are set
+  useEffect(() => {
+    if (defaultValues && !loadingFIs && institutions.length > 0) {
+      const currentFIValue = form.getValues().financialInstitutionId;
+      const expectedFIValue = defaultValues.financialInstitutionId;
+
+      // If the current form value doesn't match the expected value, reset the form
+      if (currentFIValue !== expectedFIValue && expectedFIValue) {
+        console.log(
+          "🔄 Institutions loaded, updating form with correct FI value"
+        );
+        console.log(
+          "Current FI:",
+          currentFIValue,
+          "Expected FI:",
+          expectedFIValue
+        );
+        form.reset(defaultValues);
+
+        setTimeout(() => {
+          const updatedValue = form.getValues().financialInstitutionId;
+          console.log("✅ Form updated with FI value:", updatedValue);
+        }, 50);
+      }
+    }
+  }, [loadingFIs, institutions.length, defaultValues, form]);
 
   // Watch for changes and propagate to parent component
   useEffect(() => {
@@ -155,7 +201,7 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="agency_name"
+                name="agence_name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("agencyName")} *</FormLabel>
@@ -169,7 +215,7 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="agency_email"
+                name="agence_email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("agencyEmail")} *</FormLabel>
@@ -183,7 +229,7 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="agency_phone"
+                name="agence_phone"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("agencyPhone")} *</FormLabel>

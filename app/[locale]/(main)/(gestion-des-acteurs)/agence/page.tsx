@@ -61,8 +61,8 @@ export default function AgencePage() {
   const filteredAgences = agences.filter(
     (agence) =>
       agence.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agence.agency_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agence.agency_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agence.agence_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agence.agence_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       agence.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -94,7 +94,9 @@ export default function AgencePage() {
         </div>
         <Card>
           <CardContent className="py-8">
-            <div className="text-center">Loading Agence data...</div>
+            <div className="text-center">
+              {t("loadingFinancialInstitutions")}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -141,7 +143,9 @@ export default function AgencePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Agences ({filteredAgences.length})</span>
+            <span>
+              {t("title")} ({filteredAgences.length})
+            </span>
             <Building className="h-5 w-5 text-gray-500" />
           </CardTitle>
         </CardHeader>
@@ -150,12 +154,12 @@ export default function AgencePage() {
             <div className="text-center py-8">
               <Building className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-800 mb-2">
-                {searchQuery ? "No Agences found" : "No Agences yet"}
+                {searchQuery ? t("noAgencies") : t("noAgenciesYet")}
               </h3>
               <p className="text-gray-600 mb-4">
                 {searchQuery
                   ? "Try adjusting your search criteria"
-                  : "Create your first Agence to get started"}
+                  : "Create your first agency to get started"}
               </p>
               {!searchQuery && (
                 <Button
@@ -163,7 +167,7 @@ export default function AgencePage() {
                   className="flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Add First Agence
+                  {t("add")} {t("title")}
                 </Button>
               )}
             </div>
@@ -173,12 +177,12 @@ export default function AgencePage() {
                 {" "}
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Agency</TableHead>
-                    <TableHead>Agency Name</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Address</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("codeAgence")}</TableHead>
+                    <TableHead>{t("title")}</TableHead>
+                    <TableHead>{t("agencyName")}</TableHead>
+                    <TableHead>{t("contactInformation")}</TableHead>
+                    <TableHead>{t("address")}</TableHead>
+                    <TableHead className="text-right">{t("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -188,17 +192,17 @@ export default function AgencePage() {
                       <TableCell className="font-medium">
                         {agence.code}
                       </TableCell>
-                      <TableCell>{agence.agency_name}</TableCell>
+                      <TableCell>{agence.agence_name}</TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {agence.agency_name || "N/A"}
+                          {agence.agence_name || "N/A"}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="text-sm">{agence.agency_email}</div>
+                          <div className="text-sm">{agence.agence_email}</div>
                           <div className="text-sm text-gray-500">
-                            {agence.agency_phone}
+                            {agence.agence_phone}
                           </div>
                         </div>
                       </TableCell>

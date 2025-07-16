@@ -1,7 +1,69 @@
 import { z } from "zod";
 
-// Base schema for common fields
-const baseSchema = z.object({
+// Common client details schema
+const commonClientDetailsSchema = z.object({
+  wilaya: z.string().min(1, "wilaya is required"),
+  address: z.string().min(1, "address is required"),
+});
+
+// Individual client schema
+const individualSchema = commonClientDetailsSchema.extend({
+  name: z.string().min(1, "name is required"),
+  id_number: z.string().min(1, "id_number is required"),
+  nin: z.string().min(1, "nin is required"),
+  nationalite: z.string().min(1, "nationalite is required"),
+  birth_date: z.coerce.date({
+    message: "birth_date must be a valid date",
+  }),
+  lieu_naissance: z.string().min(1, "lieu_naissance is required"),
+  employe_a_la_institution_financiere: z.string().nullable(), // selected institution or null
+});
+
+// Company client schema
+const companySchema = commonClientDetailsSchema.extend({
+  raison_sociale: z.string().min(1, "raison_sociale is required"),
+  nif: z.string().min(1, "nif is required"),
+  reg_number: z.string().min(1, "reg_number is required"),
+  legal_form: z.string().min(1, "legal_form is required"),
+});
+
+// Base client schema with common fields
+const baseClientSchema = z.object({
+  client_code: z.string().min(1, "client_code is required"),
+  email: z.string().email("valid email is required"),
+  phone_number: z.string().min(1, "phone_number is required"),
+  id_type: z.enum(["passport", "driving_license", "CN", "RC"], {
+    errorMap: () => ({
+      message: "id_type must be one of: passport, driving_license, CN, RC",
+    }),
+  }),
+  cash_account_bank_code: z
+    .string()
+    .min(3, "cash_account_bank_code is required")
+    .max(3, "cash_account_bank_code must be exactly 3 digits"),
+  cash_account_agency_code: z
+    .string()
+    .min(5, "cash_account_agency_code is required")
+    .max(5, "cash_account_agency_code must be exactly 5 digits"),
+  cash_account_number: z
+    .string()
+    .min(10, "cash_account_number is required")
+    .max(10, "cash_account_number must be exactly 10 digits"),
+  cash_account_rip_key: z
+    .string()
+    .min(2, "cash_account_rip_key is required")
+    .max(2, "cash_account_rip_key must be exactly 2 digits"),
+  cash_account_rip_full: z
+    .string()
+    .min(20, "cash_account_rip_full is required")
+    .max(20, "cash_account_rip_full must be at most 20 digits"),
+  securities_account_number: z
+    .string()
+    .min(1, "securities_account_number is required"),
+});
+
+// Legacy base schema for backward compatibility (if needed)
+const legacyBaseSchema = z.object({
   clientCode: z.string().min(1, "Le code client est requis"),
   email: z.string().email("Email invalide").optional().or(z.literal("")),
   phoneNumber: z.string().optional().or(z.literal("")),
@@ -33,12 +95,24 @@ const baseSchema = z.object({
     .or(z.literal("")),
   observation: z.string().optional().or(z.literal("")),
   selectedAgence: z.string().optional().or(z.literal("")),
-  financialInstitutionId: z.string().optional().or(z.literal("")),
   agenceId: z.string().optional().or(z.literal("")),
   iobId: z.string().optional().or(z.literal("")),
 });
 
-// Schema for personne physique (individual)
+// New main client schemas using updated validation
+export const individualClientSchema = baseClientSchema.extend(
+  individualSchema.shape
+);
+export const companyClientSchema = baseClientSchema.extend(companySchema.shape);
+
+// Combined schema for all client types
+export const clientSchema = z.union([
+  individualClientSchema,
+  companyClientSchema,
+]);
+
+// Schema for personne physique (individual) - legacy compatibility
+// Schema for personne physique (individual) - legacy compatibility
 const personnePhysiqueSchema = z
   .object({
     clientType: z.literal("personne_physique"),
@@ -57,9 +131,9 @@ const personnePhysiqueSchema = z
     regNumber: z.string().optional(),
     legalForm: z.string().optional(),
   })
-  .extend(baseSchema.shape);
+  .extend(legacyBaseSchema.shape);
 
-// Schema for personne morale (corporate)
+// Schema for personne morale (corporate) - legacy compatibility
 const personneMoraleSchema = z
   .object({
     clientType: z.literal("personne_morale"),
@@ -76,9 +150,9 @@ const personneMoraleSchema = z
     dateNaissance: z.date().optional(),
     lieuNaissance: z.string().optional(),
   })
-  .extend(baseSchema.shape);
+  .extend(legacyBaseSchema.shape);
 
-// Schema for financial institution
+// Schema for financial institution - legacy compatibility
 const institutionFinanciereSchema = z
   .object({
     clientType: z.literal("institution_financiere"),
@@ -95,7 +169,14 @@ const institutionFinanciereSchema = z
     dateNaissance: z.date().optional(),
     lieuNaissance: z.string().optional(),
   })
-  .extend(baseSchema.shape);
+  .extend(legacyBaseSchema.shape);
+
+// Legacy combined schema using discriminated union
+export const legacyClientSchema = z.discriminatedUnion("clientType", [
+  personnePhysiqueSchema,
+  personneMoraleSchema,
+  institutionFinanciereSchema,
+]);
 
 // Schema for client user
 export const clientUserSchema = z.object({
@@ -119,11 +200,8 @@ export const clientUserSchema = z.object({
 });
 
 // Combined schema using discriminated union
-export const clientSchema = z.discriminatedUnion("clientType", [
-  personnePhysiqueSchema,
-  personneMoraleSchema,
-  institutionFinanciereSchema,
-]);
+// Note: Keeping legacy schema for backward compatibility, use clientSchema for new validation
+export const formSchemaLegacy = clientSchema;
 
 // Main form schema with proper conditional validation
 export const formSchema = z
@@ -227,8 +305,13 @@ export const formSchema = z
     }
   );
 
-// Export the inferred type
+// Export the inferred types
 export type ClientFormValues = z.infer<typeof clientSchema>;
+export type IndividualClientFormValues = z.infer<typeof individualClientSchema>;
+export type CompanyClientFormValues = z.infer<typeof companyClientSchema>;
+
+// Legacy export for backward compatibility
+export type LegacyClientFormValues = z.infer<typeof legacyClientSchema>;
 
 // Base interface for common fields
 export interface BaseClient {

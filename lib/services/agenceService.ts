@@ -85,9 +85,9 @@ export class AgenceService {
       code: formData.code,
       address: formData.address,
       code_swift: formData.code_swift,
-      agency_name: formData.agency_name,
-      agency_email: formData.agency_email,
-      agency_phone: formData.agency_phone,
+      agence_name: formData.agence_name,
+      agence_email: formData.agence_email,
+      agence_phone: formData.agence_phone,
       financialInstitutionId: formData.financialInstitutionId,
     };
   }
@@ -100,14 +100,44 @@ export class AgenceService {
       code: apiData.code,
       address: apiData.address,
       code_swift: apiData.code_swift,
-      agency_name: apiData.agency_name,
-      agency_email: apiData.agency_email,
-      agency_phone: apiData.agency_phone,
+      agence_name: apiData.agence_name,
+      agence_email: apiData.agence_email,
+      agence_phone: apiData.agence_phone,
       financialInstitutionId:
         apiData.financialInstitution?.id ||
         apiData.financialInstitutionId ||
         "",
     };
+  }
+
+  /**
+   * Get users for an Agence
+   * Note: Users are typically embedded in the agency response,
+   * so this method first tries to get them from there
+   */
+  static async getUsers(
+    agenceId: string,
+    token?: string
+  ): Promise<AgenceUser[]> {
+    try {
+      // First try to get the agency with embedded users
+      const agency = await this.getOne(agenceId, token);
+      const agencyWithUsers = agency as any;
+
+      if (agencyWithUsers.users && Array.isArray(agencyWithUsers.users)) {
+        console.log("✅ Using embedded users from agency data");
+        return agencyWithUsers.users;
+      }
+
+      // Fallback: try the separate endpoint (though it may not exist)
+      console.log("⚠️ No embedded users found, trying separate endpoint");
+      const response = await actorAPI.agence.getUsers(agenceId, token);
+      return response.data || response || [];
+    } catch (error) {
+      console.error("Error fetching Agence users:", error);
+      // Return empty array instead of throwing to allow form to work without users
+      return [];
+    }
   }
 
   /**

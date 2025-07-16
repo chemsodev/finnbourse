@@ -54,7 +54,6 @@ export default function IOBPage() {
   // Filter IOBs based on search term
   const filteredIOBs = iobs.filter(
     (iob) =>
-      iob.short_libel?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       iob.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       iob.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       iob.financialInstitution?.institutionName

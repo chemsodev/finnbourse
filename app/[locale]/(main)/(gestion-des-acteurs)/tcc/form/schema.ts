@@ -5,12 +5,6 @@ export const custodianFormSchema = z.object({
   code: z.string().min(1, "Code is required"),
   libelle: z.string().min(1, "Label is required"),
 
-  // Banking information (optional for TCC)
-  swift: z.string().optional(),
-  iban: z.string().optional(),
-  numeroCompte: z.string().optional(),
-  devise: z.string().optional(),
-
   // Address (required fields)
   adresse: z.string().min(1, "Address is required"),
   codePostal: z.string().min(1, "Postal code is required"),
@@ -29,11 +23,6 @@ export const custodianFormSchema = z.object({
   financialInstitutionId: z
     .string()
     .min(1, "Financial Institution is required"),
-
-  // Legacy fields for backward compatibility
-  commissionFixe: z.string().optional(),
-  commissionVariable: z.string().optional(),
-  tauxTva: z.string().optional(),
 });
 
 // Schema for related users (Step 2)
@@ -47,9 +36,6 @@ export const relatedUserSchema = z.object({
     .min(6, "Password must be at least 6 characters")
     .optional(),
   telephone: z.string().optional(),
-  status: z.enum(["actif", "inactif", "active", "inactive"], {
-    required_error: "Status is required",
-  }),
   positionTcc: z.string().optional(),
   role: z.array(z.string()).optional(),
 
@@ -57,7 +43,6 @@ export const relatedUserSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   position: z.string().min(2, "Position is required"),
   roles: z.array(z.string()).default([]),
-  type: z.string().min(1, "Type is required"),
   organization: z.string().optional(),
   phone: z.string().optional(),
   matricule: z.string().optional(),

@@ -62,9 +62,9 @@ export interface Agence {
   code: string;
   address: string;
   code_swift: string;
-  agency_name: string;
-  agency_email: string;
-  agency_phone: string;
+  agence_name: string;
+  agence_email: string;
+  agence_phone: string;
   financialInstitution?: {
     id: string;
     institutionName: string;
@@ -83,9 +83,9 @@ export interface AgenceCreateRequest {
   code: string;
   address: string;
   code_swift: string;
-  agency_name: string;
-  agency_email: string;
-  agency_phone: string;
+  agence_name: string;
+  agence_email: string;
+  agence_phone: string;
   financialInstitutionId: string;
 }
 
@@ -98,6 +98,11 @@ export interface AgenceUser {
   telephone: string;
   status: "actif" | "inactif";
   position: string;
+  positionAgence?: string; // Alternative field name for position
+  matricule?: string;
+  matriculeAgence?: string; // Alternative field name for matricule
+  organisation?: string;
+  organisationIndividu?: string; // Alternative field name for organization
   role: string[];
   createdAt?: string;
   updatedAt?: string;
@@ -111,7 +116,7 @@ export interface Client {
   id?: string;
   type: "individual" | "company" | "financial_institution";
   agence?: Agence | string;
-  agency_name?: string;
+  agence_name?: string;
   client_code: string;
   client_source: string;
   email: string;

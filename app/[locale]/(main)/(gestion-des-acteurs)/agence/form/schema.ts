@@ -8,9 +8,9 @@ export const agenceFormSchema = z.object({
   code: z.string().min(1, { message: "Agency code is required" }),
   address: z.string().min(1, { message: "Address is required" }),
   code_swift: z.string().min(1, { message: "SWIFT/BIC code is required" }),
-  agency_name: z.string().min(1, { message: "Agency name is required" }),
-  agency_email: z.string().email({ message: "Valid agency email is required" }),
-  agency_phone: z.string().min(1, { message: "Agency phone is required" }),
+  agence_name: z.string().min(1, { message: "Agency name is required" }),
+  agence_email: z.string().email({ message: "Valid agency email is required" }),
+  agence_phone: z.string().min(1, { message: "Agency phone is required" }),
 });
 
 export type AgenceFormValues = z.infer<typeof agenceFormSchema>;
