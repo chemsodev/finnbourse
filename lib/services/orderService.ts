@@ -134,6 +134,81 @@ export async function fetchOrders(
   }
 }
 
+export async function fetchOrdersJournal(
+  token: string,
+  marketType: string = "S"
+): Promise<OrderResponse> {
+  try {
+    console.log("Fetching orders with params:", { marketType });
+
+    const response = await fetch(`${BACKEND_API}/journal/orders/all`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        market_type: marketType,
+      }),
+    });
+
+    console.log("Request body", JSON.stringify({ marketType }));
+    console.log(response);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `Order fetch failed with status: ${response.status}`,
+        errorText
+      );
+      return {
+        error: `API Error: ${response.status}`,
+        data: { elements: [], actions: [] },
+      };
+    }
+
+    const responseData = await response.json();
+    console.log("Order API raw response:", responseData);
+
+    // Handle the response structure properly
+    if (responseData && responseData.data && responseData.data.elements) {
+      return responseData; // Already in the expected format
+    } else if (responseData && responseData.elements) {
+      // Response is missing the data wrapper
+      return {
+        error: null,
+        data: responseData,
+      };
+    } else {
+      console.error("Unexpected API response structure:", responseData);
+      // Try to extract data from the response in whatever format it's in
+      const elements =
+        responseData?.data?.orders || // first try this
+        responseData?.orders || // or this
+        responseData?.elements ||
+        responseData?.data?.elements ||
+        [];
+
+      const actions =
+        responseData?.actions || responseData?.data?.actions || [];
+
+      return {
+        error: null,
+        data: {
+          elements: Array.isArray(elements) ? elements : [],
+          actions: Array.isArray(actions) ? actions : [],
+        },
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return {
+      error: error instanceof Error ? error.message : "Unknown error",
+      data: { elements: [], actions: [] },
+    };
+  }
+}
+
 /**
  * Process an order action (validate, reject, cancel)
  * @param token REST token for authentication
@@ -303,4 +378,5 @@ export default {
   processOrderActionWithReason,
   fetchStockDetails,
   fetchClientDetails,
+  fetchOrdersJournal,
 };
