@@ -211,20 +211,6 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="code_swift"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("codeSwiftBic")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} defaultValue="DZD" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="address"
                 render={({ field }) => (
                   <FormItem className="col-span-2">

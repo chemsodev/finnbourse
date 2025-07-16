@@ -347,32 +347,20 @@ export default function ViewAgencyPage() {
 
                   <div>
                     <h3 className="text-lg font-semibold mb-4">
-                      {t("directeurAgence")}
+                      {t("agencyDetails")}
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="font-semibold">{t("directeurNom")}</p>
-                        <p>
-                          {agency.director_name || agency.directeurNom || "N/A"}
-                        </p>
+                        <p className="font-semibold">{t("agencyName")}</p>
+                        <p>{agency.agency_name || "N/A"}</p>
                       </div>
                       <div>
-                        <p className="font-semibold">
-                          {t("directeurTelephone")}
-                        </p>
-                        <p>
-                          {agency.director_phone ||
-                            agency.directeurTelephone ||
-                            "N/A"}
-                        </p>
+                        <p className="font-semibold">{t("agencyPhone")}</p>
+                        <p>{agency.agency_phone || "N/A"}</p>
                       </div>
                       <div className="col-span-2">
-                        <p className="font-semibold">{t("directeurEmail")}</p>
-                        <p>
-                          {agency.director_email ||
-                            agency.directeurEmail ||
-                            "N/A"}
-                        </p>
+                        <p className="font-semibold">{t("agencyEmail")}</p>
+                        <p>{agency.agency_email || "N/A"}</p>
                       </div>
                     </div>
                   </div>

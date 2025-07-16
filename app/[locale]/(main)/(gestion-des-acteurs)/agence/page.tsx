@@ -61,8 +61,8 @@ export default function AgencePage() {
   const filteredAgences = agences.filter(
     (agence) =>
       agence.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agence.director_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agence.director_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agence.agency_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agence.agency_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       agence.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -174,8 +174,8 @@ export default function AgencePage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Code</TableHead>
-                    <TableHead>Director</TableHead>
-                    <TableHead>Director Name</TableHead>
+                    <TableHead>Agency</TableHead>
+                    <TableHead>Agency Name</TableHead>
                     <TableHead>Contact</TableHead>
                     <TableHead>Address</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -188,17 +188,17 @@ export default function AgencePage() {
                       <TableCell className="font-medium">
                         {agence.code}
                       </TableCell>
-                      <TableCell>{agence.director_name}</TableCell>
+                      <TableCell>{agence.agency_name}</TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {agence.director_name || "N/A"}
+                          {agence.agency_name || "N/A"}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="text-sm">{agence.director_email}</div>
+                          <div className="text-sm">{agence.agency_email}</div>
                           <div className="text-sm text-gray-500">
-                            {agence.director_phone}
+                            {agence.agency_phone}
                           </div>
                         </div>
                       </TableCell>
