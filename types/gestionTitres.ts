@@ -142,7 +142,7 @@ export interface Stock {
     | "placementOrganise";
   createdAt?: string;
   updatedAt?: string;
-  durationYears?: number;
+  duration?: number;
   nombreDeTranches?: number;
   // Financial fields
   dividendRate?: number;
