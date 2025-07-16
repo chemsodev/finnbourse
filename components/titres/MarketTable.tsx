@@ -212,7 +212,7 @@ export function MarketTable({
           maturityDate: stock.maturityDate
             ? new Date(stock.maturityDate)
             : undefined,
-          durationYears: undefined,
+          duration: undefined,
           commission: undefined,
           shareClass: undefined,
           votingRights: stock.votingRights || false,

@@ -226,69 +226,40 @@ TitreFormDialogProps) {
       console.log("Submitting form values:", values);
       const firstInstitutionId = values.institutions?.[0] ?? "";
 
+      const { nombreDeTranches, ...payloadWithoutTranches } = values;
+
       const payload = {
-        ...values,
+        ...payloadWithoutTranches,
         master: watchedMaster ? watchedMaster : firstInstitutionId,
         votingRights: values.votingRights ?? false,
         stockType: watchedType ? watchedType : "action",
         emissionDate: new Date(values.emissionDate),
         closingDate: new Date(values.closingDate),
         enjoymentDate: new Date(values.enjoymentDate),
-
-        ...(watchedType === "obligation" && values.maturityDate
-          ? { maturityDate: new Date(values.maturityDate) }
-          : {}),
-
-        // isPrimary: values.isPrimary ?? false,
-        // paymentSchedule: values?.paymentSchedule?.map((item) => ({
-        //   ...item,
-        //   date: item.date.toISOString(),
-        // })),
         institutions: values.institutions || [],
-        // stockPrice: {
-        //   ...values.stockPrice,
-        //   date: new Date(values.stockPrice.date),
-        // },
-        // payment schedule arrays
-        // type == "obligation"
-        capitalRepaymentSchedule:
-          values.capitalRepaymentSchedule?.map((item) => ({
-            date: new Date(item.date),
-            rate: item.rate,
-          })) || [],
-        couponSchedule:
-          values.couponSchedule?.map((item) => ({
-            date: new Date(item.date),
-            rate: item.rate,
-          })) || [],
       };
+
+      if (watchedType !== "action") {
+        Object.assign(payload, {
+          ...(values.maturityDate && {
+            maturityDate: new Date(values.maturityDate),
+          }),
+          duration: values.duration,
+          capitalRepaymentSchedule:
+            values.capitalRepaymentSchedule?.map((item) => ({
+              date: new Date(item.date),
+              rate: item.rate,
+            })) || [],
+          couponSchedule:
+            values.couponSchedule?.map((item) => ({
+              date: new Date(item.date),
+              rate: item.rate,
+            })) || [],
+        });
+      }
 
       console.log("Submitting payload:", payload);
 
-      // let response;
-      // if (isEdit && defaultValues?.id) {
-      //   const moveToSecondaryData: MoveToSecondaryData = {
-      //     price: payload.stockPrice.price,
-      //     gap: payload.stockPrice.gap,
-      //     date: payload.stockPrice.date.toISOString(),
-      //   };
-      //   if (isIOB) {
-      //     // Use IOB-specific endpoint
-      //     response = await api.updateIobMarketSecondary(
-      //       defaultValues.id,
-      //       moveToSecondaryData
-      //     );
-      //   } else {
-      //     // Use regular secondary market endpoint
-      //     response = await api.moveToSecondary(
-      //       defaultValues.id,
-      //       moveToSecondaryData
-      //     );
-      //   }
-      // } else {
-
-      //   response = await api.createStock(payload);
-      // }
       const response = await api.createStock(payload);
 
       console.log("Create stock response:", response);
@@ -1073,7 +1044,7 @@ TitreFormDialogProps) {
                       {/* Duration in Years */}
                       <FormField
                         control={form.control}
-                        name="durationYears"
+                        name="duration"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>{t("form.duration")}</FormLabel>
@@ -1105,266 +1076,273 @@ TitreFormDialogProps) {
                   </div>
                 )}
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">
-                    {t("form.payementSchedule")}
-                  </h3>
-                  <FormField
-                    control={form.control}
-                    name="nombreDeTranches"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("form.nombreDeTranches")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="1"
-                            placeholder={t("form.enterSegments")}
-                            value={field.value ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value === "") {
-                                field.onChange(undefined);
-                              } else {
-                                const numValue = Number(value);
-                                if (!isNaN(numValue)) {
-                                  field.onChange(numValue);
+                {(watchedType === "obligation" ||
+                  obligations.includes(watchedType)) && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">
+                      {t("form.payementSchedule")}
+                    </h3>
+                    <FormField
+                      control={form.control}
+                      name="nombreDeTranches"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("form.nombreDeTranches")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="1"
+                              placeholder={t("form.enterSegments")}
+                              value={field.value ?? ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === "") {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = Number(value);
+                                  if (!isNaN(numValue)) {
+                                    field.onChange(numValue);
+                                  }
                                 }
-                              }
-                            }}
-                            onKeyDown={preventNonNumericInput}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {(watchedType === "obligation" ||
-                    obligations.includes(watchedType)) &&
-                    nombreDeTranches &&
-                    nombreDeTranches > 0 && (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                {t("form.date")}
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                {t("form.couponRate")}
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                {t("form.capitalRate")}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {Array.from({ length: nombreDeTranches }).map(
-                              (_, index) => (
-                                <tr key={index}>
-                                  {/* Date Field */}
-                                  <td className="px-4 py-4 whitespace-nowrap">
-                                    <FormField
-                                      control={form.control}
-                                      name={`capitalRepaymentSchedule.${index}.date`}
-                                      render={({ field }) => (
-                                        <FormItem className="flex flex-col">
-                                          <Popover>
-                                            <PopoverTrigger asChild>
-                                              <FormControl>
-                                                <Button
-                                                  variant="outline"
-                                                  className={cn(
-                                                    "w-full pl-3 text-left font-normal",
-                                                    !field.value &&
-                                                      "text-muted-foreground"
-                                                  )}
-                                                >
-                                                  {field.value ? (
-                                                    formatDateDisplay(
-                                                      field.value
-                                                    )
-                                                  ) : (
-                                                    <span>Select date</span>
-                                                  )}
-                                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                              </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent
-                                              className="w-auto p-0"
-                                              align="start"
-                                            >
-                                              <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={(date) => {
-                                                  field.onChange(date);
-                                                  if (date) {
-                                                    form.setValue(
-                                                      `couponSchedule.${index}.date`,
-                                                      date
-                                                    );
-                                                  }
-                                                }}
-                                                fromYear={new Date().getFullYear()}
-                                                toYear={
-                                                  new Date().getFullYear() +
-                                                  nombreDeTranches
-                                                }
-                                                locale={getDateLocale()}
-                                              />
-                                            </PopoverContent>
-                                          </Popover>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </td>
-
-                                  {/* Coupon Rate Field */}
-                                  <td className="px-4 py-4 whitespace-nowrap">
-                                    <FormField
-                                      control={form.control}
-                                      name={`couponSchedule.${index}.rate`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <div className="relative">
-                                              <Input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                step="0.1"
-                                                placeholder={t(
-                                                  "form.enterRate"
-                                                )}
-                                                value={field.value ?? ""}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  if (value === "") {
-                                                    field.onChange(undefined);
-                                                    return;
-                                                  }
-                                                  const numValue =
-                                                    parseFloat(value);
-                                                  if (!isNaN(numValue)) {
-                                                    const clampedValue =
-                                                      Math.min(
-                                                        Math.max(numValue, 0),
-                                                        100
-                                                      );
-                                                    field.onChange(
-                                                      clampedValue
-                                                    );
-                                                  }
-                                                }}
-                                                onBlur={() => {
-                                                  if (
-                                                    field.value !== undefined &&
-                                                    field.value !== null
-                                                  ) {
-                                                    field.onChange(
-                                                      Number(
-                                                        field.value.toFixed(2)
+                              }}
+                              onKeyDown={preventNonNumericInput}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {(watchedType === "obligation" ||
+                      obligations.includes(watchedType)) &&
+                      nombreDeTranches &&
+                      nombreDeTranches > 0 && (
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  {t("form.date")}
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  {t("form.couponRate")}
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  {t("form.capitalRate")}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {Array.from({ length: nombreDeTranches }).map(
+                                (_, index) => (
+                                  <tr key={index}>
+                                    {/* Date Field */}
+                                    <td className="px-4 py-4 whitespace-nowrap">
+                                      <FormField
+                                        control={form.control}
+                                        name={`capitalRepaymentSchedule.${index}.date`}
+                                        render={({ field }) => (
+                                          <FormItem className="flex flex-col">
+                                            <Popover>
+                                              <PopoverTrigger asChild>
+                                                <FormControl>
+                                                  <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                      "w-full pl-3 text-left font-normal",
+                                                      !field.value &&
+                                                        "text-muted-foreground"
+                                                    )}
+                                                  >
+                                                    {field.value ? (
+                                                      formatDateDisplay(
+                                                        field.value
                                                       )
-                                                    );
-                                                  }
-                                                }}
-                                                onKeyDown={
-                                                  preventNonNumericInput
-                                                }
-                                                className="w-full pr-8"
-                                              />
-                                              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                                                %
-                                              </span>
-                                            </div>
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </td>
-
-                                  {/* Capital Rate Field */}
-                                  <td className="px-4 py-4 whitespace-nowrap">
-                                    <FormField
-                                      control={form.control}
-                                      name={`capitalRepaymentSchedule.${index}.rate`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <div className="relative">
-                                              <Input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                step="0.1"
-                                                placeholder={t(
-                                                  "form.enterRate"
-                                                )}
-                                                value={field.value ?? ""}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-
-                                                  if (value === "") {
-                                                    field.onChange(undefined);
-                                                    return;
-                                                  }
-
-                                                  const numValue =
-                                                    parseFloat(value);
-
-                                                  // Validate the number
-                                                  if (!isNaN(numValue)) {
-                                                    // Clamp between 0 and 100
-                                                    const clampedValue =
-                                                      Math.min(
-                                                        Math.max(numValue, 0),
-                                                        100
+                                                    ) : (
+                                                      <span>Select date</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                  </Button>
+                                                </FormControl>
+                                              </PopoverTrigger>
+                                              <PopoverContent
+                                                className="w-auto p-0"
+                                                align="start"
+                                              >
+                                                <Calendar
+                                                  mode="single"
+                                                  selected={field.value}
+                                                  onSelect={(date) => {
+                                                    field.onChange(date);
+                                                    if (date) {
+                                                      form.setValue(
+                                                        `couponSchedule.${index}.date`,
+                                                        date
                                                       );
-                                                    field.onChange(
-                                                      clampedValue
-                                                    );
+                                                    }
+                                                  }}
+                                                  fromYear={new Date().getFullYear()}
+                                                  toYear={
+                                                    new Date().getFullYear() +
+                                                    nombreDeTranches
                                                   }
-                                                }}
-                                                onBlur={() => {
-                                                  // Format to 2 decimal places on blur
-                                                  if (
-                                                    field.value !== undefined &&
-                                                    field.value !== null
-                                                  ) {
-                                                    field.onChange(
-                                                      Number(
-                                                        field.value.toFixed(2)
-                                                      )
-                                                    );
+                                                  locale={getDateLocale()}
+                                                />
+                                              </PopoverContent>
+                                            </Popover>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </td>
+
+                                    {/* Coupon Rate Field */}
+                                    <td className="px-4 py-4 whitespace-nowrap">
+                                      <FormField
+                                        control={form.control}
+                                        name={`couponSchedule.${index}.rate`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormControl>
+                                              <div className="relative">
+                                                <Input
+                                                  type="number"
+                                                  min="0"
+                                                  max="100"
+                                                  step="0.1"
+                                                  placeholder={t(
+                                                    "form.enterRate"
+                                                  )}
+                                                  value={field.value ?? ""}
+                                                  onChange={(e) => {
+                                                    const value =
+                                                      e.target.value;
+                                                    if (value === "") {
+                                                      field.onChange(undefined);
+                                                      return;
+                                                    }
+                                                    const numValue =
+                                                      parseFloat(value);
+                                                    if (!isNaN(numValue)) {
+                                                      const clampedValue =
+                                                        Math.min(
+                                                          Math.max(numValue, 0),
+                                                          100
+                                                        );
+                                                      field.onChange(
+                                                        clampedValue
+                                                      );
+                                                    }
+                                                  }}
+                                                  onBlur={() => {
+                                                    if (
+                                                      field.value !==
+                                                        undefined &&
+                                                      field.value !== null
+                                                    ) {
+                                                      field.onChange(
+                                                        Number(
+                                                          field.value.toFixed(2)
+                                                        )
+                                                      );
+                                                    }
+                                                  }}
+                                                  onKeyDown={
+                                                    preventNonNumericInput
                                                   }
-                                                }}
-                                                onKeyDown={
-                                                  preventNonNumericInput
-                                                }
-                                                className="w-full pr-8"
-                                              />
-                                              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                                                %
-                                              </span>
-                                            </div>
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </td>
-                                </tr>
-                              )
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                </div>
+                                                  className="w-full pr-8"
+                                                />
+                                                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                                  %
+                                                </span>
+                                              </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </td>
+
+                                    {/* Capital Rate Field */}
+                                    <td className="px-4 py-4 whitespace-nowrap">
+                                      <FormField
+                                        control={form.control}
+                                        name={`capitalRepaymentSchedule.${index}.rate`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormControl>
+                                              <div className="relative">
+                                                <Input
+                                                  type="number"
+                                                  min="0"
+                                                  max="100"
+                                                  step="0.1"
+                                                  placeholder={t(
+                                                    "form.enterRate"
+                                                  )}
+                                                  value={field.value ?? ""}
+                                                  onChange={(e) => {
+                                                    const value =
+                                                      e.target.value;
+
+                                                    if (value === "") {
+                                                      field.onChange(undefined);
+                                                      return;
+                                                    }
+
+                                                    const numValue =
+                                                      parseFloat(value);
+
+                                                    // Validate the number
+                                                    if (!isNaN(numValue)) {
+                                                      // Clamp between 0 and 100
+                                                      const clampedValue =
+                                                        Math.min(
+                                                          Math.max(numValue, 0),
+                                                          100
+                                                        );
+                                                      field.onChange(
+                                                        clampedValue
+                                                      );
+                                                    }
+                                                  }}
+                                                  onBlur={() => {
+                                                    // Format to 2 decimal places on blur
+                                                    if (
+                                                      field.value !==
+                                                        undefined &&
+                                                      field.value !== null
+                                                    ) {
+                                                      field.onChange(
+                                                        Number(
+                                                          field.value.toFixed(2)
+                                                        )
+                                                      );
+                                                    }
+                                                  }}
+                                                  onKeyDown={
+                                                    preventNonNumericInput
+                                                  }
+                                                  className="w-full pr-8"
+                                                />
+                                                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                                                  %
+                                                </span>
+                                              </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <DialogClose asChild>
