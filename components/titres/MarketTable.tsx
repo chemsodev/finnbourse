@@ -41,7 +41,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/hooks/use-toast";
 
-import { formatDate, formatPrice } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 
 import { Stock, StockType } from "@/types/gestionTitres";
@@ -49,7 +49,6 @@ import { TitreFormValues } from "./titreSchemaValidation";
 import { EditTitre } from "./EditTitre";
 import { EditSecondaryMarketTitre } from "./EditSecondaryMarketTitre";
 import { useStockApi } from "@/hooks/useStockApi";
-import { is } from "date-fns/locale";
 
 interface MarketTableProps {
   type: StockType;
@@ -69,10 +68,10 @@ interface TableState {
 
 function mapToStockType(
   type: StockType
-): "action" | "obligation" | "sukuk" | "participatif" {
+): "action" | "obligation" | "sukuk" | "obligationsOrdinaires" | "oat" {
   const mapping: Record<
     StockType,
-    "action" | "obligation" | "sukuk" | "participatif"
+    "action" | "obligation" | "sukuk" | "obligationsOrdinaires" | "oat"
   > = {
     opv: "action",
     empruntobligataire: "obligation",
@@ -81,10 +80,6 @@ function mapToStockType(
     sukuk: "sukuk",
     sukukmp: "sukuk",
     sukukms: "sukuk",
-    titresparticipatifs: "participatif",
-    titresparticipatifsmp: "participatif",
-    titresparticipatifsms: "participatif",
-    participatif: "participatif",
   };
   return mapping[type] || "action";
 }
@@ -187,7 +182,7 @@ export function MarketTable({
 
         const defaultValues: TitreFormValues = {
           id: stock.id,
-          type: stockType,
+          // type: stockType,
           name: stock.name || "",
           stockType: stockType,
           code: stock.code || "",
@@ -205,10 +200,10 @@ export function MarketTable({
             ? new Date(stock.enjoymentDate)
             : new Date(),
           marketListing: stock.marketListing || "ALG",
-          status: ["activated", "suspended", "delisted"].includes(
+          status: ["activated", "deactivated", "delisted"].includes(
             stock.status as string
           )
-            ? (stock.status as "activated" | "suspended" | "delisted")
+            ? (stock.status as "activated" | "deactivated" | "delisted")
             : "activated",
 
           // Optional fields
@@ -292,8 +287,20 @@ export function MarketTable({
   };
 
   // Column definitions for the table
-  const columns = React.useMemo<ColumnDef<Stock>[]>(() => {
-    const cols: ColumnDef<Stock>[] = [
+  const baseColumns = React.useMemo<ColumnDef<Stock>[]>(
+    () => [
+      {
+        accessorKey: "isinCode",
+        header: t("isinCode"),
+        cell: ({ row }) => {
+          const stock = row.original;
+          return (
+            <div className="text-xs text-gray-500">
+              {stock.isinCode || "N/A"}
+            </div>
+          );
+        },
+      },
       {
         accessorKey: "issuer",
         header: () => (
@@ -323,9 +330,84 @@ export function MarketTable({
           );
         },
       },
+      {
+        accessorKey: "faceValue",
+        header: t("faceValue"),
+        cell: ({ row }) => {
+          const stock = row.original;
+          return (
+            <div className="text-xs text-gray-500">
+              {stock.faceValue || "N/A"}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "quantity",
+        header: t("quantity"),
+        cell: ({ row }) => {
+          const stock = row.original;
+          return (
+            <div className="text-xs text-gray-500">
+              {stock.quantity || "N/A"}
+            </div>
+          );
+        },
+      },
+    ],
+    [t]
+  );
+
+  const columns = React.useMemo<ColumnDef<Stock>[]>(() => {
+    const primaryCols: ColumnDef<Stock>[] = [
+      ...baseColumns,
+      {
+        accessorKey: "price",
+        header: t("price"),
+        cell: ({ row }) => {
+          const stock = row.original;
+          return (
+            <div className="text-sm font-medium text-gray-900">
+              {stock.name || "N/A"}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "emissionDate",
+        header: t("emissionDate"),
+        cell: ({ row }) =>
+          row.original.emissionDate
+            ? formatDate(row.original.emissionDate)
+            : "NC",
+      },
+      {
+        accessorKey: "closingDate",
+        header: t("closingDate"),
+        cell: ({ row }) =>
+          row.original.closingDate
+            ? formatDate(row.original.closingDate)
+            : "NC",
+      },
     ];
+
+    const secondaryCols: ColumnDef<Stock>[] = [
+      ...baseColumns,
+      {
+        accessorKey: "enjoymentDate",
+        header: t("enjoymentDate"),
+        cell: ({ row }) =>
+          row.original.enjoymentDate
+            ? formatDate(row.original.enjoymentDate)
+            : "NC",
+      },
+    ];
+
+    const cols =
+      marketType === "primaire" ? [...primaryCols] : [...secondaryCols];
+
     if (marketType === "secondaire" || type === "obligation") {
-      cols.splice(1, 0, {
+      cols.splice(2, 0, {
         accessorKey: "bondType",
         header: t("type"),
         cell: ({ row }) => {
@@ -337,216 +419,17 @@ export function MarketTable({
           );
         },
       });
-    }
-    const hasEmissionData = ![
-      "action",
-      "obligation",
-      "sukuk",
-      "sukukms",
-      "titresparticipatifsms",
-      "participatif",
-    ].includes(type);
-    // Check if any stock in the data has stockPrices to determine if we should show price columns
-    const hasStockPrices = stocks.some(
-      (stock) =>
-        Array.isArray(stock.stockPrices) && stock.stockPrices.length > 0
-    );
-
-    if (hasEmissionData) {
-      cols.push(
-        {
-          accessorKey: "emissionDate",
-          header: t("ouverture"),
-          cell: ({ row }) =>
-            row.original.emissionDate
-              ? formatDate(row.original.emissionDate)
-              : "NC",
-        },
-        {
-          accessorKey: "closingDate",
-          header: t("cloture"),
-          cell: ({ row }) =>
-            row.original.closingDate
-              ? formatDate(row.original.closingDate)
-              : "NC",
-        }
-      );
+      cols.splice(6, 0, {
+        accessorKey: "maturityDate",
+        header: t("maturityDate"),
+        cell: ({ row }) =>
+          row.original.maturityDate
+            ? formatDate(row.original.maturityDate)
+            : "NC",
+      });
     }
 
-    if (hasStockPrices) {
-      cols.push(
-        {
-          accessorKey: "enjoymentDate",
-          header: t("valeurOuverture"),
-          cell: ({ row }) => {
-            const stockPrices = row.original?.stockPrices;
-
-            // Get the earliest price entry (opening price)
-            let openingPrice;
-            if (Array.isArray(stockPrices) && stockPrices.length > 0) {
-              // Sort by date ascending to get the earliest price
-              const sortedPrices = [...stockPrices].sort(
-                (a, b) =>
-                  new Date(a.date).getTime() - new Date(b.date).getTime()
-              );
-              openingPrice = sortedPrices[0];
-            }
-
-            const price = openingPrice?.price;
-            const date = openingPrice?.date;
-            return (
-              <div className="flex flex-col">
-                <span className="font-medium">
-                  {formatPrice(price ?? 0) ?? "NC"}
-                </span>
-                {date && (
-                  <span className="text-xs text-gray-500">
-                    {formatDate(date)}
-                  </span>
-                )}
-              </div>
-            );
-          },
-        },
-        {
-          accessorKey: "currentPrice",
-          header: t("valeurActuelle"),
-          cell: ({ row }) => {
-            const stockPrices = row.original?.stockPrices;
-
-            // Get the latest price entry (most recent)
-            let latestPrice;
-            if (Array.isArray(stockPrices) && stockPrices.length > 0) {
-              // Sort by date descending to get the most recent price
-              const sortedPrices = [...stockPrices].sort(
-                (a, b) =>
-                  new Date(b.date).getTime() - new Date(a.date).getTime()
-              );
-              latestPrice = sortedPrices[0];
-            }
-
-            const currentPrice = latestPrice?.price;
-            const date = latestPrice?.date;
-            return (
-              <div className="flex flex-col">
-                <span className="font-medium">
-                  {formatPrice(currentPrice ?? 0) ?? "NC"}
-                </span>
-                {date && (
-                  <span className="text-xs text-gray-500">
-                    {formatDate(date)}
-                  </span>
-                )}
-              </div>
-            );
-          },
-        },
-        {
-          accessorKey: "gap",
-          header: t("ecart") || "Gap",
-          cell: ({ row }) => {
-            const stockPrices = row.original?.stockPrices;
-
-            // Get the latest price entry (most recent)
-            let latestPrice;
-            if (Array.isArray(stockPrices) && stockPrices.length > 0) {
-              // Sort by date descending to get the most recent price
-              const sortedPrices = [...stockPrices].sort(
-                (a, b) =>
-                  new Date(b.date).getTime() - new Date(a.date).getTime()
-              );
-              latestPrice = sortedPrices[0];
-            }
-
-            const gap = latestPrice?.gap;
-            const date = latestPrice?.date;
-
-            if (gap === undefined || gap === null) {
-              return <span className="text-gray-400">NC</span>;
-            }
-
-            const gapValue = formatPrice(Math.abs(gap));
-            const isPositive = gap >= 0;
-            return (
-              <div className="flex flex-col">
-                <span
-                  className={
-                    isPositive
-                      ? "text-green-600 font-medium"
-                      : "text-red-600 font-medium"
-                  }
-                >
-                  {isPositive ? "+" : ""}
-                  {gapValue}
-                </span>
-                {date && (
-                  <span className="text-xs text-gray-500">
-                    {formatDate(date)}
-                  </span>
-                )}
-              </div>
-            );
-          },
-        },
-        {
-          accessorKey: "priceHistory",
-          header: "Historique des Prix",
-          cell: ({ row }) => {
-            const stockPrices = row.original?.stockPrices;
-
-            if (!Array.isArray(stockPrices) || stockPrices.length === 0) {
-              return <span className="text-gray-400">Aucun historique</span>;
-            }
-
-            // Sort by date descending to show most recent first
-            const sortedPrices = [...stockPrices].sort(
-              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
-
-            return (
-              <div className="max-w-xs">
-                <div className="text-xs text-gray-600 mb-1">
-                  {sortedPrices.length} entrée(s)
-                </div>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {sortedPrices.slice(0, 3).map((priceEntry, index) => (
-                    <div
-                      key={`${row.original.id}-price-${index}`}
-                      className="text-xs border-l-2 pl-2 border-gray-200"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">
-                          {formatPrice(priceEntry.price)}
-                        </span>
-                        <span
-                          className={`ml-2 ${
-                            (priceEntry.gap ?? 0) >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {(priceEntry.gap ?? 0) >= 0 ? "+" : ""}
-                          {formatPrice(Math.abs(priceEntry.gap ?? 0))}
-                        </span>
-                      </div>
-                      <div className="text-gray-500">
-                        {formatDate(priceEntry.date)}
-                      </div>
-                    </div>
-                  ))}
-                  {sortedPrices.length > 3 && (
-                    <div className="text-xs text-gray-500 text-center">
-                      +{sortedPrices.length - 3} autres...
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          },
-        }
-      );
-    }
-
+    // Add status and actions columns
     cols.push(
       {
         accessorKey: "status",
@@ -557,8 +440,8 @@ export function MarketTable({
             t(
               status === "activated"
                 ? "actif"
-                : status === "suspended"
-                ? "suspendu"
+                : status === "deactivated"
+                ? "inactif"
                 : status === "delisted"
                 ? "deliste"
                 : "NC"
@@ -579,7 +462,6 @@ export function MarketTable({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem asChild>
                   <Link
                     href={getDetailsLink(
@@ -605,7 +487,7 @@ export function MarketTable({
     );
 
     return cols;
-  }, [t, type, marketType, handleEditClick, isIOB]);
+  }, [baseColumns, marketType, t, type, handleEditClick, isIOB]);
 
   const table = useReactTable({
     data: stocks || [],
@@ -717,10 +599,6 @@ export function MarketTable({
       </div>
 
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-sm text-muted-foreground flex-1">
-          {table.getFilteredSelectedRowModel().rows.length} {t("de")}{" "}
-          {table.getFilteredRowModel().rows.length} {t("lignesSelectionnees")}
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"

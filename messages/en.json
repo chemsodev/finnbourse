@@ -384,6 +384,14 @@
   },
   "TitresTable": {
     "logo": "Logo",
+    "isinCode": "ISIN Code",
+    "faceValue": "Face Value",
+    "price": "Price",
+    "quantity": "Quantity",
+    "closingDate": "Closing Date",
+    "emissionDate": "Emission Date",
+    "enjoymentDate": "Enjoyment Date",
+    "maturityDate": "Maturity Date",
     "titre": "Security",
     "ouverture": "Opening",
     "cloture": "Closing",
@@ -3240,7 +3248,14 @@
         "selectInstitution": "Select institution ....",
         "institutionName": "Institution Name",
         "institutionPlaceholder": "Enter institution name",
-        "addInstitution": "Add Institution"
+        "addInstitution": "Add Institution",
+        "enterFaceValue": "Enter face value",
+        "enterQuantity": "Enter quantity",
+        "enterPrice": "Enter price",
+        "enterRate": "Enter rate",
+        "enterDuration": "Enter Duration",
+        "enterSegments": "Enter number of segments",
+        "total": "Total Value"
       }
     },
     "ViewTitre": {
@@ -3253,7 +3268,7 @@
       "issuer": "Issuer",
       "isinCode": "ISIN Code",
       "code": "Code",
-      "capitalOperation": "Capital Operation",
+      "capitalOperation": "Operation Type",
       "faceValue": "Face Value",
       "quantity": "Quantity",
       "marketListing": "Market Listing",

@@ -143,6 +143,7 @@ export interface Stock {
   createdAt?: string;
   updatedAt?: string;
   durationYears?: number;
+  nombreDeTranches?: number;
   // Financial fields
   dividendRate?: number;
   estimatedRate?: number;

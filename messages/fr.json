@@ -685,7 +685,15 @@
   },
   "TitresTable": {
     "logo": "Logo",
+    "isinCode": "Code ISIN",
     "titre": "Titre",
+    "faceValue": "Valeur Nominale",
+    "price": "Prix",
+    "quantity": "Quantité",
+    "closingDate": "Date de Clôture",
+    "emissionDate": "Date d'Émission",
+    "enjoymentDate": "Date de Jouissance",
+    "maturityDate": "Date d'Échéance",
     "ouverture": "Ouverture",
     "cloture": "Clôture",
     "variation": "Variation",
@@ -3099,12 +3107,12 @@
       "title": "Marché Primaire",
       "types": {
         "ipo": {
-          "title": "Introduction en Bourse",
+          "title": "Action",
           "description": "Les Introductions en Bourse (IPO) représentent une opportunité pour les investisseurs d'acheter des actions d'une entreprise qui entre en bourse pour la première fois. Lorsqu'une entreprise décide d'être cotée en bourse, elle émet de nouvelles actions qui sont offertes au public via une IPO. Ce processus permet à l'entreprise de lever des fonds pour financer ses projets, tout en offrant aux investisseurs la chance d'acquérir des actions avant qu'elles ne soient disponibles sur le marché secondaire. Participer à une IPO peut offrir des opportunités d'achat à un prix attractif, souvent en anticipation de la croissance future de l'entreprise."
         },
         "bondIssue": {
-          "title": "Émission Obligataire",
-          "description": "Une émission obligataire est un type d'instrument financier où les investisseurs prêtent de l'argent aux entreprises ou aux gouvernements en échange de paiements d'intérêts réguliers et du remboursement du capital à l'échéance. Les obligations sont des titres de créance émis pour financer des projets ou des opérations. Elles offrent généralement un rendement fixe, ce qui les rend attrayantes pour les investisseurs recherchant un revenu prévisible et un certain niveau de sécurité. Les émissions obligataires peuvent varier en termes de durée, de taux d'intérêt et de risque, selon l'émetteur et les conditions du marché."
+          "title": "Obligation",
+          "description": "Une obligation est un type d'instrument financier où les investisseurs prêtent de l'argent aux entreprises ou aux gouvernements en échange de paiements d'intérêts réguliers et du remboursement du capital à l'échéance. Les obligations sont des titres de créance émis pour financer des projets ou des opérations. Elles offrent généralement un rendement fixe, ce qui les rend attrayantes pour les investisseurs recherchant un revenu prévisible et un certain niveau de sécurité. Les émissions obligataires peuvent varier en termes de durée, de taux d'intérêt et de risque, selon l'émetteur et les conditions du marché."
         },
         "participativeTitles": {
           "title": "Titres Participatifs",
@@ -3169,11 +3177,10 @@
         "basicInformation": "Informations Essentielles",
         "financialDetails": "Détails Financiers",
         "bondSpecificDetails": "Détails Spécifiques Obligataires",
-
         "date": "Date",
         "obligationType": "Type d'Obligation",
         "obligationsOrdinaires": "Obligations Ordinaires",
-        "sukuk": "Sukuk (Obligations Islamiques)",
+        "sukuk": "Sukuk",
         "vt": "Valeurs du Trésor",
         "duration": "Durée",
         "nombreDeTranches": "Nombre de Tranches",
@@ -3233,7 +3240,14 @@
         "selectInstitution": "Sélectionner institution ....",
         "institutionName": "Nom de l'Institution",
         "institutionPlaceholder": "Entrer le nom de l'institution",
-        "addInstitution": "Ajouter une Institution"
+        "addInstitution": "Ajouter une Institution",
+        "enterFaceValue": "Entrer la valeur nominale",
+        "enterQuantity": "Entrer la quantité",
+        "enterPrice": "Entrer le prix",
+        "enterRate": "Entrer le taux",
+        "enterDuration": "Entrer la durée",
+        "enterSegments": "Entrer le nombre de segments",
+        "total": "Valeur Totale"
       }
     },
     "ViewTitre": {
@@ -3246,7 +3260,7 @@
       "issuer": "Émetteur",
       "isinCode": "Code ISIN",
       "code": "Code",
-      "capitalOperation": "Opération de Capital",
+      "capitalOperation": "Type d'Opération",
       "faceValue": "Valeur Nominale",
       "quantity": "Quantité",
       "marketListing": "Cotation de Marché",
@@ -3259,7 +3273,7 @@
       "years": "Années",
       "dividendRate": "Taux de Dividende",
       "duration": "Durée",
-      "nonDeterminedDuration": "Durée Non Déterminée",
+      "nonDeterminedDuration": "Durée indéterminée",
       "emissionDate": "Date d'Émission",
       "closingDate": "Date de Clôture",
       "enjoymentDate": "Date de Jouissance",

@@ -132,12 +132,12 @@ TitreFormDialogProps) {
       capitalRepaymentSchedule: [],
       couponSchedule: [],
       status: "activated",
-      price: 0,
-      stockPrice: {
-        price: 0,
-        date: new Date(),
-        gap: 0,
-      },
+      // price: 0,
+      // stockPrice: {
+      //   price: 0,
+      //   date: new Date(),
+      //   gap: 0,
+      // },
     },
   });
 
@@ -152,10 +152,19 @@ TitreFormDialogProps) {
   }, [form, defaultValues, isEdit]);
 
   // Watch for changes in the form
-  const durationYears = form.watch("durationYears");
+  // const durationYears = form.watch("durationYears");
+  const nombreDeTranches = form.watch("nombreDeTranches");
   const watchedType = form.watch("stockType");
-  console.log(watchedType);
   const watchedMaster = form.watch("institutions.0");
+  const quantity = form.watch("quantity");
+  const price = form.watch("price");
+  // Total Calculation
+  const total = React.useMemo(() => {
+    if (quantity && price) {
+      return quantity * price;
+    }
+    return 0;
+  }, [quantity, price]);
 
   const { replace: replaceCapitalRepayment } = useFieldArray({
     control: form.control,
@@ -171,8 +180,8 @@ TitreFormDialogProps) {
     if (
       watchedType !== "obligation" ||
       obligations.includes(watchedType) ||
-      !durationYears ||
-      durationYears <= 0
+      !nombreDeTranches ||
+      nombreDeTranches <= 0
     ) {
       // Clear schedules if not obligation or no duration
       replaceCapitalRepayment([]);
@@ -181,14 +190,19 @@ TitreFormDialogProps) {
     }
 
     // Generate capital repayment schedule
-    const capitalSchedule = Array.from({ length: durationYears }, (_, i) => ({
-      date: new Date(new Date().setFullYear(new Date().getFullYear() + i + 1)),
-      rate: 0,
-    }));
+    const capitalSchedule = Array.from(
+      { length: nombreDeTranches },
+      (_, i) => ({
+        date: new Date(
+          new Date().setFullYear(new Date().getFullYear() + i + 1)
+        ),
+        rate: 0,
+      })
+    );
 
     // Generate coupon schedule
     const couponScheduleItems = Array.from(
-      { length: durationYears },
+      { length: nombreDeTranches },
       (_, i) => ({
         date: new Date(
           new Date().setFullYear(new Date().getFullYear() + i + 1)
@@ -198,7 +212,7 @@ TitreFormDialogProps) {
     );
     replaceCapitalRepayment(capitalSchedule);
     replaceCoupon(couponScheduleItems);
-  }, [durationYears, watchedType, replaceCapitalRepayment, replaceCoupon]);
+  }, [nombreDeTranches, watchedType, replaceCapitalRepayment, replaceCoupon]);
 
   async function onSubmit(values: TitreFormValues) {
     try {
@@ -231,10 +245,10 @@ TitreFormDialogProps) {
         //   date: item.date.toISOString(),
         // })),
         institutions: values.institutions || [],
-        stockPrice: {
-          ...values.stockPrice,
-          date: new Date(values.stockPrice.date),
-        },
+        // stockPrice: {
+        //   ...values.stockPrice,
+        //   date: new Date(values.stockPrice.date),
+        // },
         // payment schedule arrays
         // type == "obligation"
         capitalRepaymentSchedule:
@@ -529,21 +543,30 @@ TitreFormDialogProps) {
                     {t("form.financialDetails")}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Face Value */}
+                    {/* Price */}
                     <FormField
                       control={form.control}
-                      name="faceValue"
+                      name="price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("form.faceValue")}</FormLabel>
+                          <FormLabel>{t("form.price")}</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
-                              step="1"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
+                              step="0.1"
+                              placeholder={t("form.enterPrice")}
+                              value={field.value ?? ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === "") {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = Number(value);
+                                  if (!isNaN(numValue)) {
+                                    field.onChange(numValue);
+                                  }
+                                }
+                              }}
                               onKeyDown={preventNonNumericInput}
                             />
                           </FormControl>
@@ -551,6 +574,7 @@ TitreFormDialogProps) {
                         </FormItem>
                       )}
                     />
+
                     {/* Quantity */}
                     <FormField
                       control={form.control}
@@ -561,11 +585,20 @@ TitreFormDialogProps) {
                           <FormControl>
                             <Input
                               type="number"
-                              // min="1"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
+                              step="1"
+                              placeholder={t("form.enterQuantity")}
+                              value={field.value ?? ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === "") {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = Number(value);
+                                  if (!isNaN(numValue)) {
+                                    field.onChange(numValue);
+                                  }
+                                }
+                              }}
                               onKeyDown={preventNonNumericInput}
                             />
                           </FormControl>
@@ -573,6 +606,22 @@ TitreFormDialogProps) {
                         </FormItem>
                       )}
                     />
+                    <div className="md:col-span-2">
+                      <FormItem>
+                        <FormLabel>{t("form.total")}</FormLabel>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 border rounded-md w-full">
+                          <span className="text-2xl font-bold text-primary">
+                            {new Intl.NumberFormat(locale, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }).format(total)}
+                          </span>
+                          <span className="text-lg font-medium text-gray-600">
+                            DZD
+                          </span>
+                        </div>
+                      </FormItem>
+                    </div>
                     {/* Market Listing */}
                     <FormField
                       control={form.control}
@@ -637,22 +686,31 @@ TitreFormDialogProps) {
                         </FormItem>
                       )}
                     />
-                    {/* Price */}
+                    {/* Face Value */}
                     <FormField
                       control={form.control}
-                      name="stockPrice.price"
+                      name="faceValue"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("form.price")}</FormLabel>
+                          <FormLabel>{t("form.faceValue")}</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
-                              min=""
-                              // step="0.01"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
+                              step="1"
+                              placeholder={t("form.enterFaceValue")}
+                              value={field.value ?? ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+
+                                if (value === "") {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = Number(value);
+                                  if (!isNaN(numValue)) {
+                                    field.onChange(numValue);
+                                  }
+                                }
+                              }}
                               onKeyDown={preventNonNumericInput}
                             />
                           </FormControl>
@@ -671,10 +729,8 @@ TitreFormDialogProps) {
                             <div className="relative">
                               <Input
                                 type="number"
-                                min="0"
-                                max="100"
-                                // step="0.01"
-                                placeholder="Enter rate"
+                                placeholder={t("form.enterRate")}
+                                step="0.1"
                                 value={field.value ?? ""}
                                 onChange={(e) => {
                                   const value = e.target.value;
@@ -989,7 +1045,7 @@ TitreFormDialogProps) {
                                     {field.value ? (
                                       formatDateDisplay(field.value)
                                     ) : (
-                                      <span>Select date</span>
+                                      <span>{t("form.selectDate")}</span>
                                     )}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                   </Button>
@@ -1024,11 +1080,20 @@ TitreFormDialogProps) {
                             <FormControl>
                               <Input
                                 type="number"
-                                min="1"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
+                                step="1"
+                                placeholder={t("form.enterDuration")}
+                                value={field.value ?? ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value === "") {
+                                    field.onChange(undefined);
+                                  } else {
+                                    const numValue = Number(value);
+                                    if (!isNaN(numValue)) {
+                                      field.onChange(numValue);
+                                    }
+                                  }
+                                }}
                                 onKeyDown={preventNonNumericInput}
                               />
                             </FormControl>
@@ -1039,35 +1104,45 @@ TitreFormDialogProps) {
                     </div>
                   </div>
                 )}
-                {(watchedType === "obligation" ||
-                  obligations.includes(watchedType)) &&
-                  durationYears &&
-                  durationYears > 0 && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold border-b pb-2">
-                        {t("form.payementSchedule")}
-                      </h3>
-                      <FormField
-                        control={form.control}
-                        name="durationYears"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("form.nombreDeTranches")}</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="1"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    {t("form.payementSchedule")}
+                  </h3>
+                  <FormField
+                    control={form.control}
+                    name="nombreDeTranches"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("form.nombreDeTranches")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="1"
+                            placeholder={t("form.enterSegments")}
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "") {
+                                field.onChange(undefined);
+                              } else {
+                                const numValue = Number(value);
+                                if (!isNaN(numValue)) {
+                                  field.onChange(numValue);
                                 }
-                                onKeyDown={preventNonNumericInput}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              }
+                            }}
+                            onKeyDown={preventNonNumericInput}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {(watchedType === "obligation" ||
+                    obligations.includes(watchedType)) &&
+                    nombreDeTranches &&
+                    nombreDeTranches > 0 && (
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
@@ -1084,7 +1159,7 @@ TitreFormDialogProps) {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {Array.from({ length: durationYears }).map(
+                            {Array.from({ length: nombreDeTranches }).map(
                               (_, index) => (
                                 <tr key={index}>
                                   {/* Date Field */}
@@ -1135,7 +1210,7 @@ TitreFormDialogProps) {
                                                 fromYear={new Date().getFullYear()}
                                                 toYear={
                                                   new Date().getFullYear() +
-                                                  durationYears
+                                                  nombreDeTranches
                                                 }
                                                 locale={getDateLocale()}
                                               />
@@ -1160,8 +1235,10 @@ TitreFormDialogProps) {
                                                 type="number"
                                                 min="0"
                                                 max="100"
-                                                step="0.01"
-                                                placeholder="Enter rate"
+                                                step="0.1"
+                                                placeholder={t(
+                                                  "form.enterRate"
+                                                )}
                                                 value={field.value ?? ""}
                                                 onChange={(e) => {
                                                   const value = e.target.value;
@@ -1223,8 +1300,10 @@ TitreFormDialogProps) {
                                                 type="number"
                                                 min="0"
                                                 max="100"
-                                                step="0.01"
-                                                placeholder="Enter rate"
+                                                step="0.1"
+                                                placeholder={t(
+                                                  "form.enterRate"
+                                                )}
                                                 value={field.value ?? ""}
                                                 onChange={(e) => {
                                                   const value = e.target.value;
@@ -1284,8 +1363,8 @@ TitreFormDialogProps) {
                           </tbody>
                         </table>
                       </div>
-                    </div>
-                  )}
+                    )}
+                </div>
               </div>
               <DialogFooter>
                 <DialogClose asChild>

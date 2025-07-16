@@ -92,6 +92,7 @@ export const TitreSchema = z.object({
     .optional(),
   maturityDate: z.date().optional(),
   durationYears: z.number().min(1).max(30).optional(),
+  nombreDeTranches: z.number().min(1).optional(),
   // paymentSchedule: z.array(PaymentScheduleItemSchema).optional(),
   commission: z.number().min(0).optional(),
   shareClass: z.string().optional(),
@@ -99,7 +100,7 @@ export const TitreSchema = z.object({
   master: z.string().optional(),
   institutions: z.array(z.string()).optional(),
   price: z.number().optional(),
-  stockPrice: StockPriceSchema,
+  stockPrice: StockPriceSchema.optional(),
   // isPrimary: z.boolean().optional(),
   capitalRepaymentSchedule: z
     .array(CapitalRepaymentScheduleItemSchema)

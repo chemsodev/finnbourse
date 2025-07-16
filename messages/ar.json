@@ -296,7 +296,15 @@
   },
   "TitresTable": {
     "logo": "الشعار",
+    "isinCode": "رمز ISIN",
     "titre": "الورقة المالية",
+    "faceValue": "القيمة الاسمية",
+    "price": "السعر",
+    "quantity": "الكمية",
+    "closingDate": "تاريخ الإغلاق",
+    "emissionDate": "تاريخ الإصدار",
+    "enjoymentDate": "تاريخ الاستحقاق",
+    "maturityDate": "تاريخ الاستحقاق",
     "ouverture": "الفتح",
     "cloture": "الإغلاق",
     "variation": "التغير",
@@ -2779,7 +2787,14 @@
         "selectInstitution": "اختر مؤسسة ....",
         "institutionName": "اسم المؤسسة",
         "institutionPlaceholder": "أدخل اسم المؤسسة",
-        "addInstitution": "إضافة مؤسسة"
+        "addInstitution": "إضافة مؤسسة",
+        "enterFaceValue": "أدخل القيمة الاسمية",
+        "enterQuantity": "أدخل الكمية",
+        "enterPrice": "أدخل السعر",
+        "enterRate": "أدخل المعدل",
+        "enterDuration": "أدخل المدة",
+        "enterSegments": "أدخل عدد الشرائح",
+        "total": "القيمة الإجمالية"
       }
     },
     "ViewTitre": {
@@ -2798,7 +2813,7 @@
       "empruntObligataireInstitutionnel": "إصدار سندات مؤسسية / خاصة",
       "placementOrganise": "توزيع منظم",
       "code": "الكود",
-      "capitalOperation": "عملية رأس المال",
+      "capitalOperation": "نوع العملية",
       "faceValue": "القيمة الاسمية",
       "quantity": "الكمية",
       "marketListing": "إدراج السوق",
