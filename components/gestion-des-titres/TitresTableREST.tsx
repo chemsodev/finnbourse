@@ -132,6 +132,16 @@ export function TitresTableREST({ type, isPrimary = true }: TitresTableProps) {
   // Define your columns for the table
   const columns = (t: (key: string) => string): ColumnDef<Stock>[] => [
     {
+      accessorKey: "isinCode",
+      header: t("isinCode"),
+      cell: ({ row }) => {
+        const stock = row.original;
+        return (
+          <div className="text-xs text-gray-500">{stock.isinCode || "N/A"}</div>
+        );
+      },
+    },
+    {
       accessorKey: "issuer",
       header: ({ column }) => (
         <Button
@@ -159,15 +169,26 @@ export function TitresTableREST({ type, isPrimary = true }: TitresTableProps) {
         );
       },
     },
+
     {
-      accessorKey: "code",
-      header: t("code"),
+      accessorKey: "faceValue",
+      header: t("faceValue"),
       cell: ({ row }) => {
-        const stock = row.original as any;
+        const stock = row.original;
         return (
-          <div className="uppercase text-gray-500 font-semibold text-xs">
-            {stock.code || "N/A"}
+          <div className="text-xs text-gray-500">
+            {stock.faceValue || "N/A"}
           </div>
+        );
+      },
+    },
+    {
+      accessorKey: "quantity",
+      header: t("quantity"),
+      cell: ({ row }) => {
+        const stock = row.original;
+        return (
+          <div className="text-xs text-gray-500">{stock.quantity || "N/A"}</div>
         );
       },
     },
@@ -176,6 +197,18 @@ export function TitresTableREST({ type, isPrimary = true }: TitresTableProps) {
     type !== "sukukms" &&
     type !== "titresparticipatifsms"
       ? [
+          {
+            accessorKey: "price",
+            header: t("price"),
+            cell: ({ row }: { row: { original: Stock } }) => {
+              const stock = row.original;
+              return (
+                <div className="text-sm font-medium text-gray-900">
+                  {stock.name || "N/A"}
+                </div>
+              );
+            },
+          },
           {
             accessorKey: "emissionDate",
             header: t("ouverture"),
@@ -243,19 +276,17 @@ export function TitresTableREST({ type, isPrimary = true }: TitresTableProps) {
       accessorKey: "status",
       header: t("statut"),
       cell: ({ row }) => {
-        const stock = row.original as any;
-        const status = stock.status;
-
+        const status = row.original.status;
         return (
-          <div className="capitalize">
-            {status === "active" || status === "activated"
-              ? t("actif")
-              : status === "suspended"
-              ? t("suspendu")
-              : status === "moved_to_secondary"
-              ? t("marche_secondaire")
-              : status || "NC"}
-          </div>
+          t(
+            status === "activated"
+              ? "actif"
+              : status === "deactivated"
+              ? "inactif"
+              : status === "delisted"
+              ? "deliste"
+              : "NC"
+          ) ?? "NC"
         );
       },
     },
@@ -465,10 +496,6 @@ export function TitresTableREST({ type, isPrimary = true }: TitresTableProps) {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} {t("de")}{" "}
-          {table.getFilteredRowModel().rows.length} {t("lignesSelectionnees")}.
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"

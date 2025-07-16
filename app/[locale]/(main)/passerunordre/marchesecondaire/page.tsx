@@ -1,20 +1,14 @@
 import InfoDialog from "@/components/InfoDialog";
-import MyMarquee from "@/components/MyMarquee";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
-import { FaRegHandshake } from "react-icons/fa6";
-import { MdOutlineMosque } from "react-icons/md";
 
-const page = () => {
+const Page = () => {
   const t = useTranslations("MarcheSecondaire");
 
   return (
     <div className=" motion-preset-focus motion-duration-2000">
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
       <Link
         href="/passerunordre"
         className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-10"
@@ -127,9 +121,7 @@ const page = () => {
                 </svg>
               </div>
             </Link>
-          </div> 
-
-
+          </div>
         </div>
       </div>
       <div className="flex justify-center">
@@ -150,4 +142,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

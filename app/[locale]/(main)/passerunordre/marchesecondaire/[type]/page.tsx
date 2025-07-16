@@ -1,6 +1,5 @@
 "use client";
 
-import MyMarquee from "@/components/MyMarquee";
 import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
 import { TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
 import { Link } from "@/i18n/routing";
@@ -47,9 +46,6 @@ const SecondaryMarketPage = ({ params }: { params: { type: string } }) => {
 
   return (
     <>
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
       <Link
         href="/passerunordre/marchesecondaire"
         className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit  md:mt-4 -mb-12"

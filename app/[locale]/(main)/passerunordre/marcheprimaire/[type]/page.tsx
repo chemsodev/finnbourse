@@ -2,7 +2,6 @@
 
 import AjoutSocieteEmettrice from "@/components/listed-company/AjoutSocieteEmettrice";
 import AjoutTitre from "@/components/AjoutTitre";
-import MyMarquee from "@/components/MyMarquee";
 import { TitresTableREST } from "@/components/gestion-des-titres/TitresTableREST";
 import { TitresTableObligation } from "@/components/gestion-des-titres/TitresTableObligation";
 import { Link } from "@/i18n/routing";
@@ -12,7 +11,6 @@ import { useTranslations } from "next-intl";
 import React, { useEffect } from "react";
 import TokenExpiredHandler from "@/components/TokenExpiredHandler";
 import { useRestToken } from "@/hooks/useRestToken";
-import FormPassationOrdreMarchePrimaire from "@/components/passation-ordre/FormPassationOrdreMarchePrimaire";
 
 const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
   const { type } = params;
@@ -50,12 +48,9 @@ const PrimaryMarketPage = ({ params }: { params: { type: string } }) => {
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
       <Link
         href="/passerunordre/marcheprimaire"
-        className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-4"
+        className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit md:mt-4"
       >
         <ArrowLeft className="w-5" /> <div>{t("back")}</div>
       </Link>

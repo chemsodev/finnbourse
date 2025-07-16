@@ -5,6 +5,7 @@ import { MarketCardProps } from "@/types/gestionTitres";
 export default function MarketCard({
   title,
   description,
+  text = [],
   listItems = [],
   href,
   Icon,
@@ -17,6 +18,7 @@ export default function MarketCard({
           title={title}
           description={description}
           listItems={listItems}
+          text={text}
         />
       </div>
       <Link href={href} className="flex flex-col gap-3 w-full h-36">

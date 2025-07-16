@@ -1,18 +1,13 @@
-import auth from "@/auth";
 import InfoDialog from "@/components/InfoDialog";
-import MyMarquee from "@/components/MyMarquee";
+
 import { Link } from "@/i18n/routing";
-import { getServerSession } from "next-auth/next";
+
 import React from "react";
 import { getTranslations } from "next-intl/server";
-import IPOAnnouncement from "@/components/dashboard/IPOAnnouncement";
 
 const page = async () => {
   const t = await getTranslations("PasserUnOrdre");
   const ipoT = await getTranslations("IPOAnnouncement");
-  const dateTime = new Date();
-  const session = await getServerSession(auth);
-  const userRole = (session as any)?.user?.roleid;
 
   // Example IPO data - replace with actual data from your API/database
   const ipoEndDate = new Date();
@@ -21,14 +16,13 @@ const page = async () => {
   return (
     <div className=" motion-preset-focus motion-duration-2000">
       <div className="mt-3 flex flex-col gap-4">
-        <MyMarquee />
-        <IPOAnnouncement
+        {/* <IPOAnnouncement
           companyName={ipoT("sonatrach")}
           endDate={ipoEndDate}
           description={ipoT("sonatrach_description")}
           actionUrl="/passerunordre/marcheprimaire/opv"
-        />
-      </div>{" "}
+        /> */}
+      </div>
       <div className="flex justify-center text-3xl font-bold text-primary m-12 text-center md:ltr:text-left md:rtl:text-right">
         {t("passerunordre")}
       </div>

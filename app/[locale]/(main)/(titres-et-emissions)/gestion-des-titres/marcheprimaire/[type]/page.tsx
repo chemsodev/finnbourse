@@ -80,16 +80,12 @@ const PrimaryMarketTypePage = ({ params }: Props) => {
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
-
       <Link
         href="/gestion-des-titres/marcheprimaire"
-        className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-4"
+        className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit  md:mt-4"
       >
         <ArrowLeft className="w-5" />
-        <div>{t("back")}</div>
+        <p>{t("back")}</p>
       </Link>
 
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8 text-center md:ltr:text-left md:rtl:text-right">

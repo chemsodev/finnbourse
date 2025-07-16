@@ -16,6 +16,7 @@ export interface Stock {
   facevalue?: number;
   faceValue?: number;
   quantity?: number;
+
   emissiondate?: string;
   emissionDate?: string;
   maturitydate?: string;

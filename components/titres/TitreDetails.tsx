@@ -50,7 +50,6 @@ export function TitreDetails({
     }
   };
 
-  console.log(data);
   // Improved date formatting with error handling
   const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return null;
@@ -152,7 +151,7 @@ export function TitreDetails({
               )}
             </div>
           </div>
-
+          {/* 
           {data.stockPrice?.price && (
             <div className="text-right">
               <div className="text-2xl font-bold text-blue-600">
@@ -173,7 +172,7 @@ export function TitreDetails({
                   </div>
                 )}
             </div>
-          )}
+          )} */}
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -192,9 +191,7 @@ export function TitreDetails({
             {renderDetail(t("capitalOperation"), data.capitalOperation)}
             {renderDetail(
               t("marketListing"),
-              data.marketListing === "ALG"
-                ? t("primaryMarket")
-                : t("secondaryMarket")
+              data.marketListing === "PME" ? t("pme") : t("principal")
             )}
           </CardContent>
         </Card>
@@ -210,12 +207,12 @@ export function TitreDetails({
           <CardContent className="space-y-0">
             {renderDetail(t("faceValue"), formatCurrency(data.faceValue))}
             {renderDetail(t("quantity"), data.quantity?.toLocaleString())}
-            {data.stockPrice?.price &&
+            {/* {data.stockPrice?.price &&
               renderDetail(
                 t("currentPrice"),
                 formatCurrency(data.stockPrice.price)
-              )}
-            {data.stockPrice?.gap !== undefined &&
+              )} */}
+            {/* {data.stockPrice?.gap !== undefined &&
               data.stockPrice?.gap !== null &&
               renderDetail(
                 t("gap") || "Gap",
@@ -227,7 +224,7 @@ export function TitreDetails({
                   {data.stockPrice.gap >= 0 ? "+" : ""}
                   {formatCurrency(data.stockPrice.gap)}
                 </span>
-              )}
+              )} */}
             {renderDetail(
               t("votingRights"),
               data.votingRights ? t("yes") : t("no")
@@ -236,8 +233,17 @@ export function TitreDetails({
               t("dividendRate"),
               formatPercentage(data.dividendRate)
             )}
-            {data.durationYears &&
-              renderDetail(t("duration"), `${data.durationYears} years`)}
+            {data.stockType === "action"
+              ? renderDetail(t("duration"), t("nonDeterminedDuration"))
+              : data.durationYears && data.durationYears === 1
+              ? renderDetail(
+                  t("duration"),
+                  `${data.durationYears} ${t("year")}`
+                )
+              : renderDetail(
+                  t("duration"),
+                  `${data.durationYears} ${t("years")}`
+                )}
           </CardContent>
         </Card>
       </div>
@@ -351,7 +357,7 @@ export function TitreDetails({
       )}
 
       {/* Capital Repayment Schedule */}
-      {(data.capitalRepaymentSchedule?.length ?? 0) > 0 && (
+      {/* {(data.capitalRepaymentSchedule?.length ?? 0) > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -389,9 +395,9 @@ export function TitreDetails({
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
       {/* Coupon Schedule */}
-      {(data.couponSchedule?.length ?? 0) > 0 && (
+      {/* {(data.couponSchedule?.length ?? 0) > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -429,7 +435,7 @@ export function TitreDetails({
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
       {(data.capitalRepaymentSchedule?.length ?? 0) > 0 &&
         (data.couponSchedule?.length ?? 0) > 0 &&
         data.capitalRepaymentSchedule?.length ===

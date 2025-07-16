@@ -25,12 +25,17 @@ export const StockTypeSchema = z.enum([
   "action",
   "obligation",
   "sukuk",
-  "participatif",
+  "obligationsOrdinaires",
+  "oat",
 ]);
 
-export const ObligationTypeSchema = z.enum(["participatif", "sukuk"]);
+// export const ObligationTypeSchema = z.enum([
+//   "obligationsOrdinaires",
+//   "sukuk",
+//   "oat",
+// ]);
 
-export const MarketListingSchema = z.enum(["ALG", "TUN", "CAS"]);
+export const MarketListingSchema = z.enum(["PME", "PRINCIPAL"]);
 
 // Market Type Schema
 export const MasterSchema = z
@@ -73,19 +78,29 @@ export const TitreSchema = z.object({
   closingDate: z.date(),
   enjoymentDate: z.date(),
   marketListing: MarketListingSchema,
-  type: StockTypeSchema, // This can be "obligation", "action", etc.
-  status: z.enum(["activated", "suspended", "delisted"]),
+  // type: StockTypeSchema, // This can be "obligation", "action", etc.
+  status: z.enum(["activated", "deactivated", "delisted"]),
   dividendRate: z.number().min(0).optional(),
-  capitalOperation: z.enum(["augmentation", "ouverture"]).optional(),
+  capitalOperation: z
+    .enum([
+      "augmentation",
+      "ouverture",
+      "empruntObligatairePublic",
+      "empruntObligataireInstitutionnel",
+      "placementOrganise",
+    ])
+    .optional(),
   maturityDate: z.date().optional(),
   durationYears: z.number().min(1).max(30).optional(),
+  nombreDeTranches: z.number().min(1).optional(),
   // paymentSchedule: z.array(PaymentScheduleItemSchema).optional(),
   commission: z.number().min(0).optional(),
   shareClass: z.string().optional(),
   votingRights: z.boolean().optional(),
   master: z.string().optional(),
   institutions: z.array(z.string()).optional(),
-  stockPrice: StockPriceSchema,
+  price: z.number().optional(),
+  stockPrice: StockPriceSchema.optional(),
   // isPrimary: z.boolean().optional(),
   capitalRepaymentSchedule: z
     .array(CapitalRepaymentScheduleItemSchema)

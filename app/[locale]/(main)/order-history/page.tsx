@@ -1,6 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import MyMarquee from "@/components/MyMarquee";
-import Link from "next/link";
 import TabSearch from "@/components/TabSearch";
 import MyPagination from "@/components/navigation/MyPagination";
 import OrdresTableHistory from "@/components/order-history/OrdresTableHistory";
@@ -26,10 +24,6 @@ export default async function OrdersHistoryPage({
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
-
       <div className="flex gap-8 mt-16">
         {/* Main content */}
         <div className="flex-1">

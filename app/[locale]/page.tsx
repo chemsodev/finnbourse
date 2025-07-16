@@ -1,4 +1,3 @@
-import MyMarquee from "@/components/MyMarquee";
 import TopBarDash from "@/components/navigation/TopBarDash";
 import { getTranslations } from "next-intl/server";
 import DashItem2 from "@/components/dashboard/DashItem2";
@@ -36,13 +35,11 @@ export default async function Home() {
       <DynamicSidebar />
       <div className="p-4 overflow-scroll h-screen md:w-5/6 mb-12 md:mb-0 motion-preset-focus motion-duration-2000">
         <div className="relative w-full">
-          <MyMarquee />
           <div className="absolute inset-0 z-10 flex justify-end items-start">
             <TopBarDash />
           </div>
-          
         </div>
-        
+
         <div className="">
           <div className="mt-6 w-full">
             <StaticStockTracker />

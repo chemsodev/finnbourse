@@ -17,10 +17,10 @@ interface PageParams {
 
 function mapToStockType(
   type: StockType
-): "action" | "obligation" | "sukuk" | "participatif" {
+): "action" | "obligation" | "sukuk" | "obligationsOrdinaires" | "oat" {
   const mapping: Record<
     StockType,
-    "action" | "obligation" | "sukuk" | "participatif"
+    "action" | "obligation" | "sukuk" | "obligationsOrdinaires" | "oat"
   > = {
     opv: "action",
     empruntobligataire: "obligation",
@@ -29,10 +29,6 @@ function mapToStockType(
     sukuk: "sukuk",
     sukukmp: "sukuk",
     sukukms: "sukuk",
-    titresparticipatifs: "participatif",
-    titresparticipatifsmp: "participatif",
-    titresparticipatifsms: "participatif",
-    participatif: "participatif",
   };
   return mapping[type] || "action";
 }
@@ -170,7 +166,7 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     id: titre.id,
     name: titre.name || "",
     stockType: mapToStockType(titre.stockType),
-    type: mapToObligationType(titre?.type || ""),
+    // type: mapToObligationType(titre?.type || ""),
     code: titre.code || "",
     issuer: extractIssuerId(titre.issuer) || "",
     isinCode: titre.isinCode || "",
@@ -184,11 +180,11 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     enjoymentDate: titre.enjoymentDate
       ? new Date(titre.enjoymentDate)
       : new Date(),
-    marketListing: titre.marketListing || "ALG",
-    status: ["activated", "suspended", "delisted"].includes(
+    marketListing: titre.marketListing || "PME",
+    status: ["activated", "deactivated", "delisted"].includes(
       titre.status as string
     )
-      ? (titre.status as "activated" | "suspended" | "delisted")
+      ? (titre.status as "activated" | "deactivated" | "delisted")
       : "activated",
     stockPrice: {
       price: titre.stockPrices?.[0]?.price || 0,

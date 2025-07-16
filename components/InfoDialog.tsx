@@ -10,13 +10,15 @@ import { AiOutlineInfoCircle } from "react-icons/ai";
 
 interface InfoDialogProps {
   title: string;
-  description: string;
+  description?: string;
+  text?: string[];
   listItems?: string[];
 }
 
 const InfoDialog = ({
   title,
   description,
+  text = [],
   listItems = [],
 }: InfoDialogProps) => {
   return (

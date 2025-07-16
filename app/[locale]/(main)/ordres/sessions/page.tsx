@@ -3,8 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import MyMarquee from "@/components/MyMarquee";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import SessionManagement from "@/components/bourse-sessions/session-management";
 import SessionOrders from "@/components/bourse-sessions/session-orders";
 import Link from "next/link";
@@ -16,9 +15,11 @@ export default function BourseSessionsPage() {
   const tForm = useTranslations("FormPassationOrdreObligation");
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const [activeTab, setActiveTab] = useState("management");
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null
+  );
 
   // Gérer les paramètres d'URL pour l'onglet et la session
   useEffect(() => {
@@ -46,9 +47,6 @@ export default function BourseSessionsPage() {
 
   return (
     <div className="motion-preset-focus motion-duration-2000">
-      <div className="mt-3">
-        <MyMarquee />
-      </div>
       <div className="flex flex-col gap-1 mt-16 mb-8 ml-8">
         <div className="w-full flex justify-between items-center mb-2">
           <div className="flex flex-col gap-1">
@@ -59,16 +57,28 @@ export default function BourseSessionsPage() {
               {t("description")}
             </div>
           </div>
-          <Link href={activeTab === "orders" ? "/ordres/sessions" : "/ordres/execution"}>
-            <Button type="button" variant="outline" className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit">
-            <ArrowLeft className="w-5" /> <div>{tForm("retour")}</div>
+          <Link
+            href={
+              activeTab === "orders" ? "/ordres/sessions" : "/ordres/execution"
+            }
+          >
+            <Button
+              type="button"
+              variant="outline"
+              className="flex gap-2 items-center border rounded-md py-1.5 px-2 bg-primary text-white hover:bg-primary hover:text-white w-fit"
+            >
+              <ArrowLeft className="w-5" /> <div>{tForm("retour")}</div>
             </Button>
           </Link>
         </div>
       </div>
 
       <div className="border border-gray-100 rounded-md p-4 mt-10">
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <TabsContent value="management" className="mt-6">
             <SessionManagement onSessionSelect={handleSessionSelect} />
           </TabsContent>
