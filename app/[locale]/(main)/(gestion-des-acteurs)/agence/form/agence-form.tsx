@@ -155,10 +155,10 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="director_name"
+                name="agency_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("directeurNom")} *</FormLabel>
+                    <FormLabel>{t("agencyName")} *</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -169,10 +169,10 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="director_email"
+                name="agency_email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("directeurEmail")} *</FormLabel>
+                    <FormLabel>{t("agencyEmail")} *</FormLabel>
                     <FormControl>
                       <Input {...field} type="email" />
                     </FormControl>
@@ -183,10 +183,10 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="director_phone"
+                name="agency_phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("directeurTelephone")} *</FormLabel>
+                    <FormLabel>{t("agencyPhone")} *</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -211,10 +211,10 @@ export function AgenceForm({
 
               <FormField
                 control={form.control}
-                name="currency"
+                name="code_swift"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("devise")}</FormLabel>
+                    <FormLabel>{t("codeSwiftBic")}</FormLabel>
                     <FormControl>
                       <Input {...field} defaultValue="DZD" />
                     </FormControl>

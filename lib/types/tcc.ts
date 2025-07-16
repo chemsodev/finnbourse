@@ -4,12 +4,20 @@ import { use } from "react";
  * Based on the backend API structure from Postman collection
  */
 
+export interface FinancialInstitution {
+  id: string;
+  institutionName: string;
+  taxIdentificationNumber: string;
+  agreementNumber: string;
+  legalForm: string;
+  establishmentDate: string;
+  fullAddress: string;
+}
+
 export interface TCC {
   id?: string;
   code: string;
   libelle: string;
-  account_type: "DEPOSIT" | "SECURITIES" | "BOTH";
-  status: "ACTIVE" | "INACTIVE";
   address: string;
   postal_code: string;
   city: string;
@@ -19,11 +27,9 @@ export interface TCC {
   agreement_number?: string;
   agreement_date?: string;
   surveillance_authority?: string;
-  name_correspondent?: string;
-  code_correspondent?: string;
   financialInstitutionId: string;
-  createdAt?: string;
-  updatedAt?: string;
+  // Add optional financialInstitution property to match the API response format
+  financialInstitution?: FinancialInstitution;
   users?: TCCUser[];
 }
 
@@ -49,8 +55,6 @@ export interface TCCUser {
 export interface TCCCreateRequest {
   code: string;
   libelle: string;
-  account_type: "DEPOSIT" | "SECURITIES" | "BOTH";
-  status: "ACTIVE" | "INACTIVE";
   address: string;
   postal_code: string;
   city: string;
@@ -60,8 +64,6 @@ export interface TCCCreateRequest {
   agreement_number?: string;
   agreement_date?: string;
   surveillance_authority?: string;
-  name_correspondent?: string;
-  code_correspondent?: string;
   financialInstitutionId: string;
 }
 

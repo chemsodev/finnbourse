@@ -62,10 +62,9 @@ export interface Agence {
   code: string;
   address: string;
   code_swift: string;
-  currency: string;
-  director_name: string;
-  director_email: string;
-  director_phone: string;
+  agency_name: string;
+  agency_email: string;
+  agency_phone: string;
   financialInstitution?: {
     id: string;
     institutionName: string;
@@ -84,10 +83,9 @@ export interface AgenceCreateRequest {
   code: string;
   address: string;
   code_swift: string;
-  currency: string;
-  director_name: string;
-  director_email: string;
-  director_phone: string;
+  agency_name: string;
+  agency_email: string;
+  agency_phone: string;
   financialInstitutionId: string;
 }
 

@@ -47,11 +47,7 @@ export default function IOBPage() {
       await fetchIOBs();
     } catch (error) {
       console.error("Failed to load IOB data:", error);
-      toast({
-        title: t("error"),
-        description: t("errorLoadingData"),
-        variant: "destructive",
-      });
+      // Toast notification removed as requested
     }
   };
 
@@ -59,10 +55,8 @@ export default function IOBPage() {
   const filteredIOBs = iobs.filter(
     (iob) =>
       iob.short_libel?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      iob.long_libel?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       iob.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       iob.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      iob.correspondent?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       iob.financialInstitution?.institutionName
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase())
@@ -196,12 +190,10 @@ export default function IOBPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[120px]">{t("bankCode")}</TableHead>
-                  <TableHead>{t("shortLabel")}</TableHead>
-                  <TableHead>{t("longLabel")}</TableHead>
                   <TableHead>{t("financialInstitution")}</TableHead>
-                  <TableHead>{t("correspondent")}</TableHead>
                   <TableHead>{t("email")}</TableHead>
                   <TableHead>{t("phone")}</TableHead>
+                  <TableHead>{t("address")}</TableHead>
                   <TableHead className="text-center w-[120px]">
                     {t("actions")}
                   </TableHead>
@@ -211,7 +203,7 @@ export default function IOBPage() {
                 {filteredIOBs.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={6}
                       className="h-24 text-center text-muted-foreground"
                     >
                       {searchTerm ? t("noSearchResults") : t("noIOBsFound")}
@@ -221,16 +213,14 @@ export default function IOBPage() {
                   filteredIOBs.map((iob) => (
                     <TableRow key={iob.id} className="hover:bg-muted/50">
                       <TableCell className="font-medium">{iob.code}</TableCell>
-                      <TableCell>{iob.short_libel}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">
-                        {iob.long_libel}
-                      </TableCell>
                       <TableCell>
                         {iob.financialInstitution?.institutionName || "N/A"}
                       </TableCell>
-                      <TableCell>{iob.correspondent || "N/A"}</TableCell>
                       <TableCell>{iob.email || "N/A"}</TableCell>
                       <TableCell>{iob.phone || "N/A"}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        {iob.address || "N/A"}
+                      </TableCell>
                       <TableCell className="text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

@@ -52,10 +52,30 @@ export default function FormPage({ params }: FormPageProps) {
         // Transform TCC data to form format
         const transformedData = TCCService.transformAPIDataToForm(currentTCC);
 
-        // Ensure financial institution ID is properly set
+        // Ensure financial institution ID is properly set and converted to string
         if (currentTCC.financialInstitutionId) {
-          transformedData.financialInstitutionId =
-            currentTCC.financialInstitutionId;
+          // Cast to string to ensure consistency in form data
+          transformedData.financialInstitutionId = String(
+            currentTCC.financialInstitutionId
+          );
+          console.log(
+            "🏦 Set Financial Institution ID:",
+            transformedData.financialInstitutionId
+          );
+        }
+
+        // If there's a financialInstitution object in the response (from your example data)
+        if (
+          currentTCC.financialInstitution &&
+          currentTCC.financialInstitution.id
+        ) {
+          transformedData.financialInstitutionId = String(
+            currentTCC.financialInstitution.id
+          );
+          console.log(
+            "🏦 Set Financial Institution ID from object:",
+            transformedData.financialInstitutionId
+          );
         }
 
         console.log("Transformed TCC data for form:", transformedData);
@@ -71,10 +91,7 @@ export default function FormPage({ params }: FormPageProps) {
           tccId: currentTCC.id,
         });
 
-        toast({
-          title: "Data Loaded",
-          description: "Existing TCC data loaded for editing",
-        });
+        console.log("✅ TCC data loaded successfully for editing");
       } else {
         console.log("🔍 No existing TCC found, form will be for creation");
       }
@@ -94,15 +111,12 @@ export default function FormPage({ params }: FormPageProps) {
     custodian: {
       code: "",
       libelle: "",
-      typeCompte: "DEPOSIT",
-      statut: "ACTIVE", // Set a default status value
       adresse: "",
       codePostal: "",
       ville: "",
       pays: "Algeria",
       telephone: "",
       email: "",
-      dateCreation: new Date().toISOString().split("T")[0],
       swift: "",
       iban: "",
       numeroCompte: "",
@@ -110,12 +124,9 @@ export default function FormPage({ params }: FormPageProps) {
       numeroAgrement: "",
       dateAgrement: "",
       autoriteSurveillance: "",
-      codeCorrespondant: "",
-      nomCorrespondant: "",
       commissionFixe: "",
       commissionVariable: "",
       tauxTva: "",
-      commentaire: "",
       financialInstitutionId: "", // Will be selected by user
     },
     relatedUsers: [],
@@ -165,12 +176,11 @@ export default function FormPage({ params }: FormPageProps) {
           tccId: resultTCC.id, // Store TCC ID for user creation
         }));
 
-        toast({
-          title: isEditMode ? "TCC Updated" : "TCC Created",
-          description: isEditMode
-            ? "TCC updated successfully. You can now manage users."
-            : "TCC created successfully. You can now add users.",
-        });
+        console.log(
+          isEditMode
+            ? "✅ TCC updated successfully"
+            : "✅ TCC created successfully"
+        );
 
         // Move to next step
         setCurrentStep((prev) => prev + 1);
@@ -248,14 +258,13 @@ export default function FormPage({ params }: FormPageProps) {
           }
         }
 
-        // Show summary toast
+        // Show summary in console
         if (successCount > 0) {
-          toast({
-            title: "Users Created",
-            description: `${successCount} user(s) created successfully${
+          console.log(
+            `✅ ${successCount} user(s) created successfully${
               errorCount > 0 ? `, ${errorCount} failed` : ""
-            }`,
-          });
+            }`
+          );
         }
 
         if (errorCount > 0 && successCount === 0) {

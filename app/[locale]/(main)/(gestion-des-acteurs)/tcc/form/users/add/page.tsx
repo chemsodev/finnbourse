@@ -140,7 +140,7 @@ export default function AddTCCUserPage({
       });
 
       // Navigate back to users list
-      router.push(`/${params.locale}/tcc/users`);
+      router.push(`/${params.locale}/tcc/form/users`);
     } catch (error) {
       console.error("Failed to add user:", error);
       toast({
@@ -367,7 +367,9 @@ export default function AddTCCUserPage({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push(`/${params.locale}/tcc/users`)}
+                  onClick={() =>
+                    router.push(`/${params.locale}/tcc/form/users`)
+                  }
                   disabled={isSubmitting}
                 >
                   {t("cancel")}

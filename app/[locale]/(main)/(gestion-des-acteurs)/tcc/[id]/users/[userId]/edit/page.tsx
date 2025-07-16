@@ -113,12 +113,20 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
     async function loadUser() {
       try {
         setIsLoading(true);
+        console.log("🔍 Loading user data for userId:", userId);
+        console.log("🔍 TCC ID:", tccId);
+
         // Get the TCC which includes its users
         const tcc = await TCCService.getTCC();
+        console.log("🔍 TCC data loaded:", tcc);
+        console.log("🔍 TCC users:", tcc?.users);
+
         // Find the specific user by ID
         const userData = tcc?.users?.find((user) => user.id === userId);
+        console.log("🔍 Found user data:", userData);
 
         if (!userData) {
+          console.error("❌ User not found with ID:", userId);
           throw new Error("User not found");
         }
 
@@ -143,10 +151,14 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
           confirmPassword: "",
         };
 
+        console.log("📝 Prepared form data:", formData);
+
         // Reset form with user data
         form.reset(formData);
+
+        console.log("✅ User data loaded successfully");
       } catch (error) {
-        console.error("Failed to load user:", error);
+        console.error("❌ Failed to load user:", error);
         toast({
           title: t("error"),
           description: t("failedToLoadUser"),
@@ -163,6 +175,7 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
   const onSubmit = async (values: UserFormValues) => {
     try {
       setIsSubmitting(true);
+      console.log("🔄 Submitting user update with values:", values);
 
       // Transform form data to API format
       const userData = {
@@ -181,22 +194,25 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
       };
 
       // Only include password if provided
-      if (values.password) {
+      if (values.password && values.password.trim() !== "") {
         Object.assign(userData, { password: values.password });
+        console.log("🔐 Password will be updated");
       }
+
+      console.log("📤 Sending user data to API:", userData);
 
       // Update the user
       await TCCService.updateUser(userId, userData);
 
-      console.log("User updated successfully:", userData);
+      console.log("✅ User updated successfully:", userData);
 
       toast({
         title: t("success"),
         description: t("userUpdatedSuccessfully"),
       });
 
-      // Navigate back to users list (no need for TCC ID)
-      router.push(`/${params.locale}/tcc/users`);
+      // Navigate back to users list with correct TCC ID
+      router.push(`/${params.locale}/tcc/${tccId}/users`);
     } catch (error: any) {
       console.error("Failed to update user:", error);
 
@@ -249,7 +265,11 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
               {t("userNotFound")}
             </h2>
             <p className="text-gray-500 mb-4">{t("userNotFoundDescription")}</p>
-            <Button onClick={() => router.push(`/${params.locale}/tcc/users`)}>
+            <Button
+              onClick={() =>
+                router.push(`/${params.locale}/tcc/${tccId}/users`)
+              }
+            >
               {t("backToUsers")}
             </Button>
           </div>
@@ -264,7 +284,7 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push(`/${params.locale}/tcc/users`)}
+          onClick={() => router.push(`/${params.locale}/tcc/${tccId}/users`)}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           {t("back")}

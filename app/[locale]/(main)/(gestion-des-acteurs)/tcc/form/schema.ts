@@ -4,14 +4,6 @@ import * as z from "zod";
 export const custodianFormSchema = z.object({
   code: z.string().min(1, "Code is required"),
   libelle: z.string().min(1, "Label is required"),
-  typeCompte: z.enum(["DEPOSIT", "SECURITIES", "BOTH"], {
-    required_error: "Account type is required",
-  }),
-  statut: z.enum(["ACTIVE", "INACTIVE"], {
-    required_error: "Status is required",
-    invalid_type_error: "Status must be either ACTIVE or INACTIVE",
-  }),
-  dateCreation: z.string().optional(),
 
   // Banking information (optional for TCC)
   swift: z.string().optional(),
@@ -33,9 +25,6 @@ export const custodianFormSchema = z.object({
   dateAgrement: z.string().min(1, "Agreement date is required"),
   autoriteSurveillance: z.string().min(1, "Surveillance authority is required"),
 
-  // Correspondent
-  codeCorrespondant: z.string().optional(),
-  nomCorrespondant: z.string().optional(),
   // Financial Institution ID (required for backend)
   financialInstitutionId: z
     .string()
@@ -45,7 +34,6 @@ export const custodianFormSchema = z.object({
   commissionFixe: z.string().optional(),
   commissionVariable: z.string().optional(),
   tauxTva: z.string().optional(),
-  commentaire: z.string().optional(),
 });
 
 // Schema for related users (Step 2)

@@ -108,7 +108,7 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
           <Button variant="outline" size="icon" disabled>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold text-gray-800">Loading...</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{t("loading")}</h1>
           <RefreshCw className="h-6 w-6 animate-spin" />
         </div>
       </div>
@@ -125,12 +125,14 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold text-gray-800">TCC Not Found</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {t("tccNotFound")}
+          </h1>
         </div>
         <Card>
           <CardContent className="py-8">
             <p className="text-center text-gray-500">
-              The requested TCC could not be found.
+              {t("tccNotFoundMessage")}
             </p>
           </CardContent>
         </Card>
@@ -151,9 +153,11 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-800">
-            {tccData.libelle} - Users
+            {tccData.libelle} - {t("users")}
           </h1>
-          <p className="text-gray-600">Manage users for TCC: {tccData.code}</p>
+          <p className="text-gray-600">
+            {t("manageUsers")} {tccData.code}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button onClick={loadData} variant="outline" size="icon">
@@ -161,7 +165,7 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
           </Button>
           <Button onClick={handleAddUser} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Add User
+            {t("addUser")}
           </Button>
         </div>
       </div>
@@ -171,31 +175,15 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            TCC Information
+            {t("tccDetails")}
           </CardTitle>
         </CardHeader>{" "}
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm font-medium text-gray-600">Status</div>
-              <Badge
-                variant={tccData.status === "ACTIVE" ? "default" : "secondary"}
-              >
-                {tccData.status}
-              </Badge>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <div className="text-sm font-medium text-gray-600">
-                Account Type
+                {t("contact")}
               </div>
-              <div className="text-sm">
-                {tccData.account_type === "DEPOSIT" && "Depot"}
-                {tccData.account_type === "SECURITIES" && "Titres"}
-                {tccData.account_type === "BOTH" && "Depot et Titres"}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-600">Contact</div>
               <div className="text-sm">{tccData.email}</div>
             </div>
           </div>
@@ -206,7 +194,9 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Users ({users.length})</span>
+            <span>
+              {t("users")} ({users.length})
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -214,30 +204,27 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
             <div className="text-center py-8">
               <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-800 mb-2">
-                No Users Yet
+                {t("noUsersYet")}
               </h3>
-              <p className="text-gray-600 mb-4">
-                This TCC doesn't have any users yet. Add the first user to get
-                started.
-              </p>
+              <p className="text-gray-600 mb-4">{t("noUsersDescription")}</p>
               <Button
                 onClick={handleAddUser}
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Add First User
+                {t("addFirstUser")}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Roles</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("name")}</TableHead>
+                  <TableHead>{t("email")}</TableHead>
+                  <TableHead>{t("position")}</TableHead>
+                  <TableHead>{t("roles")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead>{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -284,7 +271,7 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
                           variant="outline"
                           size="sm"
                         >
-                          View
+                          {t("viewDetails")}
                         </Button>
                         <Button
                           onClick={() => handleEditUser(user)}
@@ -307,43 +294,47 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
       <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-            <DialogDescription>
-              Detailed information about the selected user.
-            </DialogDescription>
+            <DialogTitle>{t("userDetails")}</DialogTitle>
+            <DialogDescription>{t("userDetailsDescription")}</DialogDescription>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-gray-600">
-                    First Name
+                    {t("contactFirstName")}
                   </div>
                   <div>{selectedUser.firstname}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-600">
-                    Last Name
+                    {t("contactLastName")}
                   </div>
                   <div>{selectedUser.lastname}</div>
                 </div>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-600">Email</div>
+                <div className="text-sm font-medium text-gray-600">
+                  {t("email")}
+                </div>
                 <div>{selectedUser.email}</div>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-600">Phone</div>
+                <div className="text-sm font-medium text-gray-600">
+                  {t("phone")}
+                </div>
                 <div>{selectedUser.telephone}</div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-600">
-                  Position
+                  {t("position")}
                 </div>
                 <div>{selectedUser.positionTcc}</div>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-600">Roles</div>
+                <div className="text-sm font-medium text-gray-600">
+                  {t("roles")}
+                </div>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {selectedUser.role.map((role, index) => (
                     <Badge key={index} variant="outline">
@@ -353,7 +344,9 @@ export default function TCCUsersPage({ params }: TCCUsersPageProps) {
                 </div>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-600">Status</div>
+                <div className="text-sm font-medium text-gray-600">
+                  {t("status")}
+                </div>
                 <Badge
                   variant={
                     selectedUser.status === "actif" ? "default" : "secondary"

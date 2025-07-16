@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustodianForm } from "../form/custodian-form";
-import { RelatedUsersForm } from "../form/related-users-form";
+import { EnhancedTCCUsersForm } from "../form/enhanced-users-form";
 import { CustodianFormValues, RelatedUserFormValues } from "../form/schema";
 import { TCCService } from "@/lib/services/tccService";
 import { useToast } from "@/hooks/use-toast";
@@ -22,8 +22,6 @@ export default function TCCFormTestPage() {
   const [custodianData, setCustodianData] = useState<CustodianFormValues>({
     code: `TCC-TEST-${Date.now()}`,
     libelle: "Test TCC from Form",
-    typeCompte: "BOTH",
-    statut: "ACTIVE",
     adresse: "123 Test Street",
     codePostal: "12345",
     ville: "Test City",
@@ -31,12 +29,9 @@ export default function TCCFormTestPage() {
     telephone: "+213123456789",
     email: "test@tcc.com",
     financialInstitutionId: "",
-    dateCreation: new Date().toISOString().split("T")[0],
     numeroAgrement: "TEST-2025-001",
     dateAgrement: "2025-06-17",
     autoriteSurveillance: "COSOB",
-    codeCorrespondant: "TC001",
-    nomCorrespondant: "Test Correspondent",
     swift: "",
     iban: "",
     numeroCompte: "",
@@ -44,7 +39,6 @@ export default function TCCFormTestPage() {
     commissionFixe: "",
     commissionVariable: "",
     tauxTva: "",
-    commentaire: "Test TCC created via form integration",
   });
 
   const [usersData, setUsersData] = useState<RelatedUserFormValues[]>([]);
@@ -147,9 +141,9 @@ export default function TCCFormTestPage() {
             <CardTitle>Step 2: TCC Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <RelatedUsersForm
-              defaultValues={{ users: usersData }}
-              onFormChange={handleUsersChange}
+            <EnhancedTCCUsersForm
+              users={usersData}
+              onUsersChange={handleUsersChange}
             />
             <div className="mt-6 flex justify-between">
               <Button variant="outline" onClick={() => setStep(0)}>

@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustodianFormValues, custodianFormSchema } from "./schema";
-import { TCC_ACCOUNT_TYPES, TCC_STATUS_OPTIONS } from "@/lib/types/tcc";
 import { useFinancialInstitutions } from "@/hooks/useFinancialInstitutions";
 
 interface CustodianFormProps {
@@ -57,6 +56,17 @@ export function CustodianForm({
       console.log("Resetting TCC form with values:", defaultValues);
       form.reset(defaultValues);
 
+      // Explicitly set the financial institution ID to ensure it's selected in the dropdown
+      if (defaultValues.financialInstitutionId) {
+        form.setValue(
+          "financialInstitutionId",
+          defaultValues.financialInstitutionId,
+          {
+            shouldValidate: true,
+          }
+        );
+      }
+
       // Verify form values after reset
       setTimeout(() => {
         console.log("Current form values after reset:", form.getValues());
@@ -67,6 +77,50 @@ export function CustodianForm({
       }, 100);
     }
   }, [defaultValues, form]);
+
+  // Debug financial institutions and form state
+  useEffect(() => {
+    console.log("🏦 Financial institutions loaded:", institutions.length);
+    console.log("🏦 Is loading institutions:", isLoadingInstitutions);
+    console.log("🏦 Available institutions:", institutions);
+
+    const currentFiId = form.getValues().financialInstitutionId;
+    console.log("🏦 Current form FI ID:", currentFiId);
+
+    // Only run this logic when institutions are done loading
+    if (!isLoadingInstitutions && institutions.length > 0) {
+      if (currentFiId) {
+        const matchingInstitution = institutions.find(
+          (inst) => inst.id === currentFiId
+        );
+        console.log("🏦 Matching institution found:", matchingInstitution);
+
+        // Always force the form to update with the current financial institution ID
+        // This ensures the dropdown shows the correct selection
+        if (matchingInstitution) {
+          console.log("🏦 Forcing form update for financial institution");
+          form.setValue("financialInstitutionId", currentFiId, {
+            shouldValidate: true,
+          });
+        } else {
+          console.warn("🏦 No matching institution found for ID:", currentFiId);
+        }
+      } else if (defaultValues?.financialInstitutionId) {
+        // If form doesn't have the value but defaultValues does, use that
+        console.log(
+          "🏦 Using defaultValues financial institution ID:",
+          defaultValues.financialInstitutionId
+        );
+        form.setValue(
+          "financialInstitutionId",
+          defaultValues.financialInstitutionId,
+          {
+            shouldValidate: true,
+          }
+        );
+      }
+    }
+  }, [institutions, isLoadingInstitutions, form, defaultValues]);
 
   // Update parent form when this form changes
   const handleFormChange = () => {
@@ -109,121 +163,62 @@ export function CustodianForm({
               )}
             />
           </div>
-
-          {/* Type de compte et statut */}
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="typeCompte"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("type")}</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id="typeCompte" className="w-full">
-                        <SelectValue placeholder={t("select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TCC_ACCOUNT_TYPES.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="statut"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("status")}</FormLabel>
-                  <FormControl>
-                    <Select
-                      value={field.value || "ACTIVE"}
-                      onValueChange={field.onChange}
-                      defaultValue="ACTIVE"
-                    >
-                      <SelectTrigger id="statut" className="w-full">
-                        <SelectValue placeholder={t("select")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TCC_STATUS_OPTIONS.map((status) => (
-                          <SelectItem key={status.value} value={status.value}>
-                            {status.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="dateCreation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("creationDate")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="dateCreation"
-                      type="date"
-                      className="w-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
         </div>
 
         {/* Financial Institution Selection */}
         <div>
-          <h3 className="text-lg font-medium mb-4">Financial Institution</h3>
+          <h3 className="text-lg font-medium mb-4">
+            {t("financialInstitution")}
+          </h3>
           <div className="space-y-2">
             <FormField
               control={form.control}
               name="financialInstitutionId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Financial Institution *</FormLabel>
+                  <FormLabel>{t("financialInstitution")} *</FormLabel>
                   <FormControl>
                     <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
+                      value={field.value || ""}
+                      onValueChange={(value) => {
+                        console.log(
+                          "🏦 Financial Institution selected:",
+                          value
+                        );
+                        field.onChange(value);
+                      }}
                       disabled={isLoadingInstitutions}
+                      defaultValue={defaultValues?.financialInstitutionId}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue
                           placeholder={
                             isLoadingInstitutions
-                              ? "Loading..."
-                              : "Select financial institution"
+                              ? t("loadingFinancialInstitutions")
+                              : t("selectFinancialInstitution")
                           }
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {institutions.map((institution) => (
-                          <SelectItem
-                            key={institution.id}
-                            value={institution.id}
-                          >
-                            {institution.institutionName} -{" "}
-                            {institution.agreementNumber}
+                        {isLoadingInstitutions ? (
+                          <SelectItem value="" disabled>
+                            {t("loadingFinancialInstitutions")}
                           </SelectItem>
-                        ))}
+                        ) : institutions.length === 0 ? (
+                          <SelectItem value="" disabled>
+                            {t("noFinancialInstitutionsAvailable")}
+                          </SelectItem>
+                        ) : (
+                          institutions.map((institution) => (
+                            <SelectItem
+                              key={institution.id}
+                              value={institution.id}
+                            >
+                              {institution.institutionName} -{" "}
+                              {institution.agreementNumber}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -403,70 +398,6 @@ export function CustodianForm({
               />
             </div>
           </div>
-        </div>
-
-        {/* Correspondent Information */}
-        <div>
-          <h3 className="text-lg font-medium mb-4">
-            Correspondent Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <FormField
-                control={form.control}
-                name="codeCorrespondant"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correspondent Code</FormLabel>
-                    <FormControl>
-                      <Input
-                        id="codeCorrespondant"
-                        className="w-full"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <FormField
-                control={form.control}
-                name="nomCorrespondant"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correspondent Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        id="nomCorrespondant"
-                        className="w-full"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Comments */}
-        <div>
-          <FormField
-            control={form.control}
-            name="commentaire"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("comments")}</FormLabel>
-                <FormControl>
-                  <Textarea id="commentaire" className="w-full" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
       </form>
     </Form>

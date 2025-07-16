@@ -290,14 +290,6 @@ export default function TCCPage({ params }: TCCPageProps) {
                       <p>{tcc!.libelle}</p>
                     </div>
                     <div>
-                      <p className="font-semibold">{t("accountType")}</p>
-                      <p>
-                        {tcc!.account_type === "DEPOSIT" && "Depot"}
-                        {tcc!.account_type === "SECURITIES" && "Titres"}
-                        {tcc!.account_type === "BOTH" && "Depot et Titres"}
-                      </p>
-                    </div>
-                    <div>
                       <p className="font-semibold">{t("email")}</p>
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -341,22 +333,6 @@ export default function TCCPage({ params }: TCCPageProps) {
                           {t("surveillanceAuthority")}
                         </p>
                         <p>{tcc!.surveillance_authority}</p>
-                      </div>
-                    )}
-                    {tcc!.name_correspondent && (
-                      <div>
-                        <p className="font-semibold">
-                          {t("correspondentName")}
-                        </p>
-                        <p>{tcc!.name_correspondent}</p>
-                      </div>
-                    )}
-                    {tcc!.code_correspondent && (
-                      <div>
-                        <p className="font-semibold">
-                          {t("correspondentCode")}
-                        </p>
-                        <p>{tcc!.code_correspondent}</p>
                       </div>
                     )}
                     {(tcc as any).financialInstitution && (

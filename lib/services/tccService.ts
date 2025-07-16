@@ -162,8 +162,6 @@ export class TCCService {
     return {
       code: formData.code,
       libelle: formData.libelle,
-      account_type: formData.typeCompte,
-      status: formData.statut, // Should already be ACTIVE or INACTIVE
       address: formData.adresse,
       postal_code: formData.codePostal,
       city: formData.ville,
@@ -173,8 +171,6 @@ export class TCCService {
       agreement_number: formData.numeroAgrement,
       agreement_date: formData.dateAgrement,
       surveillance_authority: formData.autoriteSurveillance,
-      name_correspondent: formData.nomCorrespondant,
-      code_correspondent: formData.codeCorrespondant,
       financialInstitutionId: formData.financialInstitutionId,
     };
   }
@@ -189,23 +185,53 @@ export class TCCService {
       JSON.stringify(apiData, null, 2)
     );
 
+    // Helper function to format date for HTML input
+    const formatDateForInput = (dateString: string | undefined): string => {
+      if (!dateString) return "";
+
+      try {
+        // Try to parse the date and format it as YYYY-MM-DD for HTML date input
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          console.warn("Invalid date:", dateString);
+          return "";
+        }
+        return date.toISOString().split("T")[0];
+      } catch (error) {
+        console.warn("Error formatting date:", dateString, error);
+        return "";
+      }
+    };
+
+    // Extract financial institution ID from either direct property or nested object
+    let financialInstitutionId = "";
+
+    // First try to get it from the financialInstitutionId property
+    if (apiData.financialInstitutionId) {
+      financialInstitutionId = String(apiData.financialInstitutionId);
+      console.log("📊 Using financialInstitutionId:", financialInstitutionId);
+    }
+    // Then try to get it from the nested financialInstitution object if available
+    else if (apiData.financialInstitution && apiData.financialInstitution.id) {
+      financialInstitutionId = String(apiData.financialInstitution.id);
+      console.log("📊 Using financialInstitution.id:", financialInstitutionId);
+    }
+
+    console.log("📊 Final Financial Institution ID:", financialInstitutionId);
+
     const result = {
-      code: apiData.code,
-      libelle: apiData.libelle,
-      typeCompte: apiData.account_type,
-      statut: apiData.status, // Keep as ACTIVE or INACTIVE as required by the schema
-      adresse: apiData.address,
-      codePostal: apiData.postal_code,
-      ville: apiData.city,
-      pays: apiData.country,
-      telephone: apiData.phone,
-      email: apiData.email,
-      numeroAgrement: apiData.agreement_number,
-      dateAgrement: apiData.agreement_date,
-      autoriteSurveillance: apiData.surveillance_authority,
-      nomCorrespondant: apiData.name_correspondent,
-      codeCorrespondant: apiData.code_correspondent,
-      financialInstitutionId: apiData.financialInstitutionId || "",
+      code: apiData.code || "",
+      libelle: apiData.libelle || "",
+      adresse: apiData.address || "",
+      codePostal: apiData.postal_code || "",
+      ville: apiData.city || "",
+      pays: apiData.country || "",
+      telephone: apiData.phone || "",
+      email: apiData.email || "",
+      numeroAgrement: apiData.agreement_number || "",
+      dateAgrement: formatDateForInput(apiData.agreement_date),
+      autoriteSurveillance: apiData.surveillance_authority || "",
+      financialInstitutionId: financialInstitutionId,
     };
 
     console.log("Transformed TCC form data:", result);

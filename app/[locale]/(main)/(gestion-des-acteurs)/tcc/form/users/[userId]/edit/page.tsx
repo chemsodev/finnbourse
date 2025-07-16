@@ -176,8 +176,8 @@ export default function EditUserPage({ params }: EditUserPageProps) {
         description: t("userUpdatedSuccessfully"),
       });
 
-      // Navigate back to the TCC page
-      router.push(`/${params.locale}/tcc`);
+      // Navigate back to the TCC form users page
+      router.push(`/${params.locale}/tcc/form/users`);
     } catch (error: any) {
       console.error("Failed to update user:", error);
 
@@ -225,7 +225,7 @@ export default function EditUserPage({ params }: EditUserPageProps) {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => router.push(`/${params.locale}/tcc`)}
+          onClick={() => router.push(`/${params.locale}/tcc/form/users`)}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>

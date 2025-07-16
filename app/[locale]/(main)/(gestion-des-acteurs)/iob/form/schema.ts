@@ -6,14 +6,15 @@ export const iobFormSchema = z.object({
     .string()
     .min(1, "Financial Institution is required"),
   codeIob: z.string().min(1, "Code IOB is required"),
-  libelleCourt: z.string().min(1, "Short label is required"),
-  libelleLong: z.string().min(1, "Long label is required"),
-  correspondant: z.string().min(1, "Correspondent is required"),
+  // Making these fields optional since they're removed from the form but might be needed for API compatibility
+  libelleCourt: z.string().optional().or(z.literal("")),
+  libelleLong: z.string().optional().or(z.literal("")),
+  correspondant: z.string().optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   fax: z.string().optional(),
   telephone: z.string().optional(),
   addresse: z.string().min(1, "Address is required"),
-  ordreDeTu: z.string().optional(),
+  ordreDeTu: z.string().optional().or(z.literal("")),
 });
 
 // Schema for related users (Step 2)

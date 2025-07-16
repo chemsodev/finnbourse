@@ -85,10 +85,9 @@ export class AgenceService {
       code: formData.code,
       address: formData.address,
       code_swift: formData.code_swift,
-      currency: formData.currency,
-      director_name: formData.director_name,
-      director_email: formData.director_email,
-      director_phone: formData.director_phone,
+      agency_name: formData.agency_name,
+      agency_email: formData.agency_email,
+      agency_phone: formData.agency_phone,
       financialInstitutionId: formData.financialInstitutionId,
     };
   }
@@ -101,10 +100,9 @@ export class AgenceService {
       code: apiData.code,
       address: apiData.address,
       code_swift: apiData.code_swift,
-      currency: apiData.currency || "DZD",
-      director_name: apiData.director_name,
-      director_email: apiData.director_email,
-      director_phone: apiData.director_phone,
+      agency_name: apiData.agency_name,
+      agency_email: apiData.agency_email,
+      agency_phone: apiData.agency_phone,
       financialInstitutionId:
         apiData.financialInstitution?.id ||
         apiData.financialInstitutionId ||

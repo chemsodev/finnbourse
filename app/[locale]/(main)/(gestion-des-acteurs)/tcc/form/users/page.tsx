@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -58,6 +58,8 @@ type UserFormValues = z.infer<typeof userSchema>;
 
 export default function AddTCCUserPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
   const t = useTranslations("TCCDetailsPage");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -85,14 +87,18 @@ export default function AddTCCUserPage() {
     // In a real app, you would save this data to your backend
     console.log(values);
 
-    // Navigate back to users list
-    router.push("/tcc");
+    // Navigate back to TCC form
+    router.push(`/${locale}/tcc/form`);
   };
 
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex items-center gap-4 mb-8 bg-slate-100 p-4 rounded-md">
-        <Button variant="outline" size="sm" onClick={() => router.push("/tcc")}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push(`/${locale}/tcc/form`)}
+        >
           <ArrowLeft className="h-4 w-4 mr-1" />
           {t("back")}
         </Button>
@@ -314,7 +320,7 @@ export default function AddTCCUserPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/tcc")}
+                onClick={() => router.push(`/${locale}/tcc/form`)}
               >
                 {t("cancel")}
               </Button>

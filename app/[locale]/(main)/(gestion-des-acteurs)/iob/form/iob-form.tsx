@@ -113,51 +113,7 @@ export function IobForm({ defaultValues, onFormChange }: IobFormProps) {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="libelleCourt"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold text-lg">
-                  {t("shortLabel")} *
-                </FormLabel>
-                <FormControl>
-                  <Input id="libelleCourt" className="w-full" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="libelleLong"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold text-lg">
-                  {t("longLabel")} *
-                </FormLabel>
-                <FormControl>
-                  <Input id="libelleLong" className="w-full" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="correspondant"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold text-lg">
-                  {t("correspondent")} *
-                </FormLabel>
-                <FormControl>
-                  <Input id="correspondant" className="w-full" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Fields for libelleCourt, libelleLong, and correspondant removed */}
           <FormField
             control={form.control}
             name="email"
@@ -223,21 +179,7 @@ export function IobForm({ defaultValues, onFormChange }: IobFormProps) {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="ordreDeTu"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold text-lg">
-                  {t("orderTu")}
-                </FormLabel>
-                <FormControl>
-                  <Input id="ordreDeTu" className="w-full" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Order field removed */}
         </form>
       </Form>
     </div>
