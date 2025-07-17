@@ -181,6 +181,13 @@ export function CustodianForm({
                     <Select
                       value={field.value || ""}
                       onValueChange={(value) => {
+                        // Don't allow selection of placeholder values
+                        if (
+                          value === "loading" ||
+                          value === "no-institutions"
+                        ) {
+                          return;
+                        }
                         console.log(
                           "🏦 Financial Institution selected:",
                           value
@@ -188,7 +195,6 @@ export function CustodianForm({
                         field.onChange(value);
                       }}
                       disabled={isLoadingInstitutions}
-                      defaultValue={defaultValues?.financialInstitutionId}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue
@@ -201,11 +207,11 @@ export function CustodianForm({
                       </SelectTrigger>
                       <SelectContent>
                         {isLoadingInstitutions ? (
-                          <SelectItem value="" disabled>
+                          <SelectItem value="loading" disabled>
                             {t("loadingFinancialInstitutions")}
                           </SelectItem>
                         ) : institutions.length === 0 ? (
-                          <SelectItem value="" disabled>
+                          <SelectItem value="no-institutions" disabled>
                             {t("noFinancialInstitutionsAvailable")}
                           </SelectItem>
                         ) : (

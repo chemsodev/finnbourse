@@ -49,13 +49,22 @@ const clientSchema = z
       .min(1, "Le numéro de compte titres est requis"),
 
     // RIB fields
-    ribBanque: z.string().min(3, "Code banque requis (3 chiffres)").max(3),
-    ribAgence: z.string().min(3, "Code agence requis (3 chiffres)").max(3),
+    ribBanque: z
+      .string()
+      .min(3, "Code banque requis (3 chiffres)")
+      .max(3, "Code banque doit être exactement 3 chiffres"),
+    ribAgence: z
+      .string()
+      .min(5, "Code agence requis (5 chiffres)")
+      .max(5, "Code agence doit être exactement 5 chiffres"),
     ribCompte: z
       .string()
-      .min(11, "Numéro de compte requis (11 chiffres)")
-      .max(11),
-    ribCle: z.string().min(2, "Clé RIB requise (2 chiffres)").max(2),
+      .min(10, "Numéro de compte requis (10 chiffres)")
+      .max(10, "Numéro de compte doit être exactement 10 chiffres"),
+    ribCle: z
+      .string()
+      .min(2, "Clé RIB requise (2 chiffres)")
+      .max(2, "Clé RIB doit être exactement 2 chiffres"),
 
     // Individual fields (conditional)
     name: z.string().optional(),
@@ -572,8 +581,8 @@ export const SimpleClientForm: React.FC<SimpleClientFormProps> = ({
                 <Input
                   id="ribAgence"
                   {...form.register("ribAgence")}
-                  placeholder="002"
-                  maxLength={3}
+                  placeholder="00123"
+                  maxLength={5}
                 />
                 {form.formState.errors.ribAgence && (
                   <p className="text-red-500 text-sm mt-1">
@@ -587,8 +596,8 @@ export const SimpleClientForm: React.FC<SimpleClientFormProps> = ({
                 <Input
                   id="ribCompte"
                   {...form.register("ribCompte")}
-                  placeholder="12345678901"
-                  maxLength={11}
+                  placeholder="1234567890"
+                  maxLength={10}
                 />
                 {form.formState.errors.ribCompte && (
                   <p className="text-red-500 text-sm mt-1">

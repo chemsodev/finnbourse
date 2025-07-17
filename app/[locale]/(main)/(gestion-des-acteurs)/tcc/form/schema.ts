@@ -1,7 +1,9 @@
 import * as z from "zod";
 
 // Schema for the Account Holder Custodian details (Step 1)
+// TCC-specific validation only
 export const custodianFormSchema = z.object({
+  // Basic information
   code: z.string().min(1, "Code is required"),
   libelle: z.string().min(1, "Label is required"),
 
@@ -11,9 +13,10 @@ export const custodianFormSchema = z.object({
   ville: z.string().min(1, "City is required"),
   pays: z.string().min(1, "Country is required"),
 
-  // Contact information (required)
+  // Contact information (required with backend validation)
   telephone: z.string().min(1, "Phone number is required"),
-  email: z.string().email().min(1, "Email is required"),
+  email: z.string().email("Valid email is required"),
+
   // Regulatory information
   numeroAgrement: z.string().min(1, "Agreement number is required"),
   dateAgrement: z.string().min(1, "Agreement date is required"),

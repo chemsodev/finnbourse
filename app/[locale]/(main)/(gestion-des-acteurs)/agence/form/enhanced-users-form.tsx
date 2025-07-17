@@ -492,15 +492,6 @@ export function EnhancedAgenceUsersForm({
                       >
                         {translateRole("agence_gestion_clients")}
                       </SelectItem>
-                      <SelectItem
-                        key="observateur_agence"
-                        value="observateur_agence"
-                      >
-                        {translateRole("observateur_agence")}
-                      </SelectItem>
-                      <SelectItem key="agence_admin" value="agence_admin">
-                        {translateRole("agence_admin")}
-                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

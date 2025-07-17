@@ -59,7 +59,7 @@ export function mapLegacyRoleToNewRole(
   else if (userType.toLowerCase() === "tcc") {
     switch (legacyRole) {
       case "admin":
-        return "tcc_super_admin";
+        return "tcc_admin";
       case "validator 1":
       case "validateur 1":
         return "tcc_first_approver";
@@ -98,30 +98,33 @@ export function mapLegacyRoleToNewRole(
 // Map new role ID to legacy role for backward compatibility
 export function mapNewRoleToLegacyRole(newRoleId: string): string {
   // Agency roles
-  if (newRoleId === "agency_order_declarer") return "initiator";
-  if (newRoleId === "agency_first_approver") return "validator 1";
-  if (newRoleId === "agency_final_approver") return "validator 2";
-  if (newRoleId === "agency_viewer") return "consultation";
-  if (newRoleId === "agency_user_admin" || newRoleId === "agency_client_admin")
+  if (newRoleId === "order_initializer_agence") return "initiator";
+  if (newRoleId === "order_validator_agence_1") return "validator 1";
+  if (newRoleId === "order_validator_agence_2") return "validator 2";
+  if (newRoleId === "agence_viewer_order_history") return "consultation";
+  if (
+    newRoleId === "agence_client_manager" ||
+    newRoleId === "agence_gestion_clients"
+  )
     return "admin";
 
   // Client roles
-  if (newRoleId === "client_order_creator") return "initiator";
-  if (newRoleId === "client_first_approver") return "validator 1";
-  if (newRoleId === "client_final_approver") return "validator 2";
-  if (newRoleId === "client_viewer") return "consultation";
+  if (newRoleId === "order_initializer_client") return "initiator";
+  if (newRoleId === "client_viewer_portfolio") return "consultation";
+  if (newRoleId === "client_viewer_order_history") return "consultation";
 
   // TCC roles
-  if (newRoleId === "tcc_super_admin") return "admin";
-  if (newRoleId === "tcc_first_approver") return "validator 1";
-  if (newRoleId === "tcc_final_approver") return "validator 2";
-  if (newRoleId === "tcc_viewer") return "consultation";
+  if (newRoleId === "tcc_admin") return "admin";
+  if (newRoleId === "order_validator_tcc_1") return "validator 1";
+  if (newRoleId === "order_validator_tcc_2") return "validator 2";
+  if (newRoleId === "tcc_viewer_order_history") return "consultation";
+  if (newRoleId === "finbourse_super_admin") return "admin";
 
   // IOB roles
-  if (newRoleId === "iob_user_admin") return "admin";
-  if (newRoleId === "iob_order_executor") return "initiator";
-  if (newRoleId === "iob_result_submitter") return "validator 1";
-  if (newRoleId === "iob_viewer") return "consultation";
+  if (newRoleId === "order_executor") return "initiator";
+  if (newRoleId === "order_validator_iob_1") return "validator 1";
+  if (newRoleId === "order_validator_iob_2") return "validator 2";
+  if (newRoleId === "iob_secondary_market") return "consultation";
 
   return newRoleId;
 }

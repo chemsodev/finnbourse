@@ -186,7 +186,7 @@ export class ClientTransformationService {
       baseClient.nif = formData.nif;
       baseClient.reg_number = formData.regNumber;
       baseClient.legal_form = formData.legalForm;
-      baseClient.lieu_naissance = formData.wilaya; // Using wilaya as lieu_naissance
+      // Note: lieu_naissance is NOT included for company/financial institution clients
     }
 
     return baseClient as CreateClientDto;

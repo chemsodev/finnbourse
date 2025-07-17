@@ -229,7 +229,7 @@ export default function ViewIOBPage() {
           <h1 className="text-3xl font-bold">{t("detailsIob")}</h1>
           {iob.code && (
             <p className="text-lg text-primary ml-4">
-              {t("bankCode")}: <span className="font-semibold">{iob.code}</span>
+              {t("code")}: <span className="font-semibold">{iob.code}</span>
             </p>
           )}
         </div>
@@ -266,86 +266,81 @@ export default function ViewIOBPage() {
                 {/* Main Information */}
                 <div>
                   <h3 className="text-lg font-semibold border-b pb-2 mb-3">
-                    {t("bankDetails")}
+                    {t("iobDetails")}
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                      <p className="font-semibold">{t("bankCode")}</p>
+                      <p className="font-semibold">{t("code")}</p>
                       <p className="font-medium text-primary">{iob.code}</p>
                     </div>
-                    <div>
-                      <p className="font-semibold">{t("shortLabel")}</p>
-                      <p>{iob.short_libel}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold">{t("longLabel")}</p>
-                      <p>{iob.long_libel}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold">{t("correspondent")}</p>
-                      <p>{iob.correspondent}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold">{t("order")}</p>
-                      <p>{iob.order || "-"}</p>
-                    </div>
                     {financialInstitution && (
-                      <div className="col-span-2">
-                        <p className="font-semibold">
-                          {t("financialInstitution")}
-                        </p>
-                        <p>{financialInstitution.institutionName}</p>
-                      </div>
+                      <>
+                        <div>
+                          <p className="font-semibold">
+                            {t("financialInstitution")}
+                          </p>
+                          <p>{financialInstitution.institutionName}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold">
+                            {t("agreementNumber")}
+                          </p>
+                          <p>{financialInstitution.agreementNumber}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold">{t("legalForm")}</p>
+                          <p>{financialInstitution.legalForm}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold">
+                            {t("taxIdentificationNumber")}
+                          </p>
+                          <p>{financialInstitution.taxIdentificationNumber}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold">
+                            {t("establishmentDate")}
+                          </p>
+                          <p>
+                            {financialInstitution.establishmentDate
+                              ? new Date(
+                                  financialInstitution.establishmentDate
+                                ).toLocaleDateString()
+                              : "-"}
+                          </p>
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
 
-                {/* Location & Contact */}
+                {/* Contact Information */}
                 <div>
                   <h3 className="text-lg font-semibold border-b pb-2 mb-3">
-                    Location & Contact
+                    {t("contactInformation")}
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                      <p className="font-semibold">Address</p>
-                      <p>{iob.address}</p>
+                      <p className="font-semibold">{t("address")}</p>
+                      <p>{iob.address || "-"}</p>
                     </div>
+                    {financialInstitution?.fullAddress && (
+                      <div>
+                        <p className="font-semibold">{t("fullAddress")}</p>
+                        <p>{financialInstitution.fullAddress}</p>
+                      </div>
+                    )}
                     <div>
-                      <p className="font-semibold">Phone</p>
+                      <p className="font-semibold">{t("phone")}</p>
                       <p>{iob.phone || "-"}</p>
                     </div>
                     <div>
-                      <p className="font-semibold">Fax</p>
-                      <p>{iob.fax || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold">Email</p>
+                      <p className="font-semibold">{t("email")}</p>
                       <p>{iob.email || "-"}</p>
                     </div>
-                  </div>
-                </div>
-
-                {/* Dates */}
-                <div>
-                  <h3 className="text-lg font-semibold border-b pb-2 mb-3">
-                    Dates
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="font-semibold">Created At</p>
-                      <p>
-                        {iob.createdAt
-                          ? new Date(iob.createdAt).toLocaleString()
-                          : "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-semibold">Last Updated</p>
-                      <p>
-                        {iob.updatedAt
-                          ? new Date(iob.updatedAt).toLocaleString()
-                          : "-"}
-                      </p>
+                      <p className="font-semibold">{t("fax")}</p>
+                      <p>{iob.fax || "-"}</p>
                     </div>
                   </div>
                 </div>

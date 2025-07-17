@@ -7,201 +7,215 @@ export type RoleType = {
   description: string;
 };
 
-// Client roles (keeping existing ones as they weren't specified in the update)
+// Client role enum
+export enum ClientRole {
+  client_viewer_portfolio = "client_viewer_portfolio",
+  client_viewer_order_history = "client_viewer_order_history",
+  order_initializer_client = "order_initializer_client",
+}
+
+// Agency role enum
+export enum AgenceRole {
+  agence_client_manager = "agence_client_manager",
+  order_initializer_agence = "order_initializer_agence",
+  order_validator_agence_1 = "order_validator_agence_1",
+  order_validator_agence_2 = "order_validator_agence_2",
+  agence_viewer_order_history = "agence_viewer_order_history",
+  order_validator_agence_retour_1 = "order_validator_agence_retour_1",
+  order_validator_agence_retour_2 = "order_validator_agence_retour_2",
+  agence_gestion_clients = "agence_gestion_clients",
+}
+
+// IOB role enum
+export enum IobRole {
+  order_executor = "order_executor",
+  order_validator_iob_1 = "order_validator_iob_1",
+  order_validator_iob_2 = "order_validator_iob_2",
+  iob_secondary_market = "iob_secondary_market",
+}
+
+// TCC role enum
+export enum TccRole {
+  client_account_manager_1 = "client_account_manager_1",
+  client_account_manager_2 = "client_account_manager_2",
+  order_validator_tcc_1 = "order_validator_tcc_1",
+  order_validator_tcc_2 = "order_validator_tcc_2",
+  order_extern_initializer = "order_extern_initializer",
+  client_account_extern_manager = "client_account_extern_manager",
+  tcc_admin = "tcc_admin",
+  tcc_viewer_order_history = "tcc_viewer_order_history",
+  order_validator_tcc_retour_1 = "order_validator_tcc_retour_1",
+  order_validator_tcc_retour_2 = "order_validator_tcc_retour_2",
+  tcc_gestion_emetteurs = "tcc_gestion_emetteurs",
+  tcc_gestion_titres = "tcc_gestion_titres",
+  tcc_gestion_clients = "tcc_gestion_clients",
+}
+
+// Super admin role constant
+export const SUPER_ADMIN_ROLE = "finbourse_super_admin";
+
+// Client roles array
 export const CLIENT_ROLES: RoleType[] = [
   {
-    id: "client_order_creator",
-    label: "Initiateur d'ordre",
-    description: "Peut initier/créer un ordre.",
+    id: ClientRole.client_viewer_portfolio,
+    label: "Portfolio Viewer",
+    description: "Can view client portfolio information.",
   },
   {
-    id: "client_first_approver",
-    label: "Premier validateur",
-    description: "Peut effectuer la première validation d'un ordre.",
+    id: ClientRole.client_viewer_order_history,
+    label: "Order History Viewer",
+    description: "Can view order history for client.",
   },
   {
-    id: "client_final_approver",
-    label: "Validateur final",
-    description: "Peut effectuer la validation finale d'un ordre.",
-  },
-  {
-    id: "client_viewer",
-    label: "Observateur",
-    description: "Peut uniquement consulter les ordres (lecture seule).",
+    id: ClientRole.order_initializer_client,
+    label: "Order Initializer",
+    description: "Can initialize/create orders for client.",
   },
 ];
 
-// Agency roles - Updated to match backend specifications
+// Agency roles array
 export const AGENCY_ROLES: RoleType[] = [
   {
-    id: "agence_client_manager",
+    id: AgenceRole.agence_client_manager,
     label: "Client Manager",
     description: "Client manager for agence.",
   },
   {
-    id: "order_initializer_agence",
+    id: AgenceRole.order_initializer_agence,
     label: "Order Initializer",
     description: "Order initializer for agence.",
   },
   {
-    id: "order_validator_agence_1",
+    id: AgenceRole.order_validator_agence_1,
     label: "First Level Order Validator",
     description: "First level order validator for agence.",
   },
   {
-    id: "order_validator_agence_2",
+    id: AgenceRole.order_validator_agence_2,
     label: "Second Level Order Validator",
     description: "Second level order validator for agence.",
   },
   {
-    id: "order_validator_agence_retour_1",
-    label: "Return First Level Order Validator",
-    description: "Return first level order validator for agence.",
-  },
-  {
-    id: "order_validator_agence_retour_2",
-    label: "Return Second Level Order Validator",
-    description: "Return second level order validator for agence.",
-  },
-  {
-    id: "agence_viewer_order_history",
+    id: AgenceRole.agence_viewer_order_history,
     label: "Order History Viewer",
     description: "Can view order history for agency.",
   },
   {
-    id: "agence_gestion_clients",
+    id: AgenceRole.order_validator_agence_retour_1,
+    label: "Return First Level Order Validator",
+    description: "Return first level order validator for agence.",
+  },
+  {
+    id: AgenceRole.order_validator_agence_retour_2,
+    label: "Return Second Level Order Validator",
+    description: "Return second level order validator for agence.",
+  },
+  {
+    id: AgenceRole.agence_gestion_clients,
     label: "Client Management",
     description: "Can manage clients for agency.",
   },
-  {
-    id: "observateur_agence",
-    label: "Agence Observer",
-    description: "Agence observer (read-only access).",
-  },
-  {
-    id: "agence_admin",
-    label: "Agence Administrator",
-    description: "Agence administrator.",
-  },
 ];
 
-// IOB roles - Updated to match backend specifications
+// IOB roles array
 export const IOB_ROLES: RoleType[] = [
   {
-    id: "order_submiter",
-    label: "Order Submitter",
-    description: "Can submit orders to the IOB system.",
+    id: IobRole.order_executor,
+    label: "Order Executor",
+    description: "Can execute orders in the IOB system.",
   },
   {
-    id: "order_validator_iob_1",
+    id: IobRole.order_validator_iob_1,
     label: "First Level Order Validator",
     description: "First level order validator for IOB.",
   },
   {
-    id: "order_validator_iob_2",
+    id: IobRole.order_validator_iob_2,
     label: "Second Level Order Validator",
     description: "Second level order validator for IOB.",
   },
   {
-    id: "iob_secondary_market",
+    id: IobRole.iob_secondary_market,
     label: "IOB Secondary Market",
     description: "Handles secondary market operations for IOB.",
   },
-  {
-    id: "observateur_iob",
-    label: "IOB Observer",
-    description: "Can only view orders and their status (read-only access).",
-  },
-  {
-    id: "iob_admin",
-    label: "IOB Administrator",
-    description: "Can manage IOB users and their roles.",
-  },
 ];
 
-// TCC roles - Updated to match backend specifications
+// TCC roles array
 export const TCC_ROLES: RoleType[] = [
   {
-    id: "client_account_manager_1",
+    id: TccRole.client_account_manager_1,
     label: "First Level Client Account Manager",
     description: "First level client account manager.",
   },
   {
-    id: "client_account_manager_2",
+    id: TccRole.client_account_manager_2,
     label: "Second Level Client Account Manager",
     description: "Second level client account manager.",
   },
   {
-    id: "order_validator_tcc_1",
+    id: TccRole.order_validator_tcc_1,
     label: "First Level Order Validator",
     description: "First level order validator for TCC.",
   },
   {
-    id: "order_validator_tcc_2",
+    id: TccRole.order_validator_tcc_2,
     label: "Second Level Order Validator",
     description: "Second level order validator for TCC.",
   },
   {
-    id: "order_validator_tcc_retour_1",
-    label: "Return First Level Order Validator",
-    description: "Return first level order validator for TCC.",
-  },
-  {
-    id: "order_validator_tcc_retour_2",
-    label: "Return Second Level Order Validator",
-    description: "Return second level order validator for TCC.",
-  },
-  {
-    id: "tcc_viewer_order_history",
-    label: "Order History Viewer",
-    description: "Can view order history for TCC.",
-  },
-  {
-    id: "tcc_gestion_emetteurs",
-    label: "Issuer Management",
-    description: "Can manage issuers for TCC.",
-  },
-  {
-    id: "tcc_gestion_titres",
-    label: "Securities Management",
-    description: "Can manage securities for TCC.",
-  },
-  {
-    id: "tcc_gestion_clients",
-    label: "Client Management",
-    description: "Can manage clients for TCC.",
-  },
-  {
-    id: "order_executor",
-    label: "Order Executor",
-    description: "Can execute orders in the system.",
-  },
-  {
-    id: "order_extern_initializer",
+    id: TccRole.order_extern_initializer,
     label: "External Order Initializer",
     description: "External order initializer.",
   },
   {
-    id: "client_account_extern_manager",
+    id: TccRole.client_account_extern_manager,
     label: "External Client Account Manager",
     description: "External client account manager.",
   },
   {
-    id: "observateur_tcc",
-    label: "TCC Observer",
-    description: "TCC observer (read-only access).",
-  },
-  {
-    id: "tcc_admin",
+    id: TccRole.tcc_admin,
     label: "TCC Administrator",
     description: "TCC administrator.",
   },
   {
-    id: "finbourse_super_admin",
-    label: "System Super Administrator",
-    description: "System super administrator with full access.",
+    id: TccRole.tcc_viewer_order_history,
+    label: "Order History Viewer",
+    description: "Can view order history for TCC.",
+  },
+  {
+    id: TccRole.order_validator_tcc_retour_1,
+    label: "Return First Level Order Validator",
+    description: "Return first level order validator for TCC.",
+  },
+  {
+    id: TccRole.order_validator_tcc_retour_2,
+    label: "Return Second Level Order Validator",
+    description: "Return second level order validator for TCC.",
+  },
+  {
+    id: TccRole.tcc_gestion_emetteurs,
+    label: "Issuer Management",
+    description: "Can manage issuers for TCC.",
+  },
+  {
+    id: TccRole.tcc_gestion_titres,
+    label: "Securities Management",
+    description: "Can manage securities for TCC.",
+  },
+  {
+    id: TccRole.tcc_gestion_clients,
+    label: "Client Management",
+    description: "Can manage clients for TCC.",
   },
 ];
+
+// Super admin role
+export const SUPER_ADMIN: RoleType = {
+  id: SUPER_ADMIN_ROLE,
+  label: "System Super Administrator",
+  description: "System super administrator with full access.",
+};
 
 // Helper function to get roles by user type
 export function getRolesByUserType(userType: string): RoleType[] {
@@ -222,7 +236,18 @@ export function getRolesByUserType(userType: string): RoleType[] {
 
 // Get a role by its ID
 export function getRoleById(roleId: string): RoleType | undefined {
-  return [...CLIENT_ROLES, ...AGENCY_ROLES, ...TCC_ROLES, ...IOB_ROLES].find(
-    (role) => role.id === roleId
-  );
+  const allRoles = [
+    ...CLIENT_ROLES,
+    ...AGENCY_ROLES,
+    ...TCC_ROLES,
+    ...IOB_ROLES,
+    SUPER_ADMIN,
+  ];
+  return allRoles.find((role) => role.id === roleId);
 }
+
+// Export all role values as arrays for easy access
+export const ALL_CLIENT_ROLES = Object.values(ClientRole);
+export const ALL_AGENCE_ROLES = Object.values(AgenceRole);
+export const ALL_IOB_ROLES = Object.values(IobRole);
+export const ALL_TCC_ROLES = Object.values(TccRole);
