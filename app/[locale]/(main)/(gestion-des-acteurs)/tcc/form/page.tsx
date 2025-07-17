@@ -59,7 +59,7 @@ export default function FormPage({ params }: FormPageProps) {
             currentTCC.financialInstitutionId
           );
           console.log(
-            "🏦 Set Financial Institution ID:",
+            "🏦 Set Financial Institution ID from direct property:",
             transformedData.financialInstitutionId
           );
         }
@@ -73,21 +73,31 @@ export default function FormPage({ params }: FormPageProps) {
             currentTCC.financialInstitution.id
           );
           console.log(
-            "🏦 Set Financial Institution ID from object:",
+            "🏦 Set Financial Institution ID from nested object:",
             transformedData.financialInstitutionId
           );
         }
 
-        console.log("Transformed TCC data for form:", transformedData);
+        // Additional debugging to check the transformed data
+        console.log("🔄 Transformed TCC data for form:", transformedData);
         console.log(
-          "Financial Institution ID:",
+          "🏦 Final Financial Institution ID in form:",
           transformedData.financialInstitutionId
         );
+
+        // Transform existing users for the form
+        const existingUsers = currentTCC.users
+          ? currentTCC.users.map((user) =>
+              TCCService.transformUserAPIDataToForm(user)
+            )
+          : [];
+
+        console.log("🔄 Transformed existing users for form:", existingUsers);
 
         // Force a re-render with the new data by creating a new object
         setFormValues({
           custodian: transformedData,
-          relatedUsers: [], // Keep existing related users if needed
+          relatedUsers: existingUsers, // Load existing users
           tccId: currentTCC.id,
         });
 
@@ -199,72 +209,88 @@ export default function FormPage({ params }: FormPageProps) {
   };
   const handleSubmit = async () => {
     try {
-      // Step 2: Handle User Creation
+      // Step 2: Handle User Creation/Update
       const tccId = formValues.tccId;
 
       if (!tccId) {
         throw new Error("No TCC ID available for user creation");
       }
 
-      console.log("Step 2: Creating users for TCC ID:", tccId);
+      console.log("Step 2: Processing users for TCC ID:", tccId);
 
       if (formValues.relatedUsers.length > 0) {
         let successCount = 0;
         let errorCount = 0;
 
-        // Create each user separately
-        for (let index = 0; index < formValues.relatedUsers.length; index++) {
-          const user = formValues.relatedUsers[index];
-          try {
+        // In edit mode, we don't create new users - they already exist
+        // Instead, we just show success message for TCC update
+        if (isEditMode) {
+          console.log(
+            "✅ Edit mode: TCC updated successfully with existing users"
+          );
+          toast({
+            title: t("processComplete"),
+            description: t("tccUpdatedSuccessfully"),
+          });
+        } else {
+          // Create mode: Create each user separately
+          for (let index = 0; index < formValues.relatedUsers.length; index++) {
+            const user = formValues.relatedUsers[index];
+            try {
+              console.log(
+                `Creating user ${index + 1}/${formValues.relatedUsers.length}:`,
+                user.fullName
+              );
+
+              // Transform form data to API format
+              const apiUserData = {
+                firstname: user.fullName.split(" ")[0] || user.fullName,
+                lastname: user.fullName.split(" ").slice(1).join(" ") || "",
+                email:
+                  user.email ||
+                  `${user.fullName.toLowerCase().replace(/\s+/g, ".")}@tcc.com`,
+                password: user.password || "TempPassword123!",
+                telephone: user.phone || "",
+                positionTcc: user.position,
+                role: user.roles || [],
+                status: "actif" as "actif", // Default value since status field was removed
+              };
+
+              console.log(`User ${index + 1} data:`, apiUserData);
+
+              await TCCService.createUser(apiUserData, tccId);
+              successCount++;
+
+              console.log(`User ${index + 1} created successfully`);
+            } catch (userError) {
+              console.error(`Failed to create user ${index + 1}:`, userError);
+              errorCount++;
+            }
+          }
+
+          // Show summary for create mode
+          if (successCount > 0) {
             console.log(
-              `Creating user ${index + 1}/${formValues.relatedUsers.length}:`,
-              user.fullName
+              `✅ ${successCount} user(s) created successfully${
+                errorCount > 0 ? `, ${errorCount} failed` : ""
+              }`
             );
+            toast({
+              title: t("processComplete"),
+              description: t("tccCreatedSuccessfully"),
+            });
+          }
 
-            // Transform form data to API format
-            const apiUserData = {
-              firstname: user.fullName.split(" ")[0] || user.fullName,
-              lastname: user.fullName.split(" ").slice(1).join(" ") || "",
-              email:
-                user.email ||
-                `${user.fullName.toLowerCase().replace(/\s+/g, ".")}@tcc.com`,
-              password: user.password || "TempPassword123!",
-              telephone: user.phone || "",
-              positionTcc: user.position,
-              role: user.roles || [],
-              status: "actif" as "actif", // Default value since status field was removed
-            };
-
-            console.log(`User ${index + 1} data:`, apiUserData);
-
-            await TCCService.createUser(apiUserData, tccId);
-            successCount++;
-
-            console.log(`User ${index + 1} created successfully`);
-          } catch (userError) {
-            console.error(`Failed to create user ${index + 1}:`, userError);
-            errorCount++;
+          if (errorCount > 0 && successCount === 0) {
+            toast({
+              title: t("userCreationFailed"),
+              description: t("failedToCreateUsers"),
+              variant: "destructive",
+            });
           }
         }
-
-        // Show summary in console
-        if (successCount > 0) {
-          console.log(
-            `✅ ${successCount} user(s) created successfully${
-              errorCount > 0 ? `, ${errorCount} failed` : ""
-            }`
-          );
-        }
-
-        if (errorCount > 0 && successCount === 0) {
-          toast({
-            title: t("userCreationFailed"),
-            description: t("failedToCreateUsers"),
-            variant: "destructive",
-          });
-        }
       } else {
-        console.log("No users to create, workflow complete");
+        console.log("No users to process, workflow complete");
         toast({
           title: t("processComplete"),
           description: isEditMode

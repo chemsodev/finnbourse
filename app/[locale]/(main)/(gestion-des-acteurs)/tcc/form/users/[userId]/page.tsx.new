@@ -38,7 +38,7 @@ export default function EditTCCUserPage({
             positionTcc: "Manager",
             matricule: "EMP12345",
             organisationIndividu: "Sample Org",
-            role: ["tcc_admin", "client_account_manager_1"],
+            role: ["order_validator_tcc_1", "tcc_gestion_clients"],
             status: "actif"
           });
           setLoading(false);

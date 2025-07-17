@@ -92,6 +92,7 @@ export interface TCCUserUpdateRequest {
   role?: string[];
   matricule?: string;
   organisationIndividu?: string;
+
   tcc?: number;
 }
 
@@ -101,15 +102,14 @@ export interface TCCUserRoleUpdateRequest {
 
 // Available roles for TCC users based on the backend ta3 KHALIL
 export const TCC_USER_ROLES = [
-  "client_account_manager_1",
-  "client_account_manager_2",
   "order_validator_tcc_1",
   "order_validator_tcc_2",
-  "order_validator_tcc_3",
-  "order_validator_tcc_4",
-  "order_extern_initializer",
-  "observateur_tcc",
-  "order_iob_extern",
+  "tcc_viewer_order_history",
+  "order_validator_tcc_retour_1",
+  "order_validator_tcc_retour_2",
+  "tcc_gestion_emetteurs",
+  "tcc_gestion_titres",
+  "tcc_gestion_clients",
 ] as const;
 
 export type TCCUserRole = (typeof TCC_USER_ROLES)[number];

@@ -36,13 +36,8 @@ export enum IobRole {
 
 // TCC role enum
 export enum TccRole {
-  client_account_manager_1 = "client_account_manager_1",
-  client_account_manager_2 = "client_account_manager_2",
   order_validator_tcc_1 = "order_validator_tcc_1",
   order_validator_tcc_2 = "order_validator_tcc_2",
-  order_extern_initializer = "order_extern_initializer",
-  client_account_extern_manager = "client_account_extern_manager",
-  tcc_admin = "tcc_admin",
   tcc_viewer_order_history = "tcc_viewer_order_history",
   order_validator_tcc_retour_1 = "order_validator_tcc_retour_1",
   order_validator_tcc_retour_2 = "order_validator_tcc_retour_2",
@@ -144,16 +139,6 @@ export const IOB_ROLES: RoleType[] = [
 // TCC roles array
 export const TCC_ROLES: RoleType[] = [
   {
-    id: TccRole.client_account_manager_1,
-    label: "First Level Client Account Manager",
-    description: "First level client account manager.",
-  },
-  {
-    id: TccRole.client_account_manager_2,
-    label: "Second Level Client Account Manager",
-    description: "Second level client account manager.",
-  },
-  {
     id: TccRole.order_validator_tcc_1,
     label: "First Level Order Validator",
     description: "First level order validator for TCC.",
@@ -162,21 +147,6 @@ export const TCC_ROLES: RoleType[] = [
     id: TccRole.order_validator_tcc_2,
     label: "Second Level Order Validator",
     description: "Second level order validator for TCC.",
-  },
-  {
-    id: TccRole.order_extern_initializer,
-    label: "External Order Initializer",
-    description: "External order initializer.",
-  },
-  {
-    id: TccRole.client_account_extern_manager,
-    label: "External Client Account Manager",
-    description: "External client account manager.",
-  },
-  {
-    id: TccRole.tcc_admin,
-    label: "TCC Administrator",
-    description: "TCC administrator.",
   },
   {
     id: TccRole.tcc_viewer_order_history,

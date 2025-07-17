@@ -45,35 +45,43 @@ export function CustodianForm({
 
   // Reset form when defaultValues change (important for edit mode)
   useEffect(() => {
-    console.log("TCC form default values changed:", defaultValues);
+    console.log("🔄 TCC form default values changed:", defaultValues);
     console.log(
-      "Financial Institution ID in defaultValues:",
+      "🏦 Financial Institution ID in defaultValues:",
       defaultValues?.financialInstitutionId
     );
 
     if (defaultValues) {
       // Reset the form with the new default values
-      console.log("Resetting TCC form with values:", defaultValues);
+      console.log("🔄 Resetting TCC form with values:", defaultValues);
       form.reset(defaultValues);
 
       // Explicitly set the financial institution ID to ensure it's selected in the dropdown
       if (defaultValues.financialInstitutionId) {
-        form.setValue(
-          "financialInstitutionId",
-          defaultValues.financialInstitutionId,
-          {
-            shouldValidate: true,
-          }
+        const fiIdString = String(defaultValues.financialInstitutionId);
+        console.log(
+          "🏦 Setting financial institution ID explicitly:",
+          fiIdString
         );
+
+        form.setValue("financialInstitutionId", fiIdString, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        });
       }
 
-      // Verify form values after reset
+      // Verify form values after reset and trigger form change
       setTimeout(() => {
-        console.log("Current form values after reset:", form.getValues());
+        const currentValues = form.getValues();
+        console.log("🔍 Current form values after reset:", currentValues);
         console.log(
-          "Current FI value:",
-          form.getValues().financialInstitutionId
+          "🏦 Current FI value:",
+          currentValues.financialInstitutionId
         );
+
+        // Trigger form change to update parent
+        handleFormChange();
       }, 100);
     }
   }, [defaultValues, form]);
@@ -89,35 +97,39 @@ export function CustodianForm({
 
     // Only run this logic when institutions are done loading
     if (!isLoadingInstitutions && institutions.length > 0) {
-      if (currentFiId) {
+      // Get the financial institution ID from defaultValues or form
+      const targetFiId = defaultValues?.financialInstitutionId || currentFiId;
+
+      if (targetFiId) {
+        // Convert to string for consistent comparison
+        const fiIdString = String(targetFiId);
+
         const matchingInstitution = institutions.find(
-          (inst) => inst.id === currentFiId
+          (inst) => String(inst.id) === fiIdString
         );
         console.log("🏦 Matching institution found:", matchingInstitution);
+        console.log("🏦 Target FI ID (string):", fiIdString);
 
-        // Always force the form to update with the current financial institution ID
-        // This ensures the dropdown shows the correct selection
+        // Always force the form to update with the correct financial institution ID
         if (matchingInstitution) {
-          console.log("🏦 Forcing form update for financial institution");
-          form.setValue("financialInstitutionId", currentFiId, {
+          console.log("🏦 Setting form value to:", fiIdString);
+          form.setValue("financialInstitutionId", fiIdString, {
             shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
           });
+
+          // Trigger form change to update parent
+          setTimeout(() => {
+            handleFormChange();
+          }, 100);
         } else {
-          console.warn("🏦 No matching institution found for ID:", currentFiId);
+          console.warn("🏦 No matching institution found for ID:", fiIdString);
+          console.warn(
+            "🏦 Available institution IDs:",
+            institutions.map((inst) => String(inst.id))
+          );
         }
-      } else if (defaultValues?.financialInstitutionId) {
-        // If form doesn't have the value but defaultValues does, use that
-        console.log(
-          "🏦 Using defaultValues financial institution ID:",
-          defaultValues.financialInstitutionId
-        );
-        form.setValue(
-          "financialInstitutionId",
-          defaultValues.financialInstitutionId,
-          {
-            shouldValidate: true,
-          }
-        );
       }
     }
   }, [institutions, isLoadingInstitutions, form, defaultValues]);

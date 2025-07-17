@@ -116,14 +116,9 @@ export default function EditTCCUserPage({ params }: EditTCCUserPageProps) {
         console.log("🔍 Loading user data for userId:", userId);
         console.log("🔍 TCC ID:", tccId);
 
-        // Get the TCC which includes its users
-        const tcc = await TCCService.getTCC();
-        console.log("🔍 TCC data loaded:", tcc);
-        console.log("🔍 TCC users:", tcc?.users);
-
-        // Find the specific user by ID
-        const userData = tcc?.users?.find((user) => user.id === userId);
-        console.log("🔍 Found user data:", userData);
+        // Get user data directly using the new getUser method
+        const userData = await TCCService.getUser(userId);
+        console.log("🔍 User data loaded:", userData);
 
         if (!userData) {
           console.error("❌ User not found with ID:", userId);

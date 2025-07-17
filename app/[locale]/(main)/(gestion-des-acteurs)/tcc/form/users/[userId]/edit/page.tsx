@@ -29,7 +29,6 @@ import { useTranslations } from "next-intl";
 import { TCCService } from "@/lib/services/tccService";
 import { ArrowLeft, User, Loader2 } from "lucide-react";
 import { TCC, TCCUser } from "@/lib/types/tcc";
-import { useTCC } from "@/hooks/useTCC";
 
 // User schema for form validation
 const userSchema = z.object({
@@ -63,8 +62,6 @@ export default function EditUserPage({ params }: EditUserPageProps) {
   const [user, setUser] = useState<TCCUser | null>(null);
   const [roles, setRoles] = useState<{ id: string; label: string }[]>([]);
 
-  // TCC data
-  const { tcc, fetchTCC } = useTCC();
   const userId = params.userId;
 
   const form = useForm<UserFormValues>({
@@ -92,14 +89,8 @@ export default function EditUserPage({ params }: EditUserPageProps) {
     try {
       setIsLoading(true);
 
-      // 1. Load TCC to get user data
-      const currentTCC = await fetchTCC();
-      if (!currentTCC) {
-        throw new Error("Failed to load TCC data");
-      }
-
-      // 2. Find user in TCC users
-      const userData = findUserInTcc(currentTCC, userId);
+      // 1. Load user data directly using the new getUser method
+      const userData = await TCCService.getUser(userId);
       if (!userData) {
         throw new Error("User not found");
       }

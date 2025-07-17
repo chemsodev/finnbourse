@@ -123,6 +123,14 @@ export const actorAPI = {
       });
     },
 
+    getUser: async (userId: string, token?: string) => {
+      const restToken = token || (await getRestToken());
+      return clientFetchREST(`/tcc/users/${userId}`, {
+        method: "GET",
+        token: restToken || undefined,
+      });
+    },
+
     updateUser: async (userId: string, userData: any, token?: string) => {
       const restToken = token || (await getRestToken());
       return clientFetchREST(`/tcc/users/${userId}`, {

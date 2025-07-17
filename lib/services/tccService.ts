@@ -99,6 +99,21 @@ export class TCCService {
   }
 
   /**
+   * Get a single TCC user by ID
+   */
+  static async getUser(userId: string, token?: string): Promise<TCCUser> {
+    try {
+      console.log("🔍 TCCService.getUser: Loading user with ID:", userId);
+      const response = await actorAPI.tcc.getUser(userId, token);
+      console.log("🔍 TCCService.getUser: API response:", response);
+      return response.data || response;
+    } catch (error) {
+      console.error("❌ Error fetching TCC user:", error);
+      throw new Error("Failed to fetch TCC user");
+    }
+  }
+
+  /**
    * Create a TCC user
    */
   static async createUser(
@@ -262,16 +277,22 @@ export class TCCService {
   static transformUserAPIDataToForm(apiData: TCCUser): any {
     return {
       id: apiData.id,
+      fullName: `${apiData.firstname} ${apiData.lastname}`,
+      email: apiData.email,
+      phone: apiData.telephone || "",
+      position: apiData.positionTcc || "",
+      roles: Array.isArray(apiData.role) ? apiData.role : [],
+      matricule: apiData.matricule || "",
+      organization: apiData.organisationIndividu || "",
+      password: "", // Don't include password in edit form
+      status: apiData.status || "active",
+      type: "member", // Default type for compatibility
+      // Keep original fields for compatibility
       firstname: apiData.firstname,
       lastname: apiData.lastname,
-      email: apiData.email,
       telephone: apiData.telephone,
-      status: apiData.status,
       positionTcc: apiData.positionTcc,
       role: Array.isArray(apiData.role) ? apiData.role : [],
-      // Legacy fields for compatibility
-      fullName: `${apiData.firstname} ${apiData.lastname}`,
-      roles: Array.isArray(apiData.role) ? apiData.role : [],
     };
   }
 }

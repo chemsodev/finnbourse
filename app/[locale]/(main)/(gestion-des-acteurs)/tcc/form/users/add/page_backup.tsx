@@ -31,25 +31,25 @@ import { useTCCUsers } from "@/hooks/useTCC";
 
 // Define the valid TCC role types
 type ValidTCCRole =
-  | "client_account_manager_1"
-  | "client_account_manager_2"
   | "order_validator_tcc_1"
   | "order_validator_tcc_2"
-  | "order_extern_initializer"
-  | "client_account_extern_manager"
-  | "observateur_tcc"
-  | "tcc_admin"
+  | "tcc_viewer_order_history"
+  | "order_validator_tcc_retour_1"
+  | "order_validator_tcc_retour_2"
+  | "tcc_gestion_emetteurs"
+  | "tcc_gestion_titres"
+  | "tcc_gestion_clients"
   | "finbourse_super_admin";
 
 const VALID_TCC_ROLES: ValidTCCRole[] = [
-  "client_account_manager_1",
-  "client_account_manager_2",
   "order_validator_tcc_1",
   "order_validator_tcc_2",
-  "order_extern_initializer",
-  "client_account_extern_manager",
-  "observateur_tcc",
-  "tcc_admin",
+  "tcc_viewer_order_history",
+  "order_validator_tcc_retour_1",
+  "order_validator_tcc_retour_2",
+  "tcc_gestion_emetteurs",
+  "tcc_gestion_titres",
+  "tcc_gestion_clients",
   "finbourse_super_admin",
 ];
 

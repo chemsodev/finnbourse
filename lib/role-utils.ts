@@ -58,19 +58,23 @@ export function mapLegacyRoleToNewRole(
   // For TCC users
   else if (userType.toLowerCase() === "tcc") {
     switch (legacyRole) {
-      case "admin":
-        return "tcc_admin";
       case "validator 1":
       case "validateur 1":
-        return "tcc_first_approver";
+        return "order_validator_tcc_1";
       case "validator 2":
       case "validateur 2":
-        return "tcc_final_approver";
+        return "order_validator_tcc_2";
       case "consultation":
       case "view-only":
-        return "tcc_viewer";
+        return "tcc_viewer_order_history";
+      case "gestion_emetteurs":
+        return "tcc_gestion_emetteurs";
+      case "gestion_titres":
+        return "tcc_gestion_titres";
+      case "gestion_clients":
+        return "tcc_gestion_clients";
       default:
-        return "tcc_viewer";
+        return "tcc_viewer_order_history";
     }
   }
 
@@ -114,10 +118,14 @@ export function mapNewRoleToLegacyRole(newRoleId: string): string {
   if (newRoleId === "client_viewer_order_history") return "consultation";
 
   // TCC roles
-  if (newRoleId === "tcc_admin") return "admin";
   if (newRoleId === "order_validator_tcc_1") return "validator 1";
   if (newRoleId === "order_validator_tcc_2") return "validator 2";
   if (newRoleId === "tcc_viewer_order_history") return "consultation";
+  if (newRoleId === "order_validator_tcc_retour_1") return "return validator 1";
+  if (newRoleId === "order_validator_tcc_retour_2") return "return validator 2";
+  if (newRoleId === "tcc_gestion_emetteurs") return "gestion_emetteurs";
+  if (newRoleId === "tcc_gestion_titres") return "gestion_titres";
+  if (newRoleId === "tcc_gestion_clients") return "gestion_clients";
   if (newRoleId === "finbourse_super_admin") return "admin";
 
   // IOB roles
