@@ -73,7 +73,7 @@ export interface Stock {
 // Transform API stock data to chart format
 export const transformStockToChartData = (stock: Stock) => {
   const chartData = [];
-  
+
   // Add the base stock price (current price)
   chartData.push({
     date: format(new Date(), "yyyy-MM-dd"),
@@ -89,7 +89,7 @@ export const transformStockToChartData = (stock: Stock) => {
   });
 
   // Add historical prices
-  stock.stockPrices.forEach(pricePoint => {
+  stock.stockPrices.forEach((pricePoint) => {
     chartData.push({
       date: format(new Date(pricePoint.date), "yyyy-MM-dd"),
       price: pricePoint.price,
@@ -105,7 +105,9 @@ export const transformStockToChartData = (stock: Stock) => {
   });
 
   // Sort by date
-  return chartData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return chartData.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 };
 
 // Transform multiple stocks for comparison
@@ -114,32 +116,34 @@ export const transformStocksForComparison = (stocks: Stock[]) => {
   const stockDataMap = new Map<string, any[]>();
 
   // Process each stock
-  stocks.forEach(stock => {
+  stocks.forEach((stock) => {
     const stockData = transformStockToChartData(stock);
     stockDataMap.set(stock.id, stockData);
-    
+
     // Collect all unique dates
-    stockData.forEach(point => allDates.add(point.date));
+    stockData.forEach((point) => allDates.add(point.date));
   });
 
   // Create comparison data
-  const comparisonData = Array.from(allDates).sort().map(date => {
-    const dataPoint: any = { date };
-    
-    stocks.forEach((stock, index) => {
-      const stockData = stockDataMap.get(stock.id) || [];
-      const pricePoint = stockData.find(point => point.date === date);
-      
-      if (pricePoint) {
-        dataPoint[`stock${index + 1}`] = pricePoint.price;
-        dataPoint[`stock${index + 1}Name`] = pricePoint.stockName;
-        dataPoint[`stock${index + 1}Code`] = pricePoint.stockCode;
-        dataPoint[`stock${index + 1}Gap`] = pricePoint.gap;
-      }
-    });
+  const comparisonData = Array.from(allDates)
+    .sort()
+    .map((date) => {
+      const dataPoint: any = { date };
 
-    return dataPoint;
-  });
+      stocks.forEach((stock, index) => {
+        const stockData = stockDataMap.get(stock.id) || [];
+        const pricePoint = stockData.find((point) => point.date === date);
+
+        if (pricePoint) {
+          dataPoint[`stock${index + 1}`] = pricePoint.price;
+          dataPoint[`stock${index + 1}Name`] = pricePoint.stockName;
+          dataPoint[`stock${index + 1}Code`] = pricePoint.stockCode;
+          dataPoint[`stock${index + 1}Gap`] = pricePoint.gap;
+        }
+      });
+
+      return dataPoint;
+    });
 
   return comparisonData;
 };
@@ -158,9 +162,9 @@ export const calculateStockPerformance = (stock: Stock) => {
     };
   }
 
-  const prices = [stock.price, ...stock.stockPrices.map(p => p.price)];
+  const prices = [stock.price, ...stock.stockPrices.map((p) => p.price)];
   const sortedPrices = [...prices].sort((a, b) => a - b);
-  
+
   const firstPrice = stock.stockPrices[0]?.price || stock.price;
   const lastPrice = stock.price;
   const change = lastPrice - firstPrice;
@@ -168,13 +172,15 @@ export const calculateStockPerformance = (stock: Stock) => {
 
   // Calculate volatility (standard deviation)
   const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
-  const variance = prices.reduce((sum, price) => sum + Math.pow(price - avg, 2), 0) / prices.length;
+  const variance =
+    prices.reduce((sum, price) => sum + Math.pow(price - avg, 2), 0) /
+    prices.length;
   const volatility = Math.sqrt(variance);
 
   return {
     change,
     changePercent,
-    trend: change > 0 ? "up" : change < 0 ? "down" : "stable" as const,
+    trend: change > 0 ? "up" : change < 0 ? "down" : ("stable" as const),
     volatility,
     highestPrice: sortedPrices[sortedPrices.length - 1],
     lowestPrice: sortedPrices[0],
@@ -183,24 +189,40 @@ export const calculateStockPerformance = (stock: Stock) => {
 };
 
 // Filter stocks by criteria
-export const filterStocks = (stocks: Stock[], criteria: {
-  stockType?: string;
-  marketListing?: string;
-  activitySector?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  status?: string;
-  votingRights?: boolean;
-}) => {
-  return stocks.filter(stock => {
-    if (criteria.stockType && stock.stockType !== criteria.stockType) return false;
-    if (criteria.marketListing && stock.marketListing !== criteria.marketListing) return false;
-    if (criteria.activitySector && stock.issuer.activitySector !== criteria.activitySector) return false;
+export const filterStocks = (
+  stocks: Stock[],
+  criteria: {
+    stockType?: string;
+    marketListing?: string;
+    activitySector?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    status?: string;
+    votingRights?: boolean;
+  }
+) => {
+  return stocks.filter((stock) => {
+    if (criteria.stockType && stock.stockType !== criteria.stockType)
+      return false;
+    if (
+      criteria.marketListing &&
+      stock.marketListing !== criteria.marketListing
+    )
+      return false;
+    if (
+      criteria.activitySector &&
+      stock.issuer.activitySector !== criteria.activitySector
+    )
+      return false;
     if (criteria.minPrice && stock.price < criteria.minPrice) return false;
     if (criteria.maxPrice && stock.price > criteria.maxPrice) return false;
     if (criteria.status && stock.status !== criteria.status) return false;
-    if (criteria.votingRights !== undefined && stock.votingRights !== criteria.votingRights) return false;
-    
+    if (
+      criteria.votingRights !== undefined &&
+      stock.votingRights !== criteria.votingRights
+    )
+      return false;
+
     return true;
   });
 };
@@ -208,8 +230,8 @@ export const filterStocks = (stocks: Stock[], criteria: {
 // Group stocks by sector
 export const groupStocksBySector = (stocks: Stock[]) => {
   const grouped = new Map<string, Stock[]>();
-  
-  stocks.forEach(stock => {
+
+  stocks.forEach((stock) => {
     const sector = stock.issuer.activitySector;
     if (!grouped.has(sector)) {
       grouped.set(sector, []);
@@ -224,29 +246,44 @@ export const groupStocksBySector = (stocks: Stock[]) => {
 export const calculateMarketStats = (stocks: Stock[]) => {
   if (stocks.length === 0) return null;
 
-  const totalMarketCap = stocks.reduce((sum, stock) => sum + (stock.price * stock.quantity), 0);
-  const avgPrice = stocks.reduce((sum, stock) => sum + stock.price, 0) / stocks.length;
-  const prices = stocks.map(stock => stock.price);
+  const totalMarketCap = stocks.reduce(
+    (sum, stock) => sum + stock.price * stock.quantity,
+    0
+  );
+  const avgPrice =
+    stocks.reduce((sum, stock) => sum + stock.price, 0) / stocks.length;
+  const prices = stocks.map((stock) => stock.price);
   const sortedPrices = [...prices].sort((a, b) => a - b);
 
   // Calculate overall market performance
-  const performanceMetrics = stocks.map(stock => calculateStockPerformance(stock));
-  const avgPerformance = performanceMetrics.reduce((sum, metric) => sum + metric.changePercent, 0) / performanceMetrics.length;
+  const performanceMetrics = stocks.map((stock) =>
+    calculateStockPerformance(stock)
+  );
+  const avgPerformance =
+    performanceMetrics.reduce((sum, metric) => sum + metric.changePercent, 0) /
+    performanceMetrics.length;
 
   // Group by sector
   const sectorGroups = groupStocksBySector(stocks);
-  const sectorStats = Array.from(sectorGroups.entries()).map(([sector, sectorStocks]) => {
-    const sectorMarketCap = sectorStocks.reduce((sum, stock) => sum + (stock.price * stock.quantity), 0);
-    const sectorAvgPrice = sectorStocks.reduce((sum, stock) => sum + stock.price, 0) / sectorStocks.length;
-    
-    return {
-      sector,
-      count: sectorStocks.length,
-      marketCap: sectorMarketCap,
-      avgPrice: sectorAvgPrice,
-      percentage: (sectorMarketCap / totalMarketCap) * 100,
-    };
-  });
+  const sectorStats = Array.from(sectorGroups.entries()).map(
+    ([sector, sectorStocks]) => {
+      const sectorMarketCap = sectorStocks.reduce(
+        (sum, stock) => sum + stock.price * stock.quantity,
+        0
+      );
+      const sectorAvgPrice =
+        sectorStocks.reduce((sum, stock) => sum + stock.price, 0) /
+        sectorStocks.length;
+
+      return {
+        sector,
+        count: sectorStocks.length,
+        marketCap: sectorMarketCap,
+        avgPrice: sectorAvgPrice,
+        percentage: (sectorMarketCap / totalMarketCap) * 100,
+      };
+    }
+  );
 
   return {
     totalStocks: stocks.length,
@@ -258,8 +295,8 @@ export const calculateMarketStats = (stocks: Stock[]) => {
     avgPerformance,
     sectorStats,
     marketListings: {
-      PRINCIPAL: stocks.filter(s => s.marketListing === "PRINCIPAL").length,
-      PME: stocks.filter(s => s.marketListing === "PME").length,
+      PRINCIPAL: stocks.filter((s) => s.marketListing === "PRINCIPAL").length,
+      PME: stocks.filter((s) => s.marketListing === "PME").length,
     },
   };
 };
@@ -267,7 +304,7 @@ export const calculateMarketStats = (stocks: Stock[]) => {
 // Format stock data for export
 export const formatStockForExport = (stock: Stock) => {
   const performance = calculateStockPerformance(stock);
-  
+
   return {
     id: stock.id,
     name: stock.issuer.name,
@@ -303,7 +340,7 @@ export const formatStockForExport = (stock: Stock) => {
       address: stock.issuer.address,
       tel: stock.issuer.tel,
     },
-    priceHistory: stock.stockPrices.map(price => ({
+    priceHistory: stock.stockPrices.map((price) => ({
       date: price.date,
       price: price.price,
       gap: price.gap,

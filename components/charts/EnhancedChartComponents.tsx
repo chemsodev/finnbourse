@@ -122,7 +122,7 @@ export const createEnhancedAxisTickFormatter = (
         return `${(numValue / 1000).toFixed(1)}K €`;
       }
     }
-    
+
     return formatChartValue(value, valueType, locale);
   };
 };

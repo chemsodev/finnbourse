@@ -103,7 +103,12 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
 
     // Filter by date range if specified
     if (startDate && endDate) {
-      processedData = filterDataByDateRange(processedData, startDate, endDate, dateKey);
+      processedData = filterDataByDateRange(
+        processedData,
+        startDate,
+        endDate,
+        dateKey
+      );
     }
 
     // Normalize data and handle missing dates
@@ -112,9 +117,13 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
 
   // Create formatters
   const dateTickFormatter = createEnhancedDateTickFormatter("short", locale);
-  const valueTickFormatter = createEnhancedAxisTickFormatter(valueType, locale, {
-    shortForm: true,
-  });
+  const valueTickFormatter = createEnhancedAxisTickFormatter(
+    valueType,
+    locale,
+    {
+      shortForm: true,
+    }
+  );
 
   // Custom tooltip renderer
   const TooltipComponent = customTooltip || EnhancedChartTooltip;
@@ -173,11 +182,7 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
           );
         case "bar":
           return (
-            <Bar
-              {...commonProps}
-              radius={[2, 2, 0, 0]}
-              fillOpacity={0.8}
-            />
+            <Bar {...commonProps} radius={[2, 2, 0, 0]} fillOpacity={0.8} />
           );
         default:
           return null;
@@ -205,18 +210,11 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
                 {showTooltip && (
                   <Tooltip
                     content={
-                      <TooltipComponent
-                        locale={locale}
-                        valueType={valueType}
-                      />
+                      <TooltipComponent locale={locale} valueType={valueType} />
                     }
                   />
                 )}
-                {showLegend && (
-                  <Legend
-                    content={<LegendComponent />}
-                  />
-                )}
+                {showLegend && <Legend content={<LegendComponent />} />}
                 {renderChartElements()}
               </>
             ),
@@ -241,18 +239,11 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
               {showTooltip && (
                 <Tooltip
                   content={
-                    <TooltipComponent
-                      locale={locale}
-                      valueType={valueType}
-                    />
+                    <TooltipComponent locale={locale} valueType={valueType} />
                   }
                 />
               )}
-              {showLegend && (
-                <Legend
-                  content={<LegendComponent />}
-                />
-              )}
+              {showLegend && <Legend content={<LegendComponent />} />}
               {renderChartElements()}
             </>
           ),
@@ -268,12 +259,12 @@ export const EnhancedChart: React.FC<EnhancedChartProps> = ({
         {(title || subtitle) && (
           <CardHeader>
             {title && <CardTitle>{title}</CardTitle>}
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+            {subtitle && (
+              <p className="text-sm text-muted-foreground">{subtitle}</p>
+            )}
           </CardHeader>
         )}
-        <CardContent>
-          {chartContent}
-        </CardContent>
+        <CardContent>{chartContent}</CardContent>
       </Card>
     );
   }

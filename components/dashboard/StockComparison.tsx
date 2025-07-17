@@ -30,12 +30,12 @@ import { CalendarIcon, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslations, useLocale } from "next-intl";
 import { useChartData } from "@/hooks/useChartData";
-import { 
-  formatChartDate, 
-  formatTooltipDate, 
+import {
+  formatChartDate,
+  formatTooltipDate,
   createAxisTickFormatter,
   formatChartValue,
-  type SupportedLocale
+  type SupportedLocale,
 } from "@/lib/chart-utils";
 import { cn } from "@/lib/utils";
 
@@ -90,9 +90,9 @@ interface StockComparisonProps {
   onStockSelect?: (stock: Stock) => void;
 }
 
-const StockComparison: React.FC<StockComparisonProps> = ({ 
-  stocks = [], 
-  onStockSelect 
+const StockComparison: React.FC<StockComparisonProps> = ({
+  stocks = [],
+  onStockSelect,
 }) => {
   const t = useTranslations("StockComparison");
   const locale = useLocale() as SupportedLocale;
@@ -110,7 +110,7 @@ const StockComparison: React.FC<StockComparisonProps> = ({
       code: stock.code,
     };
 
-    const priceHistory = stock.stockPrices.map(pricePoint => ({
+    const priceHistory = stock.stockPrices.map((pricePoint) => ({
       date: pricePoint.date,
       price: pricePoint.price,
       stock: stock.id,
@@ -118,8 +118,8 @@ const StockComparison: React.FC<StockComparisonProps> = ({
       code: stock.code,
     }));
 
-    return [baseData, ...priceHistory].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    return [baseData, ...priceHistory].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
   };
 
@@ -127,8 +127,10 @@ const StockComparison: React.FC<StockComparisonProps> = ({
   const chartData = useMemo(() => {
     if (!selectedStock1) return [];
 
-    const stock1 = stocks.find(s => s.id === selectedStock1);
-    const stock2 = selectedStock2 ? stocks.find(s => s.id === selectedStock2) : null;
+    const stock1 = stocks.find((s) => s.id === selectedStock1);
+    const stock2 = selectedStock2
+      ? stocks.find((s) => s.id === selectedStock2)
+      : null;
 
     if (!stock1) return [];
 
@@ -136,7 +138,7 @@ const StockComparison: React.FC<StockComparisonProps> = ({
     const stock2Data = stock2 ? transformStockData(stock2) : [];
 
     const dateMap = new Map();
-    
+
     stock1Data.forEach((item) => {
       dateMap.set(item.date, {
         date: item.date,
@@ -191,27 +193,31 @@ const StockComparison: React.FC<StockComparisonProps> = ({
   };
 
   const getStock1Info = () => {
-    const stock = stocks.find(s => s.id === selectedStock1);
-    return stock ? {
-      name: stock.issuer.name,
-      code: stock.code,
-      sector: stock.issuer.activitySector,
-      price: stock.price,
-      faceValue: stock.faceValue,
-      quantity: stock.quantity,
-    } : null;
+    const stock = stocks.find((s) => s.id === selectedStock1);
+    return stock
+      ? {
+          name: stock.issuer.name,
+          code: stock.code,
+          sector: stock.issuer.activitySector,
+          price: stock.price,
+          faceValue: stock.faceValue,
+          quantity: stock.quantity,
+        }
+      : null;
   };
 
   const getStock2Info = () => {
-    const stock = stocks.find(s => s.id === selectedStock2);
-    return stock ? {
-      name: stock.issuer.name,
-      code: stock.code,
-      sector: stock.issuer.activitySector,
-      price: stock.price,
-      faceValue: stock.faceValue,
-      quantity: stock.quantity,
-    } : null;
+    const stock = stocks.find((s) => s.id === selectedStock2);
+    return stock
+      ? {
+          name: stock.issuer.name,
+          code: stock.code,
+          sector: stock.issuer.activitySector,
+          price: stock.price,
+          faceValue: stock.faceValue,
+          quantity: stock.quantity,
+        }
+      : null;
   };
 
   // Calculate performance metrics
@@ -231,11 +237,17 @@ const StockComparison: React.FC<StockComparisonProps> = ({
     const metrics: any = {};
 
     if (firstData.security1 && lastData.security1) {
-      metrics.security1 = calculateChange(firstData.security1, lastData.security1);
+      metrics.security1 = calculateChange(
+        firstData.security1,
+        lastData.security1
+      );
     }
 
     if (firstData.security2 && lastData.security2) {
-      metrics.security2 = calculateChange(firstData.security2, lastData.security2);
+      metrics.security2 = calculateChange(
+        firstData.security2,
+        lastData.security2
+      );
     }
 
     return metrics;
@@ -275,7 +287,9 @@ const StockComparison: React.FC<StockComparisonProps> = ({
             </label>
             <Select value={selectedStock1} onValueChange={setSelectedStock1}>
               <SelectTrigger>
-                <SelectValue placeholder={t?.("selectStock") || "Select a stock"} />
+                <SelectValue
+                  placeholder={t?.("selectStock") || "Select a stock"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {stocks.map((stock) => (
@@ -298,14 +312,14 @@ const StockComparison: React.FC<StockComparisonProps> = ({
             </label>
             <Select value={selectedStock2} onValueChange={setSelectedStock2}>
               <SelectTrigger>
-                <SelectValue placeholder={t?.("selectStock") || "Select a stock"} />
+                <SelectValue
+                  placeholder={t?.("selectStock") || "Select a stock"}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">
-                  {t?.("none") || "None"}
-                </SelectItem>
+                <SelectItem value="">{t?.("none") || "None"}</SelectItem>
                 {stocks
-                  .filter(stock => stock.id !== selectedStock1)
+                  .filter((stock) => stock.id !== selectedStock1)
                   .map((stock) => (
                     <SelectItem key={stock.id} value={stock.id}>
                       <div className="flex flex-col">
@@ -356,9 +370,14 @@ const StockComparison: React.FC<StockComparisonProps> = ({
               </label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? formatTooltipDate(startDate, locale) : (t?.("pickDate") || "Pick a date")}
+                    {startDate
+                      ? formatTooltipDate(startDate, locale)
+                      : t?.("pickDate") || "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -378,9 +397,14 @@ const StockComparison: React.FC<StockComparisonProps> = ({
               </label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? formatTooltipDate(endDate, locale) : (t?.("pickDate") || "Pick a date")}
+                    {endDate
+                      ? formatTooltipDate(endDate, locale)
+                      : t?.("pickDate") || "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -398,7 +422,7 @@ const StockComparison: React.FC<StockComparisonProps> = ({
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Button 
+          <Button
             onClick={handleCompare}
             disabled={!selectedStock1 || loading || dataLoading}
             className="flex-1"
@@ -412,7 +436,7 @@ const StockComparison: React.FC<StockComparisonProps> = ({
               t?.("compare") || "Compare"
             )}
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={resetChart}
             disabled={loading || dataLoading}
@@ -437,20 +461,38 @@ const StockComparison: React.FC<StockComparisonProps> = ({
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <h4 className="font-medium">{getStock1Info()?.name}</h4>
-                      <span className="text-sm text-muted-foreground">{getStock1Info()?.code}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {getStock1Info()?.code}
+                      </span>
                     </div>
-                    <div className="text-sm text-muted-foreground">{getStock1Info()?.sector}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getStock1Info()?.sector}
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Current Price:</span>
-                      <span className="font-medium">{formatChartValue(getStock1Info()?.price || 0, "currency", locale)}</span>
+                      <span className="font-medium">
+                        {formatChartValue(
+                          getStock1Info()?.price || 0,
+                          "currency",
+                          locale
+                        )}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Face Value:</span>
-                      <span className="font-medium">{formatChartValue(getStock1Info()?.faceValue || 0, "currency", locale)}</span>
+                      <span className="font-medium">
+                        {formatChartValue(
+                          getStock1Info()?.faceValue || 0,
+                          "currency",
+                          locale
+                        )}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Quantity:</span>
-                      <span className="font-medium">{getStock1Info()?.quantity?.toLocaleString()}</span>
+                      <span className="font-medium">
+                        {getStock1Info()?.quantity?.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -463,20 +505,38 @@ const StockComparison: React.FC<StockComparisonProps> = ({
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <h4 className="font-medium">{getStock2Info()?.name}</h4>
-                      <span className="text-sm text-muted-foreground">{getStock2Info()?.code}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {getStock2Info()?.code}
+                      </span>
                     </div>
-                    <div className="text-sm text-muted-foreground">{getStock2Info()?.sector}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getStock2Info()?.sector}
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Current Price:</span>
-                      <span className="font-medium">{formatChartValue(getStock2Info()?.price || 0, "currency", locale)}</span>
+                      <span className="font-medium">
+                        {formatChartValue(
+                          getStock2Info()?.price || 0,
+                          "currency",
+                          locale
+                        )}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Face Value:</span>
-                      <span className="font-medium">{formatChartValue(getStock2Info()?.faceValue || 0, "currency", locale)}</span>
+                      <span className="font-medium">
+                        {formatChartValue(
+                          getStock2Info()?.faceValue || 0,
+                          "currency",
+                          locale
+                        )}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Quantity:</span>
-                      <span className="font-medium">{getStock2Info()?.quantity?.toLocaleString()}</span>
+                      <span className="font-medium">
+                        {getStock2Info()?.quantity?.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -493,22 +553,36 @@ const StockComparison: React.FC<StockComparisonProps> = ({
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium">{getStock1Info()?.name}</p>
+                      <p className="text-sm font-medium">
+                        {getStock1Info()?.name}
+                      </p>
                       <p className="text-2xl font-bold">
-                        {formatChartValue(performanceMetrics.security1.change, "currency", locale)}
+                        {formatChartValue(
+                          performanceMetrics.security1.change,
+                          "currency",
+                          locale
+                        )}
                       </p>
                     </div>
-                    <div className={cn(
-                      "flex items-center",
-                      performanceMetrics.security1.percentage >= 0 ? "text-green-600" : "text-red-600"
-                    )}>
+                    <div
+                      className={cn(
+                        "flex items-center",
+                        performanceMetrics.security1.percentage >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      )}
+                    >
                       {performanceMetrics.security1.percentage >= 0 ? (
                         <TrendingUp className="h-4 w-4 mr-1" />
                       ) : (
                         <TrendingDown className="h-4 w-4 mr-1" />
                       )}
                       <span className="text-sm font-medium">
-                        {formatChartValue(performanceMetrics.security1.percentage, "percentage", locale)}
+                        {formatChartValue(
+                          performanceMetrics.security1.percentage,
+                          "percentage",
+                          locale
+                        )}
                       </span>
                     </div>
                   </div>
@@ -521,22 +595,36 @@ const StockComparison: React.FC<StockComparisonProps> = ({
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium">{getStock2Info()?.name}</p>
+                      <p className="text-sm font-medium">
+                        {getStock2Info()?.name}
+                      </p>
                       <p className="text-2xl font-bold">
-                        {formatChartValue(performanceMetrics.security2.change, "currency", locale)}
+                        {formatChartValue(
+                          performanceMetrics.security2.change,
+                          "currency",
+                          locale
+                        )}
                       </p>
                     </div>
-                    <div className={cn(
-                      "flex items-center",
-                      performanceMetrics.security2.percentage >= 0 ? "text-green-600" : "text-red-600"
-                    )}>
+                    <div
+                      className={cn(
+                        "flex items-center",
+                        performanceMetrics.security2.percentage >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      )}
+                    >
                       {performanceMetrics.security2.percentage >= 0 ? (
                         <TrendingUp className="h-4 w-4 mr-1" />
                       ) : (
                         <TrendingDown className="h-4 w-4 mr-1" />
                       )}
                       <span className="text-sm font-medium">
-                        {formatChartValue(performanceMetrics.security2.percentage, "percentage", locale)}
+                        {formatChartValue(
+                          performanceMetrics.security2.percentage,
+                          "percentage",
+                          locale
+                        )}
                       </span>
                     </div>
                   </div>
@@ -552,38 +640,45 @@ const StockComparison: React.FC<StockComparisonProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={processedData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tick={{ fontSize: 12 }}
                   tickFormatter={createAxisTickFormatter("short", locale)}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => formatChartValue(value, "currency", locale)}
+                  tickFormatter={(value) =>
+                    formatChartValue(value, "currency", locale)
+                  }
                 />
-                <Tooltip 
+                <Tooltip
                   labelFormatter={(value) => formatTooltipDate(value, locale)}
                   formatter={(value, name) => [
                     formatChartValue(value as number, "currency", locale),
-                    name === "security1" ? processedData[0]?.security1Name : processedData[0]?.security2Name
+                    name === "security1"
+                      ? processedData[0]?.security1Name
+                      : processedData[0]?.security2Name,
                   ]}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="security1" 
-                  stroke="#8884d8" 
+                <Line
+                  type="monotone"
+                  dataKey="security1"
+                  stroke="#8884d8"
                   name={processedData[0]?.security1Name || "Stock 1"}
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   connectNulls={false}
                 />
-                {selectedStock2 && processedData.some(d => d.security2) && (
-                  <Line 
-                    type="monotone" 
-                    dataKey="security2" 
-                    stroke="#82ca9d" 
-                    name={processedData.find(d => d.security2Name)?.security2Name || "Stock 2"}
+                {selectedStock2 && processedData.some((d) => d.security2) && (
+                  <Line
+                    type="monotone"
+                    dataKey="security2"
+                    stroke="#82ca9d"
+                    name={
+                      processedData.find((d) => d.security2Name)
+                        ?.security2Name || "Stock 2"
+                    }
                     strokeWidth={2}
                     dot={{ r: 4 }}
                     connectNulls={false}
@@ -611,25 +706,41 @@ const StockComparison: React.FC<StockComparisonProps> = ({
                       <div>
                         <span className="text-muted-foreground">Min:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security1.min, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security1.min,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Max:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security1.max, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security1.max,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Avg:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security1.avg, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security1.avg,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Median:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security1.median, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security1.median,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                     </div>
@@ -643,25 +754,41 @@ const StockComparison: React.FC<StockComparisonProps> = ({
                       <div>
                         <span className="text-muted-foreground">Min:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security2.min, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security2.min,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Max:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security2.max, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security2.max,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Avg:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security2.avg, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security2.avg,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Median:</span>
                         <span className="ml-2 font-medium">
-                          {formatChartValue(statistics.security2.median, "currency", locale)}
+                          {formatChartValue(
+                            statistics.security2.median,
+                            "currency",
+                            locale
+                          )}
                         </span>
                       </div>
                     </div>

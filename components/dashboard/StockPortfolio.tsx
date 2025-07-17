@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,58 +18,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   AreaChart,
   Area,
   BarChart,
-  Bar
+  Bar,
 } from "recharts";
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  TrendingUp, 
-  TrendingDown, 
-  Activity, 
-  DollarSign, 
+import {
+  Search,
+  Filter,
+  Download,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  DollarSign,
   BarChart3,
   Calendar,
   Eye,
   Settings,
   RefreshCw,
   Star,
-  StarOff
+  StarOff,
 } from "lucide-react";
 
 import { useStockData } from "@/hooks/useStockData";
 import { Stock } from "@/lib/stock-utils";
-import { 
-  formatChartDate, 
-  formatChartValue, 
-  type SupportedLocale 
+import {
+  formatChartDate,
+  formatChartValue,
+  type SupportedLocale,
 } from "@/lib/chart-utils";
 
 interface StockPortfolioProps {
@@ -89,10 +89,14 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
 }) => {
   const t = useTranslations("portfolio");
   const locale = useLocale() as SupportedLocale;
-  
-  const [selectedStockIds, setSelectedStockIds] = useState<string[]>(initialSelectedStocks);
+
+  const [selectedStockIds, setSelectedStockIds] = useState<string[]>(
+    initialSelectedStocks
+  );
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "price" | "performance">("name");
+  const [sortBy, setSortBy] = useState<"name" | "price" | "performance">(
+    "name"
+  );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [activeTab, setActiveTab] = useState("overview");
   const [showFilters, setShowFilters] = useState(false);
@@ -138,24 +142,27 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
   }, [sortStocks, sortBy, sortDirection]);
 
   // Handle stock selection
-  const handleStockSelect = useCallback((stock: Stock) => {
-    setSelectedStockIds(prev => {
-      const isSelected = prev.includes(stock.id);
-      const newSelection = isSelected
-        ? prev.filter(id => id !== stock.id)
-        : [...prev, stock.id];
-      
-      return newSelection;
-    });
-    
-    if (onStockSelect) {
-      onStockSelect(stock);
-    }
-  }, [onStockSelect]);
+  const handleStockSelect = useCallback(
+    (stock: Stock) => {
+      setSelectedStockIds((prev) => {
+        const isSelected = prev.includes(stock.id);
+        const newSelection = isSelected
+          ? prev.filter((id) => id !== stock.id)
+          : [...prev, stock.id];
+
+        return newSelection;
+      });
+
+      if (onStockSelect) {
+        onStockSelect(stock);
+      }
+    },
+    [onStockSelect]
+  );
 
   // Toggle favorite
   const toggleFavorite = useCallback((stockId: string) => {
-    setFavorites(prev => {
+    setFavorites((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(stockId)) {
         newFavorites.delete(stockId);
@@ -167,27 +174,32 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
   }, []);
 
   // Export functionality
-  const handleExport = useCallback((format: "json" | "csv") => {
-    const data = exportData(format);
-    const blob = new Blob([data], { 
-      type: format === "json" ? "application/json" : "text/csv" 
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `stocks-${new Date().toISOString().split('T')[0]}.${format}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [exportData]);
+  const handleExport = useCallback(
+    (format: "json" | "csv") => {
+      const data = exportData(format);
+      const blob = new Blob([data], {
+        type: format === "json" ? "application/json" : "text/csv",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `stocks-${new Date().toISOString().split("T")[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    [exportData]
+  );
 
   // Custom tooltip for charts
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border rounded shadow-lg">
-          <p className="font-medium">{formatChartDate(label, "medium", locale)}</p>
+          <p className="font-medium">
+            {formatChartDate(label, "medium", locale)}
+          </p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {entry.dataKey}: {formatChartValue(entry.value, "currency")}
@@ -206,11 +218,15 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
 
     const isPositive = performance.changePercent >= 0;
     return (
-      <Badge 
+      <Badge
         variant={isPositive ? "default" : "destructive"}
         className="flex items-center gap-1"
       >
-        {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+        {isPositive ? (
+          <TrendingUp className="h-3 w-3" />
+        ) : (
+          <TrendingDown className="h-3 w-3" />
+        )}
         {performance.changePercent.toFixed(2)}%
       </Badge>
     );
@@ -223,7 +239,7 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
     const performance = performanceMetrics[stock.id];
 
     return (
-      <Card 
+      <Card
         className={`cursor-pointer transition-all hover:shadow-md ${
           isSelected ? "ring-2 ring-blue-500" : ""
         }`}
@@ -232,7 +248,9 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg truncate">{stock.issuer.name}</CardTitle>
+              <CardTitle className="text-lg truncate">
+                {stock.issuer.name}
+              </CardTitle>
               <CardDescription className="text-sm text-gray-600">
                 {stock.code} • {stock.isinCode}
               </CardDescription>
@@ -245,7 +263,11 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
                 toggleFavorite(stock.id);
               }}
             >
-              {isFavorite ? <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /> : <StarOff className="h-4 w-4" />}
+              {isFavorite ? (
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              ) : (
+                <StarOff className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </CardHeader>
@@ -257,11 +279,13 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
               </span>
               <PerformanceBadge stockId={stock.id} />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="text-gray-500">{t("sector")}</span>
-                <p className="font-medium truncate">{stock.issuer.activitySector}</p>
+                <p className="font-medium truncate">
+                  {stock.issuer.activitySector}
+                </p>
               </div>
               <div>
                 <span className="text-gray-500">{t("market")}</span>
@@ -298,10 +322,14 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-sm font-medium mb-1 block">{t("sector")}</label>
+            <label className="text-sm font-medium mb-1 block">
+              {t("sector")}
+            </label>
             <Select
               value={filters.activitySector || ""}
-              onValueChange={(value) => applyFilter({ activitySector: value || undefined })}
+              onValueChange={(value) =>
+                applyFilter({ activitySector: value || undefined })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder={t("allSectors")} />
@@ -318,10 +346,14 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1 block">{t("market")}</label>
+            <label className="text-sm font-medium mb-1 block">
+              {t("market")}
+            </label>
             <Select
               value={filters.marketListing || ""}
-              onValueChange={(value) => applyFilter({ marketListing: value || undefined })}
+              onValueChange={(value) =>
+                applyFilter({ marketListing: value || undefined })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder={t("allMarkets")} />
@@ -338,10 +370,14 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1 block">{t("stockType")}</label>
+            <label className="text-sm font-medium mb-1 block">
+              {t("stockType")}
+            </label>
             <Select
               value={filters.stockType || ""}
-              onValueChange={(value) => applyFilter({ stockType: value || undefined })}
+              onValueChange={(value) =>
+                applyFilter({ stockType: value || undefined })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder={t("allTypes")} />
@@ -426,13 +462,17 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
           <SelectContent>
             <SelectItem value="name">{t("sortByName")}</SelectItem>
             <SelectItem value="price">{t("sortByPrice")}</SelectItem>
-            <SelectItem value="performance">{t("sortByPerformance")}</SelectItem>
+            <SelectItem value="performance">
+              {t("sortByPerformance")}
+            </SelectItem>
           </SelectContent>
         </Select>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+          onClick={() =>
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+          }
         >
           {sortDirection === "asc" ? "↑" : "↓"}
         </Button>
@@ -449,14 +489,17 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
               <div>
                 <p className="text-sm text-gray-600">{t("totalValue")}</p>
                 <p className="text-2xl font-bold">
-                  {formatChartValue(marketStats?.totalMarketCap || 0, "currency")}
+                  {formatChartValue(
+                    marketStats?.totalMarketCap || 0,
+                    "currency"
+                  )}
                 </p>
               </div>
               <DollarSign className="h-8 w-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -470,7 +513,7 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -484,7 +527,7 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -530,11 +573,17 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={comparisonData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="date" 
-                        tickFormatter={(value) => formatChartDate(value, "short", locale)}
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={(value) =>
+                          formatChartDate(value, "short", locale)
+                        }
                       />
-                      <YAxis tickFormatter={(value) => formatChartValue(value, "currency")} />
+                      <YAxis
+                        tickFormatter={(value) =>
+                          formatChartValue(value, "currency")
+                        }
+                      />
                       <Tooltip content={<CustomTooltip />} />
                       {selectedStocks.map((stock, index) => (
                         <Line
@@ -587,7 +636,9 @@ export const StockPortfolio: React.FC<StockPortfolioProps> = ({
                         {stock.issuer.name}
                       </TableCell>
                       <TableCell>{stock.code}</TableCell>
-                      <TableCell>{formatChartValue(stock.price, "currency")}</TableCell>
+                      <TableCell>
+                        {formatChartValue(stock.price, "currency")}
+                      </TableCell>
                       <TableCell>
                         <PerformanceBadge stockId={stock.id} />
                       </TableCell>

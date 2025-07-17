@@ -1,12 +1,17 @@
 "use client";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { useLocale } from "next-intl";
-import { 
-  formatChartDate, 
-  formatTooltipDate, 
+import {
+  formatChartDate,
+  formatTooltipDate,
   createAxisTickFormatter,
-  type SupportedLocale 
+  type SupportedLocale,
 } from "@/lib/chart-utils";
 import type { DotProps } from "recharts";
 
@@ -23,14 +28,14 @@ const chartData = [
   { month: "October", desktop: 290 },
   { month: "November", desktop: 450 },
   { month: "December", desktop: 320 },
-]
+];
 
 const chartConfig = {
   desktop: {
     label: "Desktop",
     color: "hsl(var(--chart-1))",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 // Recharts passes cx & cy for every point. During first render or when
 // a point is outside the visible area they can be null / undefined.
@@ -38,19 +43,27 @@ const chartConfig = {
 
 const PointedDot = ({ cx, cy, stroke }: DotProps) => {
   // Bail out if coordinates aren’t valid numbers
-  if (typeof cx !== "number" || typeof cy !== "number" || Number.isNaN(cx) || Number.isNaN(cy)) {
-    return null
+  if (
+    typeof cx !== "number" ||
+    typeof cy !== "number" ||
+    Number.isNaN(cx) ||
+    Number.isNaN(cy)
+  ) {
+    return null;
   }
 
-  const width = 6
-  const height = 16
+  const width = 6;
+  const height = 16;
 
   return (
     <svg x={cx - width / 2} y={cy - height / 2} width={width} height={height}>
-      <polygon points={`${width / 2},0 0,${height} ${width},${height}`} fill={stroke || "var(--color-desktop)"} />
+      <polygon
+        points={`${width / 2},0 0,${height} ${width},${height}`}
+        fill={stroke || "var(--color-desktop)"}
+      />
     </svg>
-  )
-}
+  );
+};
 
 export function ShadLineChart() {
   const locale = useLocale() as SupportedLocale;
@@ -72,20 +85,30 @@ export function ShadLineChart() {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tickFormatter={(value) => formatChartDate(`2024-${value}-01`, "short", locale)}
+            tickFormatter={(value) =>
+              formatChartDate(`2024-${value}-01`, "short", locale)
+            }
           />
-          <ChartTooltip 
-            cursor={false} 
+          <ChartTooltip
+            cursor={false}
             content={
               <ChartTooltipContent
                 hideLabel
-                labelFormatter={(label) => formatTooltipDate(`2024-${label}-01`, locale)}
+                labelFormatter={(label) =>
+                  formatTooltipDate(`2024-${label}-01`, locale)
+                }
               />
             }
           />
-          <Line dataKey="desktop" type="linear" stroke="var(--color-desktop)" strokeWidth={2} dot={<PointedDot />} />
+          <Line
+            dataKey="desktop"
+            type="linear"
+            stroke="var(--color-desktop)"
+            strokeWidth={2}
+            dot={<PointedDot />}
+          />
         </LineChart>
       </ChartContainer>
     </div>
-  )
+  );
 }
