@@ -93,7 +93,7 @@ const SideBar = async () => {
               link={{
                 href: "/order-history",
                 icon: <FileText size={15} />,
-                label: t("historiqueDesOrdres"),
+                label: t("orderHistory"),
               }}
             />
             <OrdersDropDown />

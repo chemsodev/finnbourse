@@ -74,7 +74,7 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
     <div className="motion-preset-focus motion-duration-2000">
       <Link
         href="/iob-secondary-market"
-        className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit absolute md:mt-4"
+        className="flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white w-fit  md:mt-4"
       >
         <ArrowLeft className="w-5" />
         <div>{t("back")}</div>

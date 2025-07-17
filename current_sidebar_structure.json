@@ -16,7 +16,7 @@
       "id": "order-history",
       "href": "/order-history",
       "icon": "History",
-      "translationKey": "historiqueDesOrdres"
+      "translationKey": "orderHistory"
     },
     {
       "id": "orders-dropdown",

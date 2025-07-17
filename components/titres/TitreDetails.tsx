@@ -235,7 +235,7 @@ export function TitreDetails({
             )}
             {data.stockType === "action"
               ? renderDetail(t("duration"), t("nonDeterminedDuration"))
-              : data.duration && data.duration === 1
+              : data.duration && data.duration === "1"
               ? renderDetail(t("duration"), `${data.duration} ${t("year")}`)
               : renderDetail(t("duration"), `${data.duration} ${t("years")}`)}
           </CardContent>

@@ -17,15 +17,24 @@ type Props = {
   };
 };
 
+type TabType = "action" | "obligation";
+
 const SecondaryMarketTypePage = ({ params }: Props) => {
   const { type } = params;
   const t = useTranslations("Titres");
+  const [activeTab, setActiveTab] = useState<TabType>("action");
   const [stocks, setStocks] = useState<Stock[]>([]);
+  const [iobStocks, setIobStocks] = useState<Stock[]>([]);
   const [refreshTable, setRefreshTable] = useState<
     (() => Promise<void>) | null
   >(null);
   const { data: session, status } = useSession();
   const { restToken, isLoading } = useRestToken();
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setIobStocks([]);
+  };
 
   // Function to capture the refresh function from MarketTable
   const handleRefreshFunction = (refreshFn: () => Promise<void>) => {
@@ -83,14 +92,58 @@ const SecondaryMarketTypePage = ({ params }: Props) => {
         <div className="text-xs text-gray-500">{t("explMS")}</div>
       </div>
 
-      <div className="border ml-4 border-gray-100 rounded-md p-4 bg-gray-50/80">
-        <MarketTable
-          type={type as StockType}
-          marketType="secondaire"
-          stocks={stocks}
-          setStocks={setStocks}
-          onRefresh={handleRefreshFunction}
-        />
+      <div className="ml-8 mb-8">
+        <h2 className="text-2xl font-bold text-primary/80 mb-4">
+          1 . Introduction au marché secondaire
+        </h2>
+        <div className="border  border-gray-100 rounded-md p-4 bg-gray-50/80">
+          <MarketTable
+            type={type as StockType}
+            marketType="secondaire"
+            stocks={stocks}
+            setStocks={setStocks}
+            isIOB={false}
+            onRefresh={handleRefreshFunction}
+          />
+        </div>
+      </div>
+      <div className="ml-8 mb-4">
+        <h2 className="text-2xl font-bold text-primary/80 mb-4">
+          2 . {t("marcheSecondaire")}
+        </h2>
+        <div className="flex border-b border-gray-200 mb-6">
+          <button
+            className={`py-2 px-4 font-medium text-sm ${
+              activeTab === "action"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => handleTabChange("action")}
+          >
+            {t("stock")}
+          </button>
+          <button
+            className={`py-2 px-4 font-medium text-sm ${
+              activeTab === "obligation"
+                ? "border-b-2 border-primary text-primary"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => handleTabChange("obligation")}
+          >
+            {t("bond")}
+          </button>
+        </div>
+        <div className="border  border-gray-100 rounded-md p-4 bg-gray-50/80">
+          <MarketTable
+            type={activeTab}
+            marketType="secondaire"
+            stocks={iobStocks}
+            setStocks={setIobStocks}
+            isIOB={true}
+            onRefresh={handleRefreshFunction}
+            canEdit={false}
+          />
+        </div>
       </div>
     </div>
   );

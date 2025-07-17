@@ -54,6 +54,7 @@ interface MarketTableProps {
   type: StockType;
   marketType: "primaire" | "secondaire";
   isIOB?: boolean;
+  canEdit?: boolean;
   stocks: Stock[];
   setStocks: React.Dispatch<React.SetStateAction<Stock[]>>;
   onRefresh?: (refreshFn: () => Promise<void>) => void;
@@ -98,6 +99,7 @@ export function MarketTable({
   type,
   marketType,
   isIOB = false,
+  canEdit = true,
   stocks,
   setStocks,
   onRefresh,
@@ -149,6 +151,8 @@ export function MarketTable({
       setLoading(false);
     }
   }, [type, marketType, api, toast, setStocks, isIOB]);
+
+  console.log(type);
 
   React.useEffect(() => {
     fetchStocks();
@@ -368,7 +372,7 @@ export function MarketTable({
           const stock = row.original;
           return (
             <div className="text-sm font-medium text-gray-900">
-              {stock.name || "N/A"}
+              {stock.price || "N/A"}
             </div>
           );
         },
@@ -406,7 +410,7 @@ export function MarketTable({
     const cols =
       marketType === "primaire" ? [...primaryCols] : [...secondaryCols];
 
-    if (marketType === "secondaire" || type === "obligation") {
+    if ((marketType === "secondaire" && !isIOB) || type === "obligation") {
       cols.splice(2, 0, {
         accessorKey: "bondType",
         header: t("type"),
@@ -414,7 +418,7 @@ export function MarketTable({
           const stock = row.original as any;
           return (
             <div className="capitalize text-xs font-semibold text-gray-700">
-              {stock.type || ""}
+              {stock.stockType ? stock.stockType : stock.type || "N/A"}
             </div>
           );
         },
@@ -474,7 +478,7 @@ export function MarketTable({
                     {t("voirDetails")}
                   </Link>
                 </DropdownMenuItem>
-                {marketType === "secondaire" && (
+                {marketType === "secondaire" && canEdit === true && (
                   <DropdownMenuItem onClick={() => handleEditClick(stock)}>
                     {t("modifier")}
                   </DropdownMenuItem>
@@ -487,7 +491,7 @@ export function MarketTable({
     );
 
     return cols;
-  }, [baseColumns, marketType, t, type, handleEditClick, isIOB]);
+  }, [baseColumns, marketType, t, type, handleEditClick, , isIOB, canEdit]);
 
   const table = useReactTable({
     data: stocks || [],

@@ -53,7 +53,7 @@
     "teneurDeCompte": "Teneur de Compte",
     "execution": "Exécution",
     "resultats": "Résultats",
-    "historiqueDesOrdres": "Historique des Ordres",
+    "historiqueDesOrdres": "Journal des Ordres",
     "more": "Plus",
     "moreOptions": "Plus d'Options"
   },
@@ -3500,7 +3500,7 @@
     }
   },
   "orderHistory": {
-    "orderHistory": "Historique des Ordres",
+    "orderHistory": "Journal des Ordres",
     "orderHistoryDescription": "Consultez et gérez l'historique de vos ordres",
     "subscriptionsHistory": "Historique des Souscriptions",
     "primaryMarket": "Marché Primaire",
