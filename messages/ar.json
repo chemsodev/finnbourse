@@ -156,6 +156,7 @@
   },
   "DashLineChart": {
     "compareStocks": "قارن مع سهم آخر",
+    "view": "عرض",
     "title": "الرسم البياني المقارن",
     "graph": "الرسم البياني",
     "stocks": "الأسهم",

@@ -240,6 +240,7 @@
     "title": "Comparative Chart",
     "graph": "Chart",
     "stocks": "Stocks",
+    "view": "View",
     "noData": "No data available, please try another Stock.",
     "stockToCompare": "Stocks to compare",
     "selectStock": "Please select a stock",

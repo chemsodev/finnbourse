@@ -20,6 +20,13 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { fr, ar, enUS } from "date-fns/locale";
+import {
+  formatChartDate,
+  formatTooltipDate,
+  createAxisTickFormatter,
+  formatChartValue,
+  normalizeChartData,
+} from "@/lib/chart-utils";
 
 // Static mock data for stocks
 const mockStockData = [
@@ -119,12 +126,17 @@ export function StockTracker() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
+                tickFormatter={createAxisTickFormatter("short", locale as "fr" | "ar" | "en")}
+              />
+              <YAxis
                 tickFormatter={(value) =>
-                  format(new Date(value), "MMM dd", { locale: getDateLocale() })
+                  formatChartValue(value, "currency", locale as "fr" | "ar" | "en")
                 }
               />
-              <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip
+                content={<ChartTooltipContent />}
+                labelFormatter={(value) => formatTooltipDate(value, locale as "fr" | "ar" | "en")}
+              />
               <ChartLegend content={<ChartLegendContent />} />
               <Area
                 type="linear"
@@ -160,12 +172,10 @@ export function StockTracker() {
                 {mockStockData.map((row, index) => (
                   <tr key={index} className="border-b">
                     <td className="p-4">
-                      {format(new Date(row.date), "MMM dd, yyyy", {
-                        locale: getDateLocale(),
-                      })}
+                      {formatChartDate(row.date, "medium", locale as "fr" | "ar" | "en")}
                     </td>
-                    <td className="p-4">${row.stockOne}</td>
-                    {compareMode && <td className="p-4">${row.stockTwo}</td>}
+                    <td className="p-4">{formatChartValue(row.stockOne, "currency", locale as "fr" | "ar" | "en")}</td>
+                    {compareMode && <td className="p-4">{formatChartValue(row.stockTwo, "currency", locale as "fr" | "ar" | "en")}</td>}
                   </tr>
                 ))}
               </tbody>

@@ -1,7 +1,14 @@
-"use client"
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import type { DotProps } from "recharts"
+"use client";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { useLocale } from "next-intl";
+import { 
+  formatChartDate, 
+  formatTooltipDate, 
+  createAxisTickFormatter,
+  type SupportedLocale 
+} from "@/lib/chart-utils";
+import type { DotProps } from "recharts";
 
 const chartData = [
   { month: "January", desktop: 186 },
@@ -46,6 +53,8 @@ const PointedDot = ({ cx, cy, stroke }: DotProps) => {
 }
 
 export function ShadLineChart() {
+  const locale = useLocale() as SupportedLocale;
+
   return (
     <div>
       <ChartContainer config={chartConfig} className="max-h-60 w-full">
@@ -63,9 +72,17 @@ export function ShadLineChart() {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tickFormatter={(value) => value.slice(0, 3)}
+            tickFormatter={(value) => formatChartDate(`2024-${value}-01`, "short", locale)}
           />
-          <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+          <ChartTooltip 
+            cursor={false} 
+            content={
+              <ChartTooltipContent
+                hideLabel
+                labelFormatter={(label) => formatTooltipDate(`2024-${label}-01`, locale)}
+              />
+            }
+          />
           <Line dataKey="desktop" type="linear" stroke="var(--color-desktop)" strokeWidth={2} dot={<PointedDot />} />
         </LineChart>
       </ChartContainer>

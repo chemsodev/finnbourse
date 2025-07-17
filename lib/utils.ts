@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
+import { fr, ar, enUS } from "date-fns/locale";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -50,28 +51,62 @@ export function formatPrice(price: number | string): string {
   return formattedPrice;
 }
 
-export const formatDate = (dateString: string | Date) => {
+export const formatDate = (
+  dateString: string | Date,
+  formatType: "short" | "medium" | "long" | "iso" = "iso",
+  locale: "fr" | "ar" | "en" = "en"
+) => {
   // Return 'N/A' for falsy values (0, null, undefined, empty string)
   if (!dateString) {
     return "N/A";
   }
 
-  const date = new Date(dateString);
+  try {
+    let date: Date;
 
-  // Handle the case where the date string is in the format 'Wed Dec 25 2024 23:03:17 GMT+0100 (Central European Standard Time)'
-  if (isNaN(date.getTime())) {
-    const parsedDate = Date.parse(dateString.toString());
-    if (!isNaN(parsedDate)) {
-      return format(new Date(parsedDate), "yyyy-MM-dd");
+    if (typeof dateString === "string") {
+      date = parseISO(dateString) || new Date(dateString);
+    } else {
+      date = dateString;
     }
-  }
 
-  // Check if the date is valid
-  if (isNaN(date.getTime())) {
+    // Handle the case where the date string is in the format 'Wed Dec 25 2024 23:03:17 GMT+0100 (Central European Standard Time)'
+    if (!isValid(date)) {
+      const parsedDate = Date.parse(dateString.toString());
+      if (!isNaN(parsedDate)) {
+        date = new Date(parsedDate);
+      }
+    }
+
+    // Check if the date is valid
+    if (!isValid(date)) {
+      return "N/A";
+    }
+
+    const dateLocale = locale === "fr" ? fr : locale === "ar" ? ar : enUS;
+
+    switch (formatType) {
+      case "short":
+        return format(date, locale === "ar" ? "dd/MM" : "MMM dd", {
+          locale: dateLocale,
+        });
+      case "medium":
+        return format(date, locale === "ar" ? "dd/MM/yyyy" : "MMM dd, yyyy", {
+          locale: dateLocale,
+        });
+      case "long":
+        return format(date, locale === "ar" ? "dd/MM/yyyy" : "PPP", {
+          locale: dateLocale,
+        });
+      case "iso":
+        return format(date, "yyyy-MM-dd");
+      default:
+        return format(date, "yyyy-MM-dd");
+    }
+  } catch (error) {
+    console.error("Error formatting date:", error);
     return "N/A";
   }
-
-  return format(date, "yyyy-MM-dd");
 };
 
 export const getDefaultValiditeDate = () => {

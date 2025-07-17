@@ -372,6 +372,7 @@
     "compareStocks": "Comparer avec une autre action",
     "title": "Graphe Comparatif",
     "graph": "Graphe",
+    "view": "Voir",
     "stocks": "Actions",
     "noData": " Pas de donnes disponibles, veuillez réessayer des autres actions.",
     "stockToCompare": "Action a comparer",

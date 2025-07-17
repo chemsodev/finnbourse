@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRestToken } from "@/hooks/useRestToken";
 import {
   useEffect,
   useState,
@@ -53,69 +54,104 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CarnetOrdre from "./CarnetOrdre";
 
-// Mock data for stocks
-const mockStocks = [
-  {
-    id: "1",
-    issuer: "TOTAL",
-    code: "TOTAL",
-    name: "Total Energies",
-    facevalue: 52.3,
+// Interface for the API response
+interface StockPrice {
+  id: string;
+  stock: string;
+  price: number;
+  gap: number;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Issuer {
+  id: string;
+  name: string;
+  website: string;
+  activitySector: string;
+  createdAt: string;
+  updatedAt: string;
+  capital: string;
+  email: string;
+  address: string;
+  tel: string;
+}
+
+interface ApiStock {
+  id: string;
+  name: string | null;
+  stockType: string;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  issuer: Issuer;
+  isinCode: string;
+  code: string;
+  faceValue: number;
+  quantity: number;
+  emissionDate: string;
+  closingDate: string;
+  enjoymentDate: string;
+  maturityDate: string | null;
+  marketListing: string;
+  status: string;
+  dividendRate: number;
+  yieldRate: number | null;
+  fixedRate: number | null;
+  estimatedRate: number | null;
+  variableRate: number | null;
+  price: number;
+  capitalOperation: string;
+  shareClass: string | null;
+  votingRights: boolean;
+  stockPrices: StockPrice[];
+}
+
+// Transform API data to match the expected format
+const transformApiDataToStock = (apiStock: ApiStock) => {
+  // If no stock prices, generate a single data point with current price
+  let priceData = apiStock.stockPrices || [];
+
+  if (priceData.length === 0) {
+    // Create a single data point with current price if no historical data
+    priceData = [
+      {
+        id: "current",
+        stock: apiStock.id,
+        price: apiStock.price,
+        gap: 0,
+        date: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+  }
+
+  // Create a display name with stock type
+  const displayName = apiStock.name || apiStock.issuer.name;
+  const stockTypeLabel =
+    apiStock.stockType === "action" ? "Action" : "Obligation";
+
+  return {
+    id: apiStock.id,
+    issuer: apiStock.issuer.name,
+    code: apiStock.code,
+    name: `${displayName} (${stockTypeLabel})`,
+    stockType: apiStock.stockType,
+    facevalue: apiStock.faceValue,
     marketmetadata: {
-      cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(
-          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
-        ).toISOString(),
-        price: 52.3 + (Math.random() - 0.5) * 5,
-      })),
+      cours: priceData
+        .map((price) => ({
+          date: price.date,
+          price: price.price,
+        }))
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        ),
     },
-  },
-  {
-    id: "2",
-    issuer: "BNP Paribas",
-    code: "BNP",
-    name: "BNP Paribas",
-    facevalue: 45.8,
-    marketmetadata: {
-      cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(
-          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
-        ).toISOString(),
-        price: 45.8 + (Math.random() - 0.5) * 3,
-      })),
-    },
-  },
-  {
-    id: "3",
-    issuer: "Orange",
-    code: "ORA",
-    name: "Orange SA",
-    facevalue: 12.5,
-    marketmetadata: {
-      cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(
-          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
-        ).toISOString(),
-        price: 12.5 + (Math.random() - 0.5) * 2,
-      })),
-    },
-  },
-  {
-    id: "4",
-    issuer: "LVMH",
-    code: "MC",
-    name: "LVMH Moët Hennessy",
-    facevalue: 850.0,
-    marketmetadata: {
-      cours: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(
-          Date.now() - (29 - i) * 24 * 60 * 60 * 1000
-        ).toISOString(),
-        price: 850.0 + (Math.random() - 0.5) * 50,
-      })),
-    },
-  },
-];
+  };
+};
 
 const formSchema = z.object({
   firstAction: z.string().optional(),
@@ -127,23 +163,158 @@ const formSchema = z.object({
 export function StaticStockTracker() {
   const t = useTranslations("DashLineChart");
   const locale = useLocale();
+  const { restToken } = useRestToken();
   const [loading, setLoading] = useState(false);
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
-  const [stockOne, setStockOne] = useState<any>(mockStocks[0]);
-  const [stockTwo, setStockTwo] = useState<any>(mockStocks[1]);
-  const [stockOneData, setStockOneData] = useState<any[]>(
-    mockStocks[0].marketmetadata.cours
-  );
-  const [stockTwoData, setStockTwoData] = useState<any[]>(
-    mockStocks[1].marketmetadata.cours
-  );
+  const [availableStocks, setAvailableStocks] = useState<any[]>([]);
+  const [stockOne, setStockOne] = useState<any>(null);
+  const [stockTwo, setStockTwo] = useState<any>(null);
+  const [stockOneData, setStockOneData] = useState<any[]>([]);
+  const [stockTwoData, setStockTwoData] = useState<any[]>([]);
   const [compareMode, setCompareMode] = useState(true);
   const [view, setView] = useState<"graphe comparatif" | "carnet">(
     "graphe comparatif"
   );
   const [graphHeight, setGraphHeight] = useState<number | undefined>(undefined);
   const formCardContentRef = useRef<HTMLDivElement>(null);
+
+  // Fetch available stocks from API
+  const fetchAvailableStocks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      // Add authorization token if available
+      if (restToken) {
+        headers.Authorization = `Bearer ${restToken}`;
+        console.log(
+          "🔑 Using token:",
+          restToken ? "Token available" : "No token"
+        );
+      } else {
+        console.warn("⚠️ No authentication token available");
+      }
+
+      console.log("📡 Making API calls to:", baseUrl);
+
+      try {
+        // Fetch actions (stocks)
+        const actionsResponse = await fetch(`${baseUrl}/api/v1/stock/filter`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            marketType: "secondaire",
+            stockType: "action",
+          }),
+        });
+
+        console.log("📊 Actions response status:", actionsResponse.status);
+
+        if (!actionsResponse.ok) {
+          console.error("❌ Actions API error:", {
+            status: actionsResponse.status,
+            statusText: actionsResponse.statusText,
+            headers: Object.fromEntries(actionsResponse.headers.entries()),
+          });
+        }
+
+        // Fetch obligations (bonds)
+        const obligationsResponse = await fetch(
+          `${baseUrl}/api/v1/stock/filter`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              marketType: "secondaire",
+              stockType: "obligation",
+            }),
+          }
+        );
+
+        console.log(
+          "📊 Obligations response status:",
+          obligationsResponse.status
+        );
+
+        if (!obligationsResponse.ok) {
+          console.error("❌ Obligations API error:", {
+            status: obligationsResponse.status,
+            statusText: obligationsResponse.statusText,
+            headers: Object.fromEntries(obligationsResponse.headers.entries()),
+          });
+        }
+
+        if (!actionsResponse.ok || !obligationsResponse.ok) {
+          throw new Error(
+            `HTTP error! Actions: ${actionsResponse.status}, Obligations: ${obligationsResponse.status}`
+          );
+        }
+
+        const actionsData: ApiStock[] = await actionsResponse.json();
+        const obligationsData: ApiStock[] = await obligationsResponse.json();
+
+        console.log("📊 Fetched actions from API:", actionsData);
+        console.log("📊 Fetched obligations from API:", obligationsData);
+
+        // Combine both types of stocks
+        const allApiStocks = [...actionsData, ...obligationsData];
+        console.log("📊 Combined stocks:", allApiStocks);
+
+        // Transform API data to component format
+        const transformedStocks = allApiStocks.map(transformApiDataToStock);
+        console.log("📊 Transformed stocks:", transformedStocks);
+
+        setAvailableStocks(transformedStocks);
+
+        // Set default stocks if available
+        if (transformedStocks.length > 0) {
+          const defaultStock = transformedStocks[0];
+          setStockOne(defaultStock);
+          setStockOneData(defaultStock.marketmetadata.cours);
+
+          if (transformedStocks.length > 1) {
+            const secondStock = transformedStocks[1];
+            setStockTwo(secondStock);
+            setStockTwoData(secondStock.marketmetadata.cours);
+          } else {
+            // If only one stock, set it as both for comparison
+            setStockTwo(defaultStock);
+            setStockTwoData(defaultStock.marketmetadata.cours);
+          }
+        } else {
+          // No stocks available
+          setStockOne(null);
+          setStockTwo(null);
+          setStockOneData([]);
+          setStockTwoData([]);
+        }
+      } catch (apiError) {
+        console.error("❌ API call failed:", apiError);
+        throw apiError;
+      }
+    } catch (error) {
+      console.error("Error fetching stocks:", error);
+      // Fallback to empty array if API fails
+      setAvailableStocks([]);
+      setStockOne(null);
+      setStockTwo(null);
+      setStockOneData([]);
+      setStockTwoData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [restToken]);
+
+  // Fetch stocks on component mount
+  useEffect(() => {
+    fetchAvailableStocks();
+  }, [fetchAvailableStocks]);
 
   useLayoutEffect(() => {
     if (formCardContentRef.current) {
@@ -170,22 +341,34 @@ export function StaticStockTracker() {
     return Array.from(dateMap.values());
   }, []);
 
-  const fetchTwoStocks = useCallback(async (idOne: string, idTwo: string) => {
-    setLoading(true);
-    try {
-      const stock1 = mockStocks.find((s) => s.id === idOne) || mockStocks[0];
-      const stock2 = mockStocks.find((s) => s.id === idTwo) || mockStocks[1];
+  const fetchTwoStocks = useCallback(
+    async (idOne: string, idTwo: string) => {
+      setLoading(true);
+      try {
+        const stock1 = availableStocks.find((s: any) => s.id === idOne);
+        const stock2 = availableStocks.find((s: any) => s.id === idTwo);
 
-      setStockOne(stock1);
-      setStockTwo(stock2);
-      setStockOneData(stock1.marketmetadata.cours);
-      setStockTwoData(stock2.marketmetadata.cours);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        if (stock1) {
+          setStockOne(stock1);
+          setStockOneData(stock1.marketmetadata.cours || []);
+        }
+
+        if (stock2) {
+          setStockTwo(stock2);
+          setStockTwoData(stock2.marketmetadata.cours || []);
+        } else if (stock1) {
+          // If no second stock found, use the first stock for both
+          setStockTwo(stock1);
+          setStockTwoData(stock1.marketmetadata.cours || []);
+        }
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [availableStocks]
+  );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -210,6 +393,11 @@ export function StaticStockTracker() {
       setLoading(false);
     }
   }
+
+  // Add a refresh function to refetch data
+  const refreshStocks = useCallback(() => {
+    fetchAvailableStocks();
+  }, [fetchAvailableStocks]);
 
   const mergedData = useMemo(() => {
     if (!stockOneData) return [];
@@ -251,11 +439,11 @@ export function StaticStockTracker() {
 
   const chartConfig = {
     stockOne: {
-      label: stockOne ? stockOne.issuer : "Stock One",
+      label: stockOne ? stockOne.name || stockOne.code : "Stock One",
       color: "hsl(var(--chart-3))",
     },
     stockTwo: {
-      label: stockTwo ? stockTwo.issuer : "Stock Two",
+      label: stockTwo ? stockTwo.name || stockTwo.code : "Stock Two",
       color: "hsl(var(--chart-1))",
     },
   };
@@ -304,9 +492,11 @@ export function StaticStockTracker() {
                 className="flex-1 flex flex-col"
                 style={graphHeight ? { height: graphHeight } : {}}
               >
-                {!stockOneData || !stockTwoData ? (
+                {!stockOneData ||
+                !stockTwoData ||
+                availableStocks.length === 0 ? (
                   <div className="h-60 border rounded-md flex justify-center text-center items-center shadow-inner">
-                    {t("noData")}
+                    {loading ? "Loading stocks..." : t("noData")}
                   </div>
                 ) : (
                   <div className="pr-2 pt-4 sm:pr-6 sm:pt-6 animate-fade-in h-full">
@@ -421,9 +611,12 @@ export function StaticStockTracker() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {mockStocks?.map((t: any) => (
-                                      <SelectItem key={t.id} value={t.id}>
-                                        {t.issuer}
+                                    {availableStocks?.map((stock: any) => (
+                                      <SelectItem
+                                        key={stock.id}
+                                        value={stock.id}
+                                      >
+                                        {stock.name || stock.code}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -452,9 +645,12 @@ export function StaticStockTracker() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {mockStocks?.map((t: any) => (
-                                      <SelectItem key={t.id} value={t.id}>
-                                        {t.issuer}
+                                    {availableStocks?.map((stock: any) => (
+                                      <SelectItem
+                                        key={stock.id}
+                                        value={stock.id}
+                                      >
+                                        {stock.name || stock.code}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -604,10 +800,12 @@ export function StaticStockTracker() {
                     </div>
                     <Button
                       type="submit"
-                      disabled={loading}
+                      disabled={loading || availableStocks.length === 0}
                       className="w-full mt-auto"
                     >
-                      {loading ? "chargement..." : "Voir"}
+                      {loading
+                        ? t("loading") || "Loading..."
+                        : t("view") || "View"}
                     </Button>
                   </form>
                 </Form>
