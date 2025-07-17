@@ -50,6 +50,8 @@ export function TitreDetails({
     }
   };
 
+  console.log(data);
+
   // Improved date formatting with error handling
   const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return null;
@@ -73,19 +75,11 @@ export function TitreDetails({
     return companies.find((c) => c.id === id)?.name || id;
   };
 
-  // const getInstitutionNames = (ids: string[] = []) => {
-  //   if (!ids || ids.length === 0) return null;
-  //   return institutions
-  //     .filter((i) => ids.includes(i.id))
-  //     .map((i) => i.name)
-  //     .join(", ");
-  // };
-
-  // Enhanced status badge component
+  // Status badge component
   const StatusBadge = ({ status }: { status: string }) => {
     const statusConfig = {
       activated: { color: "bg-green-100 text-green-800", label: "Active" },
-      suspended: { color: "bg-yellow-100 text-yellow-800", label: "Suspended" },
+      delisted: { color: "bg-yellow-100 text-yellow-800", label: "delisted" },
       deactivated: { color: "bg-red-100 text-red-800", label: "Inactive" },
     };
 
@@ -96,6 +90,52 @@ export function TitreDetails({
     return <Badge className={config.color}>{config.label}</Badge>;
   };
 
+  // Format currency with proper locale
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (!amount && amount !== 0) return null;
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "DZD",
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  // Format percentage
+  const formatPercentage = (rate: number | null | undefined) => {
+    if (!rate && rate !== 0) return null;
+    return `${rate.toFixed(2)}%`;
+  };
+
+  // helper functions to get Stock prices
+  const getLatestStockPrice = () => {
+    if (!data.stockPrices || data.stockPrices.length === 0) return null;
+
+    // Sort by date descending and get the most recent
+    const sorted = [...data.stockPrices].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    return sorted[0];
+  };
+
+  const getOpeningStockPrice = () => {
+    if (!data.stockPrices || data.stockPrices.length === 0) return null;
+
+    // Sort by date ascending and get the first (oldest)
+    const sorted = [...data.stockPrices].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    return sorted[0];
+  };
+
+  const calculatePriceGap = () => {
+    const latest = getLatestStockPrice();
+    const opening = getOpeningStockPrice();
+
+    if (!latest?.price || !opening?.price) return null;
+    return latest.price - opening.price;
+  };
+
+  //
   const renderDetail = (
     label: string,
     value: React.ReactNode,
@@ -113,22 +153,6 @@ export function TitreDetails({
       </div>
     </div>
   );
-
-  // Format currency with proper locale
-  const formatCurrency = (amount: number | null | undefined) => {
-    if (!amount && amount !== 0) return null;
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: "DZD",
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  // Format percentage
-  const formatPercentage = (rate: number | null | undefined) => {
-    if (!rate && rate !== 0) return null;
-    return `${rate.toFixed(2)}%`;
-  };
 
   const content = (
     <div className="max-w-6xl mx-auto space-y-6 p-4 h-[calc(100vh-50px)] overflow-auto">
@@ -151,28 +175,50 @@ export function TitreDetails({
               )}
             </div>
           </div>
-          {/* 
-          {data.stockPrice?.price && (
-            <div className="text-right">
-              <div className="text-2xl font-bold text-blue-600">
-                {formatCurrency(data.stockPrice.price)}
-              </div>
-              <div className="text-sm text-gray-500">{t("currentPrice")}</div>
-              {data.stockPrice.gap !== undefined &&
-                data.stockPrice.gap !== null && (
-                  <div
-                    className={`text-sm font-medium ${
-                      data.stockPrice.gap >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {data.stockPrice.gap >= 0 ? "+" : ""}
-                    {formatCurrency(data.stockPrice.gap)} ({t("gap") || "Gap"})
+          {(() => {
+            const latestPrice = getLatestStockPrice();
+            const openingPrice = getOpeningStockPrice();
+            const priceGap = calculatePriceGap();
+
+            if (!latestPrice) {
+              return (
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">
+                    {t("noPriceData")}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div className="text-right">
+                <div className="text-2xl font-bold text-blue-600">
+                  {formatCurrency(latestPrice.price)}
+                </div>
+                <div className="text-sm text-gray-500">{t("currentPrice")}</div>
+
+                {latestPrice.date && (
+                  <div className="text-xs text-gray-400">
+                    {formatDate(latestPrice.date)}
                   </div>
                 )}
-            </div>
-          )} */}
+
+                {priceGap !== null && openingPrice && (
+                  <div
+                    className={`text-sm font-medium ${
+                      priceGap >= 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {priceGap > 0 && priceGap !== 0 ? "+" : ""}
+                    {formatCurrency(priceGap)} ({t("gap")})
+                    <span className="text-xs text-gray-400 ml-2">
+                      ({formatCurrency(openingPrice.price)} {t("openingPrice")})
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -207,24 +253,7 @@ export function TitreDetails({
           <CardContent className="space-y-0">
             {renderDetail(t("faceValue"), formatCurrency(data.faceValue))}
             {renderDetail(t("quantity"), data.quantity?.toLocaleString())}
-            {/* {data.stockPrice?.price &&
-              renderDetail(
-                t("currentPrice"),
-                formatCurrency(data.stockPrice.price)
-              )} */}
-            {/* {data.stockPrice?.gap !== undefined &&
-              data.stockPrice?.gap !== null &&
-              renderDetail(
-                t("gap") || "Gap",
-                <span
-                  className={
-                    data.stockPrice.gap >= 0 ? "text-green-600" : "text-red-600"
-                  }
-                >
-                  {data.stockPrice.gap >= 0 ? "+" : ""}
-                  {formatCurrency(data.stockPrice.gap)}
-                </span>
-              )} */}
+
             {renderDetail(
               t("votingRights"),
               data.votingRights ? t("yes") : t("no")
@@ -288,7 +317,6 @@ export function TitreDetails({
           </div>
         </CardContent>
       </Card>
-
       {isValidationReturnPage && orderResponse && (
         <Card>
           <CardHeader>
@@ -325,7 +353,6 @@ export function TitreDetails({
           </CardContent>
         </Card>
       )}
-
       {/* Institutions */}
       {Array.isArray(data.institutions) && data.institutions.length > 0 && (
         <Card>
@@ -349,7 +376,70 @@ export function TitreDetails({
           </CardContent>
         </Card>
       )}
-
+      {/* Stock Prices */}
+      {data.stockPrices && data.stockPrices.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              {t("priceHistory")} ({data.stockPrices.length} {t("entries")})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      {t("date")}
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      {t("price")}
+                    </th>
+                    {data.stockPrices.some(
+                      (price) => price.gap !== undefined
+                    ) && (
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">
+                        {t("gap")}
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.stockPrices.map((price, index) => (
+                    <tr key={index} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 text-sm">
+                        {formatDate(price.date)}
+                      </td>
+                      <td className="py-3 px-4 text-sm font-medium text-blue-600">
+                        {formatCurrency(price.price)}
+                      </td>
+                      {data.stockPrices!.some((p) => p.gap !== undefined) && (
+                        <td
+                          className={`py-3 px-4 text-sm font-medium ${
+                            (price.gap ?? 0) >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {price.gap !== undefined ? (
+                            <>
+                              {price.gap >= 0 ? "+" : ""}
+                              {formatCurrency(price.gap)}
+                            </>
+                          ) : (
+                            "N/A"
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Capital Repayment Schedule */}
       {/* {(data.capitalRepaymentSchedule?.length ?? 0) > 0 && (
         <Card>

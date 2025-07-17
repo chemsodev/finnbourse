@@ -157,11 +157,11 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     )
       ? (titre.status as "activated" | "deactivated" | "delisted")
       : "activated",
-    stockPrice: {
-      price: titre.stockPrices?.[0]?.price || 0,
-      date: new Date(),
-      gap: 0,
-    },
+    stockPrices: titre.stockPrices?.map((price) => ({
+      price: price.price || 0,
+      date: new Date(price.date),
+      gap: price.gap || 0,
+    })),
     capitalOperation: titre.capitalOperation || "ouverture",
     votingRights: titre.votingRights || false,
     dividendRate: titre.dividendRate,

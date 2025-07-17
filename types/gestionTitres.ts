@@ -130,9 +130,6 @@ export interface Stock {
   master: string;
   status: StockStatus;
   price?: number;
-  // isPrimary: boolean;
-  stockPrice?: StockPrice;
-  // institutions: FinancialInstitution[];
   institutions: string[];
   capitalOperation?:
     | "augmentation"
@@ -167,13 +164,13 @@ export interface Stock {
 
   // capitalRepaymentSchedule?: RepaymentSchedule[];
   // couponSchedule?: CouponSchedule[];
-  stockPrices?: StockPrice[];
+  stockPrices?: StockPrices[];
 }
 export interface MarketTableProps {
   type: StockType;
 }
 
-export interface StockPrice {
+export interface StockPrices {
   price: number;
   date: Date;
   gap?: number;

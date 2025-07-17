@@ -73,7 +73,7 @@
       "pending": "Pending Orders",
       "executed": "Executed Orders",
       "nonExecuted": "Non Executed Orders",
-      "avisDoperation": "Operation Notice"
+      "operated": "Operated Orders"
     }
   },
   "Commissions": {
@@ -424,7 +424,15 @@
     "lignesSelectionnees": "Selected Lines",
     "aucunResultat": "No results found",
     "valeurActuelle": "Current Value",
-    "type": "Type"
+    "type": "Type",
+    "ecart": "Gap",
+    "retry": "Retry",
+    "actions": "Actions",
+    "obligations": "Obligations",
+    "status": "Status",
+    "activated": "Activated",
+    "deactivated": "Deactivated",
+    "delisted": "Delisted"
   },
   "TitreDrawer": {
     "repayementMethod": "Repayment Method",
@@ -3296,7 +3304,13 @@
       "notFoundDescription": "The requested titre with ID \"{id}\" could not be found.",
       "gap": "Gap",
       "pme": "PME",
-      "principal": "Principal"
+      "principal": "Principal",
+      "noPriceData": "No price data available",
+      "openingPrice": "Opening Price",
+      "priceHistory": "Price History",
+      "entries": "Entries",
+      "date": "Date",
+      "price": "Price"
     },
     "EditTitre": {
       "editTitre": "Edit Security",

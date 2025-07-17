@@ -29,6 +29,15 @@ const MyPortfolio = () => {
         </div>
         <div className="flex flex-col bg-primary rounded p-4 text-white items-start justify-between w-full">
           <div className="flex flex-row items-center">
+            <span className="w-3 h-3 rounded-full bg-purple-400 mr-2"></span>
+            <div className="text-[1vw]">{t("status.operated")}</div>
+          </div>
+          <span className="text-[1vw] font-semibold ml-6 p-[0.2vw]">
+            {nbMessages}
+          </span>
+        </div>
+        <div className="flex flex-col bg-primary rounded p-4 text-white items-start justify-between w-full">
+          <div className="flex flex-row items-center">
             <span className="w-3 h-3 rounded-full bg-blue-400 mr-2"></span>
             <div className="text-[1vw]">{t("status.executed")}</div>
           </div>
@@ -40,15 +49,6 @@ const MyPortfolio = () => {
           <div className="flex flex-row items-center">
             <span className="w-3 h-3 rounded-full bg-orange-400 mr-2"></span>
             <div className="text-[1vw]">{t("status.nonExecuted")}</div>
-          </div>
-          <span className="text-[1vw] font-semibold ml-6 p-[0.2vw]">
-            {nbMessages}
-          </span>
-        </div>
-        <div className="flex flex-col bg-primary rounded p-4 text-white items-start justify-between w-full">
-          <div className="flex flex-row items-center">
-            <span className="w-3 h-3 rounded-full bg-purple-400 mr-2"></span>
-            <div className="text-[1vw]">{t("status.avisDoperation")}</div>
           </div>
           <span className="text-[1vw] font-semibold ml-6 p-[0.2vw]">
             {nbMessages}

@@ -100,7 +100,7 @@ export const TitreSchema = z.object({
   master: z.string().optional(),
   institutions: z.array(z.string()).optional(),
   price: z.number().optional(),
-  stockPrice: StockPriceSchema.optional(),
+  stockPrices: z.array(StockPriceSchema).optional(),
   // isPrimary: z.boolean().optional(),
   capitalRepaymentSchedule: z
     .array(CapitalRepaymentScheduleItemSchema)
