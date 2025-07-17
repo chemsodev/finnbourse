@@ -91,7 +91,7 @@ export const TitreSchema = z.object({
     ])
     .optional(),
   maturityDate: z.date().optional(),
-  duration: z.number().min(1).max(30).optional(),
+  duration: z.string().optional(),
   nombreDeTranches: z.number().min(1).optional(),
   // paymentSchedule: z.array(PaymentScheduleItemSchema).optional(),
   commission: z.number().min(0).optional(),

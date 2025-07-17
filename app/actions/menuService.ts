@@ -284,7 +284,7 @@ export const menuItemMap: Record<
     label: "Order History",
     href: "/order-history",
     icon: "History",
-    translationKey: "historiqueDesOrdres",
+    translationKey: "orderHistory",
   },
 
   // Orders dropdown and children

@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { TitreDetails } from "@/components/titres/TitreDetails";
 import { TitreFormValues } from "@/components/titres/titreSchemaValidation";
 import { useFinancialInstitution } from "@/hooks/useFinancialInstitution";
@@ -8,7 +9,6 @@ import { Stock, StockType } from "@/types/gestionTitres";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 interface PageParams {
   id: string;
@@ -17,10 +17,10 @@ interface PageParams {
 
 function mapToStockType(
   type: StockType
-): "action" | "obligation" | "sukuk" | "participatif" {
+): "action" | "obligation" | "sukuk" | "obligationsOrdinaires" | "oat" {
   const mapping: Record<
     StockType,
-    "action" | "obligation" | "sukuk" | "participatif"
+    "action" | "obligation" | "sukuk" | "obligationsOrdinaires" | "oat"
   > = {
     opv: "action",
     empruntobligataire: "obligation",
@@ -29,23 +29,8 @@ function mapToStockType(
     sukuk: "sukuk",
     sukukmp: "sukuk",
     sukukms: "sukuk",
-    titresparticipatifs: "participatif",
-    titresparticipatifsmp: "participatif",
-    titresparticipatifsms: "participatif",
-    participatif: "participatif",
   };
   return mapping[type] || "action";
-}
-
-// Helper function to map StockType to ObligationType
-function mapToObligationType(type: StockType): "participatif" | "sukuk" {
-  if (type.includes("sukuk")) {
-    return "sukuk";
-  }
-  if (type.includes("participatif")) {
-    return "participatif";
-  }
-  return "participatif";
 }
 
 // Helper function to extract issuer ID
@@ -153,7 +138,6 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     id: titre.id,
     name: titre.name || "",
     stockType: mapToStockType(titre.stockType),
-    type: mapToObligationType(titre?.type || ""),
     code: titre.code || "",
     issuer: extractIssuerId(titre.issuer) || "",
     isinCode: titre.isinCode || "",
@@ -168,10 +152,10 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
       ? new Date(titre.enjoymentDate)
       : new Date(),
     marketListing: titre.marketListing || "ALG",
-    status: ["activated", "suspended", "delisted"].includes(
+    status: ["activated", "deactivated", "delisted"].includes(
       titre.status as string
     )
-      ? (titre.status as "activated" | "suspended" | "delisted")
+      ? (titre.status as "activated" | "deactivated" | "delisted")
       : "activated",
     stockPrice: {
       price: titre.stockPrices?.[0]?.price || 0,
@@ -181,7 +165,7 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     capitalOperation: titre.capitalOperation || "ouverture",
     votingRights: titre.votingRights || false,
     dividendRate: titre.dividendRate,
-    durationYears: titre.durationYears || 1,
+    duration: titre.duration || "",
     institutions: extractInstitutionIds(titre.institutions || []),
     maturityDate: titre.maturityDate ? new Date(titre.maturityDate) : undefined,
 

@@ -194,7 +194,7 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     capitalOperation: titre.capitalOperation || "ouverture",
     votingRights: titre.votingRights || false,
     dividendRate: titre.dividendRate,
-    durationYears: titre.durationYears || 1,
+    duration: titre.duration || "",
     institutions: extractInstitutionIds(titre.institutions || []),
     maturityDate: titre.maturityDate ? new Date(titre.maturityDate) : undefined,
 

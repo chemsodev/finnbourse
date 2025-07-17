@@ -68,7 +68,7 @@ const createApiClient = (getToken: () => string | null) => {
 
   return {
     // Get Stock by ID
-    getStockById: (id: string) => makeRequest<Stock>(`/stock1/${id}`),
+    getStockById: (id: string) => makeRequest<Stock>(`/stock/${id}`),
 
     // Create all type of stock
     createStock: (stockData: Omit<Stock, "id">) =>

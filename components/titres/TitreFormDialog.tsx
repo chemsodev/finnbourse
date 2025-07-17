@@ -940,13 +940,9 @@ TitreFormDialogProps) {
                                 <Input
                                   type="radio"
                                   id="obligationsOrdinaires"
-                                  value="obligationsOrdinaires"
-                                  checked={
-                                    field.value === "obligationsOrdinaires"
-                                  }
-                                  onChange={() =>
-                                    field.onChange("obligationsOrdinaires")
-                                  }
+                                  value="obligation"
+                                  checked={field.value === "obligation"}
+                                  onChange={() => field.onChange("obligation")}
                                   className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                                 />
                                 <Label
@@ -1049,24 +1045,7 @@ TitreFormDialogProps) {
                           <FormItem>
                             <FormLabel>{t("form.duration")}</FormLabel>
                             <FormControl>
-                              <Input
-                                type="number"
-                                step="1"
-                                placeholder={t("form.enterDuration")}
-                                value={field.value ?? ""}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (value === "") {
-                                    field.onChange(undefined);
-                                  } else {
-                                    const numValue = Number(value);
-                                    if (!isNaN(numValue)) {
-                                      field.onChange(numValue);
-                                    }
-                                  }
-                                }}
-                                onKeyDown={preventNonNumericInput}
-                              />
+                              <Input {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
