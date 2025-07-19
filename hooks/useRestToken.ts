@@ -75,6 +75,7 @@ export function useRestToken() {
 
     setIsFetchingToken(true);
     try {
+      console.log("🔄 Fetching REST token...");
       // Fetch token from API endpoint
       const response = await fetch("/api/auth/rest-token", {
         method: "GET",
@@ -85,16 +86,22 @@ export function useRestToken() {
         const data = await response.json();
         if (data.restToken) {
           storeRestToken(data.restToken);
-          console.log("🔑 REST Token fetched and stored");
+          console.log("✅ REST Token fetched and stored successfully");
+          return data.restToken;
+        } else {
+          console.warn("⚠️ No REST token in response");
         }
       } else {
-        console.warn("⚠️ Failed to fetch REST token from API");
+        console.warn(
+          `⚠️ Failed to fetch REST token: ${response.status} ${response.statusText}`
+        );
       }
     } catch (error) {
       console.error("❌ Error fetching REST token:", error);
     } finally {
       setIsFetchingToken(false);
     }
+    return null;
   };
 
   const storeRestToken = (token: string) => {
@@ -108,7 +115,21 @@ export function useRestToken() {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem(REST_TOKEN_KEY);
       setStoredRestToken(null);
+      console.log("🗑️ REST token cleared from storage");
     }
+  };
+
+  // Validate and refresh token if needed
+  const ensureValidToken = async (): Promise<string | null> => {
+    const currentToken = session?.user?.restToken || storedRestToken;
+
+    if (!currentToken) {
+      console.log("🔄 No token available, fetching new one...");
+      return await fetchAndStoreRestToken();
+    }
+
+    // Token exists, assume it's valid unless we get a 401
+    return currentToken;
   };
 
   // Clear token when user logs out
@@ -147,6 +168,7 @@ export function useRestToken() {
     hasGraphqlToken: !!graphqlToken,
     fetchAndStoreRestToken,
     clearStoredToken,
+    ensureValidToken,
   };
 }
 

@@ -140,12 +140,31 @@ export function MarketTable({
         typeof err === "object" && err !== null && "message" in err
           ? String((err as { message?: unknown }).message)
           : "Failed to fetch stocks";
-      setError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Error loading stocks",
-        description: errorMessage,
-      });
+
+      console.error("❌ Error fetching stocks:", err);
+
+      // Handle 401 specifically
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "status" in err &&
+        (err as any).status === 401
+      ) {
+        console.warn("🔒 Authentication error - token may be expired");
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description:
+            "Your session may have expired. Please try refreshing the page.",
+        });
+      } else {
+        setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Error loading stocks",
+          description: errorMessage,
+        });
+      }
       setStocks([]);
     } finally {
       setLoading(false);
@@ -484,20 +503,22 @@ export function MarketTable({
           // Get both latest and opening prices
           const { latest, opening } = getPrices(stockPrices);
 
-          // Calculate gap if both prices exist
-          const gap =
-            latest?.price !== undefined && opening?.price !== undefined
-              ? latest.price - opening.price
+          // Calculate gap percentage if both prices exist
+          const gapPercentage =
+            latest?.price !== undefined &&
+            opening?.price !== undefined &&
+            opening?.price !== 0
+              ? ((latest.price - opening.price) / opening.price) * 100
               : null;
 
           const date = latest?.date;
 
-          if (gap === null) {
+          if (gapPercentage === null) {
             return <span className="text-gray-400">NC</span>;
           }
 
-          const gapValue = formatPrice(gap);
-          const isPositive = gap >= 0;
+          const gapValue = gapPercentage.toFixed(2);
+          const isPositive = gapPercentage >= 0;
 
           return (
             <div className="flex flex-col">
@@ -508,8 +529,8 @@ export function MarketTable({
                     : "text-red-600 font-medium"
                 }
               >
-                {isPositive && gap !== 0 ? "+" : ""}
-                {gapValue}
+                {isPositive && gapPercentage !== 0 ? "+" : ""}
+                {gapValue}%
               </span>
               {date && (
                 <span className="text-xs text-gray-500">

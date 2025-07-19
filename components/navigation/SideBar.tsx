@@ -128,10 +128,7 @@ const SideBar = async () => {
         <div className="flex flex-col gap-2">
           <DeconnexionDialog />
           <div className="flex">
-            <Link
-              href="/profile"
-              className="flex bg-white shadow-sm items-center gap-4 hover:shadow-inner p-2 w-full ltr:rounded-l-xl rtl:rounded-r-xl"
-            >
+            <div className="flex bg-white shadow-sm items-center gap-4 hover:shadow-inner p-2 w-full ltr:rounded-l-xl rtl:rounded-r-xl cursor-default">
               <Avatar>
                 <AvatarImage src="" />
                 <AvatarFallback>
@@ -147,7 +144,7 @@ const SideBar = async () => {
                   {session?.user?.email}
                 </div>
               </div>
-            </Link>
+            </div>
             <LocaleButton />
           </div>
         </div>

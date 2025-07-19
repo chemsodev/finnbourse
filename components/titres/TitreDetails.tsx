@@ -131,8 +131,8 @@ export function TitreDetails({
     const latest = getLatestStockPrice();
     const opening = getOpeningStockPrice();
 
-    if (!latest?.price || !opening?.price) return null;
-    return latest.price - opening.price;
+    if (!latest?.price || !opening?.price || opening.price === 0) return null;
+    return ((latest.price - opening.price) / opening.price) * 100;
   };
 
   //
@@ -210,7 +210,7 @@ export function TitreDetails({
                     }`}
                   >
                     {priceGap > 0 && priceGap !== 0 ? "+" : ""}
-                    {formatCurrency(priceGap)} ({t("gap")})
+                    {priceGap.toFixed(2)}% ({t("gap")})
                     <span className="text-xs text-gray-400 ml-2">
                       ({formatCurrency(openingPrice.price)} {t("openingPrice")})
                     </span>
@@ -406,34 +406,45 @@ export function TitreDetails({
                   </tr>
                 </thead>
                 <tbody>
-                  {data.stockPrices.map((price, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm">
-                        {formatDate(price.date)}
-                      </td>
-                      <td className="py-3 px-4 text-sm font-medium text-blue-600">
-                        {formatCurrency(price.price)}
-                      </td>
-                      {data.stockPrices!.some((p) => p.gap !== undefined) && (
-                        <td
-                          className={`py-3 px-4 text-sm font-medium ${
-                            (price.gap ?? 0) >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {price.gap !== undefined ? (
-                            <>
-                              {price.gap >= 0 ? "+" : ""}
-                              {formatCurrency(price.gap)}
-                            </>
-                          ) : (
-                            "N/A"
-                          )}
+                  {data.stockPrices.map((price, index) => {
+                    // Calculate gap percentage relative to opening price
+                    const openingPrice = getOpeningStockPrice();
+                    const gapPercentage =
+                      openingPrice?.price && openingPrice.price !== 0
+                        ? ((price.price - openingPrice.price) /
+                            openingPrice.price) *
+                          100
+                        : null;
+
+                    return (
+                      <tr key={index} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 text-sm">
+                          {formatDate(price.date)}
                         </td>
-                      )}
-                    </tr>
-                  ))}
+                        <td className="py-3 px-4 text-sm font-medium text-blue-600">
+                          {formatCurrency(price.price)}
+                        </td>
+                        {data.stockPrices!.some((p) => p.gap !== undefined) && (
+                          <td
+                            className={`py-3 px-4 text-sm font-medium ${
+                              (gapPercentage ?? 0) >= 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {gapPercentage !== null ? (
+                              <>
+                                {gapPercentage >= 0 ? "+" : ""}
+                                {gapPercentage.toFixed(2)}%
+                              </>
+                            ) : (
+                              "N/A"
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

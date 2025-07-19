@@ -4,7 +4,7 @@ import {
   SecondaryMarketResponse,
   Stock,
   StockFilter,
-  StockPrice,
+  StockPrices,
 } from "@/types/gestionTitres";
 
 // Function to get the correct base URL based on environment
@@ -22,7 +22,8 @@ const getBaseUrl = () => {
 const createApiClient = (getToken: () => string | null) => {
   const makeRequest = async <T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retryCount = 0
   ): Promise<T> => {
     const baseUrl = getBaseUrl();
     const url = `${baseUrl}${endpoint}`;
@@ -41,6 +42,43 @@ const createApiClient = (getToken: () => string | null) => {
         // Add credentials for proxy requests
         credentials: typeof window !== "undefined" ? "include" : "omit",
       });
+
+      // Handle 401 Unauthorized - token might be expired
+      if (response.status === 401 && retryCount === 0) {
+        console.warn("🔄 Token expired, attempting to refresh...");
+
+        // Clear potentially expired token from storage
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("finnbourse_rest_token");
+        }
+
+        // Try to refresh token
+        try {
+          const refreshResponse = await fetch("/api/auth/rest-token", {
+            method: "GET",
+            credentials: "include",
+          });
+
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            if (refreshData.restToken) {
+              // Store new token
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem(
+                  "finnbourse_rest_token",
+                  refreshData.restToken
+                );
+              }
+
+              // Retry the original request with new token
+              console.log("🔄 Retrying request with refreshed token...");
+              return makeRequest<T>(endpoint, options, retryCount + 1);
+            }
+          }
+        } catch (refreshError) {
+          console.error("❌ Token refresh failed:", refreshError);
+        }
+      }
 
       if (!response.ok) {
         let errorData: any;
@@ -85,8 +123,8 @@ const createApiClient = (getToken: () => string | null) => {
       }),
 
     // Create stock price
-    createStockPrice: (priceData: StockPrice) =>
-      makeRequest<StockPrice>("/stock/price", {
+    createStockPrice: (priceData: StockPrices) =>
+      makeRequest<StockPrices>("/stock/price", {
         method: "POST",
         body: JSON.stringify(priceData),
       }),

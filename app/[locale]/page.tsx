@@ -11,7 +11,7 @@ import LogOutAgent from "@/components/LogOutAgent";
 import { StaticStockTracker } from "@/components/dashboard/StaticStockTracker";
 import StaticDashNews from "@/components/dashboard/StaticDashNews";
 import TitreTable from "@/components/dashboard/TitreTable";
-import PrimaryMarketTable from "@/components/dashboard/PrimaryMarketTable";
+import SecondaryMarketTable from "@/components/dashboard/SecondaryMarketTable";
 
 export default async function Home() {
   const t = await getTranslations("HomePage");
@@ -51,7 +51,7 @@ export default async function Home() {
           <div className="mt-8 w-full grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-3">
               {/* <TitreTable /> */}
-              <PrimaryMarketTable />
+              <SecondaryMarketTable />
             </div>
             <div className="lg:col-span-1">
               <MyPortfolio />

@@ -163,7 +163,12 @@ const formSchema = z.object({
 export function StaticStockTracker() {
   const t = useTranslations("DashLineChart");
   const locale = useLocale();
-  const { restToken } = useRestToken();
+  const {
+    restToken,
+    isLoading: isTokenLoading,
+    isAuthenticated,
+    hasRestToken,
+  } = useRestToken();
   const [loading, setLoading] = useState(false);
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
@@ -311,10 +316,18 @@ export function StaticStockTracker() {
     }
   }, [restToken]);
 
-  // Fetch stocks on component mount
+  // Fetch stocks on component mount - but only when authenticated and token is available
   useEffect(() => {
-    fetchAvailableStocks();
-  }, [fetchAvailableStocks]);
+    // Don't make API calls until we're authenticated and have a REST token
+    if (isAuthenticated && hasRestToken && !isTokenLoading) {
+      console.log("🚀 Authentication ready, fetching stocks...");
+      fetchAvailableStocks();
+    } else {
+      console.log(
+        `⏳ Waiting for authentication: authenticated=${isAuthenticated}, hasToken=${hasRestToken}, loading=${isTokenLoading}`
+      );
+    }
+  }, [fetchAvailableStocks, isAuthenticated, hasRestToken, isTokenLoading]);
 
   useLayoutEffect(() => {
     if (formCardContentRef.current) {
@@ -451,6 +464,26 @@ export function StaticStockTracker() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
+
+  // Show loading state while waiting for authentication
+  if (isTokenLoading || !isAuthenticated || !hasRestToken) {
+    return (
+      <div className="w-full space-y-6">
+        <div className="flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-sm text-gray-600">
+              {isTokenLoading
+                ? "Loading authentication..."
+                : !isAuthenticated
+                ? "Please log in to continue..."
+                : "Preparing data connection..."}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-6">

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import SearchFilter from "../listed-company/search-filter";
 import { useStockApi } from "@/hooks/useStockApi";
+import { useRestToken } from "@/hooks/useRestToken";
 import { Stock, StockType } from "@/types/gestionTitres";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
@@ -23,6 +24,11 @@ const PrimaryMarketTable = () => {
   const router = useRouter();
   const { toast } = useToast();
   const api = useStockApi();
+  const {
+    isLoading: isTokenLoading,
+    isAuthenticated,
+    hasRestToken,
+  } = useRestToken();
   const t = useTranslations("TitresTable");
 
   const [activeTab, setActiveTab] = useState<StockType>("action");
@@ -58,9 +64,17 @@ const PrimaryMarketTable = () => {
   };
 
   useEffect(() => {
-    fetchStocks();
+    // Don't make API calls until we're authenticated and have a REST token
+    if (isAuthenticated && hasRestToken && !isTokenLoading) {
+      console.log("🚀 Authentication ready, fetching primary market stocks...");
+      fetchStocks();
+    } else {
+      console.log(
+        `⏳ Waiting for authentication in PrimaryMarketTable: authenticated=${isAuthenticated}, hasToken=${hasRestToken}, loading=${isTokenLoading}`
+      );
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeTab, isAuthenticated, hasRestToken, isTokenLoading]);
 
   const filteredStocks = stocks.filter(
     (stock) =>
@@ -85,6 +99,24 @@ const PrimaryMarketTable = () => {
         return "bg-gray-100 text-gray-800 ";
     }
   };
+
+  // Show loading state while waiting for authentication
+  if (isTokenLoading || !isAuthenticated || !hasRestToken) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-sm text-gray-600">
+            {isTokenLoading
+              ? "Loading authentication..."
+              : !isAuthenticated
+              ? "Please log in to continue..."
+              : "Preparing data connection..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

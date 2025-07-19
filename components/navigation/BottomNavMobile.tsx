@@ -81,10 +81,10 @@ const BottomNav = async () => {
           <DropdownMenuLabel>User Menu</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <Link href="/profile" className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-default">
               <UserRound size={16} />
               {t("Profile")}
-            </Link>
+            </div>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
