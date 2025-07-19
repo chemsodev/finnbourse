@@ -41,10 +41,10 @@ import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/hooks/use-toast";
 
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatPrice } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 
-import { Stock, StockType } from "@/types/gestionTitres";
+import { Stock, StockPrices, StockType } from "@/types/gestionTitres";
 import { TitreFormValues } from "./titreSchemaValidation";
 import { EditTitre } from "./EditTitre";
 import { EditSecondaryMarketTitre } from "./EditSecondaryMarketTitre";
@@ -152,8 +152,6 @@ export function MarketTable({
     }
   }, [type, marketType, api, toast, setStocks, isIOB]);
 
-  console.log(type);
-
   React.useEffect(() => {
     fetchStocks();
   }, [fetchStocks]);
@@ -165,6 +163,47 @@ export function MarketTable({
     }
   }, [onRefresh, fetchStocks]);
 
+  // Function to get StockPrices
+  const getPrices = (stockPrices: StockPrices[]) => {
+    if (!Array.isArray(stockPrices)) return { opening: null, latest: null };
+
+    const sortedAsc = [...stockPrices].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    const sortedDesc = [...stockPrices].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    return {
+      opening: sortedAsc[0],
+      latest: sortedDesc[0],
+    };
+  };
+
+  const PriceCell = ({ price, date }: StockPrices) => (
+    <div className="flex flex-col">
+      <span className="font-medium">{formatPrice(price ?? 0) ?? "NC"}</span>
+      {date && (
+        <span className="text-xs text-gray-500">{formatDate(date)}</span>
+      )}
+    </div>
+  );
+
+  //
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case "activated":
+        return "bg-green-100 text-green-800 ";
+      case "deactivated":
+        return "bg-yellow-100 text-yellow-800 ";
+      case "delisted":
+        return "bg-red-100 text-red-800 ";
+      default:
+        return "bg-gray-100 text-gray-800 ";
+    }
+  };
+
+  //
   const handleEditClick = React.useCallback(
     (stock: Stock) => {
       try {
@@ -227,24 +266,30 @@ export function MarketTable({
               )
             : [],
           // StockPrice - get the latest price from stockPrices array
-          stockPrice: (() => {
+          stockPrices: (() => {
             const stockPrices = stock.stockPrices;
-            let latestPrice;
-
             if (Array.isArray(stockPrices) && stockPrices.length > 0) {
-              // Sort by date descending to get the most recent price
-              const sortedPrices = [...stockPrices].sort(
-                (a, b) =>
-                  new Date(b.date).getTime() - new Date(a.date).getTime()
-              );
-              latestPrice = sortedPrices[0];
+              // Map all prices to ensure correct type
+              return stockPrices.map((sp) => ({
+                price: sp.price ?? 0,
+                date: sp.date ? new Date(sp.date) : new Date(),
+                gap: sp.gap,
+              }));
             }
-
-            return {
-              price: latestPrice?.price || stock.stockPrice?.price || 0,
-              date: latestPrice?.date ? new Date(latestPrice.date) : new Date(),
-              gap: latestPrice?.gap || stock.stockPrice?.gap || 0,
-            };
+            // If no prices, fallback to stock.stockPrices if available
+            if (stock.stockPrices && stock.stockPrices.length > 0) {
+              return [
+                {
+                  price: stock.stockPrices[0].price ?? 0,
+                  date: stock.stockPrices[0].date
+                    ? new Date(stock.stockPrices[0].date)
+                    : new Date(),
+                  gap: stock.stockPrices[0].gap,
+                },
+              ];
+            }
+            // Default to empty array
+            return [];
           })(),
           // Schedules
           capitalRepaymentSchedule:
@@ -405,6 +450,76 @@ export function MarketTable({
             ? formatDate(row.original.enjoymentDate)
             : "NC",
       },
+      {
+        accessorKey: "openingPrice",
+        header: t("valeurOuverture"),
+        cell: ({ row }) => {
+          const { opening } = getPrices(row.original?.stockPrices ?? []);
+          return (
+            <PriceCell
+              price={opening?.price ?? 0}
+              date={opening?.date ?? new Date()}
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "currentPrice",
+        header: t("valeurActuelle"),
+        cell: ({ row }) => {
+          const { latest } = getPrices(row.original?.stockPrices ?? []);
+          return (
+            <PriceCell
+              price={latest?.price ?? 0}
+              date={latest?.date ?? new Date()}
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "gap",
+        header: t("ecart"),
+        cell: ({ row }) => {
+          const stockPrices = row.original?.stockPrices ?? [];
+          // Get both latest and opening prices
+          const { latest, opening } = getPrices(stockPrices);
+
+          // Calculate gap if both prices exist
+          const gap =
+            latest?.price !== undefined && opening?.price !== undefined
+              ? latest.price - opening.price
+              : null;
+
+          const date = latest?.date;
+
+          if (gap === null) {
+            return <span className="text-gray-400">NC</span>;
+          }
+
+          const gapValue = formatPrice(gap);
+          const isPositive = gap >= 0;
+
+          return (
+            <div className="flex flex-col">
+              <span
+                className={
+                  isPositive
+                    ? "text-green-600 font-medium"
+                    : "text-red-600 font-medium"
+                }
+              >
+                {isPositive && gap !== 0 ? "+" : ""}
+                {gapValue}
+              </span>
+              {date && (
+                <span className="text-xs text-gray-500">
+                  {formatDate(date)}
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
     ];
 
     const cols =
@@ -439,17 +554,24 @@ export function MarketTable({
         accessorKey: "status",
         header: t("statut"),
         cell: ({ row }) => {
-          const status = row.original.status;
+          const stock = row.original;
+          const statusText =
+            stock.status === "activated"
+              ? "actif"
+              : stock.status === "deactivated"
+              ? "inactif"
+              : stock.status === "delisted"
+              ? "deliste"
+              : "NC";
+
           return (
-            t(
-              status === "activated"
-                ? "actif"
-                : status === "deactivated"
-                ? "inactif"
-                : status === "delisted"
-                ? "deliste"
-                : "NC"
-            ) ?? "NC"
+            <span
+              className={`px-3 py-2 rounded-full text-xs ${getStatusColor(
+                stock.status
+              )}`}
+            >
+              {t(statusText) ?? "N/A"}
+            </span>
           );
         },
       },

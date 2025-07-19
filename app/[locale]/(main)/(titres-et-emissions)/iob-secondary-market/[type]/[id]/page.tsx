@@ -157,11 +157,12 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
     )
       ? (titre.status as "activated" | "deactivated" | "delisted")
       : "activated",
-    stockPrice: {
-      price: titre.stockPrices?.[0]?.price || 0,
-      date: new Date(),
-      gap: 0,
-    },
+    stockPrices:
+      titre.stockPrices?.map((price) => ({
+        date: new Date(price.date),
+        price: price.price || 0,
+        gap: price.gap || 0,
+      })) || [],
     capitalOperation: titre.capitalOperation || "ouverture",
     votingRights: titre.votingRights || false,
     dividendRate: titre.dividendRate,
@@ -190,7 +191,7 @@ export default function TitreDetailsPage({ params }: { params: PageParams }) {
           href={`/iob-secondary-market/${params.type}`}
           className="inline-flex gap-2 items-center border rounded-md py-1 px-2 bg-primary text-white  md:mt-10"
         >
-          <ArrowLeft className="w-5" /> <div>{t("back")}</div>
+          <ArrowLeft className="w-5" /> <div>{t("actions.back")}</div>
         </Link>
         <TitreDetails
           data={titreData}

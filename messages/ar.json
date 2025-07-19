@@ -72,7 +72,7 @@
       "pending": "أوامر في الانتظار",
       "executed": "أوامر منفذة",
       "nonExecuted": "أوامر غير منفذة",
-      "avisDoperation": "إشعار العملية"
+      "operated": "أوامر مُعالجة"
     }
   },
   "finalisationInscriptionParticulier": {
@@ -336,7 +336,15 @@
     "lignesSelectionnees": "الصفوف المحددة",
     "aucunResultat": "لا توجد نتائج",
     "valeurActuelle": "القيمة الحالية",
-    "type": "النوع"
+    "type": "النوع",
+    "ecart": "الفرق",
+    "retry": "إعادة المحاولة",
+    "actions": "الأسهم",
+    "obligations": "السندات",
+    "status": "الحالة",
+    "activated": "مفعل",
+    "deactivated": "معطل",
+    "delisted": "محذوف"
   },
   "TitreDrawer": {
     "repayementMethod": "طريقة التسديد",
@@ -2914,7 +2922,13 @@
       "notFoundDescription": "تعذر العثور على الورقة المالية المطلوبة بالمعرف \"{id}\".",
       "gap": "الفجوة",
       "pme": "PME",
-      "principal": "الرئيسي"
+      "principal": "الرئيسي",
+      "noPriceData": "لا توجد بيانات سعرية",
+      "openingPrice": "سعر الافتتاح",
+      "priceHistory": "تاريخ السعر",
+      "entries": "المدخلات",
+      "date": "التاريخ",
+      "price": "السعر"
     },
     "EditTitre": {
       "editTitre": "تعديل الورقة المالية",

@@ -71,7 +71,7 @@
       "pending": "Ordres En Attentes",
       "executed": "Ordres Exécutés",
       "nonExecuted": "Ordres non Exécutés",
-      "avisDoperation": "Avis D'Opération"
+      "operated": "Ordres Opérés"
     }
   },
   "Commissions": {
@@ -725,7 +725,15 @@
     "lignesSelectionnees": "Lignes sélectionnées",
     "aucunResultat": "Aucun résultat trouvé",
     "valeurActuelle": "Valeur actuelle",
-    "type": "Type"
+    "type": "Type",
+    "ecart": "Écart",
+    "retry": "Réessayer",
+    "actions": "Actions",
+    "obligations": "Obligations",
+    "status": "Statut",
+    "activated": "Actif",
+    "deactivated": "Inactif",
+    "delisted": "Radié"
   },
   "titresTable": {
     "logo": "Logo",
@@ -3424,7 +3432,13 @@
       "notFoundDescription": "Le titre demandé avec l'ID \"{id}\" n'a pas pu être trouvé.",
       "gap": "Écart",
       "pme": "PME",
-      "principal": "Principal"
+      "principal": "Principal",
+      "noPriceData": "Aucune donnée de prix disponible",
+      "openingPrice": "Prix d'ouverture",
+      "priceHistory": "Historique des Prix",
+      "entries": "Entrées",
+      "date": "Date",
+      "price": "Prix"
     },
     "EditTitre": {
       "editTitre": "Modifier le Titre",
